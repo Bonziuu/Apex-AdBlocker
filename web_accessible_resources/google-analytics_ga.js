@@ -1,4 +1,4 @@
-// Tarcza – atrapa starego Google Analytics (ga.js)
+// ChromeBlock – atrapa starego Google Analytics (ga.js)
 (function () {
   'use strict';
   const noop = function () {};

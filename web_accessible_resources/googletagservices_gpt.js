@@ -1,4 +1,4 @@
-// Tarcza – atrapa Google Publisher Tag (gpt.js)
+// ChromeBlock – atrapa Google Publisher Tag (gpt.js)
 (function () {
   'use strict';
   const noop = function () {};

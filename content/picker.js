@@ -1,9 +1,9 @@
-// Tarcza – tryb wskazywania elementu do ukrycia (wstrzykiwany na żądanie z okienka).
+// ChromeBlock – tryb wskazywania elementu do ukrycia (wstrzykiwany na żądanie z okienka).
 
 (() => {
-  if (window.__tarczaPicker) { window.__tarczaPicker.focus(); return; }
+  if (window.__chromeblockPicker) { window.__chromeblockPicker.focus(); return; }
 
-  const host = document.createElement('tarcza-picker');
+  const host = document.createElement('chromeblock-picker');
   host.style.cssText = 'all:initial;position:fixed;inset:0;z-index:2147483647;pointer-events:none;';
   const root = host.attachShadow({ mode: 'closed' });
   root.innerHTML = `
@@ -172,7 +172,7 @@
     for (const t of ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup']) window.removeEventListener(t, onClick, true);
     window.removeEventListener('keydown', onKey, true);
     host.remove();
-    delete window.__tarczaPicker;
+    delete window.__chromeblockPicker;
   }
 
   window.addEventListener('mousemove', onMove, true);
@@ -202,5 +202,5 @@
     countEl.textContent = 'Nie udało się zapisać filtra.';
   });
 
-  window.__tarczaPicker = { focus() { input.focus(); } };
+  window.__chromeblockPicker = { focus() { input.focus(); } };
 })();
