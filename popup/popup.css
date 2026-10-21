@@ -126,3 +126,8 @@ main {
   color: var(--muted);
   text-align: center;
 }
+
+.problems {
+  width: 100%; margin-top: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid #f59e0b55;
+  background: #f59e0b1a; color: inherit; font: inherit; font-size: 12px; cursor: pointer; text-align: left;
+}

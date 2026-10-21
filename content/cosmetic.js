@@ -1,18 +1,49 @@
-// Tarcza – skrypt treści (świat izolowany, document_start, wszystkie ramki).
+// ChromeBlock – skrypt treści (świat izolowany, document_start, wszystkie ramki).
 // 1) prosi service worker o CSS dla tej strony (filtry kosmetyczne),
 // 2) zbiera klasy/identyfikatory elementów i dociąga pasujące ogólne filtry,
 // 3) stosuje filtry proceduralne (:has-text, :upward, :remove, ...).
+//
+// Diagnostyka wydajności (opcje → Diagnostyka) jest domyślnie WYŁĄCZONA; gdy
+// włączona, liczniki są wysyłane wyłącznie do service workera tego rozszerzenia.
 
 (() => {
-  if (window.__tarczaCosmetic) return;
-  window.__tarczaCosmetic = true;
+  if (window.__chromeblockCosmetic) return;
+  window.__chromeblockCosmetic = true;
 
   const url = location.href;
-  let hideAttr = 'data-tarcza-hide';
+  let hideAttr = 'data-chromeblock-hide';
 
   const send = (msg) => {
     try { return chrome.runtime.sendMessage(msg); } catch { return Promise.resolve(null); }
   };
+
+  // ------------------------------------------------------------ diagnostyka
+
+  const perf = {
+    enabled: false,
+    stats: { mutationBatches: 0, genericMs: 0, proceduralMs: 0, proceduralRuns: 0, tokensSent: 0, selectorsApplied: 0 },
+    dirty: false,
+    timer: 0,
+  };
+  const now = () => performance.now();
+  const measure = (key, fn) => {
+    if (!perf.enabled) return fn();
+    const t0 = now();
+    try { return fn(); } finally { perf.stats[key] += now() - t0; perf.dirty = true; }
+  };
+  const bump = (key, n = 1) => { if (perf.enabled) { perf.stats[key] += n; perf.dirty = true; } };
+  try {
+    chrome.storage.local.get('devPerf').then(({ devPerf }) => {
+      if (!devPerf) return;
+      perf.enabled = true;
+      perf.timer = setInterval(() => {
+        if (!perf.dirty) return;
+        perf.dirty = false;
+        const stats = { ...perf.stats, genericMs: Math.round(perf.stats.genericMs * 10) / 10, proceduralMs: Math.round(perf.stats.proceduralMs * 10) / 10 };
+        send({ type: 'perf:report', url, stats });
+      }, 5000);
+    }, () => {});
+  } catch { /* brak dostępu do storage */ }
 
   // ------------------------------------------------------------------ ogólne
 
@@ -42,7 +73,8 @@
       if (!pending.size) return;
       const tokens = [...pending];
       pending = new Set();
-      send({ type: 'cosmetic:tokens', tokens, url });
+      bump('tokensSent', tokens.length);
+      send({ type: 'cosmetic:tokens', tokens, url }).then((r) => { if (r && r.selectors) bump('selectorsApplied', r.selectors); }, () => {});
     };
     const schedule = () => {
       if (timer || !pending.size) return;
@@ -50,14 +82,17 @@
       first = false;
     };
 
-    if (document.documentElement) collectTree(document.documentElement);
+    if (document.documentElement) measure('genericMs', () => collectTree(document.documentElement));
     schedule();
 
     const mo = new MutationObserver((records) => {
-      for (const r of records) {
-        if (r.type === 'attributes') { collectEl(r.target); continue; }
-        for (const n of r.addedNodes) collectTree(n);
-      }
+      bump('mutationBatches');
+      measure('genericMs', () => {
+        for (const r of records) {
+          if (r.type === 'attributes') { collectEl(r.target); continue; }
+          for (const n of r.addedNodes) collectTree(n);
+        }
+      });
       schedule();
     });
     const observe = () => mo.observe(document.documentElement, {
@@ -113,7 +148,6 @@
       } else if (css[0] === '>' || /^\s/.test(raw)) {
         for (const n of nodes) for (const e of n.querySelectorAll(':scope ' + css)) out.add(e);
       } else {
-        // kontynuacja tego samego elementu, np. ":upward(2).klasa" albo ":not(...)"
         for (const n of nodes) if (n.matches(css)) out.add(n);
       }
     } catch { return []; }
@@ -152,6 +186,7 @@
         }
         case 'remove': action = { type: 'remove' }; break;
         case 'style': action = { type: 'style', css: s.css }; break;
+        default: break;
       }
       if (nodes && !nodes.length) break;
     }
@@ -161,27 +196,35 @@
   function startProcedural(list) {
     const compiled = list.map(compile).filter(Boolean);
     if (!compiled.length) return;
+    // Zmiany samego tekstu (characterData) obserwujemy tylko, gdy jakiś filtr od niego zależy.
+    const textDependent = compiled.some((steps) => steps.some((s) => s.op === 'has-text' || s.op === 'min-text-length'));
     const styled = new WeakSet();
     const apply = () => {
-      for (const steps of compiled) {
-        const { nodes, action } = run(steps);
-        for (const n of nodes) {
-          if (action.type === 'remove') { n.remove(); continue; }
-          if (action.type === 'style') {
-            if (styled.has(n)) continue;
-            styled.add(n);
-            n.setAttribute('style', (n.getAttribute('style') || '') + ';' + action.css);
-            continue;
+      bump('proceduralRuns');
+      measure('proceduralMs', () => {
+        for (const steps of compiled) {
+          const { nodes, action } = run(steps);
+          for (const n of nodes) {
+            if (action.type === 'remove') { n.remove(); continue; }
+            if (action.type === 'style') {
+              if (styled.has(n)) continue;
+              styled.add(n);
+              n.setAttribute('style', (n.getAttribute('style') || '') + ';' + action.css);
+              continue;
+            }
+            if (!n.hasAttribute(hideAttr)) n.setAttribute(hideAttr, '');
           }
-          if (!n.hasAttribute(hideAttr)) n.setAttribute(hideAttr, '');
         }
-      }
+      });
     };
     let timer = 0;
-    const schedule = () => { if (!timer) timer = setTimeout(() => { timer = 0; apply(); }, 100); };
+    const schedule = () => {
+      bump('mutationBatches');
+      if (!timer) timer = setTimeout(() => { timer = 0; apply(); }, 100);
+    };
     const begin = () => {
       apply();
-      new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+      new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true, characterData: textDependent });
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', begin, { once: true });
     else begin();
@@ -192,6 +235,7 @@
   send({ type: 'cosmetic:init', url }).then((resp) => {
     if (!resp || resp.off) return;
     if (resp.attr) hideAttr = resp.attr;
+    if (resp.selectors) bump('selectorsApplied', resp.selectors);
     if (resp.generic) startGeneric();
     if (resp.proc && resp.proc.length) startProcedural(resp.proc);
   }, () => {});

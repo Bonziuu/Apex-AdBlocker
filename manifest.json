@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Tarcza – bloker reklam",
-  "short_name": "Tarcza",
-  "version": "1.0.0",
-  "description": "Skuteczny bloker reklam i śledzenia dla Chrome (Manifest V3). Listy EasyList, EasyPrivacy, uBlock filters i Polskie Filtry.",
+  "name": "ChromeBlock",
+  "short_name": "ChromeBlock",
+  "version": "0.2.0",
+  "version_name": "0.2.0-dev",
+  "description": "Bloker reklam i śledzenia dla Chrome (Manifest V3) z własnym silnikiem filtrów i kontrolą zgodności filtrów YouTube. Wersja developerska.",
   "minimum_chrome_version": "121",
   "permissions": [
     "declarativeNetRequest",
@@ -30,11 +31,22 @@
       "run_at": "document_start",
       "all_frames": true,
       "match_about_blank": true
+    },
+    {
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://*.youtube-nocookie.com/*"
+      ],
+      "js": [
+        "youtube/health.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Tarcza",
+    "default_title": "ChromeBlock",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
