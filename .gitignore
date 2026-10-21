@@ -4,3 +4,4 @@ node_modules/
 tests/e2e/results/
 _metadata/
 dist/
+!download/ChromeBlock-dev.zip
