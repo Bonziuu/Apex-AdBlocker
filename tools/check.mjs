@@ -4,7 +4,8 @@
 //      manifest) odpowiadają aktualnym listom i kodowi,
 //   2. walidacja zgodności YouTube (strict),
 //   3. raport audytu scriptletów (podsumowanie),
-//   4. testy (node:test).
+//   4. testy (node:test),
+//   5. opcjonalnie: smoke test prawdziwego załadowania w Chromium (SKIP bez Playwright/Chromium).
 // Kończy się kodem != 0, jeśli którykolwiek krok się nie powiódł.
 
 import fs from 'node:fs';
@@ -13,6 +14,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT } from './lists-config.mjs';
 import { buildAll, validateCompatibility } from './build.mjs';
+import { runSmoke, SKIP_MESSAGE } from './chromium-smoke.mjs';
 
 const failures = [];
 const step = (name) => console.log(`\n━━ ${name} ${'━'.repeat(Math.max(0, 60 - name.length))}`);
@@ -62,6 +64,22 @@ step('Testy');
 // Node 20 nie rozwija globów w `node --test` – pliki wyszukuje tools/run-tests.mjs (bez E2E).
 const r = spawnSync(process.execPath, ['tools/run-tests.mjs', '--test-reporter=dot'], { cwd: ROOT, stdio: 'inherit' });
 if (r.status !== 0) failures.push('tests');
+
+// 5. Chromium smoke test (opcjonalny; bez stron zewnętrznych)
+step('Chromium smoke test');
+if (process.env.CHROMEBLOCK_SMOKE === '0') {
+  console.log(`${SKIP_MESSAGE} (CHROMEBLOCK_SMOKE=0)`);
+} else {
+  const smoke = await runSmoke();
+  if (smoke.status === 'SKIP') console.log(`${SKIP_MESSAGE} (${smoke.reasons.join('; ')})`);
+  else if (smoke.status === 'PASS') console.log('✓ ChromeBlock załadowany w Chromium: service worker działa, health bez ERROR');
+  else {
+    failures.push('chromium-smoke');
+    console.log('✗ Chromium smoke test: FAIL');
+    for (const r of smoke.reasons) console.log(`  - ${r}`);
+  }
+  for (const n of smoke.notes) console.log(`  · ${n}`);
+}
 
 step('Wynik');
 if (failures.length) {
