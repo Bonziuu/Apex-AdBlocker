@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>Tarcza</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="../icons/icon32.png" alt="" width="20" height="20">
+    <span class="brand">Tarcza</span>
+    <button id="settings" class="icon-btn" title="Ustawienia" aria-label="Ustawienia">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2.2-1.6ZM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" transform="translate(-1 0)"/></svg>
+    </button>
+  </header>
+
+  <main id="main">
+    <div class="host" id="host">—</div>
+
+    <button id="power" class="power" aria-pressed="true" title="Włącz/wyłącz ochronę na tej stronie">
+      <svg viewBox="0 0 24 24" width="44" height="44" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 3v8M7.05 6.05a7.5 7.5 0 1 0 9.9 0"/></svg>
+    </button>
+    <div class="status" id="status">Ochrona włączona</div>
+    <div class="sub" id="sub">Kliknij, aby wyłączyć na tej stronie</div>
+
+    <div class="stat">
+      <div class="num" id="blocked">0</div>
+      <div class="label">zablokowanych żądań na tej karcie</div>
+    </div>
+
+    <button id="picker" class="action">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4l7 17 2.5-7.5L21 11z"/></svg>
+      Ukryj element na stronie
+    </button>
+  </main>
+
+  <div id="unsupported" class="unsupported" hidden>
+    Tarcza nie działa na stronach wewnętrznych przeglądarki (np. chrome://, Chrome Web Store).
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

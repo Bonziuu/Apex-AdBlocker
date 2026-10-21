@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tarcza – ustawienia</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="../icons/icon48.png" alt="" width="36" height="36">
+      <div>
+        <h1>Tarcza</h1>
+        <div class="muted">Bloker reklam dla Chrome · wersja <span id="version"></span></div>
+      </div>
+    </header>
+
+    <nav>
+      <button class="tab" data-tab="lists" aria-selected="true">Listy filtrów</button>
+      <button class="tab" data-tab="filters">Moje filtry</button>
+      <button class="tab" data-tab="sites">Wyłączone strony</button>
+      <button class="tab" data-tab="about">O wtyczce</button>
+    </nav>
+
+    <section id="lists" class="panel">
+      <p class="muted">Włączone listy decydują o tym, co jest blokowane. Domyślnie działają reklamy, śledzenie i złośliwe strony – to odpowiednik domyślnych ustawień uBlock Origin.</p>
+      <div id="listContainer" class="cards"></div>
+      <div id="listMsg" class="msg" hidden></div>
+    </section>
+
+    <section id="filters" class="panel" hidden>
+      <p class="muted">Własne filtry w składni uBlock Origin / Adblock Plus, po jednym w linii. Filtry dodane przyciskiem „Ukryj element” trafiają tutaj.</p>
+      <details class="help">
+        <summary>Przykłady</summary>
+        <pre>! komentarz
+||reklamy.example.com^            blokuj domenę
+||example.com/banner/*$image      blokuj obrazki z tej ścieżki
+@@||example.com^$script           zezwól na skrypty z domeny
+example.com##.reklama              ukryj element na example.com
+##.sponsorowane                    ukryj na wszystkich stronach
+example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
+      </details>
+      <textarea id="userFilters" spellcheck="false" placeholder="np. ||ads.example.com^"></textarea>
+      <div class="bar">
+        <button id="saveFilters" class="primary">Zapisz</button>
+        <span id="filtersMsg" class="msg-inline"></span>
+      </div>
+      <ul id="filterErrors" class="errors"></ul>
+    </section>
+
+    <section id="sites" class="panel" hidden>
+      <p class="muted">Na tych stronach (i ich subdomenach) Tarcza nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki.</p>
+      <textarea id="disabledSites" spellcheck="false" placeholder="np. example.com"></textarea>
+      <div class="bar">
+        <button id="saveSites" class="primary">Zapisz</button>
+        <span id="sitesMsg" class="msg-inline"></span>
+      </div>
+    </section>
+
+    <section id="about" class="panel" hidden>
+      <h2>Jak to działa</h2>
+      <p>Tarcza jest napisana w Manifest V3 – jedynej technologii rozszerzeń, którą obecnie akceptuje Chrome. Blokuje reklamy na trzech poziomach:</p>
+      <ul>
+        <li><b>Blokowanie żądań sieciowych</b> – przeglądarka nie pobiera reklam ani skryptów śledzących (declarativeNetRequest).</li>
+        <li><b>Ukrywanie elementów</b> – puste ramki i kontenery po reklamach są ukrywane arkuszem stylów.</li>
+        <li><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, podmieniane są fragmenty kodu strony (te same techniki co w uBlock Origin).</li>
+      </ul>
+      <h2>Listy filtrów</h2>
+      <p>EasyList, EasyPrivacy, Fanboy Annoyances (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.</p>
+      <h2>Ograniczenia MV3</h2>
+      <p>Część filtrów nie da się wyrazić w Manifest V3 (np. filtrowanie HTML, modyfikacja nagłówków CSP, blokowanie wyskakujących okien przez sieć). Z tego powodu skuteczność jest bardzo wysoka, ale na pojedynczych stronach może być nieco niższa niż w dawnym uBlock Origin.</p>
+      <div id="stats" class="muted"></div>
+    </section>
+  </div>
+  <script src="options.js" type="module"></script>
+</body>
+</html>

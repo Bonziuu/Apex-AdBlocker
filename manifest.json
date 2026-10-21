@@ -1,0 +1,90 @@
+{
+  "manifest_version": 3,
+  "name": "Tarcza – bloker reklam",
+  "short_name": "Tarcza",
+  "version": "1.0.0",
+  "description": "Skuteczny bloker reklam i śledzenia dla Chrome (Manifest V3). Listy EasyList, EasyPrivacy, uBlock filters i Polskie Filtry.",
+  "minimum_chrome_version": "121",
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "scripting",
+    "storage",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content/cosmetic.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Tarcza",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "options_page": "options/options.html",
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "web_accessible_resources/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ads",
+        "enabled": true,
+        "path": "rules/ads.json"
+      },
+      {
+        "id": "privacy",
+        "enabled": true,
+        "path": "rules/privacy.json"
+      },
+      {
+        "id": "security",
+        "enabled": true,
+        "path": "rules/security.json"
+      },
+      {
+        "id": "cookies",
+        "enabled": false,
+        "path": "rules/cookies.json"
+      },
+      {
+        "id": "annoyances",
+        "enabled": false,
+        "path": "rules/annoyances.json"
+      }
+    ]
+  }
+}
