@@ -15,6 +15,7 @@ let counter = 0;
  */
 export async function loadBackground(opts = {}) {
   const store = {};
+  const session = {};
   const state = {
     enabledRulesets: new Set(),
     dynamic: [],
@@ -42,9 +43,17 @@ export async function loadBackground(opts = {}) {
       onInstalled: ev('installed'),
       onStartup: ev('startup'),
       onMessage: ev('message'),
-      getManifest: () => ({ version: '0.2.2', version_name: '0.2.2-dev', manifest_version: 3 }),
+      getManifest: () => ({ version: '0.2.3', version_name: '0.2.3-dev', manifest_version: 3 }),
     },
     storage: {
+      session: {
+        get: async (keys) => {
+          const list = typeof keys === 'string' ? [keys] : keys;
+          return Object.fromEntries(list.filter((k) => k in session).map((k) => [k, structuredClone(session[k])]));
+        },
+        set: async (o) => { Object.assign(session, structuredClone(o)); },
+        remove: async (k) => { for (const key of [].concat(k)) delete session[key]; },
+      },
       local: {
         get: async (keys) => {
           const list = typeof keys === 'string' ? [keys] : keys;
@@ -97,7 +106,7 @@ export async function loadBackground(opts = {}) {
   const mod = await import(pathToFileURL(path.join(ROOT, 'background.js')).href + `?test=${++counter}`);
   const send = (msg, sender = {}) => new Promise((resolve) => state.listeners.message(msg, sender, resolve));
   const restore = () => { console.error = origError; console.info = origInfo; };
-  return { mod, state, store, send, restore, install: () => state.listeners.installed() };
+  return { mod, state, store, session, send, restore, install: () => state.listeners.installed() };
 }
 
 export const sender = (url, frameId = 0, tabUrl = url) => ({ tab: { id: 7, url: tabUrl }, frameId, url });

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // ChromeBlock – pomiar kosztu wydajności na (syntetycznym) YouTube w prawdziwym Chromium.
 //
-//   node tools/perf/youtube-perf.mjs [--runs 3] [--seconds 20] [--out wynik.json]
+//   node tools/perf/youtube-perf.mjs [--runs 3] [--seconds 20] [--out wynik.json] [--dev-perf]
 //
 // Konfiguracje (każda w świeżym, tymczasowym profilu):
 //   baseline      – Chromium bez rozszerzenia
@@ -26,6 +26,9 @@ const RUNS = Number(arg('--runs', 3));
 const SECONDS = Number(arg('--seconds', 20));
 const OUT = arg('--out', '');
 const CONFIGS = (arg('--configs', 'baseline,chromeblock,no-scriptlets')).split(',');
+// --dev-perf: włącza „Pomiary wydajności” ChromeBlock (liczniki cosmetic + profiler scriptletów).
+// Domyślnie wyłączone, bo profiler sam dodaje narzut i zaburzyłby porównanie.
+const DEV_PERF = process.argv.includes('--dev-perf');
 
 const PLAYER_JSON = JSON.stringify(playerResponse(400));
 const NEXT_JSON = JSON.stringify(nextResponse(200));
@@ -110,7 +113,7 @@ async function launch(chromium, config, tmp) {
       if (syncFinished(h) || Date.now() > deadline) break;
       await options.waitForTimeout(2000);
     }
-    await options.evaluate(() => chrome.runtime.sendMessage({ type: 'options:setDevPerf', enabled: true }));
+    if (DEV_PERF) await options.evaluate(() => chrome.runtime.sendMessage({ type: 'options:setDevPerf', enabled: true }));
     if (config === 'no-scriptlets') {
       await options.evaluate(async () => {
         const ids = (await chrome.scripting.getRegisteredContentScripts()).map((s) => s.id);
@@ -142,7 +145,7 @@ async function runOnce(chromium, config) {
     const micro = await page.evaluate(() => window.__micro());
     const d = (k) => Math.round((m1[k] - m0[k]) * 1000);
     let cosmetic = null;
-    if (options) {
+    if (options && DEV_PERF) {
       await page.waitForTimeout(5500); // raport diagnostyki jest wysyłany co 5 s
       const h = await options.evaluate(() => chrome.runtime.sendMessage({ type: 'health:get' }));
       const r = (h.perf || []).find((p) => p.host === 'www.youtube.com' && p.frame === 0);
