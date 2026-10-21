@@ -1,0 +1,57 @@
+[
+ {
+  "id": "ads",
+  "name": "Reklamy",
+  "desc": "EasyList, uBlock filters i Polskie Filtry Reklamowe",
+  "enabledByDefault": true,
+  "networkRules": 10303,
+  "networkFilters": 64378,
+  "cosmeticFilters": 46381,
+  "scriptletFilters": 4538,
+  "scriptletPatterns": 59500
+ },
+ {
+  "id": "privacy",
+  "name": "Śledzenie i prywatność",
+  "desc": "EasyPrivacy i uBlock filters – Privacy",
+  "enabledByDefault": true,
+  "networkRules": 10046,
+  "networkFilters": 57620,
+  "cosmeticFilters": 297,
+  "scriptletFilters": 272,
+  "scriptletPatterns": 1194
+ },
+ {
+  "id": "security",
+  "name": "Złośliwe strony",
+  "desc": "uBlock filters – Badware risks (oszustwa, malware)",
+  "enabledByDefault": true,
+  "networkRules": 1343,
+  "networkFilters": 4781,
+  "cosmeticFilters": 137,
+  "scriptletFilters": 22,
+  "scriptletPatterns": 41
+ },
+ {
+  "id": "cookies",
+  "name": "Komunikaty o cookies",
+  "desc": "uBlock filters – Cookie Notices",
+  "enabledByDefault": false,
+  "networkRules": 59,
+  "networkFilters": 60,
+  "cosmeticFilters": 2262,
+  "scriptletFilters": 1986,
+  "scriptletPatterns": 6655
+ },
+ {
+  "id": "annoyances",
+  "name": "Elementy irytujące",
+  "desc": "Fanboy Annoyances i uBlock filters – Annoyances (wyskakujące okna, newslettery, przyciski społecznościowe)",
+  "enabledByDefault": false,
+  "networkRules": 3351,
+  "networkFilters": 4296,
+  "cosmeticFilters": 48300,
+  "scriptletFilters": 984,
+  "scriptletPatterns": 4499
+ }
+]
