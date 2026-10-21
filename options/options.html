@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tarcza – ustawienia</title>
+  <title>ChromeBlock – ustawienia</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
@@ -11,8 +11,8 @@
     <header>
       <img src="../icons/icon48.png" alt="" width="36" height="36">
       <div>
-        <h1>Tarcza</h1>
-        <div class="muted">Bloker reklam dla Chrome · wersja <span id="version"></span></div>
+        <h1>ChromeBlock</h1>
+        <div class="muted">Bloker reklam dla Chrome · wersja developerska <span id="version"></span></div>
       </div>
     </header>
 
@@ -20,6 +20,7 @@
       <button class="tab" data-tab="lists" aria-selected="true">Listy filtrów</button>
       <button class="tab" data-tab="filters">Moje filtry</button>
       <button class="tab" data-tab="sites">Wyłączone strony</button>
+      <button class="tab" data-tab="diag">Diagnostyka</button>
       <button class="tab" data-tab="about">O wtyczce</button>
     </nav>
 
@@ -50,7 +51,7 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
     </section>
 
     <section id="sites" class="panel" hidden>
-      <p class="muted">Na tych stronach (i ich subdomenach) Tarcza nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki.</p>
+      <p class="muted">Na tych stronach (i ich subdomenach) ChromeBlock nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki.</p>
       <textarea id="disabledSites" spellcheck="false" placeholder="np. example.com"></textarea>
       <div class="bar">
         <button id="saveSites" class="primary">Zapisz</button>
@@ -58,18 +59,48 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       </div>
     </section>
 
+    <section id="diag" class="panel" hidden>
+      <p class="muted">Stan silników ChromeBlock. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce.</p>
+      <div class="bar">
+        <button id="refreshDiag" class="primary">Odśwież</button>
+        <button id="resync" class="secondary">Synchronizuj ponownie</button>
+        <span id="diagMsg" class="msg-inline"></span>
+      </div>
+
+      <h2>Silniki</h2>
+      <table class="diag" id="components"></table>
+
+      <h2>Ostatnia synchronizacja</h2>
+      <table class="diag" id="sync"></table>
+
+      <h2>YouTube Protection</h2>
+      <div id="youtube" class="diag-block"></div>
+
+      <h2>Zgodność scriptletów</h2>
+      <div id="scriptletCompat" class="diag-block muted"></div>
+
+      <h2>Dziennik błędów</h2>
+      <div class="bar"><button id="clearErrors" class="secondary">Wyczyść dziennik</button></div>
+      <table class="diag" id="errors"></table>
+
+      <h2>Pomiary wydajności (dla deweloperów)</h2>
+      <label class="check"><input type="checkbox" id="devPerf"> Mierz pracę filtrów kosmetycznych na stronach (domyślnie wyłączone)</label>
+      <p class="muted small">Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów. Dane pozostają w tej przeglądarce. Nowe wartości pojawiają się po przeładowaniu kart.</p>
+      <table class="diag" id="perf"></table>
+    </section>
+
     <section id="about" class="panel" hidden>
       <h2>Jak to działa</h2>
-      <p>Tarcza jest napisana w Manifest V3 – jedynej technologii rozszerzeń, którą obecnie akceptuje Chrome. Blokuje reklamy na trzech poziomach:</p>
+      <p>ChromeBlock jest napisany w Manifest V3 – jedynej technologii rozszerzeń, którą obecnie akceptuje Chrome. Ma własny silnik, który obsługuje określony podzbiór składni filtrów ABP/uBO, i blokuje reklamy na trzech poziomach:</p>
       <ul>
         <li><b>Blokowanie żądań sieciowych</b> – przeglądarka nie pobiera reklam ani skryptów śledzących (declarativeNetRequest).</li>
         <li><b>Ukrywanie elementów</b> – puste ramki i kontenery po reklamach są ukrywane arkuszem stylów.</li>
-        <li><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, podmieniane są fragmenty kodu strony (te same techniki co w uBlock Origin).</li>
+        <li><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, podmieniane są fragmenty kodu strony. ChromeBlock wykonuje tylko te warianty scriptletów, których semantykę zna; pozostałe są pomijane (szczegóły w zakładce Diagnostyka i w raporcie <code>npm run audit:scriptlets</code>).</li>
       </ul>
       <h2>Listy filtrów</h2>
       <p>EasyList, EasyPrivacy, Fanboy Annoyances (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.</p>
       <h2>Ograniczenia MV3</h2>
-      <p>Część filtrów nie da się wyrazić w Manifest V3 (np. filtrowanie HTML, modyfikacja nagłówków CSP, blokowanie wyskakujących okien przez sieć). Z tego powodu skuteczność jest bardzo wysoka, ale na pojedynczych stronach może być nieco niższa niż w dawnym uBlock Origin.</p>
+      <p>Części filtrów nie da się wyrazić w Manifest V3 (np. filtrowanie HTML, modyfikacja nagłówków CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma jeszcze implementacji w ChromeBlock. Na pojedynczych stronach skuteczność może być więc niższa niż w dawnym uBlock Origin. ChromeBlock nie obiecuje niewykrywalności przez strony.</p>
       <div id="stats" class="muted"></div>
     </section>
   </div>

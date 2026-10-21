@@ -106,3 +106,70 @@ document.addEventListener('keydown', (e) => {
     if (!$('sites').hidden) $('saveSites').click();
   }
 });
+
+// ------------------------------------------------------------- diagnostyka
+
+const STATUS_PL = { ok: 'OK', warning: 'ostrzeżenie', error: 'BŁĄD', unknown: 'nieznany', disabled: 'wyłączone', healthy: 'sprawny', degraded: 'problem' };
+const COMPONENT_PL = { network: 'Silnik sieciowy (DNR)', cosmetic: 'Silnik kosmetyczny', scriptlets: 'Silnik scriptletów', filters: 'Listy filtrów', youtube: 'YouTube Protection' };
+const SYNC_PL = { rulesets: 'syncRulesets()', dynamicRules: 'syncDynamicRules()', scriptlets: 'syncScriptlets()' };
+const time = (t) => (t ? new Date(t).toLocaleString('pl-PL') : '—');
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const badge = (st) => `<span class="status ${esc(st)}">${esc(STATUS_PL[st] || st)}</span>`;
+
+async function renderDiag() {
+  const h = await send({ type: 'health:get' });
+  if (!h) return;
+  $('components').innerHTML = '<tr><th>Komponent</th><th>Status</th><th>Szczegóły</th><th>Aktualizacja</th></tr>'
+    + Object.entries(h.components).map(([k, v]) => `<tr><td>${esc(COMPONENT_PL[k] || k)}</td><td>${badge(v.status)}</td><td>${esc(v.detail)}</td><td>${time(v.updatedAt)}</td></tr>`).join('');
+  $('sync').innerHTML = '<tr><th>Krok</th><th>Wynik</th><th>Komunikat</th><th>Czas</th></tr>'
+    + Object.entries(h.sync).map(([k, v]) => `<tr><td class="mono">${esc(SYNC_PL[k] || k)}</td><td>${badge(v.status)}</td><td>${esc(v.message)}</td><td>${time(v.at)}</td></tr>`).join('');
+
+  const y = h.youtube;
+  if (y) {
+    const c = y.compat;
+    const lines = [];
+    lines.push(`<p>Status: ${badge(y.status)}</p><ul>`);
+    for (const ch of y.checks) lines.push(`<li>${ch.ok ? '✓' : '✗'} ${esc(ch.message)}</li>`);
+    lines.push('</ul>');
+    if (c) {
+      lines.push(`<p>Krytyczne reguły YouTube (scriptlety): <b>${c.total}</b> · obsługiwane: <b>${c.supported}</b> · nieobsługiwane: <b>${c.partial + c.unsupported}</b></p>`);
+      const gaps = [...(c.knownGaps || []), ...(c.newGaps || [])];
+      if (gaps.length) {
+        lines.push('<p>Niewykonywane reguły:</p><ul>');
+        for (const g of gaps) lines.push(`<li><b>${esc(g.scriptlet)}</b>: ${esc(g.reason)}<br><span class="mono">${esc(g.filter.slice(0, 220))}</span></li>`);
+        lines.push('</ul>');
+      }
+    }
+    if (y.player) lines.push(`<p>Ostatni stan odtwarzacza (${esc(y.player.page || '?')}): ${badge(y.player.status)} ${esc((y.player.reasons || []).join(', '))} · ${time(y.player.at)}</p>`);
+    else lines.push('<p class="muted">Brak raportu odtwarzacza – otwórz film na YouTube.</p>');
+    $('youtube').innerHTML = lines.join('');
+  }
+
+  const sc = h.scriptletCompat;
+  $('scriptletCompat').innerHTML = sc
+    ? `Filtry scriptletów w listach: ${fmt(sc.summary.total)} · w pełni obsługiwane: ${fmt(sc.summary.supported)} · częściowo (niewykonywane): ${fmt(sc.summary.partial)} · nieobsługiwane: ${fmt(sc.summary.unsupported)}`
+    : 'Brak danych (uruchom build).';
+
+  $('errors').innerHTML = h.errors.length
+    ? '<tr><th>Czas</th><th>Komponent</th><th>Komunikat</th></tr>' + h.errors.slice().reverse().map((e) => `<tr><td>${time(e.timestamp)}</td><td>${esc(COMPONENT_PL[e.component] || e.component)}</td><td>${esc(e.message)}</td></tr>`).join('')
+    : '<tr><td class="muted">Brak błędów.</td></tr>';
+
+  $('devPerf').checked = h.devPerf;
+  $('perf').innerHTML = h.devPerf && h.perf.length
+    ? '<tr><th>Czas</th><th>Host</th><th>Partie mutacji</th><th>Ogólne [ms]</th><th>Proceduralne [ms] / uruchomień</th><th>Selektory</th></tr>'
+      + h.perf.map((p) => `<tr><td>${time(p.at)}</td><td class="mono">${esc(p.host)}${p.frame ? ` (ramka ${p.frame})` : ''}</td><td>${p.stats.mutationBatches}</td><td>${p.stats.genericMs}</td><td>${p.stats.proceduralMs} / ${p.stats.proceduralRuns}</td><td>${p.stats.selectorsApplied}</td></tr>`).join('')
+    : `<tr><td class="muted">${h.devPerf ? 'Brak pomiarów – przeładuj kilka stron.' : 'Pomiary wyłączone.'}</td></tr>`;
+}
+
+$('refreshDiag').addEventListener('click', renderDiag);
+$('resync').addEventListener('click', async () => {
+  $('resync').disabled = true;
+  const r = await send({ type: 'health:resync' });
+  $('resync').disabled = false;
+  flash($('diagMsg'), r && r.ok ? 'Synchronizacja zakończona' : 'Synchronizacja zakończona z błędami – zobacz tabelę', r && r.ok ? 'ok' : 'err');
+  renderDiag();
+});
+$('clearErrors').addEventListener('click', async () => { await send({ type: 'health:clearErrors' }); renderDiag(); });
+$('devPerf').addEventListener('change', async () => { await send({ type: 'options:setDevPerf', enabled: $('devPerf').checked }); renderDiag(); });
+document.querySelector('.tab[data-tab="diag"]').addEventListener('click', renderDiag);
+if (initial === 'diag') renderDiag();
