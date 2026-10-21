@@ -1,4 +1,4 @@
-// Tarcza – atrapa Amazon Publisher Services (apstag)
+// ChromeBlock – atrapa Amazon Publisher Services (apstag)
 (function () {
   'use strict';
   const noop = function () {};
