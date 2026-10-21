@@ -86,7 +86,7 @@ npm run check        # walidacja buildu + zgodność YouTube (strict) + audyt + 
 | `npm run build` | Buduje `rules/`, `data/`, `scriptlets/` z `tools/lists/`; strict dla YouTube |
 | `npm run audit:scriptlets` | Raport zgodności scriptletów (supported / partial / unsupported, YouTube) |
 | `npm run update-lists` | Pobiera listy i od razu pokazuje zmiany filtrów YouTube i nowe nieobsługiwane scriptlety |
-| `npm run check` | Wszystkie kontrole; kod ≠ 0 przy błędzie |
+| `npm run check` | Wszystkie kontrole; kod ≠ 0 przy błędzie. Jeśli dostępny jest Playwright + Chromium, dodatkowo ładuje rozszerzenie w Chromium (tymczasowy profil, bez stron zewnętrznych); inaczej `SKIP: Chromium smoke test unavailable`. `CHROMEBLOCK_SMOKE=0` pomija ten krok |
 | `npm run test:e2e` | Testy E2E YouTube w prawdziwym Chromium (wymagają `npx playwright install chromium`) |
 
 Aktualizacja list:
