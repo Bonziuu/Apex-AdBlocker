@@ -42,7 +42,7 @@ export async function loadBackground(opts = {}) {
       onInstalled: ev('installed'),
       onStartup: ev('startup'),
       onMessage: ev('message'),
-      getManifest: () => ({ version: '0.2.0' }),
+      getManifest: () => ({ version: '0.2.1', version_name: '0.2.1-dev', manifest_version: 3 }),
     },
     storage: {
       local: {

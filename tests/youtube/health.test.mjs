@@ -86,3 +86,14 @@ test('wzorce plików scriptletów obejmujące YouTube', () => {
   const files = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'ads.scriptlets.json'), 'utf8'));
   assert.ok(files.some((f) => coversYouTube(f.matches)));
 });
+
+test('regresja (prawdziwy Chromium): w trakcie synchronizacji brakujące scriptlety → WARNING, nie ERROR', () => {
+  const compat = { total: 30, supported: 30, partial: 0, unsupported: 0, knownGaps: [], newGaps: [] };
+  const input = { adsEnabled: true, compat, expectedScripts: ['sl-ads-3', 'sl-ads-15'], registeredScripts: ['sl-ads-3'] };
+  const during = evaluateYouTubeProtection({ ...input, syncing: true });
+  assert.equal(during.status, 'warning');
+  assert.match(during.checks.find((c) => c.id === 'scriptlets').message, /Synchronizacja w toku – zarejestrowano 1 z 2/);
+  const after = evaluateYouTubeProtection({ ...input, syncing: false });
+  assert.equal(after.status, 'error', 'po zakończeniu synchronizacji brak rejestracji to nadal ERROR');
+  assert.match(after.checks.find((c) => c.id === 'scriptlets').message, /Nie zarejestrowano: sl-ads-15/);
+});

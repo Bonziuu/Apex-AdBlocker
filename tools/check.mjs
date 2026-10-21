@@ -59,7 +59,8 @@ console.log('Pełny raport: npm run audit:scriptlets');
 
 // 4. Testy
 step('Testy');
-const r = spawnSync(process.execPath, ['--test', '--test-reporter=dot', 'tests/**/*.test.mjs'], { cwd: ROOT, stdio: 'inherit' });
+// Node 20 nie rozwija globów w `node --test` – pliki wyszukuje tools/run-tests.mjs (bez E2E).
+const r = spawnSync(process.execPath, ['tools/run-tests.mjs', '--test-reporter=dot'], { cwd: ROOT, stdio: 'inherit' });
 if (r.status !== 0) failures.push('tests');
 
 step('Wynik');

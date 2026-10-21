@@ -10,6 +10,8 @@ import {
 } from './shared/parser.js';
 import { createHealth, runSyncSteps, componentStatusFromSync } from './background/health.js';
 import { evaluateYouTubeProtection, coversYouTube } from './youtube/protection.js';
+import { PlayerReportStore } from './youtube/player-reports.js';
+import { buildDiagnosticsReport } from './background/diagnostics-report.js';
 
 const SITE_RULE_ID = 1;
 const USER_RULE_BASE = 1000;
@@ -26,7 +28,7 @@ const allowIds = new Map();     // id listy → Set identyfikatorów reguł typu
 let gunhideCache = null;        // ogólne wyjątki #@# włączonych list
 let state = null;               // { enabledLists, disabledSites, userFilters }
 let user = null;                // skompilowane własne filtry
-const youtubePlayer = new Map(); // tabId → ostatni raport odtwarzacza
+const playerReports = new PlayerReportStore(); // tabId → frameId → raport odtwarzacza (TTL 60 s)
 const perfReports = [];          // raporty wydajności (tylko gdy włączone w opcjach)
 
 const health = createHealth({
@@ -301,6 +303,9 @@ async function syncScriptlets() {
   return `zarejestrowano ${expected.length} plików scriptletów`;
 }
 
+// > 0, gdy trwa synchronizacja: brakujące scriptlety YouTube są wtedy stanem przejściowym
+let syncInProgress = 0;
+
 async function syncAll(reason = '') {
   try {
     await getState();
@@ -308,7 +313,13 @@ async function syncAll(reason = '') {
     await health.error('filters', `nie można wczytać stanu: ${e.message || e}`);
     return null;
   }
-  const results = await runSyncSteps({ rulesets: syncRulesets, dynamicRules: syncDynamicRules, scriptlets: syncScriptlets }, health);
+  syncInProgress++;
+  let results;
+  try {
+    results = await runSyncSteps({ rulesets: syncRulesets, dynamicRules: syncDynamicRules, scriptlets: syncScriptlets }, health);
+  } finally {
+    syncInProgress--;
+  }
   const comp = componentStatusFromSync(results);
   for (const [c, v] of Object.entries(comp)) await health.setComponent(c, v.status, v.detail);
   if (!results.rulesets.ok) await health.setComponent('filters', 'error', results.rulesets.message);
@@ -475,7 +486,7 @@ async function refreshYouTubeStatus() {
     try { compat = await fetchJSON('data/youtube-compat.json'); } catch { /* brak pliku → ostrzeżenie */ }
     const expected = (await expectedScriptlets()).filter((f) => coversYouTube(f.matches)).map((f) => f.id);
     const registered = (await chrome.scripting.getRegisteredContentScripts()).map((r) => r.id);
-    const lastPlayer = [...youtubePlayer.values()].sort((a, b) => b.at - a.at)[0] || null;
+    const lastPlayer = playerReports.latest();
     const result = evaluateYouTubeProtection({
       siteDisabled: isSiteDisabled('www.youtube.com', s),
       adsEnabled: s.enabledLists.includes('ads'),
@@ -483,6 +494,7 @@ async function refreshYouTubeStatus() {
       expectedScripts: expected,
       registeredScripts: registered,
       player: lastPlayer,
+      syncing: syncInProgress > 0,
     });
     const status = result.status === 'ok' ? 'ok' : result.status;
     await health.setComponent('youtube', status, result.checks.filter((c) => !c.ok).map((c) => c.message).join('; ') || 'ochrona aktywna');
@@ -510,10 +522,13 @@ async function updateIcon(tabId, url) {
 }
 
 chrome.webNavigation.onCommitted.addListener((d) => {
-  if (d.frameId === 0) updateIcon(d.tabId, d.url);
+  if (d.frameId !== 0) return;
+  // główna nawigacja karty: raporty odtwarzacza z poprzedniej strony są nieaktualne
+  playerReports.onMainFrameNavigation(d.tabId);
+  updateIcon(d.tabId, d.url);
 });
 
-chrome.tabs.onRemoved.addListener((tabId) => { youtubePlayer.delete(tabId); });
+chrome.tabs.onRemoved.addListener((tabId) => { playerReports.clearTab(tabId); });
 
 // ---------------------------------------------------------------------------
 // Wiadomości
@@ -540,16 +555,8 @@ const handlers = {
 
   async 'youtube:health'(msg, sender) {
     if (!sender.tab) return {};
-    const allowed = ['healthy', 'degraded', 'error', 'unknown'];
-    const report = {
-      status: allowed.includes(msg.status) ? msg.status : 'unknown',
-      reasons: Array.isArray(msg.reasons) ? msg.reasons.slice(0, 5).map(String) : [],
-      page: String(msg.page || ''),
-      frame: msg.frame === 'frame' ? 'frame' : 'top',
-      at: Date.now(),
-    };
-    if (report.status === 'unknown' && report.page === '') { youtubePlayer.delete(sender.tab.id); return {}; }
-    youtubePlayer.set(sender.tab.id, report);
+    // frameId pochodzi od Chrome (sender), nie z treści wiadomości
+    playerReports.set(sender.tab.id, sender.frameId || 0, { status: msg.status, reasons: msg.reasons, page: msg.page });
     await refreshYouTubeStatus();
     return {};
   },
@@ -581,6 +588,29 @@ const handlers = {
       perf: perfReports.slice().reverse(),
       version: chrome.runtime.getManifest().version,
     };
+  },
+
+  async 'diagnostics:export'() {
+    const s = await getState();
+    const snap = await health.snapshot();
+    let youtubeCompat = null;
+    let scriptletCompat = null;
+    try { youtubeCompat = await fetchJSON('data/youtube-compat.json'); } catch { /* brak pliku */ }
+    try { scriptletCompat = await fetchJSON('data/scriptlet-compat.json'); } catch { /* brak pliku */ }
+    const { devPerf } = await chrome.storage.local.get('devPerf');
+    const manifest = chrome.runtime.getManifest();
+    return buildDiagnosticsReport({
+      version: manifest.version,
+      versionName: manifest.version_name,
+      manifestVersion: manifest.manifest_version,
+      now: Date.now(),
+      enabledLists: s.enabledLists,
+      health: snap,
+      youtubeCompat,
+      scriptletCompat,
+      player: playerReports.latest(),
+      devPerf: !!devPerf,
+    });
   },
 
   async 'health:resync'() {

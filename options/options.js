@@ -173,3 +173,18 @@ $('clearErrors').addEventListener('click', async () => { await send({ type: 'hea
 $('devPerf').addEventListener('change', async () => { await send({ type: 'options:setDevPerf', enabled: $('devPerf').checked }); renderDiag(); });
 document.querySelector('.tab[data-tab="diag"]').addEventListener('click', renderDiag);
 if (initial === 'diag') renderDiag();
+
+$('copyReport').addEventListener('click', async () => {
+  const r = await send({ type: 'diagnostics:export' });
+  if (!r || !r.text) { flash($('diagMsg'), 'Nie udało się zbudować raportu', 'err'); return; }
+  const preview = $('reportPreview');
+  preview.value = r.text;
+  preview.hidden = false;
+  try {
+    await navigator.clipboard.writeText(r.text);
+    flash($('diagMsg'), 'Raport skopiowany do schowka (nic nie zostało wysłane)', 'ok');
+  } catch {
+    preview.select();
+    flash($('diagMsg'), 'Zaznaczono raport – skopiuj go ręcznie (Ctrl+C)', '');
+  }
+});

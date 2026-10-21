@@ -236,11 +236,74 @@ function looksLikeOptions(s) {
 
 const UNSUPPORTED_REGEX = /\(\?[=!<]|\\[1-9]|\(\?[a-z]*[A-Z]|\\[pPkK]\{?|[*+?}]\+|\\[cuxX]\{|\(\?>|\\[zG]/;
 
+// RE2 (silnik regexFilter w Chrome) odrzuca liczniki powtórzeń > 1000, także jako
+// iloczyn zagnieżdżonych liczników, np. (a{100}){20}. Taka reguła w statycznym
+// zestawie reguł powoduje, że Chrome w ogóle nie ładuje rozszerzenia.
+export const RE2_MAX_REPEAT = 1000;
+
+/**
+ * Najwyższy (iloczyn zagnieżdżonych) licznik powtórzeń {n,m} w wyrażeniu.
+ * Zwraca Infinity, gdy składni nie da się bezpiecznie przeanalizować.
+ */
+export function maxRegexRepeat(src) {
+  const stack = [{ max: 1 }]; // max wewnątrz bieżącej grupy
+  let lastAtom = null;        // { max } ostatniego atomu (do zastosowania kwantyfikatora)
+  let i = 0;
+  const closeAtom = (atom) => { const top = stack[stack.length - 1]; top.max = Math.max(top.max, atom.max); lastAtom = atom; };
+  while (i < src.length) {
+    const ch = src[i];
+    if (ch === '\\') { closeAtom({ max: 1 }); i += 2; continue; }
+    if (ch === '[') {
+      let j = i + 1;
+      if (src[j] === '^') j++;
+      if (src[j] === ']') j++;
+      while (j < src.length && src[j] !== ']') j += src[j] === '\\' ? 2 : 1;
+      if (j >= src.length) return Infinity;
+      closeAtom({ max: 1 });
+      i = j + 1;
+      continue;
+    }
+    if (ch === '(') { stack.push({ max: 1 }); lastAtom = null; i++; if (src[i] === '?') { while (i < src.length && src[i] !== ':' && src[i] !== ')') i++; if (src[i] === ':') i++; } continue; }
+    if (ch === ')') {
+      if (stack.length < 2) return Infinity;
+      const g = stack.pop();
+      closeAtom({ max: g.max });
+      i++;
+      continue;
+    }
+    if (ch === '{') {
+      const m = /^\{(\d+)(,(\d*))?\}/.exec(src.slice(i));
+      if (m && lastAtom) {
+        const n = Number(m[1]);
+        const hi = m[2] ? (m[3] === '' ? n : Number(m[3])) : n;
+        if (m[3] !== undefined && m[3] !== '' && hi < n) return Infinity;
+        const count = Math.max(n, hi);
+        const atom = { max: lastAtom.max * Math.max(count, 1) };
+        const top = stack[stack.length - 1];
+        top.max = Math.max(top.max, atom.max);
+        lastAtom = null;
+        i += m[0].length;
+        continue;
+      }
+      closeAtom({ max: 1 });
+      i++;
+      continue;
+    }
+    if (ch === '|') { lastAtom = null; i++; continue; }
+    if (ch === '*' || ch === '+' || ch === '?') { i++; continue; }
+    closeAtom({ max: 1 });
+    i++;
+  }
+  if (stack.length !== 1) return Infinity;
+  return stack[0].max;
+}
+
 function convertRegex(src) {
   // src: zawartość między ukośnikami
   if (src.length > 2000) return null;
   if (UNSUPPORTED_REGEX.test(src)) return null;
   try { new RegExp(src); } catch { return null; }
+  if (maxRegexRepeat(src) > RE2_MAX_REPEAT) return null;
   // RE2 nie obsługuje niektórych klas w JS – drobna normalizacja
   if (/[^\x20-\x7e]/.test(src)) return null;
   return src;

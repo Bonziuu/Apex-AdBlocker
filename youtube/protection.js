@@ -21,6 +21,8 @@ export function coversYouTube(matches) {
  * @param {string[]} input.expectedScripts    id plików scriptletów z regułami YouTube (dla włączonych list)
  * @param {string[]} input.registeredScripts  id faktycznie zarejestrowanych skryptów
  * @param {{status:string, reasons?:string[], at?:number}|null} input.player  ostatni raport odtwarzacza
+ * @param {boolean} [input.syncing]           trwa synchronizacja (np. po instalacji) – brakujące
+ *                                            scriptlety to stan przejściowy (WARNING), nie ERROR
  */
 export function evaluateYouTubeProtection(input) {
   const checks = [];
@@ -48,10 +50,13 @@ export function evaluateYouTubeProtection(input) {
   if ((input.expectedScripts || []).length === 0) {
     add('scriptlets', false, 'Brak plików scriptletów YouTube dla włączonych list');
   } else {
-    add('scriptlets', missing.length === 0,
-      missing.length === 0
-        ? `Scriptlety YouTube zarejestrowane (${input.expectedScripts.length} plików)`
-        : `Nie zarejestrowano: ${missing.join(', ')}`);
+    let message = `Scriptlety YouTube zarejestrowane (${input.expectedScripts.length} plików)`;
+    if (missing.length) {
+      message = input.syncing
+        ? `Synchronizacja w toku – zarejestrowano ${input.expectedScripts.length - missing.length} z ${input.expectedScripts.length} plików scriptletów YouTube`
+        : `Nie zarejestrowano: ${missing.join(', ')}`;
+    }
+    add('scriptlets', missing.length === 0, message, input.syncing ? 'warning' : 'error');
   }
 
   const player = input.player || null;

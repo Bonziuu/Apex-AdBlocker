@@ -202,3 +202,55 @@ test('brak pliku danych listy → komponent cosmetic ERROR, pozostałe listy dzi
     assert.equal(r.generic, true, 'silnik kosmetyczny działa dalej z pozostałymi listami');
   } finally { bg.restore(); }
 });
+
+test('playback health: iframe nie nadpisuje raportu ramki głównej w service workerze', async () => {
+  const bg = await loadBackground();
+  try {
+    await bg.install();
+    await bg.send({ type: 'youtube:health', status: 'healthy', reasons: [], page: 'watch' }, sender('https://www.youtube.com/watch?v=A', 0));
+    await bg.send({ type: 'youtube:health', status: 'error', reasons: ['x'], page: '' }, sender('https://www.youtube.com/embed/B', 4, 'https://www.youtube.com/watch?v=A'));
+    const h = await bg.send({ type: 'health:get' });
+    assert.equal(h.youtube.player.status, 'healthy');
+    assert.equal(h.components.youtube.status, 'ok');
+  } finally { bg.restore(); }
+});
+
+test('playback health: główna nawigacja i zamknięcie karty czyszczą raporty', async () => {
+  const bg = await loadBackground();
+  try {
+    await bg.install();
+    const report = () => bg.send({ type: 'youtube:health', status: 'error', reasons: ['brak postępu'], page: 'watch' }, sender('https://www.youtube.com/watch?v=A'));
+    await report();
+    assert.equal((await bg.send({ type: 'health:get' })).youtube.player.status, 'error');
+    // nawigacja w iframe NIE czyści raportu
+    bg.state.listeners.committed({ tabId: 7, frameId: 3, url: 'https://ads.example/' });
+    assert.equal((await bg.send({ type: 'health:get' })).youtube.player.status, 'error');
+    bg.state.listeners.committed({ tabId: 7, frameId: 0, url: 'https://www.youtube.com/watch?v=C' });
+    let h = await bg.send({ type: 'health:get' });
+    assert.ok(!h.youtube.player, 'raport po nawigacji usunięty');
+    assert.notEqual(h.components.youtube.status, 'error');
+    await report();
+    bg.state.listeners.tabRemoved(7);
+    h = await bg.send({ type: 'health:get' });
+    assert.ok(!h.youtube.player, 'raport po zamknięciu karty usunięty');
+  } finally { bg.restore(); }
+});
+
+test('diagnostics:export: raport lokalny bez URL, ID filmów i danych strony', async () => {
+  const bg = await loadBackground();
+  try {
+    await bg.install();
+    await bg.send({ type: 'youtube:health', status: 'degraded', reasons: ['spinner na https://www.youtube.com/watch?v=SECRETID12'], page: 'watch' }, sender('https://www.youtube.com/watch?v=SECRETID12'));
+    const r = await bg.send({ type: 'diagnostics:export' });
+    assert.match(r.text, /^ChromeBlock Diagnostics/);
+    assert.match(r.text, /0\.2\.1-dev/);
+    assert.equal(r.data.manifestVersion, 3);
+    assert.equal(r.data.player.status, 'degraded');
+    assert.ok(Array.isArray(r.data.enabledLists) && r.data.enabledLists.includes('ads'));
+    assert.ok(r.data.youtubeCompatibility && r.data.youtubeCompatibility.total > 0);
+    const all = r.text + JSON.stringify(r.data);
+    assert.ok(!all.includes('SECRETID12'), 'brak ID filmu');
+    assert.ok(!/https?:\/\//.test(all), 'brak adresów URL');
+    assert.ok(!all.includes('youtube.com'), 'brak nazw hostów');
+  } finally { bg.restore(); }
+});

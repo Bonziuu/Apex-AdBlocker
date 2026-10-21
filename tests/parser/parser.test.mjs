@@ -185,3 +185,33 @@ test('wyjątki scriptletów #@#+js(...) używają nazwy kanonicznej', () => {
   assert.equal(f.key, ['prevent-setTimeout', 'adb'].join('\u0001'));
   assert.equal(cos('example.com#@#+js()').key, '*');
 });
+
+test('regresja (prawdziwy Chromium): regexFilter z licznikiem powtórzeń > 1000 jest odrzucany (RE2)', async () => {
+  const { maxRegexRepeat, RE2_MAX_REPEAT } = await import('../../shared/parser.js');
+  assert.equal(RE2_MAX_REPEAT, 1000);
+  // filtr z EasyList, przez który Chrome odmawiał załadowania całego rozszerzenia
+  const bad = '/^https?:\\/\\/[-a-z]{5,13}\\.[a-z]{3,6}\\/[0-9a-h]{1,17}\\?[0-9a-zA-Z]{1,22}=[%0-9a-zA-Z]{200,1300}/$xmlhttprequest,3p,match-case';
+  assert.equal(parseNetworkFilter(bad), null);
+  assert.ok(parseNetworkFilter('/^https?:\\/\\/[a-z]{3,8}\\.example\\/[0-9]{1000}/$script').rule.condition.regexFilter, 'dokładnie 1000 – dozwolone');
+  assert.equal(maxRegexRepeat('a{1001}'), 1001);
+  assert.equal(maxRegexRepeat('(a{100}){20}'), 2000, 'iloczyn zagnieżdżonych liczników');
+  assert.equal(maxRegexRepeat('(?:ab{30}){40}'), 1200);
+  assert.equal(maxRegexRepeat('(a{10}){10}'), 100);
+  assert.equal(maxRegexRepeat('[{]{5}x\\{2000}'), 5, 'nawiasy w klasie i escapowane nie są licznikami');
+  assert.equal(maxRegexRepeat('x{2,}'), 2);
+  assert.equal(maxRegexRepeat('(a'), Infinity, 'niezamknięta grupa → odrzucenie');
+});
+
+test('regresja (prawdziwy Chromium): żaden wygenerowany regexFilter nie przekracza limitu RE2', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const { maxRegexRepeat, RE2_MAX_REPEAT } = await import('../../shared/parser.js');
+  const dir = new URL('../../rules/', import.meta.url);
+  for (const f of fs.readdirSync(dir)) {
+    if (!f.endsWith('.json')) continue;
+    for (const r of JSON.parse(fs.readFileSync(new URL(f, dir), 'utf8'))) {
+      const re = r.condition.regexFilter;
+      if (re) assert.ok(maxRegexRepeat(re) <= RE2_MAX_REPEAT, `${path.basename(f)} reguła ${r.id}: ${re}`);
+    }
+  }
+});
