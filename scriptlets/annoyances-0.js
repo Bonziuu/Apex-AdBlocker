@@ -392,6 +392,8 @@ const reflectApply = Reflect.apply;
 const defineProperty = Object.defineProperty;
 const getOwnDesc = Object.getOwnPropertyDescriptor;
 const textContentGetter = getOwnDesc(Node.prototype, 'textContent').get;
+const nativeJSONParse = JSON.parse;
+const nativeJSONStringify = JSON.stringify;
 const exceptionToken = 'cb' + Math.random().toString(36).slice(2);
 (() => {
 const previous = win.onerror;
@@ -520,7 +522,7 @@ for (const [prop, details] of needles) {
 let value = obj[prop];
 if (value === undefined) continue;
 if (typeof value !== 'string') {
-try { value = JSON.stringify(value); } catch { /* */ }
+try { value = nativeJSONStringify(value); } catch { /* */ }
 if (typeof value !== 'string') continue;
 }
 if (!testPattern(details, value)) return undefined;
@@ -1362,7 +1364,7 @@ return fetchPromise.then((before) => before.clone().json().then((obj) => {
 if (typeof obj !== 'object') return before;
 const after = pruneObject(obj, rawPrune, rawNeedle);
 if (typeof after !== 'object') return before;
-return respondLike(before, JSON.stringify(after));
+return respondLike(before, nativeJSONStringify(after));
 }).catch(() => before)).catch(() => fetchPromise);
 });
 },
@@ -1371,11 +1373,11 @@ const extra = parseVarargs(varargs);
 installXhrResponseTransform(parsePropsToMatch(extra.propsToMatch, 'url'), (inner) => {
 let obj;
 if (typeof inner === 'object') obj = inner;
-else if (typeof inner === 'string') { try { obj = JSON.parse(inner); } catch { /* */ } }
+else if (typeof inner === 'string') { try { obj = nativeJSONParse(inner); } catch { /* */ } }
 if (typeof obj !== 'object') return inner;
 const after = pruneObject(obj, rawPrune, rawNeedle);
 if (typeof after !== 'object') return inner;
-return typeof inner === 'string' ? JSON.stringify(after) : after;
+return typeof inner === 'string' ? nativeJSONStringify(after) : after;
 });
 },
 'trusted-replace-fetch-response'(pattern = '', replacement = '', propsToMatch = '', ...varargs) {
@@ -1416,7 +1418,13 @@ return inner.replace(rePattern, replacement);
 'trusted-prevent-dom-bypass'(methodPath = '', targetProp = '') {
 if (methodPath === '') return;
 proxyApply(methodPath, (ctx) => {
-const elems = new Set(ctx.callArgs.filter((e) => e instanceof HTMLElement));
+const args = ctx.callArgs;
+let elems = null;
+for (let i = 0; i < args.length; i++) {
+const e = args[i];
+if (e instanceof HTMLElement && 'contentWindow' in e) (elems || (elems = new Set())).add(e);
+}
+if (elems === null) return ctx.reflect();
 const r = ctx.reflect();
 for (const el of elems) {
 try {
@@ -1761,7 +1769,7 @@ return fetchPromise.then((before) => before.clone().json().then((obj) => {
 if (typeof obj !== 'object') return before;
 const after = jsonp.apply(obj);
 if (after === undefined) return before;
-return respondLike(before, JSON.stringify(after));
+return respondLike(before, nativeJSONStringify(after));
 }).catch(() => before)).catch(() => fetchPromise);
 });
 }
@@ -1772,11 +1780,11 @@ const extra = parseVarargs(varargs);
 installXhrResponseTransform(parsePropsToMatch(extra.propsToMatch, 'url'), (inner) => {
 let obj;
 if (typeof inner === 'object') obj = inner;
-else if (typeof inner === 'string') { try { obj = JSON.parse(inner); } catch { /* */ } }
+else if (typeof inner === 'string') { try { obj = nativeJSONParse(inner); } catch { /* */ } }
 if (typeof obj !== 'object' || obj === null) return inner;
 const after = jsonp.apply(obj);
 if (after === undefined) return inner;
-return typeof inner === 'string' ? JSON.stringify(after).replace(/\//g, '\\/') : after;
+return typeof inner === 'string' ? nativeJSONStringify(after).replace(/\//g, '\\/') : after;
 });
 }
 function editInbound(trusted, chain, argPosRaw, q) {
@@ -1790,8 +1798,8 @@ if (!Array.isArray(args)) return undefined;
 if (argPos >= 0) return args.length <= argPos ? undefined : argPos;
 return args.length < -argPos ? undefined : args.length + argPos;
 };
-const nativeParse = JSON.parse;
-const nativeStringify = JSON.stringify;
+const nativeParse = nativeJSONParse;
+const nativeStringify = nativeJSONStringify;
 proxyApply(chain, (ctx) => {
 const i = index(ctx.callArgs);
 if (i !== undefined) {
