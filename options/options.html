@@ -60,10 +60,12 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
     </section>
 
     <section id="diag" class="panel" hidden>
-      <p class="muted">Stan silników ChromeBlock. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce.</p>
+      <p class="muted">Stan silników ChromeBlock. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce. Raport diagnostyczny nie zawiera adresów stron, identyfikatorów filmów, ciasteczek ani danych konta – możesz go bezpiecznie wkleić do rozmowy.</p>
+      <textarea id="reportPreview" class="report" readonly hidden></textarea>
       <div class="bar">
         <button id="refreshDiag" class="primary">Odśwież</button>
         <button id="resync" class="secondary">Synchronizuj ponownie</button>
+        <button id="copyReport" class="secondary">Kopiuj raport diagnostyczny</button>
         <span id="diagMsg" class="msg-inline"></span>
       </div>
 

@@ -63,6 +63,11 @@ YouTube korzysta ze wspólnego silnika (DNR, kosmetyka, scriptlety). Moduł `you
 - `youtube/compatibility.js` – które filtry są krytyczne i czy są obsługiwane (build, audyt, testy, aktualizacja list),
 - `youtube/protection.js` – ocenę stanu ochrony w service workerze: lista „Reklamy” włączona, scriptlety YouTube zarejestrowane, zgodność filtrów, stan odtwarzacza,
 - `youtube/health.js` – lekką, lokalną diagnostykę odtwarzacza: czy istnieje `movie_player` i element `video`, czy odtwarzacz pokazuje błąd, czy ładowanie trwa podejrzanie długo, czy odtwarzanie może się rozpocząć. Statusy: `healthy`, `degraded`, `error`, `unknown`. Diagnostyka nie zapisuje adresów filmów i niczego nie naprawia automatycznie.
+- `youtube/player-reports.js` – model raportów `tabId → frameId → raport` w service workerze: raport ramki głównej ma pierwszeństwo, iframe nie może go nadpisać, YouTube osadzony na innej stronie (brak raportu top) korzysta z raportu iframe, raporty wygasają po ok. 60 s, a zamknięcie karty i główna nawigacja je usuwają.
+
+### Raport diagnostyczny
+
+Opcje → Diagnostyka → **Kopiuj raport diagnostyczny** kopiuje do schowka lokalny raport tekstowy + JSON: wersja, manifest, czas, włączone listy, stan silników i synchronizacji, zgodność YouTube i scriptletów, zagregowany stan odtwarzacza, ostatnie błędy ChromeBlock, flaga diagnostyki wydajności. Raport **nie zawiera** adresów stron, historii, ID filmów, cookies, tokenów, loginów, danych konta ani treści stron (`background/diagnostics-report.js`). Nic nie jest wysyłane automatycznie.
 
 ## Prywatność
 
@@ -72,7 +77,7 @@ Brak telemetrii, analityki, kont i backendu. Diagnostyka (stan silników, dzienn
 
 ```bash
 npm install          # tylko Playwright do testów E2E; npm test nie wymaga zależności
-npm test             # testy jednostkowe i integracyjne (node:test)
+npm test             # testy jednostkowe i integracyjne (node:test), BEZ E2E
 npm run check        # walidacja buildu + zgodność YouTube (strict) + audyt + testy
 ```
 
@@ -82,7 +87,7 @@ npm run check        # walidacja buildu + zgodność YouTube (strict) + audyt + 
 | `npm run audit:scriptlets` | Raport zgodności scriptletów (supported / partial / unsupported, YouTube) |
 | `npm run update-lists` | Pobiera listy i od razu pokazuje zmiany filtrów YouTube i nowe nieobsługiwane scriptlety |
 | `npm run check` | Wszystkie kontrole; kod ≠ 0 przy błędzie |
-| `npm run test:e2e` | Testy E2E YouTube (wymagają `npx playwright install chromium`) |
+| `npm run test:e2e` | Testy E2E YouTube w prawdziwym Chromium (wymagają `npx playwright install chromium`) |
 
 Aktualizacja list:
 
@@ -94,7 +99,31 @@ npm run check
 
 Jeśli nowy filtr YouTube nie jest obsługiwany, masz dwie drogi: zaimplementować semantykę (rejestr `shared/scriptlet-specs.js` + `tools/scriptlets-lib.js` + test) albo świadomie zaakceptować brak: `node tools/audit-scriptlets.mjs --update-youtube-baseline`.
 
-Testy E2E (`tests/e2e/`) uruchamiają Chromium z rozszerzeniem na: stronie głównej YouTube, `/watch`, playliście, Shorts, embed i music.youtube.com. Bez logowania; jeśli YouTube wymaga zgody na cookies albo CAPTCHA, przypadek jest pomijany.
+Testy są wyszukiwane przez `tools/run-tests.mjs` (jawna lista plików, bez globów – działa w Node 20+). `npm test` uruchamia `tests/**/*.test.mjs` z pominięciem `tests/e2e/`; E2E uruchamia się wyłącznie przez `npm run test:e2e`.
+
+### Testy E2E YouTube
+
+```bash
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
+Chromium startuje z jednorazowym profilem i załadowanym rozszerzeniem. Przypadki: 3 filmy `/watch` (w tym jeden dłuższy, z testem seek +15 s), playlista (przejście do kolejnego filmu przez API odtwarzacza), embed (adres `/embed/` i iframe na stronie testowej), `music.youtube.com/watch`, Shorts (tylko z `YOUTUBE_SHORTS_URL`). Stan odtwarzacza jest próbkowany co 1 s.
+
+Wyniki: `PLAYBACK_OK`, `AD_BLOCKING_OBSERVED` (jest dowód: surowa odpowiedź zawierała dane reklam, a odpowiedź widoczna dla strony – nie), `INCONCLUSIVE — no ad opportunity observed`, `AD_VISIBLE_FAILURE` (stan reklamy ≥ 3 kolejne sekundy), `PLAYER_FAILURE`. Test nie klika „Pomiń reklamę”, nie modyfikuje obiektów odtwarzacza i nie obchodzi CAPTCHA, `/sorry/` ani logowania – takie przypadki są pomijane (SKIP). Wyniki zapisują się w `tests/e2e/results/last-run.json`.
+
+| Zmienna | Znaczenie |
+|---|---|
+| `YOUTUBE_WATCH_URLS` | adresy `/watch` rozdzielone przecinkami |
+| `YOUTUBE_PLAYLIST_URL` | adres playlisty |
+| `YOUTUBE_SHORTS_URL` | adres Shorts (bez niej: `SKIP — no stable Shorts URL configured`) |
+| `YOUTUBE_EMBED_URL`, `YOUTUBE_MUSIC_URL` | własne adresy embed / YouTube Music |
+| `E2E_HANDLE_CONSENT=1` | zwykła interakcja z ekranem zgody w jednorazowym profilu (domyślnie test nic nie klika) |
+| `E2E_HEADLESS=1` | tryb headless |
+| `E2E_SAMPLE_SECONDS` | długość próbkowania (domyślnie 20 s) |
+
+Ręczny test w prawdziwym Chrome: [docs/manual-youtube-test.md](docs/manual-youtube-test.md).
 
 ### Struktura
 
@@ -102,6 +131,7 @@ Testy E2E (`tests/e2e/`) uruchamiają Chromium z rozszerzeniem na: stronie głó
 manifest.json              definicja rozszerzenia (MV3)
 background.js              service worker: listy, własne filtry, scriptlety, CSS, diagnostyka
 background/health.js       stan zdrowia silników i dziennik błędów
+background/diagnostics-report.js  lokalny raport diagnostyczny (sanityzacja)
 shared/parser.js           parser filtrów ABP/uBO → reguły DNR, filtry kosmetyczne
 shared/scriptlet-specs.js  rejestr scriptletów i walidacja argumentów (fail closed)
 shared/jsonpath.js         silnik JSONPath (dialekt uBO, także legacy)
@@ -110,8 +140,9 @@ content/picker.js          tryb „Ukryj element”
 youtube/                   YouTube Protection (zgodność, ocena, diagnostyka odtwarzacza, known-gaps.json)
 popup/, options/           interfejs (opcje → Diagnostyka)
 rules/ data/ scriptlets/   pliki generowane przez build (commitowane)
-tools/                     build, audyt, check, aktualizacja list, biblioteka scriptletów, listy źródłowe
-tests/                     parser, network, cosmetic, scriptlets, build, youtube, health, e2e
+tools/                     build, audyt, check, runner testów, aktualizacja list, biblioteka scriptletów, listy źródłowe
+tests/                     parser, network, cosmetic, scriptlets, build, youtube, health, tools, e2e
+docs/                      ręczny test YouTube
 ```
 
 ## Źródła list i licencje
