@@ -9,6 +9,7 @@
 //
 // Wynik: PASS / FAIL / SKIP (brak Playwright lub Chromium → SKIP, kod 0).
 //   node tools/chromium-smoke.mjs
+//   node tools/chromium-smoke.mjs --dir dist/ChromeBlock   (gotowa paczka)
 //   CHROMEBLOCK_SMOKE=0 – pomija test
 
 import fs from 'node:fs';
@@ -23,7 +24,7 @@ export const SKIP_MESSAGE = 'SKIP: Chromium smoke test unavailable';
 export const SYNC_STEPS = ['rulesets', 'dynamicRules', 'scriptlets'];
 export const COMPONENTS = ['network', 'cosmetic', 'scriptlets', 'filters', 'youtube'];
 // pliki potrzebne rozszerzeniu (bez tools/, tests/, docs/, node_modules/)
-const EXTENSION_ENTRIES = ['manifest.json', 'background.js', 'background', 'shared', 'content', 'youtube',
+export const EXTENSION_ENTRIES = ['manifest.json', 'background.js', 'background', 'shared', 'content', 'youtube',
   'popup', 'options', 'icons', 'rules', 'data', 'scriptlets', 'web_accessible_resources', '_locales'];
 
 /** Wyciąga komunikaty Chromium o odrzuceniu rozszerzenia z logów przeglądarki. */
@@ -101,7 +102,9 @@ export async function loadPlaywright({ root = ROOT } = {}) {
   return null;
 }
 
-function copyExtension(dest) {
+function copyExtension(dest, sourceDir = null) {
+  // gotowa paczka (np. dist/ChromeBlock) – kopiujemy ją w całości
+  if (sourceDir) { fs.cpSync(sourceDir, dest, { recursive: true }); return; }
   for (const entry of EXTENSION_ENTRIES) {
     const src = path.join(ROOT, entry);
     if (fs.existsSync(src)) fs.cpSync(src, path.join(dest, entry), { recursive: true });
@@ -126,7 +129,7 @@ function chromiumLoadLog(exe, extDir, profileDir, ms = 8000) {
 }
 
 /** Uruchamia smoke test. Zwraca wynik evaluateSmoke() oraz czy Chromium wystartował. */
-export async function runSmoke({ log = console.log, syncTimeoutMs = 180_000 } = {}) {
+export async function runSmoke({ log = console.log, syncTimeoutMs = 180_000, extensionDir = null } = {}) {
   const chromium = await loadPlaywright();
   if (!chromium) return { ...evaluateSmoke({ unavailable: 'Playwright nie jest zainstalowany' }), launched: false };
   let exe = '';
@@ -137,7 +140,7 @@ export async function runSmoke({ log = console.log, syncTimeoutMs = 180_000 } = 
   const extDir = path.join(tmp, 'extension');
   const profileDir = path.join(tmp, 'profile');
   fs.mkdirSync(extDir);
-  copyExtension(extDir);
+  copyExtension(extDir, extensionDir);
   const input = { loadErrors: [], extension: null, serviceWorkerUrl: null, health: null, error: null };
   let context = null;
   let launched = false;
@@ -198,7 +201,16 @@ export async function runSmoke({ log = console.log, syncTimeoutMs = 180_000 } = 
 
 async function main() {
   if (process.env.CHROMEBLOCK_SMOKE === '0') { console.log(`${SKIP_MESSAGE} (CHROMEBLOCK_SMOKE=0)`); return; }
-  const r = await runSmoke();
+  // --dir <katalog>: test gotowej paczki (np. dist/ChromeBlock) zamiast repozytorium
+  const i = process.argv.indexOf('--dir');
+  const extensionDir = i > 0 && process.argv[i + 1] ? path.resolve(process.argv[i + 1]) : null;
+  if (extensionDir && !fs.existsSync(path.join(extensionDir, 'manifest.json'))) {
+    console.log(`✗ Brak manifest.json w ${extensionDir}`);
+    process.exitCode = 1;
+    return;
+  }
+  if (extensionDir) console.log(`Paczka: ${extensionDir}`);
+  const r = await runSmoke({ extensionDir });
   if (r.status === 'SKIP') console.log(`${SKIP_MESSAGE} (${r.reasons.join('; ')})`);
   else console.log(`${r.status === 'PASS' ? '✓' : '✗'} Chromium smoke test: ${r.status}`);
   for (const x of r.status === 'FAIL' ? r.reasons : []) console.log(`  - ${x}`);
