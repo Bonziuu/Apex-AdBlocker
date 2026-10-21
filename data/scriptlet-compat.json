@@ -1,0 +1,40 @@
+{
+ "summary": {
+  "total": 14598,
+  "supported": 13818,
+  "partial": 84,
+  "unsupported": 696
+ },
+ "byList": {
+  "ads": {
+   "total": 9971,
+   "supported": 9400,
+   "partial": 31,
+   "unsupported": 540
+  },
+  "privacy": {
+   "total": 358,
+   "supported": 278,
+   "partial": 1,
+   "unsupported": 79
+  },
+  "security": {
+   "total": 24,
+   "supported": 20,
+   "partial": 0,
+   "unsupported": 4
+  },
+  "cookies": {
+   "total": 2146,
+   "supported": 2063,
+   "partial": 45,
+   "unsupported": 38
+  },
+  "annoyances": {
+   "total": 2099,
+   "supported": 2057,
+   "partial": 7,
+   "unsupported": 35
+  }
+ }
+}

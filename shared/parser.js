@@ -1,7 +1,9 @@
-// Tarcza – parser filtrów w składni Adblock Plus / uBlock Origin.
+// ChromeBlock – parser filtrów w składni Adblock Plus / uBlock Origin.
 // Wspólny moduł: używany przez tools/build.mjs (Node) i przez service worker
 // (własne filtry użytkownika). Nie zależy od żadnych API Node ani przeglądarki
 // poza standardowym URL.
+
+import { analyzeScriptlet, canonicalScriptletName, splitScriptletArgs } from './scriptlet-specs.js';
 
 export const PRIORITY = {
   block: 1,
@@ -127,17 +129,36 @@ export function normalizeDomain(raw, keepEntities = false) {
   return [h];
 }
 
-/** Lista "a.com|~b.com" (sep='|') lub "a.com,~b.com" (sep=',') → {include, exclude}. */
+/**
+ * Lista "a.com|~b.com" (sep='|') lub "a.com,~b.com" (sep=',') → {include, exclude}.
+ * droppedInclude/droppedExclude – liczba pozycji, których nie dało się zrozumieć
+ * (np. "site.com>>", regex). Wywołujący MUSI odrzucić filtr, jeśli wszystkie
+ * pozytywne domeny zostały odrzucone – inaczej filtr stałby się ogólny.
+ */
 export function parseDomainList(str, sep, keepEntities = false) {
   const include = [];
   const exclude = [];
+  let droppedInclude = 0;
+  let droppedExclude = 0;
   for (const part of str.split(sep)) {
     const p = part.trim();
     if (!p) continue;
-    if (p.startsWith('~')) exclude.push(...normalizeDomain(p.slice(1), keepEntities));
-    else include.push(...normalizeDomain(p, keepEntities));
+    if (p.startsWith('~')) {
+      const d = normalizeDomain(p.slice(1), keepEntities);
+      if (!d.length) droppedExclude++;
+      exclude.push(...d);
+    } else {
+      const d = normalizeDomain(p, keepEntities);
+      if (!d.length) droppedInclude++;
+      include.push(...d);
+    }
   }
-  return { include: [...new Set(include)], exclude: [...new Set(exclude)] };
+  return { include: [...new Set(include)], exclude: [...new Set(exclude)], droppedInclude, droppedExclude };
+}
+
+/** Czy lista domen po parsowaniu zmieniłaby znaczenie filtra na szersze. */
+function lostAllPositiveDomains(list) {
+  return list.droppedInclude > 0 && list.include.length === 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -309,10 +330,12 @@ export function parseNetworkFilter(text, { trusted = false } = {}) {
       case 'domain': case 'from':
         initiator = parseDomainList(value, '|');
         if (initiator.include.length === 0 && initiator.exclude.length === 0) return null;
+        if (lostAllPositiveDomains(initiator)) return null; // fail closed
         break;
       case 'to':
         request = parseDomainList(value, '|');
         if (request.include.length === 0 && request.exclude.length === 0) return null;
+        if (lostAllPositiveDomains(request)) return null; // fail closed
         break;
       case 'denyallow':
         excludedRequest = parseDomainList(value, '|').include;
@@ -675,14 +698,20 @@ export function isProcedural(sel) {
  *  {type:'unhide', include:[hosts], selector}           (#@#)
  *  {type:'style', include, exclude, selector, css}       (:style() → CSS)
  *  {type:'procedural', include, exclude, tasks, key}
- *  {type:'scriptlet', include, exclude, call:[name,...args]}
+ *  {type:'scriptlet', include, exclude, call:[canonical,...args], support}
+ *  {type:'scriptlet-rejected', include, exclude, rawName, args, support}  (NIE wykonywany)
  *  {type:'unscriptlet', include, key}                    (#@#+js)
  *  null
+ *
+ * opts.trusted – czy filtr pochodzi z zaufanej listy (uBlock filters).
  */
-export function parseCosmeticFilter(c) {
+export function parseCosmeticFilter(c, opts = {}) {
   const { domains, sep, body } = c;
-  const { include, exclude } = domains ? parseDomainList(domains, ',', true) : { include: [], exclude: [] };
+  const domainList = domains ? parseDomainList(domains, ',', true) : { include: [], exclude: [], droppedInclude: 0 };
+  const { include, exclude } = domainList;
   if (domains && include.length === 0 && exclude.length === 0) return null; // tylko nieobsługiwane domeny
+  // Fail closed: "a.com>>,~b.com##x" nie może stać się filtrem ogólnym "~b.com##x".
+  if (lostAllPositiveDomains(domainList)) return null;
   const isException = sep.includes('@');
   const isExtended = sep.includes('?');
   if (sep.includes('$') || sep.includes('%')) return null; // ABP snippets / AdGuard CSS-JS
@@ -695,14 +724,24 @@ export function parseCosmeticFilter(c) {
     if (isException) {
       if (!include.length) return null;
       if (inner.trim() === '') return { type: 'unscriptlet', include, key: '*' };
-      const call = parseScriptletArgs(inner);
-      if (!call) return null;
-      return { type: 'unscriptlet', include, key: scriptletKey(call) };
+      const parts = splitScriptletArgs(inner);
+      if (!parts.length || !parts[0]) return null;
+      return { type: 'unscriptlet', include, key: scriptletKey(scriptletCall(parts)) };
     }
-    if (!include.length) return null; // ogólne scriptlety nie są wspierane
-    const call = parseScriptletArgs(inner);
-    if (!call) return null;
-    return { type: 'scriptlet', include, exclude, call };
+    const parts = splitScriptletArgs(inner);
+    if (!parts.length || !parts[0]) return null;
+    const rawName = parts[0];
+    const args = parts.slice(1);
+    if (!include.length) {
+      // Ogólne scriptlety (bez domeny) nie są wykonywane przez ChromeBlock.
+      return { type: 'scriptlet-rejected', include, exclude, rawName, args,
+        support: { status: 'unsupported', name: rawName, canonical: canonicalScriptletName(rawName), reason: 'scriptlet ogólny (bez domeny) nie jest obsługiwany' } };
+    }
+    const support = analyzeScriptlet(rawName, args, { trusted: !!opts.trusted });
+    if (support.status !== 'supported') {
+      return { type: 'scriptlet-rejected', include, exclude, rawName, args, support };
+    }
+    return { type: 'scriptlet', include, exclude, call: [support.canonical, ...args], support };
   }
   if (b.startsWith('^') || b.startsWith('+')) return null; // filtrowanie HTML
 
@@ -733,99 +772,12 @@ export function parseCosmeticFilter(c) {
 }
 
 // ---------------------------------------------------------------------------
-// Scriptlety
+// Scriptlety (rejestr i walidacja: shared/scriptlet-specs.js)
 
-export const SCRIPTLET_ALIASES = {
-  'set': 'set-constant', 'set-constant': 'set-constant',
-  'trusted-set': 'trusted-set-constant', 'trusted-set-constant': 'trusted-set-constant',
-  'aopr': 'abort-on-property-read', 'abort-on-property-read': 'abort-on-property-read',
-  'aopw': 'abort-on-property-write', 'abort-on-property-write': 'abort-on-property-write',
-  'acs': 'abort-current-script', 'acis': 'abort-current-script', 'abort-current-script': 'abort-current-script',
-  'abort-current-inline-script': 'abort-current-script',
-  'aost': 'abort-on-stack-trace', 'abort-on-stack-trace': 'abort-on-stack-trace',
-  'aeld': 'addEventListener-defuser', 'addEventListener-defuser': 'addEventListener-defuser',
-  'prevent-addEventListener': 'addEventListener-defuser',
-  'nostif': 'no-setTimeout-if', 'no-setTimeout-if': 'no-setTimeout-if',
-  'prevent-setTimeout': 'no-setTimeout-if', 'setTimeout-defuser': 'no-setTimeout-if',
-  'nosiif': 'no-setInterval-if', 'no-setInterval-if': 'no-setInterval-if',
-  'prevent-setInterval': 'no-setInterval-if', 'setInterval-defuser': 'no-setInterval-if',
-  'nano-stb': 'adjust-setTimeout', 'nano-setTimeout-booster': 'adjust-setTimeout', 'adjust-setTimeout': 'adjust-setTimeout',
-  'nano-sib': 'adjust-setInterval', 'nano-setInterval-booster': 'adjust-setInterval', 'adjust-setInterval': 'adjust-setInterval',
-  'nowoif': 'no-window-open-if', 'no-window-open-if': 'no-window-open-if',
-  'prevent-window-open': 'no-window-open-if', 'window.open-defuser': 'no-window-open-if',
-  'no-fetch-if': 'no-fetch-if', 'prevent-fetch': 'no-fetch-if',
-  'no-xhr-if': 'no-xhr-if', 'prevent-xhr': 'no-xhr-if',
-  'ra': 'remove-attr', 'remove-attr': 'remove-attr',
-  'rc': 'remove-class', 'remove-class': 'remove-class',
-  'rmnt': 'remove-node-text', 'remove-node-text': 'remove-node-text',
-  'rpnt': 'replace-node-text', 'replace-node-text': 'replace-node-text',
-  'trusted-rpnt': 'replace-node-text', 'trusted-replace-node-text': 'replace-node-text',
-  'json-prune': 'json-prune',
-  'json-prune-fetch-response': 'json-prune-fetch-response',
-  'json-prune-xhr-response': 'json-prune-xhr-response',
-  'set-cookie': 'set-cookie',
-  'remove-cookie': 'remove-cookie', 'cookie-remover': 'remove-cookie',
-  'set-local-storage-item': 'set-local-storage-item',
-  'set-session-storage-item': 'set-session-storage-item',
-  'noeval': 'noeval', 'silent-noeval': 'noeval',
-  'noeval-if': 'noeval-if', 'prevent-eval-if': 'noeval-if',
-  'nowebrtc': 'nowebrtc',
-  'set-attr': 'set-attr',
-  'trusted-click-element': 'trusted-click-element',
-  'trusted-set-cookie': 'trusted-set-cookie',
-  'trusted-set-local-storage-item': 'trusted-set-local-storage-item',
-  'trusted-set-session-storage-item': 'trusted-set-session-storage-item',
-};
-
-// Scriptlety, które mogą pochodzić wyłącznie z zaufanych list (uBlock filters).
-export const TRUSTED_SCRIPTLETS = new Set([
-  'trusted-set-constant', 'replace-node-text', 'trusted-click-element',
-  'trusted-set-cookie', 'trusted-set-local-storage-item', 'trusted-set-session-storage-item',
-]);
-
-function parseScriptletArgs(inner) {
-  const args = [];
-  let cur = '';
-  let i = 0;
-  const s = inner;
-  // obsługa argumentów w cudzysłowach oraz "\,"
-  while (i <= s.length) {
-    // pomiń spacje na początku argumentu
-    while (cur === '' && (s[i] === ' ' || s[i] === '\t')) i++;
-    const q = s[i];
-    if (cur === '' && (q === '"' || q === "'" || q === '`')) {
-      let j = i + 1;
-      let val = '';
-      while (j < s.length && s[j] !== q) {
-        if (s[j] === '\\' && s[j + 1] === q) { val += q; j += 2; continue; }
-        val += s[j];
-        j++;
-      }
-      // za zamykającym cudzysłowem oczekujemy przecinka lub końca
-      let k = j + 1;
-      while (s[k] === ' ') k++;
-      if (k >= s.length || s[k] === ',') {
-        args.push(val);
-        i = k + 1;
-        if (k >= s.length) break;
-        continue;
-      }
-    }
-    if (i >= s.length) { args.push(cur.trim()); break; }
-    const c = s[i];
-    if (c === '\\' && s[i + 1] === ',') { cur += ','; i += 2; continue; }
-    if (c === ',') { args.push(cur.trim()); cur = ''; i++; if (i >= s.length) { args.push(''); break; } continue; }
-    cur += c;
-    i++;
-  }
-  if (!args.length || !args[0]) return null;
-  let name = args[0].replace(/\.js$/, '');
-  const canonical = SCRIPTLET_ALIASES[name];
-  if (!canonical) return null;
-  // usuń puste argumenty z końca
-  const rest = args.slice(1);
-  while (rest.length && rest[rest.length - 1] === '') rest.pop();
-  return [canonical, ...rest];
+/** [nazwa, ...argumenty] → [nazwa kanoniczna (lub surowa, gdy nieznana), ...argumenty]. */
+export function scriptletCall(parts) {
+  const name = String(parts[0]).trim().replace(/\.js$/, '');
+  return [canonicalScriptletName(name) || name, ...parts.slice(1)];
 }
 
 export function scriptletKey(call) {
