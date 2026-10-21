@@ -394,6 +394,63 @@ const getOwnDesc = Object.getOwnPropertyDescriptor;
 const textContentGetter = getOwnDesc(Node.prototype, 'textContent').get;
 const nativeJSONParse = JSON.parse;
 const nativeJSONStringify = JSON.stringify;
+const PERF_EVENT = 'chromeblock:scriptlet-perf';
+const perf = (() => {
+let on = false;
+try { on = win[Symbol.for('chromeblock.scriptletPerf')] === true; } catch { /* */ }
+if (!on) return null;
+const now = performance.now.bind(performance);
+const nativeSetTimeout = win.setTimeout.bind(win);
+const NativeCustomEvent = win.CustomEvent;
+const dispatch = EventTarget.prototype.dispatchEvent;
+const stats = new Map();
+let timer = 0;
+const flush = () => {
+timer = 0;
+if (stats.size === 0) return;
+const rows = [];
+for (const [label, st] of stats) rows.push([label, st.count, st.total, st.max]);
+stats.clear();
+try {
+reflectApply(dispatch, doc, [new NativeCustomEvent(PERF_EVENT, { detail: nativeJSONStringify({ v: 1, rows }) })]);
+} catch { /* */ }
+};
+try { win.addEventListener('pagehide', flush, true); } catch { /* */ }
+return {
+now,
+record(label, ms) {
+let st = stats.get(label);
+if (!st) { st = { count: 0, total: 0, max: 0 }; stats.set(label, st); }
+st.count++;
+st.total += ms;
+if (ms > st.max) st.max = ms;
+if (!timer) timer = nativeSetTimeout(flush, 2000);
+},
+};
+})();
+let currentScriptlet = '';
+const perfLabel = (target) => `${currentScriptlet} · ${target}`;
+/** Przy włączonym profilerze mierzy wywołania fn; przy wyłączonym zwraca fn bez zmian. */
+function perfWrap(label, fn) {
+if (perf === null) return fn;
+return function (...args) {
+const t0 = perf.now();
+try { return reflectApply(fn, this, args); } finally { perf.record(label, perf.now() - t0); }
+};
+}
+/** Pułapka apply dla Proxy: przy profilerze mierzy czas własny (bez czasu oryginalnej funkcji). */
+function makeApplyTrap(label, run) {
+if (perf === null) return (target, thisArg, args) => run(target, thisArg, args, () => reflectApply(target, thisArg, args));
+return (target, thisArg, args) => {
+let inner = 0;
+const reflect = () => {
+const t = perf.now();
+try { return reflectApply(target, thisArg, args); } finally { inner += perf.now() - t; }
+};
+const t0 = perf.now();
+try { return run(target, thisArg, args, reflect); } finally { perf.record(label, perf.now() - t0 - inner); }
+};
+}
 const exceptionToken = 'cb' + Math.random().toString(36).slice(2);
 (() => {
 const previous = win.onerror;
@@ -485,6 +542,7 @@ prop = prop.slice(pos + 1);
 }
 const fn = context[prop];
 if (typeof fn !== 'function') return;
+if (perf === null) {
 context[prop] = new Proxy(fn, {
 apply(target, thisArg, args) {
 return handler({
@@ -494,6 +552,10 @@ reflect: () => reflectApply(target, thisArg, args),
 });
 },
 });
+return;
+}
+const trap = makeApplyTrap(perfLabel(chain), (target, thisArg, args, reflect) => handler({ thisArg, callArgs: args, reflect }));
+context[prop] = new Proxy(fn, { apply: trap });
 }
 function parsePropsToMatch(propsToMatch, implicit = '') {
 const needles = new Map();
@@ -834,7 +896,7 @@ const pending = takeRecords ? observer.takeRecords() : [];
 observer.disconnect();
 handleMutations(pending);
 };
-observer = new MutationObserver(handleMutations);
+observer = new MutationObserver(perfWrap(perfLabel('MutationObserver'), handleMutations));
 observer.observe(doc, { childList: true, subtree: true });
 if (stay) return;
 runAt(() => {
@@ -1053,7 +1115,8 @@ return out.join('\r\n');
 * Podklasa XMLHttpRequest, która podmienia odpowiedź (tekstową lub JSON) dla
 * żądań pasujących do propsToMatch. transform(innerResponse) → nowa odpowiedź.
 */
-function installXhrResponseTransform(needles, transform) {
+function installXhrResponseTransform(needles, rawTransform) {
+const transform = perfWrap(perfLabel('XMLHttpRequest:response'), rawTransform);
 const instances = new WeakMap();
 const Native = win.XMLHttpRequest;
 win.XMLHttpRequest = class XMLHttpRequest extends Native {
@@ -1357,15 +1420,16 @@ return after === undefined ? before : after;
 'json-prune-fetch-response'(rawPrune = '', rawNeedle = '', ...varargs) {
 const extra = parseVarargs(varargs);
 const needles = parsePropsToMatch(extra.propsToMatch, 'url');
+const respLabel = perfLabel('fetch:response');
 proxyApply('fetch', (ctx) => {
 const fetchPromise = ctx.reflect();
 if (needles.size !== 0 && matchObjectProps(needles, collateFetchArgs(...ctx.callArgs)) === undefined) return fetchPromise;
-return fetchPromise.then((before) => before.clone().json().then((obj) => {
+return fetchPromise.then((before) => before.clone().json().then(perfWrap(respLabel, (obj) => {
 if (typeof obj !== 'object') return before;
 const after = pruneObject(obj, rawPrune, rawNeedle);
 if (typeof after !== 'object') return before;
 return respondLike(before, nativeJSONStringify(after));
-}).catch(() => before)).catch(() => fetchPromise);
+})).catch(() => before)).catch(() => fetchPromise);
 });
 },
 'json-prune-xhr-response'(rawPrune = '', rawNeedle = '', ...varargs) {
@@ -1385,16 +1449,17 @@ const rePattern = patternToRegex(pattern);
 const needles = parsePropsToMatch(propsToMatch, 'url');
 const extra = parseVarargs(varargs);
 const reIncludes = extra.includes ? patternToRegex(extra.includes) : null;
+const respLabel = perfLabel('fetch:response');
 proxyApply('fetch', (ctx) => {
 const fetchPromise = ctx.reflect();
 if (pattern === '') return fetchPromise;
 if (needles.size !== 0 && matchObjectProps(needles, collateFetchArgs(...ctx.callArgs)) === undefined) return fetchPromise;
-return fetchPromise.then((before) => before.clone().text().then((textBefore) => {
+return fetchPromise.then((before) => before.clone().text().then(perfWrap(respLabel, (textBefore) => {
 if (reIncludes && reIncludes.test(textBefore) === false) return before;
 const textAfter = textBefore.replace(rePattern, replacement);
 if (textAfter === textBefore) return before;
 return respondLike(before, textAfter);
-}).catch(() => before)).catch(() => fetchPromise);
+})).catch(() => before)).catch(() => fetchPromise);
 });
 },
 'trusted-replace-xhr-response'(pattern = '', replacement = '', propsToMatch = '', ...varargs) {
@@ -1681,12 +1746,22 @@ let delay = delayArg !== '*' ? parseInt(delayArg, 10) : -1;
 if (Number.isNaN(delay) || !Number.isFinite(delay)) delay = 1000;
 let boost = parseFloat(boostArg);
 boost = !Number.isNaN(boost) && Number.isFinite(boost) ? Math.min(Math.max(boost, 0.001), 50) : 0.05;
+if (perf === null) {
 win[name] = new Proxy(win[name], {
 apply(target, thisArg, args) {
 const [a, b] = args;
 if ((delay === -1 || b === delay) && reNeedle.test(a.toString())) args[1] = b * boost;
 return target.apply(thisArg, args);
 },
+});
+return;
+}
+win[name] = new Proxy(win[name], {
+apply: makeApplyTrap(perfLabel(name), (target, thisArg, args, reflect) => {
+const [a, b] = args;
+if ((delay === -1 || b === delay) && reNeedle.test(a.toString())) args[1] = b * boost;
+return reflect();
+}),
 });
 }
 function setAttrImpl(trusted, selector, attr, value, options) {
@@ -1762,15 +1837,16 @@ const jsonp = compileJsonPath(trusted, q);
 if (!jsonp) return;
 const extra = parseVarargs(varargs);
 const needles = parsePropsToMatch(extra.propsToMatch, 'url');
+const respLabel = perfLabel('fetch:response');
 proxyApply('fetch', (ctx) => {
 const fetchPromise = ctx.reflect();
 if (needles.size !== 0 && matchObjectProps(needles, collateFetchArgs(...ctx.callArgs)) === undefined) return fetchPromise;
-return fetchPromise.then((before) => before.clone().json().then((obj) => {
+return fetchPromise.then((before) => before.clone().json().then(perfWrap(respLabel, (obj) => {
 if (typeof obj !== 'object') return before;
 const after = jsonp.apply(obj);
 if (after === undefined) return before;
 return respondLike(before, nativeJSONStringify(after));
-}).catch(() => before)).catch(() => fetchPromise);
+})).catch(() => before)).catch(() => fetchPromise);
 });
 }
 function jsonEditXhr(trusted, q, ...varargs) {
@@ -1845,6 +1921,7 @@ const call = calls[i];
 if (excluded.has(call.join('\u0001'))) continue;
 const fn = SCRIPTLETS[call[0]];
 if (!fn) continue;
+currentScriptlet = call[0];
 try { fn(...call.slice(1)); } catch { /* scriptlet nie może zepsuć strony */ }
 }
 }

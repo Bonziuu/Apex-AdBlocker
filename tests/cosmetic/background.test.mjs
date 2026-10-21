@@ -243,7 +243,7 @@ test('diagnostics:export: raport lokalny bez URL, ID filmów i danych strony', a
     await bg.send({ type: 'youtube:health', status: 'degraded', reasons: ['spinner na https://www.youtube.com/watch?v=SECRETID12'], page: 'watch' }, sender('https://www.youtube.com/watch?v=SECRETID12'));
     const r = await bg.send({ type: 'diagnostics:export' });
     assert.match(r.text, /^ChromeBlock Diagnostics/);
-    assert.match(r.text, /0\.2\.2-dev/);
+    assert.match(r.text, /0\.2\.3-dev/);
     assert.equal(r.data.manifestVersion, 3);
     assert.equal(r.data.player.status, 'degraded');
     assert.ok(Array.isArray(r.data.enabledLists) && r.data.enabledLists.includes('ads'));

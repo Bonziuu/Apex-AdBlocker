@@ -159,6 +159,13 @@ async function renderDiag() {
     ? '<tr><th>Czas</th><th>Host</th><th>Partie mutacji</th><th>Ogólne [ms]</th><th>Proceduralne [ms] / uruchomień</th><th>Selektory</th></tr>'
       + h.perf.map((p) => `<tr><td>${time(p.at)}</td><td class="mono">${esc(p.host)}${p.frame ? ` (ramka ${p.frame})` : ''}</td><td>${p.stats.mutationBatches}</td><td>${p.stats.genericMs}</td><td>${p.stats.proceduralMs} / ${p.stats.proceduralRuns}</td><td>${p.stats.selectorsApplied}</td></tr>`).join('')
     : `<tr><td class="muted">${h.devPerf ? 'Brak pomiarów – przeładuj kilka stron.' : 'Pomiary wyłączone.'}</td></tr>`;
+
+  const sp = h.scriptletPerf || [];
+  const ms = (v) => v.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  $('scriptletPerf').innerHTML = h.devPerf && sp.length
+    ? '<tr><th>Scriptlet</th><th>Przechwycona funkcja</th><th>Wywołania</th><th>Łącznie [ms]</th><th>Średnio [ms]</th><th>Maks. [ms]</th></tr>'
+      + sp.map((r) => `<tr><td class="mono">${esc(r.scriptlet)}</td><td class="mono">${esc(r.target)}</td><td>${fmt(r.calls)}</td><td>${ms(r.totalMs)}</td><td>${ms(r.avgMs)}</td><td>${ms(r.maxMs)}</td></tr>`).join('')
+    : `<tr><td class="muted">${h.devPerf ? 'Brak pomiarów scriptletów – przeładuj kartę (np. YouTube) i odtwórz film.' : 'Pomiary wyłączone.'}</td></tr>`;
 }
 
 $('refreshDiag').addEventListener('click', renderDiag);
@@ -171,6 +178,7 @@ $('resync').addEventListener('click', async () => {
 });
 $('clearErrors').addEventListener('click', async () => { await send({ type: 'health:clearErrors' }); renderDiag(); });
 $('devPerf').addEventListener('change', async () => { await send({ type: 'options:setDevPerf', enabled: $('devPerf').checked }); renderDiag(); });
+$('resetPerf').addEventListener('click', async () => { await send({ type: 'perf:reset' }); flash($('diagMsg'), 'Pomiary wyzerowane', 'ok'); renderDiag(); });
 document.querySelector('.tab[data-tab="diag"]').addEventListener('click', renderDiag);
 if (initial === 'diag') renderDiag();
 

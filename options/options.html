@@ -86,9 +86,12 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       <table class="diag" id="errors"></table>
 
       <h2>Pomiary wydajności (dla deweloperów)</h2>
-      <label class="check"><input type="checkbox" id="devPerf"> Mierz pracę filtrów kosmetycznych na stronach (domyślnie wyłączone)</label>
-      <p class="muted small">Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów. Dane pozostają w tej przeglądarce. Nowe wartości pojawiają się po przeładowaniu kart.</p>
+      <label class="check"><input type="checkbox" id="devPerf"> Mierz pracę filtrów kosmetycznych i scriptletów na stronach (domyślnie wyłączone)</label>
+      <p class="muted small">Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu ChromeBlock (bez czasu oryginalnej funkcji strony). Bez adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty.</p>
+      <div class="bar"><button id="resetPerf" class="secondary">Resetuj pomiary</button></div>
       <table class="diag" id="perf"></table>
+      <h3>Najdroższe scriptlety</h3>
+      <table class="diag" id="scriptletPerf"></table>
     </section>
 
     <section id="about" class="panel" hidden>

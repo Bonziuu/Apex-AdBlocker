@@ -36,6 +36,11 @@
     chrome.storage.local.get('devPerf').then(({ devPerf }) => {
       if (!devPerf) return;
       perf.enabled = true;
+      // Pomiary scriptletów ze świata MAIN (patrz tools/scriptlets-lib.js, „Profiler scriptletów”).
+      // Przekazujemy surowy tekst – service worker go waliduje (tylko nazwy i liczby).
+      document.addEventListener('chromeblock:scriptlet-perf', (e) => {
+        if (typeof e.detail === 'string' && e.detail.length <= 50000) send({ type: 'perf:scriptlets', data: e.detail });
+      });
       perf.timer = setInterval(() => {
         if (!perf.dirty) return;
         perf.dirty = false;

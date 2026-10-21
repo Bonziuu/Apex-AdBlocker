@@ -12,6 +12,7 @@ import { createHealth, runSyncSteps, componentStatusFromSync } from './backgroun
 import { evaluateYouTubeProtection, coversYouTube } from './youtube/protection.js';
 import { PlayerReportStore } from './youtube/player-reports.js';
 import { buildDiagnosticsReport } from './background/diagnostics-report.js';
+import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js';
 
 const SITE_RULE_ID = 1;
 const USER_RULE_BASE = 1000;
@@ -30,6 +31,32 @@ let state = null;               // { enabledLists, disabledSites, userFilters }
 let user = null;                // skompilowane własne filtry
 const playerReports = new PlayerReportStore(); // tabId → frameId → raport odtwarzacza (TTL 60 s)
 const perfReports = [];          // raporty wydajności (tylko gdy włączone w opcjach)
+// Pomiary scriptletów (tylko przy włączonych pomiarach). Trzymane w chrome.storage.session
+// (pamięć przeglądarki, bez zapisu na dysk), żeby przetrwały uśpienie service workera.
+const scriptletPerf = new ScriptletPerfStore();
+const SCRIPTLET_PERF_KEY = 'scriptletPerf';
+const sessionStore = () => (chrome.storage && chrome.storage.session) || null;
+const scriptletPerfLoaded = (async () => {
+  try {
+    const st = sessionStore();
+    if (st) scriptletPerf.load((await st.get(SCRIPTLET_PERF_KEY))[SCRIPTLET_PERF_KEY]);
+  } catch { /* brak danych */ }
+})();
+let scriptletPerfSaveTimer = 0;
+const saveScriptletPerf = () => {
+  if (scriptletPerfSaveTimer) return;
+  scriptletPerfSaveTimer = setTimeout(async () => {
+    scriptletPerfSaveTimer = 0;
+    try { const st = sessionStore(); if (st) await st.set({ [SCRIPTLET_PERF_KEY]: scriptletPerf.toJSON() }); } catch { /* */ }
+  }, 1000);
+};
+async function resetScriptletPerf() {
+  await scriptletPerfLoaded;
+  scriptletPerf.reset();
+  try { const st = sessionStore(); if (st) await st.remove(SCRIPTLET_PERF_KEY); } catch { /* */ }
+}
+/** Plik włączający profiler scriptletów (rejestrowany przed scriptletami tylko przy pomiarach). */
+const SCRIPTLET_PERF_FLAG_FILE = 'content/scriptlet-perf-on.js';
 
 const health = createHealth({
   get: async (key) => (await chrome.storage.local.get(key))[key],
@@ -277,11 +304,13 @@ async function syncScriptlets() {
 
   const excludeMatches = s.disabledSites.flatMap(sitePatterns);
   const expected = await expectedScriptlets();
+  const { devPerf } = await chrome.storage.local.get('devPerf');
   const failures = [];
   for (const f of expected) {
     const script = {
       id: f.id,
-      js: [f.file],
+      // przy pomiarach wydajności najpierw plik-flaga (ta sama rejestracja → gwarantowana kolejność)
+      js: devPerf ? [SCRIPTLET_PERF_FLAG_FILE, f.file] : [f.file],
       matches: f.matches,
       runAt: 'document_start',
       allFrames: true,
@@ -574,6 +603,21 @@ const handlers = {
     return {};
   },
 
+  async 'perf:scriptlets'(msg) {
+    const { devPerf } = await chrome.storage.local.get('devPerf');
+    if (!devPerf) return { accepted: 0 };
+    await scriptletPerfLoaded;
+    const accepted = scriptletPerf.add(parseReport(msg.data));
+    if (accepted) saveScriptletPerf();
+    return { accepted };
+  },
+
+  async 'perf:reset'() {
+    perfReports.length = 0;
+    await resetScriptletPerf();
+    return { ok: true };
+  },
+
   async 'health:get'() {
     const youtube = await refreshYouTubeStatus();
     const snap = await health.snapshot();
@@ -586,6 +630,7 @@ const handlers = {
       scriptletCompat,
       devPerf: !!devPerf,
       perf: perfReports.slice().reverse(),
+      scriptletPerf: devPerf ? (await scriptletPerfLoaded, scriptletPerf.rows(50)) : [],
       version: chrome.runtime.getManifest().version,
     };
   },
@@ -625,8 +670,10 @@ const handlers = {
 
   async 'options:setDevPerf'(msg) {
     await chrome.storage.local.set({ devPerf: !!msg.enabled });
-    if (!msg.enabled) perfReports.length = 0;
-    return { ok: true };
+    if (!msg.enabled) { perfReports.length = 0; await resetScriptletPerf(); }
+    // ponowna rejestracja scriptletów: z plikiem-flagą profilera albo bez niego
+    const r = await runStep('scriptlets', syncScriptlets);
+    return { ok: !!r && r.ok };
   },
 
   async 'popup:get'(msg) {
