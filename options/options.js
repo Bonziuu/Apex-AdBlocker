@@ -160,6 +160,13 @@ async function renderDiag() {
       + h.perf.map((p) => `<tr><td>${time(p.at)}</td><td class="mono">${esc(p.host)}${p.frame ? ` (ramka ${p.frame})` : ''}</td><td>${p.stats.mutationBatches}</td><td>${p.stats.genericMs}</td><td>${p.stats.proceduralMs} / ${p.stats.proceduralRuns}</td><td>${p.stats.selectorsApplied}</td></tr>`).join('')
     : `<tr><td class="muted">${h.devPerf ? 'Brak pomiarów – przeładuj kilka stron.' : 'Pomiary wyłączone.'}</td></tr>`;
 
+  const st = h.startupProfile;
+  $('startupProfile').innerHTML = st && st.totalMs !== null
+    ? `<tr><th>Etap</th><th>Czas [ms]</th><th>Wywołania</th></tr><tr><td><b>Startup total</b> <span class="muted">(${esc(st.reason)})</span></td><td><b>${fmt(Math.round(st.totalMs))}</b></td><td></td></tr>`
+      + Object.entries(st.marks || {}).map(([k, v]) => `<tr><td class="muted">${esc(k)}</td><td class="muted">po ${fmt(Math.round(v))}</td><td></td></tr>`).join('')
+      + st.stages.slice().sort((a, b) => b.totalMs - a.totalMs).map((x) => `<tr><td class="mono">${esc(x.name)}</td><td>${fmt(Math.round(x.totalMs))}</td><td>${x.count}</td></tr>`).join('')
+    : '<tr><td class="muted">Brak pomiaru – pojawi się po instalacji, aktualizacji lub przeładowaniu rozszerzenia.</td></tr>';
+
   const sp = h.scriptletPerf || [];
   const ms = (v) => v.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   $('scriptletPerf').innerHTML = h.devPerf && sp.length

@@ -92,3 +92,60 @@ test('regresja wydajności: trusted-prevent-dom-bypass – zwykłe elementy bez 
   assert.deepEqual([...same], [true, true, true]);
   assert.ok(run(ctx, '__sets') > 0, 'ramka nadal przechodzi przez pełną ścieżkę');
 });
+
+/** Środowisko liczące, ile Proxy powstało na każdą funkcję (po nazwie celu). */
+function proxyCountingEnv() {
+  const ctx = createEnv('www.youtube.com');
+  run(ctx, `globalThis.__proxied = {}; const NP = Proxy;
+    globalThis.Proxy = new NP(NP, { construct(t, a) { const n = (a[0] && a[0].name) || '?'; __proxied[n] = (__proxied[n] || 0) + 1; return Reflect.construct(t, a); } });`);
+  return ctx;
+}
+
+test('jeden wrapper: 6 filtrów trusted-edit-inbound-object na JSON.stringify → dokładnie jeden Proxy', () => {
+  const calls = ytInbound();
+  assert.ok(calls.length >= 6);
+  const ctx = proxyCountingEnv();
+  runScriptlets(ctx, calls);
+  assert.equal(run(ctx, '__proxied.stringify'), 1);
+});
+
+test('jeden wrapper: 3 filtry trusted-prevent-dom-bypass na Node.prototype.appendChild → dokładnie jeden Proxy', () => {
+  const calls = ytDomBypass();
+  assert.ok(calls.length >= 3);
+  const ctx = proxyCountingEnv();
+  runScriptlets(ctx, calls);
+  assert.equal(run(ctx, '__proxied.appendChild'), 1);
+  // zachowanie bez zmian: ramka about:blank dostaje fetch, Request i JSON.parse strony
+  const r = run(ctx, `(() => { const w = { location: { href: 'about:blank' }, fetch: function f() {}, Request: function R() {},
+    JSON: { parse: function p() {} }, [Symbol.toStringTag]: 'Window' };
+    new HTMLElement('DIV').appendChild(new HTMLIFrameElement(w)); return [w.fetch === window.fetch, w.Request === window.Request, w.JSON.parse === window.JSON.parse]; })()`);
+  assert.deepEqual([...r], [true, true, true]);
+});
+
+test('jeden wrapper: kolejność handlerów, kopia argumentów, wyniki i wyjątki jak przy zagnieżdżonych Proxy', () => {
+  const ctx = createEnv('www.youtube.com');
+  runScriptlets(ctx, ytInbound());
+  // kolejność edycji jak przed zmianą (zewnętrzny – ostatnio dodany – najpierw): params = 8AUB
+  const out = JSON.parse(run(ctx, `JSON.stringify({ attestationRequest: {}, context: { client: { clientName: 'WEB', userAgent: 'channel lactmilli yahi' } } })`));
+  assert.equal(out.params, '8AUB');
+  assert.equal(out.context.client.clientScreen, 'CHANNEL');
+  // pozostałe argumenty (replacer, space) przekazane bez zmian
+  assert.equal(run(ctx, `JSON.stringify({ a: 1, b: 2 }, ['a'], 1)`), '{\n "a": 1\n}');
+  // wyjątki przechodzą bez zmian
+  assert.equal(run(ctx, `(() => { const o = {}; o.o = o; try { JSON.stringify(o); return 'ok'; } catch (e) { return e instanceof TypeError; } })()`), true);
+  // właściwości funkcji jak oryginału
+  assert.equal(run(ctx, 'JSON.stringify.name + JSON.stringify.length'), 'stringify3');
+});
+
+test('jeden wrapper: gdy inny kod owinie funkcję między filtrami, powstaje nowa warstwa (kolejność zachowana)', () => {
+  const calls = ytInbound();
+  const ctx = createEnv('www.youtube.com');
+  run(ctx, 'globalThis.__order = [];');
+  runScriptlets(ctx, calls.slice(0, 2));
+  // obcy wrapper strony/innego scriptletu pomiędzy
+  run(ctx, `const prev = JSON.stringify; JSON.stringify = function stringify(...a) { __order.push('obcy'); return prev.apply(this, a); };`);
+  runScriptlets(ctx, calls.slice(2, 3));
+  const out = JSON.parse(run(ctx, `JSON.stringify({ attestationRequest: {}, context: { client: { clientName: 'WEB', userAgent: 'channel lactmilli yahi' } } })`));
+  assert.ok(run(ctx, '__order.length') >= 1, 'obcy wrapper nadal wywoływany');
+  assert.equal(out.context.client.clientScreen, 'CHANNEL');
+});

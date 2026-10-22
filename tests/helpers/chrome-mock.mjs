@@ -23,11 +23,14 @@ export async function loadBackground(opts = {}) {
     css: [],
     staticRuleUpdates: [],
     reloads: [],
+    calls: { register: 0, unregister: 0, registeredInCalls: [] },
+    fetches: [],
     listeners: {},
   };
   const ev = (name) => ({ addListener(fn) { state.listeners[name] = fn; } });
-  globalThis.fetch = async (url) => {
+  globalThis.fetch = async (url, init = {}) => {
     const rel = String(url).replace('ext://', '');
+    state.fetches.push({ path: rel, method: init.method || 'GET' });
     if (opts.files && rel in opts.files) {
       const v = opts.files[rel];
       if (v instanceof Error) return { ok: false, status: 404, json: async () => { throw v; } };
@@ -43,7 +46,7 @@ export async function loadBackground(opts = {}) {
       onInstalled: ev('installed'),
       onStartup: ev('startup'),
       onMessage: ev('message'),
-      getManifest: () => ({ version: '0.2.3', version_name: '0.2.3-dev', manifest_version: 3 }),
+      getManifest: () => ({ version: '0.2.4', version_name: '0.2.4-dev', manifest_version: 3 }),
     },
     storage: {
       session: {
@@ -80,12 +83,18 @@ export async function loadBackground(opts = {}) {
     },
     scripting: {
       getRegisteredContentScripts: async () => state.registered.slice(),
-      unregisterContentScripts: async ({ ids }) => { state.registered = state.registered.filter((r) => !ids.includes(r.id)); },
+      unregisterContentScripts: async ({ ids }) => {
+        state.calls.unregister++;
+        state.registered = state.registered.filter((r) => !ids.includes(r.id));
+      },
+      // jak w Chrome: wywołanie jest atomowe – jeden błędny skrypt odrzuca całą paczkę
       registerContentScripts: async (arr) => {
+        state.calls.register++;
+        state.calls.registeredInCalls.push(arr.length);
         for (const s of arr) {
           if (opts.failRegister && opts.failRegister(s.id)) throw new Error(`Invalid match pattern in ${s.id}`);
-          state.registered.push(s);
         }
+        for (const s of arr) state.registered.push(structuredClone(s));
       },
       insertCSS: async (o) => { state.css.push(o); },
       executeScript: async () => {},

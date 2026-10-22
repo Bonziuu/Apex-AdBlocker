@@ -557,6 +557,55 @@ return;
 const trap = makeApplyTrap(perfLabel(chain), (target, thisArg, args, reflect) => handler({ thisArg, callArgs: args, reflect }));
 context[prop] = new Proxy(fn, { apply: trap });
 }
+const arraySlice = Array.prototype.slice;
+const chainedHooks = new Map(); // łańcuch → { owner, prop, proxy, handlers }
+/**
+* Jak proxyApply, ale kolejne filtry na TĘ SAMĄ funkcję dopisują handler do jednego wrappera
+* zamiast zakładać kolejny Proxy (Proxy(Proxy(Proxy(fn))) → jeden Proxy + lista handlerów).
+* Semantyka jak przy zagnieżdżeniu: ostatnio dodany handler działa pierwszy, a jego reflect()
+* wywołuje poprzedni (z kopią argumentów, jak Reflect.apply na kolejnym Proxy), aż do oryginału.
+* Jeśli funkcję owinął w międzyczasie ktoś inny, powstaje nowa warstwa – kolejność zostaje zachowana.
+* Używane (na razie) dla: JSON.stringify / trusted-edit-inbound-object
+* i Node.prototype.appendChild / trusted-prevent-dom-bypass.
+*/
+function proxyApplyChained(chain, handler) {
+let context = globalThis;
+let prop = chain;
+for (;;) {
+const pos = prop.indexOf('.');
+if (pos === -1) break;
+context = context[prop.slice(0, pos)];
+if (!(context instanceof Object)) return;
+prop = prop.slice(pos + 1);
+}
+const fn = context[prop];
+if (typeof fn !== 'function') return;
+const entry = { handler, label: perf === null ? '' : perfLabel(chain) };
+const hook = chainedHooks.get(chain);
+if (hook && hook.owner === context && hook.prop === prop && context[prop] === hook.proxy) {
+hook.handlers.push(entry);
+return;
+}
+const handlers = [entry];
+const invoke = (i, thisArg, args) => {
+if (i < 0) return reflectApply(fn, thisArg, args);
+const h = handlers[i];
+const next = () => invoke(i - 1, thisArg, reflectApply(arraySlice, args, []));
+if (perf === null) return h.handler({ thisArg, callArgs: args, reflect: next });
+let inner = 0;
+const reflect = () => {
+const t = perf.now();
+try { return next(); } finally { inner += perf.now() - t; }
+};
+const t0 = perf.now();
+try { return h.handler({ thisArg, callArgs: args, reflect }); } finally { perf.record(h.label, perf.now() - t0 - inner); }
+};
+const proxy = new Proxy(fn, {
+apply(target, thisArg, args) { return invoke(handlers.length - 1, thisArg, args); },
+});
+context[prop] = proxy;
+chainedHooks.set(chain, { owner: context, prop, proxy, handlers });
+}
 function parsePropsToMatch(propsToMatch, implicit = '') {
 const needles = new Map();
 if (propsToMatch === undefined || propsToMatch === '') return needles;
@@ -1482,7 +1531,8 @@ return inner.replace(rePattern, replacement);
 'trusted-edit-inbound-object'(chain = '', pos = '', q = '') { editInbound(true, chain, pos, q); },
 'trusted-prevent-dom-bypass'(methodPath = '', targetProp = '') {
 if (methodPath === '') return;
-proxyApply(methodPath, (ctx) => {
+const install = methodPath === 'Node.prototype.appendChild' ? proxyApplyChained : proxyApply;
+install(methodPath, (ctx) => {
 const args = ctx.callArgs;
 let elems = null;
 for (let i = 0; i < args.length; i++) {
@@ -1876,7 +1926,8 @@ return args.length < -argPos ? undefined : args.length + argPos;
 };
 const nativeParse = nativeJSONParse;
 const nativeStringify = nativeJSONStringify;
-proxyApply(chain, (ctx) => {
+const install = chain === 'JSON.stringify' ? proxyApplyChained : proxyApply;
+install(chain, (ctx) => {
 const i = index(ctx.callArgs);
 if (i !== undefined) {
 let clone;
