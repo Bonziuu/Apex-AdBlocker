@@ -89,6 +89,12 @@ export function buildDiagnosticsReport(input) {
     player,
     recentErrors: errors,
     perfDiagnosticsEnabled: !!input.devPerf,
+    startup: input.startupProfile && input.startupProfile.totalMs !== null && input.startupProfile.totalMs !== undefined ? {
+      reason: sanitizeText(input.startupProfile.reason),
+      totalMs: Math.round(input.startupProfile.totalMs),
+      marks: Object.fromEntries(Object.entries(input.startupProfile.marks || {}).map(([k, v]) => [sanitizeText(k), Math.round(v)])),
+      stages: (input.startupProfile.stages || []).map((x) => ({ name: sanitizeText(x.name), count: x.count, totalMs: Math.round(x.totalMs) })),
+    } : null,
   };
 
   const lines = [];
@@ -122,6 +128,13 @@ export function buildDiagnosticsReport(input) {
   for (const e of errors) lines.push(`  ${e.at} [${e.component}] ${e.message}`);
   lines.push('');
   lines.push(`Perf diagnostics: ${data.perfDiagnosticsEnabled ? 'enabled' : 'disabled'}`);
+  lines.push('');
+  if (data.startup) {
+    lines.push(`Startup total: ${data.startup.totalMs} ms (${data.startup.reason})`);
+    for (const x of data.startup.stages.slice().sort((a, b) => b.totalMs - a.totalMs).slice(0, 12)) {
+      lines.push(`  ${x.name}: ${x.totalMs} ms${x.count > 1 ? ` (${x.count}×)` : ''}`);
+    }
+  } else lines.push('Startup: no measurement');
   lines.push('');
   lines.push('JSON:');
   lines.push(JSON.stringify(data, null, 2));

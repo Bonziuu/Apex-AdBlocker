@@ -91,3 +91,13 @@ test('buildDiagnosticsReport: nieznany typ strony odtwarzacza → "other"; brak 
   assert.match(text, /Player:\n {2}no recent report/);
   assert.match(text, /Recent ChromeBlock errors:\n {2}none/);
 });
+
+test('buildDiagnosticsReport: profil startu (tylko nazwy etapów i czasy)', () => {
+  const input = fullInput();
+  input.startupProfile = { reason: 'onInstalled: update', totalMs: 4200.4, marks: { 'DNR gotowy': 80.2 },
+    stages: [{ name: 'scriptlety: registerContentScripts', count: 1, totalMs: 2800.6 }, { name: 'getState / storage', count: 3, totalMs: 4 }] };
+  const { data, text } = buildDiagnosticsReport(input);
+  assert.equal(data.startup.totalMs, 4200);
+  assert.match(text, /Startup total: 4200 ms \(onInstalled: update\)\n {2}scriptlety: registerContentScripts: 2801 ms\n {2}getState \/ storage: 4 ms \(3×\)/);
+  assert.match(buildDiagnosticsReport(fullInput()).text, /Startup: no measurement/);
+});

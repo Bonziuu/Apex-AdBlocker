@@ -13,6 +13,22 @@ import { evaluateYouTubeProtection, coversYouTube } from './youtube/protection.j
 import { PlayerReportStore } from './youtube/player-reports.js';
 import { buildDiagnosticsReport } from './background/diagnostics-report.js';
 import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js';
+import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
+
+// Pomiar etapów startu (czas od uruchomienia service workera). Ostatni zakończony pomiar
+// trafia do chrome.storage.session i do Diagnostyki.
+const startup = createStartupProfiler();
+startup.mark('service worker: moduł wczytany');
+const STARTUP_PROFILE_KEY = 'startupProfile';
+async function finishStartupProfile() {
+  startup.finish();
+  try { if (chrome.storage.session) await chrome.storage.session.set({ [STARTUP_PROFILE_KEY]: startup.snapshot() }); } catch { /* */ }
+}
+async function lastStartupProfile() {
+  const cur = startup.snapshot();
+  if (cur.totalMs !== null) return cur;
+  try { return (chrome.storage.session && (await chrome.storage.session.get(STARTUP_PROFILE_KEY))[STARTUP_PROFILE_KEY]) || null; } catch { return null; }
+}
 
 const SITE_RULE_ID = 1;
 const USER_RULE_BASE = 1000;
@@ -72,7 +88,7 @@ async function fetchJSON(path) {
 async function getListsMeta() {
   if (!listsMeta) {
     try {
-      listsMeta = await fetchJSON('data/lists.json');
+      listsMeta = await startup.time('metadane list (lists.json)', () => fetchJSON('data/lists.json'));
     } catch (e) {
       await health.setComponent('filters', 'error', String(e.message || e));
       await health.error('filters', e);
@@ -85,7 +101,7 @@ async function getListsMeta() {
 async function getState() {
   if (state) return state;
   const meta = await getListsMeta();
-  const stored = await chrome.storage.local.get(['enabledLists', 'disabledSites', 'userFilters']);
+  const stored = await startup.time('getState / storage', () => chrome.storage.local.get(['enabledLists', 'disabledSites', 'userFilters']));
   state = {
     enabledLists: Array.isArray(stored.enabledLists)
       ? stored.enabledLists.filter((id) => meta.some((m) => m.id === id))
@@ -116,7 +132,7 @@ function toSet(obj) {
 async function getListData(id) {
   let d = listData.get(id);
   if (!d) {
-    d = fetchJSON(`data/${id}.json`).then(toSet).catch(async (e) => {
+    d = startup.time('dane kosmetyczne: wczytanie JSON', () => fetchJSON(`data/${id}.json`).then(toSet)).catch(async (e) => {
       listData.delete(id);
       await health.setComponent('cosmetic', 'error', `lista ${id}: ${e.message || e}`);
       await health.error('cosmetic', `dane listy ${id}: ${e.message || e}`);
@@ -223,7 +239,7 @@ function compileUserFilters(text) {
 
 /** $badfilter z jednej listy wyłącza reguły innej listy tylko wtedy, gdy obie są włączone. */
 async function syncCrossBadfilters(enabled) {
-  const cross = await fetchJSON('data/badfilter-cross.json');
+  const cross = await startup.time('syncCrossBadfilters: badfilter-cross.json', () => fetchJSON('data/badfilter-cross.json'));
   const byTarget = new Map();
   for (const { source, target, ruleIds } of cross) {
     if (!byTarget.has(target)) byTarget.set(target, { disable: new Set(), all: new Set() });
@@ -238,7 +254,7 @@ async function syncCrossBadfilters(enabled) {
     const disableRuleIds = [...t.disable];
     const enableRuleIds = [...t.all].filter((id) => !t.disable.has(id));
     disabledCount += disableRuleIds.length;
-    await chrome.declarativeNetRequest.updateStaticRules({ rulesetId: target, disableRuleIds, enableRuleIds });
+    await startup.time('syncCrossBadfilters: updateStaticRules', () => chrome.declarativeNetRequest.updateStaticRules({ rulesetId: target, disableRuleIds, enableRuleIds }));
   }
   return disabledCount;
 }
@@ -248,15 +264,16 @@ async function syncRulesets() {
   const meta = await getListsMeta();
   const enable = meta.filter((m) => s.enabledLists.includes(m.id)).map((m) => m.id);
   const disable = meta.filter((m) => !s.enabledLists.includes(m.id)).map((m) => m.id);
-  await chrome.declarativeNetRequest.updateEnabledRulesets({ enableRulesetIds: enable, disableRulesetIds: disable });
+  await startup.time('syncRulesets: updateEnabledRulesets', () => chrome.declarativeNetRequest.updateEnabledRulesets({ enableRulesetIds: enable, disableRulesetIds: disable }));
   // weryfikacja: Chrome faktycznie włączył to, o co prosiliśmy
-  const actual = new Set(await chrome.declarativeNetRequest.getEnabledRulesets());
+  const actual = new Set(await startup.time('syncRulesets: getEnabledRulesets', () => chrome.declarativeNetRequest.getEnabledRulesets()));
   const missing = enable.filter((id) => !actual.has(id));
   const extra = disable.filter((id) => actual.has(id));
   if (missing.length || extra.length) {
     throw new Error(`stan zestawów reguł niezgodny (brak: ${missing.join(',') || '-'}, nadmiarowe: ${extra.join(',') || '-'})`);
   }
-  const crossDisabled = await syncCrossBadfilters(new Set(enable));
+  const crossDisabled = await startup.time('syncCrossBadfilters', () => syncCrossBadfilters(new Set(enable)));
+  startup.mark('DNR gotowy');
   await health.setComponent('filters', 'ok', `włączone listy: ${enable.join(', ') || 'brak'}`);
   return `włączone: ${enable.join(', ') || 'brak'}; $badfilter między listami: ${crossDisabled}`;
 }
@@ -276,11 +293,24 @@ async function syncDynamicRules() {
     rules.push({ ...r, id: USER_RULE_BASE + i });
   });
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
-  await chrome.declarativeNetRequest.updateDynamicRules({
+  await startup.time('syncDynamicRules: updateDynamicRules', () => chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: existing.map((r) => r.id),
     addRules: rules,
-  });
+  }));
   return `reguły dynamiczne: ${rules.length}`;
+}
+
+// Metadane plików scriptletów (data/<lista>.scriptlets.json, do 1,5 MB) nie zmieniają się w trakcie
+// działania rozszerzenia – parsujemy je raz na życie service workera, nie przy każdym sprawdzeniu.
+const scriptletMetaCache = new Map();
+function scriptletMeta(id) {
+  let p = scriptletMetaCache.get(id);
+  if (!p) {
+    p = startup.time('scriptlety: przygotowanie (scriptlets.json)', () => fetchJSON(`data/${id}.scriptlets.json`));
+    p.catch(() => scriptletMetaCache.delete(id));
+    scriptletMetaCache.set(id, p);
+  }
+  return p;
 }
 
 /** Oczekiwane pliki scriptletów dla włączonych list. */
@@ -290,45 +320,88 @@ async function expectedScriptlets() {
   const out = [];
   for (const m of meta) {
     if (!s.enabledLists.includes(m.id)) continue;
-    const files = await fetchJSON(`data/${m.id}.scriptlets.json`);
+    const files = await scriptletMeta(m.id);
     files.forEach((f, n) => out.push({ id: `sl-${m.id}-${n}`, list: m.id, ...f }));
   }
   return out;
 }
 
+/** Rejestracja jednego pliku scriptletów w postaci przekazywanej do chrome.scripting. */
+function scriptletRegistration(f, { devPerf, excludeMatches }) {
+  const script = {
+    id: f.id,
+    // przy pomiarach wydajności najpierw plik-flaga (ta sama rejestracja → gwarantowana kolejność)
+    js: devPerf ? [SCRIPTLET_PERF_FLAG_FILE, f.file] : [f.file],
+    matches: f.matches,
+    runAt: 'document_start',
+    allFrames: true,
+    world: 'MAIN',
+    persistAcrossSessions: true,
+  };
+  if (excludeMatches.length) script.excludeMatches = excludeMatches;
+  return script;
+}
+
+/** Czy zarejestrowany zestaw scriptletów jest dokładnie taki, jak oczekiwany (te same id, kolejność i parametry). */
+export function sameScriptletRegistrations(registered, wanted) {
+  if (registered.length !== wanted.length) return false;
+  const norm = (a) => [...(a || [])].sort().join('\n');
+  for (let i = 0; i < wanted.length; i++) {
+    const r = registered[i];
+    const w = wanted[i];
+    if (r.id !== w.id) return false;
+    if ((r.js || []).join('\n') !== w.js.join('\n')) return false;
+    if (norm(r.matches) !== norm(w.matches)) return false;
+    if (norm(r.excludeMatches) !== norm(w.excludeMatches)) return false;
+    if ((r.runAt || 'document_idle') !== w.runAt || !!r.allFrames !== w.allFrames || (r.world || 'ISOLATED') !== w.world) return false;
+    if (r.persistAcrossSessions === false) return false;
+  }
+  return true;
+}
+
+// Wydajność: każde wywołanie registerContentScripts/unregisterContentScripts powoduje, że Chrome
+// zapisuje i rozsyła do WSZYSTKICH procesów kart pełny zestaw zarejestrowanych skryptów
+// (u nas ok. 60 tys. wzorców adresów). 26 osobnych rejestracji przy instalacji/aktualizacji
+// potrafiło na kilkadziesiąt sekund obciążyć całą przeglądarkę. Dlatego:
+//   1. gdy zarejestrowany zestaw jest identyczny z oczekiwanym – nic nie robimy,
+//   2. w przeciwnym razie: jedno unregister i JEDNO register z całą listą (ta sama kolejność),
+//   3. tylko gdy cała paczka zostanie odrzucona – rejestracja pojedyncza, żeby wskazać błędny plik.
 async function syncScriptlets() {
   const s = await getState();
-  const registered = await chrome.scripting.getRegisteredContentScripts();
+  const registered = await startup.time('scriptlety: getRegisteredContentScripts', () => chrome.scripting.getRegisteredContentScripts());
   const ours = registered.filter((r) => r.id.startsWith('sl-'));
-  if (ours.length) await chrome.scripting.unregisterContentScripts({ ids: ours.map((r) => r.id) });
 
   const excludeMatches = s.disabledSites.flatMap(sitePatterns);
   const expected = await expectedScriptlets();
   const { devPerf } = await chrome.storage.local.get('devPerf');
-  const failures = [];
-  for (const f of expected) {
-    const script = {
-      id: f.id,
-      // przy pomiarach wydajności najpierw plik-flaga (ta sama rejestracja → gwarantowana kolejność)
-      js: devPerf ? [SCRIPTLET_PERF_FLAG_FILE, f.file] : [f.file],
-      matches: f.matches,
-      runAt: 'document_start',
-      allFrames: true,
-      world: 'MAIN',
-      persistAcrossSessions: true,
-    };
-    if (excludeMatches.length) script.excludeMatches = excludeMatches;
-    try {
-      await chrome.scripting.registerContentScripts([script]);
-    } catch (e) {
-      failures.push(`${f.id}: ${e.message || e}`);
-    }
+  const wanted = expected.map((f) => scriptletRegistration(f, { devPerf: !!devPerf, excludeMatches }));
+
+  if (sameScriptletRegistrations(ours, wanted)) {
+    startup.mark('scriptlety gotowe');
+    return `zarejestrowano ${expected.length} plików scriptletów (bez zmian)`;
   }
-  const after = new Set((await chrome.scripting.getRegisteredContentScripts()).map((r) => r.id));
+
+  if (ours.length) await startup.time('scriptlety: unregisterContentScripts', () => chrome.scripting.unregisterContentScripts({ ids: ours.map((r) => r.id) }));
+  const failures = [];
+  try {
+    if (wanted.length) await startup.time('scriptlety: registerContentScripts', () => chrome.scripting.registerContentScripts(wanted));
+  } catch (batchError) {
+    // paczka jest atomowa – ustalamy, który plik jest błędny, i rejestrujemy pozostałe
+    for (const script of wanted) {
+      try {
+        await startup.time('scriptlety: registerContentScripts (pojedynczo po błędzie)', () => chrome.scripting.registerContentScripts([script]));
+      } catch (e) {
+        failures.push(`${script.id}: ${e.message || e}`);
+      }
+    }
+    if (!failures.length) failures.push(String(batchError.message || batchError));
+  }
+  const after = new Set((await startup.time('scriptlety: weryfikacja', () => chrome.scripting.getRegisteredContentScripts())).map((r) => r.id));
   const notRegistered = expected.filter((f) => !after.has(f.id)).map((f) => f.id);
-  if (failures.length || notRegistered.length) {
+  if (notRegistered.length) {
     throw new Error(`zarejestrowano ${expected.length - notRegistered.length}/${expected.length} plików scriptletów; ${failures.slice(0, 3).join('; ') || notRegistered.slice(0, 5).join(', ')}`);
   }
+  startup.mark('scriptlety gotowe');
   return `zarejestrowano ${expected.length} plików scriptletów`;
 }
 
@@ -345,28 +418,50 @@ async function syncAll(reason = '') {
   syncInProgress++;
   let results;
   try {
-    results = await runSyncSteps({ rulesets: syncRulesets, dynamicRules: syncDynamicRules, scriptlets: syncScriptlets }, health);
+    results = await runSyncSteps({
+      rulesets: () => startup.time('syncRulesets', syncRulesets),
+      dynamicRules: () => startup.time('syncDynamicRules', syncDynamicRules),
+      scriptlets: () => startup.time('syncScriptlets', syncScriptlets),
+    }, health);
   } finally {
     syncInProgress--;
   }
   const comp = componentStatusFromSync(results);
   for (const [c, v] of Object.entries(comp)) await health.setComponent(c, v.status, v.detail);
   if (!results.rulesets.ok) await health.setComponent('filters', 'error', results.rulesets.message);
-  await checkCosmeticData();
-  await refreshYouTubeStatus();
+  await startup.time('checkCosmeticData', checkCosmeticData);
+  await startup.time('refreshYouTubeStatus', refreshYouTubeStatus);
+  startup.mark('health OK');
   console.info('ChromeBlock sync', reason, results);
   return results;
 }
 
-/** Sprawdza, czy dane kosmetyczne włączonych list wczytują się poprawnie. */
+/**
+ * Sprawdza dane kosmetyczne włączonych list BEZ ich parsowania (wydajność startu: pliki mają
+ * po kilka MB). Poprawność zawartości sprawdza build/check; tutaj tylko, czy pliki istnieją.
+ * Dane są wczytywane leniwie – przy pierwszej stronie, która ich potrzebuje (getListData);
+ * błąd wczytania jest wtedy zgłaszany w Diagnostyce.
+ */
 async function checkCosmeticData() {
   const s = await getState();
+  const meta = await getListsMeta();
   listData.clear();
-  const lists = await Promise.all(s.enabledLists.map(getListData));
-  const failed = s.enabledLists.filter((id, i) => lists[i].failed);
-  if (failed.length) return; // błąd został już zapisany przez getListData
-  const selectors = lists.reduce((n, d) => n + d.sel.length, 0);
-  await health.setComponent('cosmetic', 'ok', `${selectors} selektorów w ${lists.length} listach`);
+  hostCache.clear();
+  gunhideCache = null;
+  const missing = [];
+  await Promise.all(s.enabledLists.map(async (id) => {
+    try {
+      const r = await fetch(chrome.runtime.getURL(`data/${id}.json`), { method: 'HEAD' });
+      if (!r.ok) missing.push(`${id} (HTTP ${r.status})`);
+    } catch (e) { missing.push(`${id} (${e.message || e})`); }
+  }));
+  if (missing.length) {
+    await health.setComponent('cosmetic', 'error', `brak danych list: ${missing.join(', ')}`);
+    await health.error('cosmetic', `brak danych list: ${missing.join(', ')}`);
+    return;
+  }
+  const filters = meta.filter((m) => s.enabledLists.includes(m.id)).reduce((n, m) => n + (m.cosmeticFilters || 0), 0);
+  await health.setComponent('cosmetic', 'ok', `${filters} filtrów w ${s.enabledLists.length} listach (wczytywane przy pierwszej stronie)`);
 }
 
 /** Wykonuje jeden krok synchronizacji i zapisuje jego wynik (np. po zmianie ustawień). */
@@ -377,23 +472,30 @@ async function runStep(step, fn) {
   return results[step];
 }
 
-chrome.runtime.onInstalled.addListener(async () => {
-  try {
-    await chrome.declarativeNetRequest.setExtensionActionOptions({ displayActionCountAsBadgeText: true });
-    await chrome.action.setBadgeBackgroundColor({ color: '#5b5bd6' });
-    try { await chrome.action.setBadgeTextColor({ color: '#ffffff' }); } catch { /* starszy Chrome */ }
-  } catch (e) {
-    await health.error('network', `ustawienia plakietki: ${e.message || e}`);
-  }
+chrome.runtime.onInstalled.addListener(async (details) => {
+  startup.setReason(`onInstalled: ${(details && details.reason) || '?'}`);
+  startup.mark('onInstalled');
+  await startup.time('ustawienia plakietki', async () => {
+    try {
+      await chrome.declarativeNetRequest.setExtensionActionOptions({ displayActionCountAsBadgeText: true });
+      await chrome.action.setBadgeBackgroundColor({ color: '#5b5bd6' });
+      try { await chrome.action.setBadgeTextColor({ color: '#ffffff' }); } catch { /* starszy Chrome */ }
+    } catch (e) {
+      await health.error('network', `ustawienia plakietki: ${e.message || e}`);
+    }
+  });
   await syncAll('install/update');
+  await finishStartupProfile();
 });
 
 chrome.runtime.onStartup.addListener(async () => {
-  const registered = await chrome.scripting.getRegisteredContentScripts();
-  if (!registered.some((r) => r.id.startsWith('sl-'))) {
-    await runStep('scriptlets', syncScriptlets);
-  }
-  await refreshYouTubeStatus();
+  startup.setReason('onStartup');
+  startup.mark('onStartup');
+  // porównanie z oczekiwanym zestawem; gdy zgodny – bez żadnej rejestracji
+  await runStep('scriptlets', () => startup.time('syncScriptlets', syncScriptlets));
+  await startup.time('refreshYouTubeStatus', refreshYouTubeStatus);
+  startup.mark('health OK');
+  await finishStartupProfile();
 });
 
 // ---------------------------------------------------------------------------
@@ -618,6 +720,11 @@ const handlers = {
     return { ok: true };
   },
 
+  async 'startup:profile'() {
+    const p = await lastStartupProfile();
+    return { profile: p, text: formatStartupProfile(p) };
+  },
+
   async 'health:get'() {
     const youtube = await refreshYouTubeStatus();
     const snap = await health.snapshot();
@@ -631,6 +738,7 @@ const handlers = {
       devPerf: !!devPerf,
       perf: perfReports.slice().reverse(),
       scriptletPerf: devPerf ? (await scriptletPerfLoaded, scriptletPerf.rows(50)) : [],
+      startupProfile: await lastStartupProfile(),
       version: chrome.runtime.getManifest().version,
     };
   },
@@ -654,6 +762,7 @@ const handlers = {
       youtubeCompat,
       scriptletCompat,
       player: playerReports.latest(),
+      startupProfile: await lastStartupProfile(),
       devPerf: !!devPerf,
     });
   },
