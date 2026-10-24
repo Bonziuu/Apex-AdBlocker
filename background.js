@@ -14,6 +14,7 @@ import { PlayerReportStore } from './youtube/player-reports.js';
 import { buildDiagnosticsReport } from './background/diagnostics-report.js';
 import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js';
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
+import { PROTECTION_MODES, isPresetMode, listsForMode, modeForLists } from './shared/protection-modes.js';
 
 // Pomiar etapów startu (czas od uruchomienia service workera). Ostatni zakończony pomiar
 // trafia do chrome.storage.session i do Diagnostyki.
@@ -110,7 +111,7 @@ async function getListsMeta() {
 async function getState() {
   if (state) return state;
   const meta = await getListsMeta();
-  const stored = await startup.time('getState / storage', () => chrome.storage.local.get(['enabledLists', 'disabledSites', 'userFilters']));
+  const stored = await startup.time('getState / storage', () => chrome.storage.local.get(['enabledLists', 'disabledSites', 'userFilters', 'protectionMode']));
   state = {
     enabledLists: Array.isArray(stored.enabledLists)
       ? stored.enabledLists.filter((id) => meta.some((m) => m.id === id))
@@ -118,6 +119,9 @@ async function getState() {
     disabledSites: Array.isArray(stored.disabledSites) ? stored.disabledSites : [],
     userFilters: typeof stored.userFilters === 'string' ? stored.userFilters : '',
   };
+  // Tryb ochrony zawsze odpowiada faktycznie włączonym listom (zapisany tryb niezgodny z listami,
+  // np. po ręcznej zmianie w starszej wersji, jest wyliczany od nowa).
+  state.protectionMode = modeForLists(state.enabledLists);
   user = compileUserFilters(state.userFilters);
   return state;
 }
@@ -572,6 +576,29 @@ async function checkCosmeticData() {
   await health.setComponent('cosmetic', 'ok', `${filters} filtrów w ${s.enabledLists.length} listach (wczytywane przy pierwszej stronie)`);
 }
 
+/**
+ * Zmienia włączone listy (ręcznie albo przez tryb ochrony) i synchronizuje je z Chrome.
+ * Tryb ochrony jest wyliczany z list: preset albo 'custom'. Gdy Chrome odrzuci zmianę
+ * zestawów reguł, przywracane są poprzednie listy i tryb.
+ */
+async function applyEnabledLists(enabledLists) {
+  const prev = await getState();
+  const previous = prev.enabledLists.slice();
+  await saveState({ enabledLists, protectionMode: modeForLists(enabledLists) });
+  const r = await runStep('rulesets', syncRulesets);
+  if (!r.ok) {
+    await saveState({ enabledLists: previous, protectionMode: modeForLists(previous) });
+    await runStep('rulesets', syncRulesets);
+    return { ok: false, error: 'Chrome nie pozwolił zmienić list: ' + r.message, protectionMode: state.protectionMode };
+  }
+  const sl = await runStep('scriptlets', syncScriptlets);
+  await checkCosmeticData();
+  await refreshYouTubeStatus();
+  return sl.ok
+    ? { ok: true, protectionMode: state.protectionMode, enabledLists: state.enabledLists.slice() }
+    : { ok: false, error: 'Listy zmienione, ale scriptlety nie zarejestrowały się: ' + sl.message, protectionMode: state.protectionMode };
+}
+
 /** Wykonuje jeden krok synchronizacji i zapisuje jego wynik (np. po zmianie ustawień). */
 async function runStep(step, fn) {
   const results = await runSyncSteps({ [step]: fn }, health);
@@ -943,6 +970,7 @@ const handlers = {
       canRun: !!host,
       problems,
       youtube: yt,
+      protectionMode: s.protectionMode,
     };
   },
 
@@ -978,6 +1006,8 @@ const handlers = {
     return {
       lists: meta.map((m) => ({ ...m, enabled: s.enabledLists.includes(m.id) })),
       disabledSites: s.disabledSites,
+      protectionMode: s.protectionMode,
+      protectionModes: Object.fromEntries(Object.entries(PROTECTION_MODES).map(([k, v]) => [k, [...v]])),
       userFilters: s.userFilters,
       userErrors: user.errors,
       userCount: user.count,
@@ -990,18 +1020,15 @@ const handlers = {
   async 'options:setLists'(msg) {
     const meta = await getListsMeta();
     const enabledLists = msg.enabledLists.filter((id) => meta.some((m) => m.id === id));
-    const previous = (await getState()).enabledLists.slice();
-    await saveState({ enabledLists });
-    const r = await runStep('rulesets', syncRulesets);
-    if (!r.ok) {
-      await saveState({ enabledLists: previous });
-      await runStep('rulesets', syncRulesets);
-      return { ok: false, error: 'Chrome nie pozwolił zmienić list: ' + r.message };
-    }
-    const sl = await runStep('scriptlets', syncScriptlets);
-    await checkCosmeticData();
-    await refreshYouTubeStatus();
-    return sl.ok ? { ok: true } : { ok: false, error: 'Listy zmienione, ale scriptlety nie zarejestrowały się: ' + sl.message };
+    return applyEnabledLists(enabledLists);
+  },
+
+  // Tryb ochrony: nazwany zestaw list, stosowany tą samą drogą co ręczna zmiana list.
+  async 'options:setProtectionMode'(msg) {
+    if (!isPresetMode(msg.mode)) return { ok: false, error: `nieznany tryb ochrony: ${String(msg.mode)}` };
+    const meta = await getListsMeta();
+    const enabledLists = listsForMode(msg.mode).filter((id) => meta.some((m) => m.id === id));
+    return applyEnabledLists(enabledLists);
   },
 
   async 'options:setUserFilters'(msg) {
@@ -1048,7 +1075,7 @@ const handlers = {
 // Wiadomości zmieniające ustawienia wykonujemy jedna po drugiej. Każda czyta stan, modyfikuje go
 // i synchronizuje z Chrome; równoległe wykonanie gubiło zmiany (np. dwa szybkie przełączenia
 // stron albo dwa „Ukryj element” – druga zapisywała stan bez pierwszej).
-const MUTATING = new Set(['site:toggle', 'options:setLists', 'options:setUserFilters', 'options:setDisabledSites',
+const MUTATING = new Set(['site:toggle', 'options:setLists', 'options:setProtectionMode', 'options:setUserFilters', 'options:setDisabledSites',
   'options:setDevPerf', 'picker:add', 'health:resync']);
 let settingsQueue = Promise.resolve();
 function runHandler(h, msg, sender) {
