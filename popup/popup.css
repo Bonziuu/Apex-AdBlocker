@@ -98,6 +98,29 @@ main { padding: 0 12px 4px; display: grid; gap: 8px; }
 .site[data-state="off"] ~ .counter .num { color: var(--muted); }
 .label { color: var(--muted); font-size: 12px; margin-top: 2px; }
 
+/* tryb ochrony */
+.mode {
+  padding: 9px 10px 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line);
+  display: grid; gap: 6px;
+}
+.mode-head { display: flex; align-items: baseline; gap: 8px; }
+.mode-title { font-weight: 550; font-size: 12.5px; }
+.mode-current { margin-left: auto; color: var(--muted); font-size: 11.5px; font-weight: 600; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
+.seg-btn {
+  height: 26px; padding: 0 4px; border: 0; border-radius: 6px; background: transparent; cursor: pointer;
+  font-size: 12px; font-weight: 550; color: var(--muted);
+}
+.seg-btn:hover:not(:disabled):not([aria-checked="true"]) { color: var(--fg); }
+.seg-btn[aria-checked="true"] { background: var(--accent-soft); color: var(--accent-strong); }
+.seg-btn[data-pending="true"] { background: var(--accent-soft); color: var(--accent-strong); opacity: .7; }
+.seg-btn:disabled { cursor: default; }
+.mode[data-busy="true"] .seg { opacity: .75; }
+.mode-desc { color: var(--muted); font-size: 11.5px; }
+.mode-link { justify-self: start; padding: 0; border: 0; background: none; color: var(--accent); font-size: 11.5px; font-weight: 550; cursor: pointer; }
+.mode-link:hover { text-decoration: underline; }
+.mode-err { color: var(--err); font-size: 11.5px; font-weight: 550; }
+
 /* wiersz YouTube */
 .row {
   display: flex; align-items: center; gap: 8px;
