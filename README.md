@@ -2,7 +2,7 @@
 
 Bloker reklam i śledzenia dla Chrome (Manifest V3) z własnym silnikiem filtrów.
 
-> **Status: wersja developerska 0.2.0** – prywatny build do własnego użytku, nie wydanie stabilne.
+> **Status: wersja developerska 0.2.7-dev / engine baseline** – prywatny build do własnego użytku, nie wydanie stabilne.
 
 ## Instalacja (rozpakowane rozszerzenie)
 
