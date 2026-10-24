@@ -2,6 +2,7 @@ node_modules/
 .DS_Store
 *.zip
 tests/e2e/results/
+tests/local/results/
 _metadata/
 dist/
 !download/ChromeBlock-dev.zip
