@@ -43,6 +43,15 @@ const listData = new Map();     // id → dane kosmetyczne (leniwie)
 const hostCache = new Map();    // host → wynik dla stron (czyszczony przy zmianach)
 const allowIds = new Map();     // id listy → Set identyfikatorów reguł typu allow
 let gunhideCache = null;        // ogólne wyjątki #@# włączonych list
+// Generacja cache hostów: zwiększana przy każdym czyszczeniu. Wynik obliczony na podstawie
+// stanu sprzed zmiany list/ustawień nie jest zapisywany do cache (inaczej strona dostawałaby
+// stare filtry aż do następnej zmiany).
+let cacheGeneration = 0;
+function clearHostCaches() {
+  hostCache.clear();
+  gunhideCache = null;
+  cacheGeneration++;
+}
 let state = null;               // { enabledLists, disabledSites, userFilters }
 let user = null;                // skompilowane własne filtry
 const playerReports = new PlayerReportStore(); // tabId → frameId → raport odtwarzacza (TTL 60 s)
@@ -118,8 +127,7 @@ async function saveState(patch) {
   Object.assign(s, patch);
   await chrome.storage.local.set(patch);
   if ('userFilters' in patch) user = compileUserFilters(s.userFilters);
-  hostCache.clear();
-  gunhideCache = null;
+  clearHostCaches();
 }
 
 function toSet(obj) {
@@ -147,10 +155,11 @@ async function getListData(id) {
 /** Ogólne wyjątki #@# wszystkich WŁĄCZONYCH list (działają między listami). */
 async function getGlobalUnhide() {
   if (gunhideCache) return gunhideCache;
+  const gen = cacheGeneration;
   const s = await getState();
   const set = new Set();
   for (const d of await Promise.all(s.enabledLists.map(getListData))) for (const sel of d.gunhide || []) set.add(sel);
-  gunhideCache = set;
+  if (gen === cacheGeneration) gunhideCache = set;
   return set;
 }
 
@@ -237,6 +246,18 @@ function compileUserFilters(text) {
 // ---------------------------------------------------------------------------
 // Synchronizacja z Chrome
 
+// Operacje na regułach DNR (zestawy, reguły dynamiczne) wykonujemy jedna po drugiej:
+// równoczesne syncDynamicRules czytały te same istniejące reguły i dodawały te same id
+// („Rule with id 1 does not have a unique ID”).
+let dnrQueue = Promise.resolve();
+function serialDnr(fn) {
+  return () => {
+    const run = dnrQueue.then(fn, fn);
+    dnrQueue = run.catch(() => {});
+    return run;
+  };
+}
+
 /** $badfilter z jednej listy wyłącza reguły innej listy tylko wtedy, gdy obie są włączone. */
 async function syncCrossBadfilters(enabled) {
   const cross = await startup.time('syncCrossBadfilters: badfilter-cross.json', () => fetchJSON('data/badfilter-cross.json'));
@@ -259,7 +280,8 @@ async function syncCrossBadfilters(enabled) {
   return disabledCount;
 }
 
-async function syncRulesets() {
+const syncRulesets = serialDnr(syncRulesetsNow);
+async function syncRulesetsNow() {
   const s = await getState();
   const meta = await getListsMeta();
   const enable = meta.filter((m) => s.enabledLists.includes(m.id)).map((m) => m.id);
@@ -278,7 +300,8 @@ async function syncRulesets() {
   return `włączone: ${enable.join(', ') || 'brak'}; $badfilter między listami: ${crossDisabled}`;
 }
 
-async function syncDynamicRules() {
+const syncDynamicRules = serialDnr(syncDynamicRulesNow);
+async function syncDynamicRulesNow() {
   const s = await getState();
   const rules = [];
   if (s.disabledSites.length) {
@@ -439,6 +462,9 @@ async function syncScriptletsNow() {
     toRegister = session;
     mode = 'dorejestrowano część sesyjną';
   } else if (ours.length) {
+    // Znacznik „zarejestrowane w tej sesji” zdejmujemy PRZED zmianą: gdy rejestracja się nie
+    // uda albo service worker zostanie przerwany w trakcie, następny start SW sprawdzi i naprawi.
+    try { if (chrome.storage.session) await chrome.storage.session.remove(SESSION_SCRIPTLETS_KEY); } catch { /* */ }
     await startup.time('scriptlety: unregisterContentScripts', () => chrome.scripting.unregisterContentScripts({ ids: ours.map((r) => r.id) }));
   }
   const failures = [];
@@ -524,8 +550,7 @@ async function checkCosmeticData() {
   const s = await getState();
   const meta = await getListsMeta();
   listData.clear();
-  hostCache.clear();
-  gunhideCache = null;
+  clearHostCaches();
   const missing = [];
   await Promise.all(s.enabledLists.map(async (id) => {
     try {
@@ -545,7 +570,17 @@ async function checkCosmeticData() {
 /** Wykonuje jeden krok synchronizacji i zapisuje jego wynik (np. po zmianie ustawień). */
 async function runStep(step, fn) {
   const results = await runSyncSteps({ [step]: fn }, health);
-  const comp = componentStatusFromSync(results);
+  // Status „network” zależy od rulesets ORAZ dynamicRules. Udany jeden krok nie może ukryć
+  // ostatniego błędu drugiego (fałszywe OK) – dokładamy jego ostatni zapisany wynik.
+  const merged = { ...results };
+  if (step === 'rulesets' || step === 'dynamicRules') {
+    const snap = await health.snapshot();
+    for (const k of ['rulesets', 'dynamicRules']) {
+      const last = snap.sync && snap.sync[k];
+      if (!merged[k] && last && (last.status === 'ok' || last.status === 'error')) merged[k] = { ok: last.status === 'ok', message: last.message || '' };
+    }
+  }
+  const comp = componentStatusFromSync(merged);
   for (const [c, v] of Object.entries(comp)) await health.setComponent(c, v.status, v.detail);
   return results[step];
 }
@@ -583,6 +618,7 @@ chrome.runtime.onStartup.addListener(async () => {
 async function cosmeticFor(host) {
   const cached = hostCache.get(host);
   if (cached) return cached;
+  const gen = cacheGeneration;
   const s = await getState();
   const keys = hostKeys(host);
   const lists = await Promise.all(s.enabledLists.map(getListData));
@@ -637,6 +673,7 @@ async function cosmeticFor(host) {
   for (const [sel, decl] of styles) if (!unhide.has(sel)) css += `${sel}{${decl}}\n`;
 
   const result = { css, proc, generic: !ghide && !ehide, unhide, selectorCount: selectors.size + styles.length };
+  if (gen !== cacheGeneration) return result; // listy/ustawienia zmieniły się w trakcie – bez cache
   if (hostCache.size > 300) hostCache.delete(hostCache.keys().next().value);
   hostCache.set(host, result);
   return result;
@@ -943,7 +980,7 @@ const handlers = {
   async 'options:setLists'(msg) {
     const meta = await getListsMeta();
     const enabledLists = msg.enabledLists.filter((id) => meta.some((m) => m.id === id));
-    const previous = state ? state.enabledLists.slice() : [];
+    const previous = (await getState()).enabledLists.slice();
     await saveState({ enabledLists });
     const r = await runStep('rulesets', syncRulesets);
     if (!r.ok) {
@@ -998,10 +1035,23 @@ const handlers = {
   },
 };
 
+// Wiadomości zmieniające ustawienia wykonujemy jedna po drugiej. Każda czyta stan, modyfikuje go
+// i synchronizuje z Chrome; równoległe wykonanie gubiło zmiany (np. dwa szybkie przełączenia
+// stron albo dwa „Ukryj element” – druga zapisywała stan bez pierwszej).
+const MUTATING = new Set(['site:toggle', 'options:setLists', 'options:setUserFilters', 'options:setDisabledSites',
+  'options:setDevPerf', 'picker:add', 'health:resync']);
+let settingsQueue = Promise.resolve();
+function runHandler(h, msg, sender) {
+  if (!MUTATING.has(msg.type)) return h(msg, sender);
+  const run = settingsQueue.then(() => h(msg, sender));
+  settingsQueue = run.catch(() => {});
+  return run;
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   const h = msg && handlers[msg.type];
   if (!h) return false;
-  h(msg, sender).then(sendResponse, async (e) => {
+  runHandler(h, msg, sender).then(sendResponse, async (e) => {
     const component = msg.type.startsWith('cosmetic') ? 'cosmetic' : msg.type.startsWith('youtube') ? 'youtube' : 'filters';
     await health.error(component, `${msg.type}: ${e && e.message || e}`).catch(() => {});
     sendResponse({ ok: false, error: String(e && e.message || e) });
