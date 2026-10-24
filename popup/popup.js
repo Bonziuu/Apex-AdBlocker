@@ -1,37 +1,57 @@
+// ChromeBlock – popup. Tylko odczyt stanu (popup:get) i dotychczasowe akcje:
+// włączenie/wyłączenie ochrony na stronie, „Ukryj element”, ustawienia, diagnostyka.
+
+import { viewModel } from './view-model.js';
+
 const $ = (id) => document.getElementById(id);
+
+try { $('version').textContent = chrome.runtime.getManifest().version_name || chrome.runtime.getManifest().version; } catch { /* */ }
 
 const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
 function render(info) {
-  if (!info || !info.canRun) {
+  const vm = viewModel(info);
+  $('main').setAttribute('aria-busy', 'false');
+  if (!vm.supported) {
     $('main').hidden = true;
     $('unsupported').hidden = false;
+    $('picker').disabled = true;
     return;
   }
-  $('host').textContent = info.host.replace(/^www\./, '');
-  const on = !info.disabled;
-  $('power').setAttribute('aria-pressed', String(on));
-  $('status').textContent = on ? 'Ochrona włączona' : 'Ochrona wyłączona na tej stronie';
-  $('sub').textContent = on ? 'Kliknij, aby wyłączyć na tej stronie' : 'Kliknij, aby ponownie włączyć';
-  $('blocked').textContent = info.blocked === null ? '—' : info.blocked.toLocaleString('pl-PL');
-  $('picker').disabled = !on;
-  const problems = info.problems || [];
-  $('problems').hidden = problems.length === 0;
-  if (problems.length) $('problems').textContent = `⚠ Problem z silnikiem (${problems.join(', ')}) – kliknij, aby zobaczyć diagnostykę`;
+  $('host').textContent = vm.host;
+  $('host').title = vm.host;
+  $('site').dataset.state = vm.on ? 'on' : 'off';
+  $('status').textContent = vm.status;
+  $('toggle').setAttribute('aria-checked', String(vm.on));
+  $('toggle').disabled = false;
+  $('blocked').textContent = vm.blocked;
+  $('blockedLabel').textContent = vm.blockedLabel;
+  $('picker').disabled = !vm.pickerEnabled;
+
+  $('problems').hidden = !vm.problems;
+  $('problemsText').textContent = vm.problems;
+
+  $('youtube').hidden = !vm.youtube;
+  if (vm.youtube) {
+    const pill = $('youtubeStatus');
+    pill.textContent = vm.youtube.label;
+    pill.dataset.status = vm.youtube.status;
+    $('youtube').title = vm.youtube.detail;
+  }
 }
 
-let info = tab ? await chrome.runtime.sendMessage({ type: 'popup:get', tabId: tab.id }) : null;
+let info = null;
+if (tab) {
+  try { info = await chrome.runtime.sendMessage({ type: 'popup:get', tabId: tab.id }); } catch { info = null; }
+}
 render(info);
 
-$('power').addEventListener('click', async () => {
-  if (!info) return;
-  $('power').disabled = true;
-  const res = await chrome.runtime.sendMessage({ type: 'site:toggle', host: info.host, tabId: tab.id });
-  if (res && res.ok) {
-    info = { ...info, disabled: res.disabled, blocked: 0 };
-    render(info);
-  }
-  $('power').disabled = false;
+$('toggle').addEventListener('click', async () => {
+  if (!info || !info.canRun) return;
+  $('toggle').disabled = true;
+  const res = await chrome.runtime.sendMessage({ type: 'site:toggle', host: info.host, tabId: tab.id }).catch(() => null);
+  if (res && res.ok) info = { ...info, disabled: res.disabled, blocked: 0 };
+  render(info);
 });
 
 $('picker').addEventListener('click', async () => {
