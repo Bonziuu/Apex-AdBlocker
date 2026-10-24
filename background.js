@@ -371,12 +371,35 @@ export function sameScriptletRegistrations(registered, wanted) {
   return true;
 }
 
-// Synchronizacje scriptletów wykonujemy jedna po drugiej (start SW, onInstalled, onStartup, opcje).
+// Synchronizacje scriptletów wykonujemy jedna po drugiej (zmiany ustawień/list, ręczna synchronizacja).
+// Profil startu rozróżnia czas oczekiwania w kolejce od faktycznego wykonania.
 let scriptletSyncQueue = Promise.resolve();
 function syncScriptlets() {
-  const run = scriptletSyncQueue.then(syncScriptletsNow, syncScriptletsNow);
+  const queuedAt = performance.now();
+  const exec = () => {
+    startup.add('syncScriptlets: oczekiwanie w kolejce', performance.now() - queuedAt);
+    return startup.time('syncScriptlets', syncScriptletsNow);
+  };
+  const run = scriptletSyncQueue.then(exec, exec);
   scriptletSyncQueue = run.catch(() => {});
   return run;
+}
+
+// Inicjalna synchronizacja scriptletów ma JEDNEGO właściciela na życie service workera.
+// Przy instalacji/aktualizacji/przeładowaniu Chrome czyści chrome.storage.session, więc zarówno
+// sprawdzenie przy starcie SW, jak i onInstalled (oraz onStartup po restarcie przeglądarki)
+// chcą zsynchronizować scriptlety. Wcześniej uruchamiały dwie synchronizacje (druga czekała
+// w kolejce i robiła ponowne porównanie). Teraz wszystkie dołączają do jednej (single-flight);
+// po błędzie kolejne wywołanie spróbuje ponownie.
+let initialScriptletSyncPromise = null;
+function initialScriptletSync() {
+  if (initialScriptletSyncPromise) {
+    startup.add('syncScriptlets: dołączenie do trwającej/wykonanej synchronizacji', 0);
+    return initialScriptletSyncPromise;
+  }
+  initialScriptletSyncPromise = syncScriptlets();
+  initialScriptletSyncPromise.catch(() => { initialScriptletSyncPromise = null; });
+  return initialScriptletSyncPromise;
 }
 
 // Wydajność: każde wywołanie registerContentScripts/unregisterContentScripts powoduje, że Chrome
@@ -452,14 +475,18 @@ async function syncScriptletsNow() {
     if (!chrome.storage.session) return;
     const { [SESSION_SCRIPTLETS_KEY]: ok } = await chrome.storage.session.get(SESSION_SCRIPTLETS_KEY);
     if (ok) return;
-    await runStep('scriptlets', () => startup.time('syncScriptlets', syncScriptlets));
+    await runStep('scriptlets', initialScriptletSync);
   } catch { /* stan zapisany w Diagnostyce przez runStep */ }
 })();
 
 // > 0, gdy trwa synchronizacja: brakujące scriptlety YouTube są wtedy stanem przejściowym
 let syncInProgress = 0;
 
-async function syncAll(reason = '') {
+/**
+ * Pełna synchronizacja. `initial: true` (onInstalled) – scriptlety przez initialScriptletSync,
+ * czyli razem z ewentualnym sprawdzeniem przy starcie SW, a nie drugi raz.
+ */
+async function syncAll(reason = '', { initial = false } = {}) {
   try {
     await getState();
   } catch (e) {
@@ -472,7 +499,7 @@ async function syncAll(reason = '') {
     results = await runSyncSteps({
       rulesets: () => startup.time('syncRulesets', syncRulesets),
       dynamicRules: () => startup.time('syncDynamicRules', syncDynamicRules),
-      scriptlets: () => startup.time('syncScriptlets', syncScriptlets),
+      scriptlets: initial ? initialScriptletSync : syncScriptlets,
     }, health);
   } finally {
     syncInProgress--;
@@ -535,15 +562,16 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       await health.error('network', `ustawienia plakietki: ${e.message || e}`);
     }
   });
-  await syncAll('install/update');
+  await syncAll('install/update', { initial: true });
   await finishStartupProfile();
 });
 
 chrome.runtime.onStartup.addListener(async () => {
   startup.setReason('onStartup');
   startup.mark('onStartup');
-  // porównanie z oczekiwanym zestawem; gdy zgodny – bez żadnej rejestracji
-  await runStep('scriptlets', () => startup.time('syncScriptlets', syncScriptlets));
+  // porównanie z oczekiwanym zestawem; gdy zgodny – bez żadnej rejestracji;
+  // wspólne z ewentualnym sprawdzeniem przy starcie SW (jedna synchronizacja)
+  await runStep('scriptlets', initialScriptletSync);
   await startup.time('refreshYouTubeStatus', refreshYouTubeStatus);
   startup.mark('health OK');
   await finishStartupProfile();

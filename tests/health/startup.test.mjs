@@ -25,17 +25,30 @@ test('instalacja: wszystkie pliki scriptletów w JEDNYM registerContentScripts (
   } finally { bg.restore(); }
 });
 
-test('start przeglądarki (onStartup) z poprawnie zarejestrowanymi scriptletami: zero rejestracji', async () => {
+/** Stan po instalacji (rejestracje + chrome.storage.local), z którego startuje nowy service worker. */
+async function installedState() {
   const bg = await loadBackground();
   try {
     await bg.install();
-    const before = structuredClone(bg.state.calls);
+    return { registered: structuredClone(bg.state.registered), local: structuredClone(bg.store) };
+  } finally { bg.restore(); }
+}
+
+const waitFor = async (cond) => { for (let i = 0; i < 100 && !cond(); i++) await new Promise((r) => setTimeout(r, 20)); };
+
+test('start przeglądarki (onStartup) z poprawnie zarejestrowanymi scriptletami: zero rejestracji', async () => {
+  const { registered, local } = await installedState();
+  // nowy service worker po restarcie przeglądarki; rejestracje kompletne
+  const bg = await loadBackground({ registered, local });
+  try {
     await bg.state.listeners.startup();
-    assert.equal(bg.state.calls.register, before.register, 'brak registerContentScripts');
-    assert.equal(bg.state.calls.unregister, before.unregister, 'brak unregisterContentScripts');
+    assert.equal(bg.state.calls.register, 0, 'brak registerContentScripts');
+    assert.equal(bg.state.calls.unregister, 0, 'brak unregisterContentScripts');
     const h = await bg.send({ type: 'health:get' });
     assert.equal(h.sync.scriptlets.status, 'ok');
     assert.match(h.sync.scriptlets.message, /bez zmian/);
+    const p = h.startupProfile;
+    assert.equal(p.stages.find((x) => x.name === 'syncScriptlets').count, 1, 'jedna rzeczywista synchronizacja (start SW + onStartup)');
   } finally { bg.restore(); }
 });
 
@@ -146,23 +159,22 @@ test('rejestracja: utrwalane (hosty zwykłe) najpierw, potem sesyjne (encje); ob
   } finally { bg.restore(); }
 });
 
-test('restart przeglądarki: Chrome zachowuje tylko utrwalone – dorejestrowujemy WYŁĄCZNIE część sesyjną', async () => {
-  const bg = await loadBackground();
+test('restart przeglądarki: Chrome zachowuje tylko utrwalone – dorejestrowujemy WYŁĄCZNIE część sesyjną, raz', async () => {
+  const { registered, local } = await installedState();
+  const persisted = registered.filter((r) => r.persistAcrossSessions !== false);
+  const nSession = registered.length - persisted.length;
+  const bg = await loadBackground({ registered: persisted, local });
   try {
-    await bg.install();
-    const nSession = sessionRegs(bg).length;
-    // symulacja restartu: rejestracje sesyjne i chrome.storage.session znikają
-    bg.state.registered = bg.state.registered.filter((r) => r.persistAcrossSessions !== false);
-    for (const k of Object.keys(bg.session)) delete bg.session[k];
-    const before = structuredClone(bg.state.calls);
     await bg.state.listeners.startup();
-    assert.equal(bg.state.calls.unregister, before.unregister, 'utrwalone nie są ruszane');
-    assert.equal(bg.state.calls.register - before.register, 1);
-    assert.equal(bg.state.calls.registeredInCalls.at(-1), nSession, 'tylko rejestracje sesyjne');
+    await waitFor(() => bg.state.calls.register > 0);
+    assert.equal(bg.state.calls.unregister, 0, 'utrwalone nie są ruszane');
+    assert.equal(bg.state.calls.register, 1, 'jedna rejestracja (start SW i onStartup razem)');
+    assert.equal(bg.state.calls.registeredInCalls[0], nSession, 'tylko rejestracje sesyjne');
     assert.equal(sessionRegs(bg).length, nSession);
     const h = await bg.send({ type: 'health:get' });
     assert.equal(h.sync.scriptlets.status, 'ok');
     assert.match(h.sync.scriptlets.message, /dorejestrowano część sesyjną/);
+    assert.equal(h.startupProfile.stages.find((x) => x.name === 'syncScriptlets').count, 1);
   } finally { bg.restore(); }
 });
 
@@ -186,4 +198,51 @@ test('ponowne włączenie rozszerzenia (bez onStartup): część sesyjna odtwarz
     // kolejny start SW w tej samej sesji (znacznik w storage.session) – zero pracy
     assert.equal(bg2.session.sessionScriptletsOk, true);
   } finally { bg2.restore(); }
+});
+
+for (const reason of ['update', 'install']) {
+  test(`regresja: onInstalled:${reason} → dokładnie jedna rzeczywista synchronizacja scriptletów`, async () => {
+    // nowy service worker: Chrome wyczyścił rejestracje i chrome.storage.session; start SW
+    // (brak znacznika sesji) i onInstalled chcą zsynchronizować – ma być jedna synchronizacja
+    const bg = await loadBackground();
+    try {
+      await bg.state.listeners.installed({ reason });
+      const p = (await bg.send({ type: 'startup:profile' })).profile;
+      const stage = (n) => p.stages.find((x) => x.name === n) || { count: 0, totalMs: 0 };
+      assert.equal(stage('syncScriptlets').count, 1, 'syncScriptlets wykonane raz');
+      assert.equal(stage('scriptlety: getRegisteredContentScripts').count, 1, 'jedno porównanie z Chrome');
+      assert.equal(stage('scriptlety: registerContentScripts').count, 1);
+      assert.equal(bg.state.calls.register, 1);
+      assert.equal(bg.state.calls.unregister, 0);
+      assert.ok(stage('syncScriptlets: dołączenie do trwającej/wykonanej synchronizacji').count >= 1, 'drugi chętny dołączył zamiast synchronizować');
+      // czas oczekiwania w kolejce raportowany osobno od wykonania
+      assert.ok(p.stages.some((x) => x.name === 'syncScriptlets: oczekiwanie w kolejce'));
+      assert.match(p.reason, new RegExp(`onInstalled: ${reason}`));
+      const h = await bg.send({ type: 'health:get' });
+      assert.equal(h.sync.scriptlets.status, 'ok');
+    } finally { bg.restore(); }
+  });
+}
+
+test('po inicjalnej synchronizacji zmiana ustawień nadal synchronizuje naprawdę (nie dołącza do inicjalnej)', async () => {
+  const bg = await loadBackground();
+  try {
+    await bg.state.listeners.installed({ reason: 'update' });
+    const before = bg.state.calls.register;
+    await bg.send({ type: 'options:setDevPerf', enabled: true });
+    assert.equal(bg.state.calls.register, before + 1);
+    assert.ok(ourScripts(bg).every((r) => r.js[0] === 'content/scriptlet-perf-on.js'));
+    const p = (await bg.send({ type: 'startup:profile' })).profile;
+    assert.equal(p.stages.find((x) => x.name === 'syncScriptlets').count, 2, 'inicjalna + zmiana ustawień');
+  } finally { bg.restore(); }
+});
+
+test('profil startu: oczekiwanie w kolejce liczone osobno od wykonania', async () => {
+  let t = 0;
+  const p = createStartupProfiler({ now: () => t });
+  p.add('syncScriptlets: oczekiwanie w kolejce', 700);
+  await p.time('syncScriptlets', async () => { t += 30; });
+  const s = p.snapshot();
+  assert.equal(s.stages.find((x) => x.name === 'syncScriptlets').totalMs, 30);
+  assert.equal(s.stages.find((x) => x.name === 'syncScriptlets: oczekiwanie w kolejce').totalMs, 700);
 });
