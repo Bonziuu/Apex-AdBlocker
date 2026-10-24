@@ -11,11 +11,11 @@ Czas: ok. 15–20 minut.
 ## A. Przygotowanie
 
 1. Zamknij inne blokery reklam (uBlock Origin Lite, AdGuard, Adblock Plus itp.) albo użyj **nowego profilu Chrome** (Menu → Profil → Dodaj). Inne blokery zafałszują wynik.
-2. Pobierz repozytorium i przełącz się na gałąź testową:
+2. Pobierz repozytorium (najnowsza wersja jest na gałęzi `main`):
    ```bash
    git clone https://github.com/Bonziuu/Chromeblock.git
    cd Chromeblock
-   git checkout engine-hardening-youtube-v02
+   git checkout main
    ```
 3. Otwórz `chrome://extensions`, włącz **Tryb dewelopera**, kliknij **Załaduj rozpakowane** i wskaż katalog repozytorium.
 4. Sprawdź, czy karta rozszerzenia pokazuje **ChromeBlock** w najnowszej wersji (np. `0.2.7-dev`) i nie ma przycisku „Błędy”.

@@ -5,7 +5,7 @@ Instalacja zajmuje ok. 2 minuty.
 
 ## Instalacja
 
-1. Pobierz plik **ChromeBlock-dev.zip**: [kliknij tutaj, aby pobrać](https://github.com/Bonziuu/Chromeblock/raw/engine-hardening-youtube-v02/download/ChromeBlock-dev.zip).
+1. Pobierz plik **ChromeBlock-dev.zip**: [kliknij tutaj, aby pobrać](https://github.com/Bonziuu/Chromeblock/raw/main/download/ChromeBlock-dev.zip).
 2. Kliknij go prawym przyciskiem → **Wyodrębnij wszystkie…** → **Wyodrębnij**.
 3. W rozpakowanym folderze kliknij dwukrotnie **install-chromeblock.cmd**.
    - Jeśli Windows pokaże „System Windows ochronił ten komputer”, kliknij **Więcej informacji** → **Uruchom mimo to**.
