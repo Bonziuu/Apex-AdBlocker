@@ -2,43 +2,69 @@
 <html lang="pl">
 <head>
   <meta charset="utf-8">
+  <meta name="color-scheme" content="light dark">
   <title>ChromeBlock</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <header>
-    <img src="../icons/icon32.png" alt="" width="20" height="20">
+  <header class="top">
+    <img src="../icons/icon32.png" alt="" width="22" height="22">
     <span class="brand">ChromeBlock</span>
-    <button id="settings" class="icon-btn" title="Ustawienia" aria-label="Ustawienia">
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2.2-1.6ZM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" transform="translate(-1 0)"/></svg>
-    </button>
+    <span class="version" id="version"></span>
   </header>
 
-  <main id="main">
-    <div class="host" id="host">—</div>
+  <main id="main" aria-busy="true">
+    <!-- karta strony: domena, stan ochrony i przełącznik -->
+    <section class="site" id="site" data-state="loading" aria-labelledby="statusLabel">
+      <div class="site-text">
+        <div class="host" id="host" title="">…</div>
+        <div class="status" id="statusLabel">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="status">Sprawdzanie…</span>
+        </div>
+      </div>
+      <button id="toggle" class="toggle" role="switch" aria-checked="false" aria-labelledby="statusLabel" aria-describedby="toggleHint" disabled>
+        <span class="knob" aria-hidden="true"></span>
+      </button>
+      <span id="toggleHint" class="visually-hidden">Włącza lub wyłącza ochronę ChromeBlock na tej stronie. Karta zostanie przeładowana.</span>
+    </section>
 
-    <button id="power" class="power" aria-pressed="true" title="Włącz/wyłącz ochronę na tej stronie">
-      <svg viewBox="0 0 24 24" width="44" height="44" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 3v8M7.05 6.05a7.5 7.5 0 1 0 9.9 0"/></svg>
-    </button>
-    <div class="status" id="status">Ochrona włączona</div>
-    <div class="sub" id="sub">Kliknij, aby wyłączyć na tej stronie</div>
+    <!-- licznik -->
+    <section class="counter" aria-live="polite">
+      <div class="num" id="blocked">—</div>
+      <div class="label" id="blockedLabel">zablokowanych żądań na tej karcie</div>
+    </section>
 
-    <div class="stat">
-      <div class="num" id="blocked">0</div>
-      <div class="label">zablokowanych żądań na tej karcie</div>
+    <!-- YouTube Protection (tylko na YouTube) -->
+    <div class="row" id="youtube" hidden>
+      <svg class="row-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15V9l5.2 3L10 15Z"/></svg>
+      <span class="row-label">YouTube Protection</span>
+      <span class="pill" id="youtubeStatus"></span>
     </div>
 
-    <button id="problems" class="problems" hidden></button>
-
-    <button id="picker" class="action">
-      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4l7 17 2.5-7.5L21 11z"/></svg>
-      Ukryj element na stronie
+    <!-- problemy silnika -->
+    <button id="problems" class="alert" type="button" hidden>
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2 1 21h22L12 2Zm1 15h-2v-2h2v2Zm0-4h-2V9h2v4Z"/></svg>
+      <span id="problemsText"></span>
+      <svg class="chev" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m9 6 6 6-6 6"/></svg>
     </button>
   </main>
 
   <div id="unsupported" class="unsupported" hidden>
-    ChromeBlock nie działa na stronach wewnętrznych przeglądarki (np. chrome://, Chrome Web Store).
+    <strong>Ta strona nie jest obsługiwana</strong>
+    <span>ChromeBlock nie działa na stronach wewnętrznych przeglądarki (np. chrome://, Chrome Web Store).</span>
   </div>
+
+  <footer class="actions">
+    <button id="picker" class="btn" type="button" disabled>
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4l7 17 2.5-7.5L21 11z"/></svg>
+      Ukryj element
+    </button>
+    <button id="settings" class="btn" type="button">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2.2-1.6ZM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" transform="translate(-1 0)"/></svg>
+      Ustawienia
+    </button>
+  </footer>
 
   <script src="popup.js" type="module"></script>
 </body>
