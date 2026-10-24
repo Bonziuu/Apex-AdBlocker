@@ -1,4 +1,4 @@
-// Tarcza – atrapa Google Analytics (analytics.js / gtm.js): wywołuje callbacki, nic nie wysyła
+// ChromeBlock – atrapa Google Analytics (analytics.js / gtm.js): wywołuje callbacki, nic nie wysyła
 (function () {
   'use strict';
   const noop = function () {};

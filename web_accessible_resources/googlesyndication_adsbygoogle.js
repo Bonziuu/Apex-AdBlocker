@@ -1,4 +1,4 @@
-// Tarcza – atrapa adsbygoogle.js (strona działa, ale reklamy się nie ładują)
+// ChromeBlock – atrapa adsbygoogle.js (strona działa, ale reklamy się nie ładują)
 (function () {
   'use strict';
   const queue = window.adsbygoogle;
