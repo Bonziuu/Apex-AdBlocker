@@ -14,6 +14,7 @@ let counter = 0;
  * opts.files → podmiana plików rozszerzenia (ścieżka → obiekt JSON)
  * opts.registered → skrypty zarejestrowane przed startem service workera (np. utrwalone przez Chrome)
  * opts.local → początkowa zawartość chrome.storage.local
+ * opts.fetchDelay(path) → opóźnienie (ms) odczytu pliku rozszerzenia (wyścigi)
  */
 export async function loadBackground(opts = {}) {
   const store = opts.local ? structuredClone(opts.local) : {};
@@ -33,6 +34,8 @@ export async function loadBackground(opts = {}) {
   globalThis.fetch = async (url, init = {}) => {
     const rel = String(url).replace('ext://', '');
     state.fetches.push({ path: rel, method: init.method || 'GET' });
+    const delay = opts.fetchDelay ? opts.fetchDelay(rel) : 0;
+    if (delay) await new Promise((r) => setTimeout(r, delay));
     if (opts.files && rel in opts.files) {
       const v = opts.files[rel];
       if (v instanceof Error) return { ok: false, status: 404, json: async () => { throw v; } };
@@ -48,7 +51,7 @@ export async function loadBackground(opts = {}) {
       onInstalled: ev('installed'),
       onStartup: ev('startup'),
       onMessage: ev('message'),
-      getManifest: () => ({ version: '0.2.6', version_name: '0.2.6-dev', manifest_version: 3 }),
+      getManifest: () => ({ version: '0.2.7', version_name: '0.2.7-dev', manifest_version: 3 }),
     },
     storage: {
       session: {
@@ -76,9 +79,17 @@ export async function loadBackground(opts = {}) {
       },
       getEnabledRulesets: async () => [...state.enabledRulesets],
       updateStaticRules: async (o) => { state.staticRuleUpdates.push(o); },
-      getDynamicRules: async () => state.dynamic,
+      getDynamicRules: async () => structuredClone(state.dynamic),
+      // jak w Chrome: atomowo; dodanie reguły o istniejącym (nieusuwanym) id to błąd
       updateDynamicRules: async ({ removeRuleIds = [], addRules = [] }) => {
-        state.dynamic = state.dynamic.filter((r) => !removeRuleIds.includes(r.id)).concat(addRules);
+        await new Promise((r) => setTimeout(r, 1));
+        const kept = state.dynamic.filter((r) => !removeRuleIds.includes(r.id));
+        const ids = new Set(kept.map((r) => r.id));
+        for (const r of addRules) {
+          if (ids.has(r.id)) throw new Error(`Rule with id ${r.id} does not have a unique ID.`);
+          ids.add(r.id);
+        }
+        state.dynamic = kept.concat(addRules);
       },
       getMatchedRules: async () => ({ rulesMatchedInfo: [] }),
       getAvailableStaticRuleCount: async () => 300000,
