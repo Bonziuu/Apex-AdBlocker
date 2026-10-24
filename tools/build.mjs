@@ -35,6 +35,40 @@ export function hostPatterns(h) {
   return [/^\d+\.\d+\.\d+\.\d+$/.test(h) ? `*://${h}/*` : `*://*.${h}/*`];
 }
 
+/** Host wzorca dopasowania i czy obejmuje subdomeny („*://*.host/*”). */
+function patternHost(p) {
+  const m = /^\*:\/\/(\*\.)?([^/]+)\/\*$/.exec(p);
+  return m ? { host: m[2], sub: !!m[1] } : null;
+}
+
+/** Czy każdy adres pasujący do wzorca `a` pasuje też do wzorca `b`. */
+function patternCovers(b, a) {
+  const pb = patternHost(b);
+  const pa = patternHost(a);
+  if (!pa || !pb) return a === b;
+  if (pa.host === pb.host) return pb.sub || !pa.sub;
+  return pb.sub && pa.host.endsWith('.' + pb.host);
+}
+
+/**
+ * Wzorce rejestracji pliku scriptletów, rozdzielone na:
+ *   matches        – hosty zwykłe (utrwalane w Chrome: działają od razu po starcie przeglądarki),
+ *   sessionMatches – rozwinięcia encji „nazwa.*” (24 TLD na rdzeń; rejestrowane bez utrwalania).
+ * Wydajność: utrwalanie wzorców w Chrome kosztuje mniej więcej kwadratowo względem ich liczby
+ * (60 tys. ≈ 2,8 s zawieszenia przeglądarki), a encje dają ~60% wzorców.
+ * Zbiór dopasowywanych adresów jest identyczny jak przy jednej liście wzorców; nakładające się
+ * wzorce są przypisywane tylko do jednej części, żeby plik nie został wstrzyknięty dwa razy.
+ */
+export function splitShardMatches(hostList) {
+  const plain = [...new Set(hostList.filter((h) => !h.endsWith('.*')).flatMap(hostPatterns))].sort();
+  let session = [...new Set(hostList.filter((h) => h.endsWith('.*')).flatMap(hostPatterns))].sort();
+  // encja pokryta przez wzorzec zwykły – zostaje tylko zwykły (utrwalony)
+  session = session.filter((e) => !plain.some((p) => patternCovers(p, e)));
+  // wzorzec zwykły pokryty przez encję – obsługuje go część sesyjna (bez podwójnego wstrzyknięcia)
+  const matches = plain.filter((p) => !session.some((e) => patternCovers(e, p)));
+  return { matches, sessionMatches: session };
+}
+
 export function normalizeForBadfilter(text) {
   const t = text.trim();
   const idx = t.lastIndexOf('$');
@@ -266,7 +300,7 @@ export function shardScriptlets(listId, listName, compiled, scriptletLib) {
   shards.forEach((shard, n) => {
     const shardHosts = Object.keys(shard.hosts);
     if (!shardHosts.length) return;
-    const matches = [...new Set(shardHosts.flatMap(hostPatterns))].sort();
+    const { matches, sessionMatches } = splitShardMatches(shardHosts);
     const file = `scriptlets/${listId}-${n}.js`;
     const js = `/* ChromeBlock – scriptlety listy "${listName}" (część ${n + 1}/${shardCount}). Plik generowany przez tools/build.mjs. */
 (function () {
@@ -278,7 +312,7 @@ ${scriptletLib}
 runForHost(CALLS, HOSTS, EXCEPT);
 })();
 `;
-    files.push({ file, matches, js });
+    files.push({ file, matches, sessionMatches, js });
   });
   return files;
 }
@@ -333,6 +367,7 @@ export function buildAll(opts = {}) {
     for (const [source, ruleIds] of Object.entries(compiled.crossRuleIds)) badfilterCross.push({ source, target: list.id, ruleIds });
     for (const k of Object.keys(totals)) totals[k] += compiled.stats[k] || 0;
     const matchCount = files.reduce((n, f) => n + f.matches.length, 0);
+    const sessionMatchCount = files.reduce((n, f) => n + f.sessionMatches.length, 0);
 
     if (write) {
       fs.writeFileSync(path.join(outDir, 'rules', `${list.id}.json`), JSON.stringify(compiled.rules));
@@ -340,7 +375,7 @@ export function buildAll(opts = {}) {
         JSON.stringify(compiled.rules.filter((r) => r.action.type.startsWith('allow')).map((r) => r.id)));
       fs.writeFileSync(path.join(outDir, 'data', `${list.id}.json`), JSON.stringify(compiled.cosmetic));
       for (const f of files) fs.writeFileSync(path.join(outDir, f.file), f.js);
-      fs.writeFileSync(path.join(outDir, 'data', `${list.id}.scriptlets.json`), JSON.stringify(files.map(({ file, matches }) => ({ file, matches }))));
+      fs.writeFileSync(path.join(outDir, 'data', `${list.id}.scriptlets.json`), JSON.stringify(files.map(({ file, matches, sessionMatches }) => ({ file, matches, sessionMatches }))));
     }
     ruleResources.push({ id: list.id, enabled: list.enabled, path: `rules/${list.id}.json` });
 
@@ -357,9 +392,10 @@ export function buildAll(opts = {}) {
       scriptletRejected: s.scriptletRejected,
       scriptletFiles: files.length,
       scriptletPatterns: matchCount,
+      scriptletSessionPatterns: sessionMatchCount,
       unmatchedScriptletExceptions: s.unmatchedScriptletExceptions,
     });
-    log(`${list.id.padEnd(11)} reguły DNR: ${String(compiled.rules.length).padStart(6)} (regex: ${s.regex})  kosmetyczne: ${String(s.cosmetic).padStart(6)}  scriptlety: ${compiled.calls.length} (odrzucone: ${s.scriptletRejected}), ${files.length} plików, ${matchCount} wzorców`);
+    log(`${list.id.padEnd(11)} reguły DNR: ${String(compiled.rules.length).padStart(6)} (regex: ${s.regex})  kosmetyczne: ${String(s.cosmetic).padStart(6)}  scriptlety: ${compiled.calls.length} (odrzucone: ${s.scriptletRejected}), ${files.length} plików, ${matchCount} wzorców (+ ${sessionMatchCount} sesyjnych)`);
   }
 
   // Wyjątki #@#+js z listy X, które dotyczą scriptletów wykonywanych przez INNĄ listę.

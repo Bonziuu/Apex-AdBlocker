@@ -18,7 +18,7 @@ Czas: ok. 15–20 minut.
    git checkout engine-hardening-youtube-v02
    ```
 3. Otwórz `chrome://extensions`, włącz **Tryb dewelopera**, kliknij **Załaduj rozpakowane** i wskaż katalog repozytorium.
-4. Sprawdź, czy karta rozszerzenia pokazuje **ChromeBlock** w najnowszej wersji (np. `0.2.4-dev`) i nie ma przycisku „Błędy”.
+4. Sprawdź, czy karta rozszerzenia pokazuje **ChromeBlock** w najnowszej wersji (np. `0.2.5-dev`) i nie ma przycisku „Błędy”.
 5. Otwórz opcje ChromeBlock → **Diagnostyka**. Wszystkie komponenty (Network, Cosmetic, Scriptlets, Filters, YouTube) powinny mieć status **OK**. Jeśli któryś ma ERROR – zanotuj to i przejdź do części E.
 6. Zalecane: test wykonaj **bez logowania** do YouTube (okno w nowym profilu). Jeśli jesteś zalogowany, zaznacz to w uwagach – reklamy zależą od konta, regionu i testów A/B.
 
@@ -68,7 +68,7 @@ Wykonaj dla co najmniej **3 różnych filmów**, w tym jednego dłuższego (> 10
 Wypełnij jeden formularz na każdy testowany typ strony.
 
 ```
-ChromeBlock:            (wersja z chrome://extensions, np. 0.2.4-dev)
+ChromeBlock:            (wersja z chrome://extensions, np. 0.2.5-dev)
 Chrome:                 (chrome://version, np. 141.0.xxxx.xx)
 OS:                     (np. Windows 11 / macOS 15 / Ubuntu 24.04)
 URL type:               watch / playlist / shorts / embed / music

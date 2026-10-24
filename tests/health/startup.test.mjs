@@ -126,3 +126,64 @@ test('profil startu jest dostępny w Diagnostyce (health:get) i przez startup:pr
     assert.ok(r.profile.marks['DNR gotowy'] !== undefined);
   } finally { bg.restore(); }
 });
+
+const sessionRegs = (bg) => bg.state.registered.filter((r) => r.id.startsWith('sl-') && r.persistAcrossSessions === false);
+
+test('rejestracja: utrwalane (hosty zwykłe) najpierw, potem sesyjne (encje); obie w jednym wywołaniu', async () => {
+  const bg = await loadBackground();
+  try {
+    await bg.install();
+    const regs = ourScripts(bg);
+    const firstSession = regs.findIndex((r) => r.persistAcrossSessions === false);
+    assert.ok(firstSession > 0, 'są rejestracje sesyjne');
+    assert.ok(regs.slice(0, firstSession).every((r) => r.persistAcrossSessions === true));
+    assert.ok(regs.slice(firstSession).every((r) => r.persistAcrossSessions === false && r.id.endsWith('-s')));
+    assert.equal(bg.state.calls.register, 1);
+    for (const r of regs) { assert.equal(r.world, 'MAIN'); assert.equal(r.runAt, 'document_start'); assert.equal(r.allFrames, true); }
+    const persisted = regs.filter((r) => r.persistAcrossSessions).reduce((n, r) => n + r.matches.length, 0);
+    const session = sessionRegs(bg).reduce((n, r) => n + r.matches.length, 0);
+    assert.ok(persisted < session, `utrwalane ${persisted}, sesyjne ${session}`);
+  } finally { bg.restore(); }
+});
+
+test('restart przeglądarki: Chrome zachowuje tylko utrwalone – dorejestrowujemy WYŁĄCZNIE część sesyjną', async () => {
+  const bg = await loadBackground();
+  try {
+    await bg.install();
+    const nSession = sessionRegs(bg).length;
+    // symulacja restartu: rejestracje sesyjne i chrome.storage.session znikają
+    bg.state.registered = bg.state.registered.filter((r) => r.persistAcrossSessions !== false);
+    for (const k of Object.keys(bg.session)) delete bg.session[k];
+    const before = structuredClone(bg.state.calls);
+    await bg.state.listeners.startup();
+    assert.equal(bg.state.calls.unregister, before.unregister, 'utrwalone nie są ruszane');
+    assert.equal(bg.state.calls.register - before.register, 1);
+    assert.equal(bg.state.calls.registeredInCalls.at(-1), nSession, 'tylko rejestracje sesyjne');
+    assert.equal(sessionRegs(bg).length, nSession);
+    const h = await bg.send({ type: 'health:get' });
+    assert.equal(h.sync.scriptlets.status, 'ok');
+    assert.match(h.sync.scriptlets.message, /dorejestrowano część sesyjną/);
+  } finally { bg.restore(); }
+});
+
+test('ponowne włączenie rozszerzenia (bez onStartup): część sesyjna odtwarzana przy starcie service workera', async () => {
+  const bg = await loadBackground();
+  let persistedOnly;
+  let local;
+  try {
+    await bg.install();
+    persistedOnly = bg.state.registered.filter((r) => r.persistAcrossSessions !== false);
+    local = structuredClone(bg.store);
+  } finally { bg.restore(); }
+  // nowy service worker: utrwalone rejestracje i ustawienia są, części sesyjnej i storage.session brak
+  const bg2 = await loadBackground({ registered: persistedOnly, local });
+  try {
+    for (let i = 0; i < 100 && bg2.state.calls.register === 0; i++) await new Promise((r) => setTimeout(r, 20));
+    assert.equal(bg2.state.calls.register, 1, 'jedna rejestracja przy starcie SW');
+    assert.equal(bg2.state.calls.unregister, 0, 'utrwalone nie są ruszane');
+    const added = bg2.state.registered.slice(persistedOnly.length);
+    assert.ok(added.length > 0 && added.every((r) => r.persistAcrossSessions === false), 'tylko część sesyjna');
+    // kolejny start SW w tej samej sesji (znacznik w storage.session) – zero pracy
+    assert.equal(bg2.session.sessionScriptletsOk, true);
+  } finally { bg2.restore(); }
+});

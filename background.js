@@ -326,20 +326,32 @@ async function expectedScriptlets() {
   return out;
 }
 
-/** Rejestracja jednego pliku scriptletów w postaci przekazywanej do chrome.scripting. */
-function scriptletRegistration(f, { devPerf, excludeMatches }) {
-  const script = {
-    id: f.id,
+/** Sufiks id rejestracji sesyjnej (wzorce encji „nazwa.*”, bez utrwalania w Chrome). */
+const SESSION_SUFFIX = '-s';
+/** Klucz w chrome.storage.session: część sesyjna zarejestrowana w tej sesji przeglądarki. */
+const SESSION_SCRIPTLETS_KEY = 'sessionScriptletsOk';
+
+/**
+ * Rejestracje jednego pliku scriptletów (0–2):
+ *   `sl-<lista>-<n>`   – wzorce hostów zwykłych, utrwalane (działają od razu po starcie przeglądarki),
+ *   `sl-<lista>-<n>-s` – wzorce encji „nazwa.*”, persistAcrossSessions: false.
+ * Wydajność: utrwalanie w Chrome kosztuje ~kwadratowo względem liczby wzorców (60 tys. ≈ 2,8 s
+ * zawieszenia całej przeglądarki przy każdej aktualizacji/przeładowaniu), a encje to ~60% wzorców.
+ * Oba zbiory są rozłączne (build), więc plik nigdy nie jest wstrzykiwany dwa razy na tę samą stronę.
+ */
+function scriptletRegistrations(f, { devPerf, excludeMatches }) {
+  const base = {
     // przy pomiarach wydajności najpierw plik-flaga (ta sama rejestracja → gwarantowana kolejność)
     js: devPerf ? [SCRIPTLET_PERF_FLAG_FILE, f.file] : [f.file],
-    matches: f.matches,
     runAt: 'document_start',
     allFrames: true,
     world: 'MAIN',
-    persistAcrossSessions: true,
   };
-  if (excludeMatches.length) script.excludeMatches = excludeMatches;
-  return script;
+  if (excludeMatches.length) base.excludeMatches = excludeMatches;
+  const out = [];
+  if (f.matches && f.matches.length) out.push({ id: f.id, ...base, matches: f.matches, persistAcrossSessions: true });
+  if (f.sessionMatches && f.sessionMatches.length) out.push({ id: f.id + SESSION_SUFFIX, ...base, matches: f.sessionMatches, persistAcrossSessions: false });
+  return out;
 }
 
 /** Czy zarejestrowany zestaw scriptletów jest dokładnie taki, jak oczekiwany (te same id, kolejność i parametry). */
@@ -354,19 +366,29 @@ export function sameScriptletRegistrations(registered, wanted) {
     if (norm(r.matches) !== norm(w.matches)) return false;
     if (norm(r.excludeMatches) !== norm(w.excludeMatches)) return false;
     if ((r.runAt || 'document_idle') !== w.runAt || !!r.allFrames !== w.allFrames || (r.world || 'ISOLATED') !== w.world) return false;
-    if (r.persistAcrossSessions === false) return false;
+    if ((r.persistAcrossSessions !== false) !== (w.persistAcrossSessions !== false)) return false;
   }
   return true;
 }
 
+// Synchronizacje scriptletów wykonujemy jedna po drugiej (start SW, onInstalled, onStartup, opcje).
+let scriptletSyncQueue = Promise.resolve();
+function syncScriptlets() {
+  const run = scriptletSyncQueue.then(syncScriptletsNow, syncScriptletsNow);
+  scriptletSyncQueue = run.catch(() => {});
+  return run;
+}
+
 // Wydajność: każde wywołanie registerContentScripts/unregisterContentScripts powoduje, że Chrome
-// zapisuje i rozsyła do WSZYSTKICH procesów kart pełny zestaw zarejestrowanych skryptów
-// (u nas ok. 60 tys. wzorców adresów). 26 osobnych rejestracji przy instalacji/aktualizacji
-// potrafiło na kilkadziesiąt sekund obciążyć całą przeglądarkę. Dlatego:
+// zapisuje i rozsyła do WSZYSTKICH procesów kart pełny zestaw zarejestrowanych skryptów. Dlatego:
 //   1. gdy zarejestrowany zestaw jest identyczny z oczekiwanym – nic nie robimy,
-//   2. w przeciwnym razie: jedno unregister i JEDNO register z całą listą (ta sama kolejność),
-//   3. tylko gdy cała paczka zostanie odrzucona – rejestracja pojedyncza, żeby wskazać błędny plik.
-async function syncScriptlets() {
+//   2. gdy brakuje tylko części sesyjnej (start przeglądarki, ponowne włączenie rozszerzenia) –
+//      jedno register z samymi rejestracjami sesyjnymi (bez utrwalania, kilkadziesiąt ms),
+//   3. w przeciwnym razie: jedno unregister i JEDNO register z całą listą,
+//   4. tylko gdy cała paczka zostanie odrzucona – rejestracja pojedyncza, żeby wskazać błędny plik.
+// Kolejność rejestracji: najpierw wszystkie utrwalane, potem wszystkie sesyjne – taka sama
+// po instalacji i po starcie przeglądarki.
+async function syncScriptletsNow() {
   const s = await getState();
   const registered = await startup.time('scriptlety: getRegisteredContentScripts', () => chrome.scripting.getRegisteredContentScripts());
   const ours = registered.filter((r) => r.id.startsWith('sl-'));
@@ -374,20 +396,34 @@ async function syncScriptlets() {
   const excludeMatches = s.disabledSites.flatMap(sitePatterns);
   const expected = await expectedScriptlets();
   const { devPerf } = await chrome.storage.local.get('devPerf');
-  const wanted = expected.map((f) => scriptletRegistration(f, { devPerf: !!devPerf, excludeMatches }));
+  const regs = expected.flatMap((f) => scriptletRegistrations(f, { devPerf: !!devPerf, excludeMatches }));
+  const persistent = regs.filter((r) => r.persistAcrossSessions);
+  const session = regs.filter((r) => !r.persistAcrossSessions);
+  const wanted = [...persistent, ...session];
+  const markSessionOk = async () => {
+    try { if (chrome.storage.session) await chrome.storage.session.set({ [SESSION_SCRIPTLETS_KEY]: true }); } catch { /* */ }
+  };
 
   if (sameScriptletRegistrations(ours, wanted)) {
+    await markSessionOk();
     startup.mark('scriptlety gotowe');
     return `zarejestrowano ${expected.length} plików scriptletów (bez zmian)`;
   }
 
-  if (ours.length) await startup.time('scriptlety: unregisterContentScripts', () => chrome.scripting.unregisterContentScripts({ ids: ours.map((r) => r.id) }));
+  let toRegister = wanted;
+  let mode = 'pełna rejestracja';
+  if (session.length && sameScriptletRegistrations(ours, persistent)) {
+    toRegister = session;
+    mode = 'dorejestrowano część sesyjną';
+  } else if (ours.length) {
+    await startup.time('scriptlety: unregisterContentScripts', () => chrome.scripting.unregisterContentScripts({ ids: ours.map((r) => r.id) }));
+  }
   const failures = [];
   try {
-    if (wanted.length) await startup.time('scriptlety: registerContentScripts', () => chrome.scripting.registerContentScripts(wanted));
+    if (toRegister.length) await startup.time('scriptlety: registerContentScripts', () => chrome.scripting.registerContentScripts(toRegister));
   } catch (batchError) {
     // paczka jest atomowa – ustalamy, który plik jest błędny, i rejestrujemy pozostałe
-    for (const script of wanted) {
+    for (const script of toRegister) {
       try {
         await startup.time('scriptlety: registerContentScripts (pojedynczo po błędzie)', () => chrome.scripting.registerContentScripts([script]));
       } catch (e) {
@@ -397,13 +433,28 @@ async function syncScriptlets() {
     if (!failures.length) failures.push(String(batchError.message || batchError));
   }
   const after = new Set((await startup.time('scriptlety: weryfikacja', () => chrome.scripting.getRegisteredContentScripts())).map((r) => r.id));
-  const notRegistered = expected.filter((f) => !after.has(f.id)).map((f) => f.id);
+  const notRegistered = wanted.filter((r) => !after.has(r.id)).map((r) => r.id);
   if (notRegistered.length) {
-    throw new Error(`zarejestrowano ${expected.length - notRegistered.length}/${expected.length} plików scriptletów; ${failures.slice(0, 3).join('; ') || notRegistered.slice(0, 5).join(', ')}`);
+    const files = new Set(notRegistered.map((id) => id.replace(/-s$/, '')));
+    throw new Error(`zarejestrowano ${expected.length - files.size}/${expected.length} plików scriptletów; ${failures.slice(0, 3).join('; ') || notRegistered.slice(0, 5).join(', ')}`);
   }
+  await markSessionOk();
   startup.mark('scriptlety gotowe');
-  return `zarejestrowano ${expected.length} plików scriptletów`;
+  return `zarejestrowano ${expected.length} plików scriptletów (${mode})`;
 }
+
+// Część sesyjna (bez utrwalania) znika po restarcie przeglądarki oraz po wyłączeniu i ponownym
+// włączeniu rozszerzenia. chrome.storage.session jest czyszczone w tych samych sytuacjach,
+// więc brak znacznika = trzeba sprawdzić i dorejestrować. Sprawdzamy od razu przy starcie
+// service workera (zanim strony poproszą o filtry), a nie dopiero po zdarzeniu onStartup.
+(async () => {
+  try {
+    if (!chrome.storage.session) return;
+    const { [SESSION_SCRIPTLETS_KEY]: ok } = await chrome.storage.session.get(SESSION_SCRIPTLETS_KEY);
+    if (ok) return;
+    await runStep('scriptlets', () => startup.time('syncScriptlets', syncScriptlets));
+  } catch { /* stan zapisany w Diagnostyce przez runStep */ }
+})();
 
 // > 0, gdy trwa synchronizacja: brakujące scriptlety YouTube są wtedy stanem przejściowym
 let syncInProgress = 0;

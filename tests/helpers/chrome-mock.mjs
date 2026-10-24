@@ -12,14 +12,16 @@ let counter = 0;
  * opts.failRegister(id) → true, aby rejestracja danego skryptu się nie powiodła
  * opts.failRulesets → true, aby updateEnabledRulesets rzucało błąd
  * opts.files → podmiana plików rozszerzenia (ścieżka → obiekt JSON)
+ * opts.registered → skrypty zarejestrowane przed startem service workera (np. utrwalone przez Chrome)
+ * opts.local → początkowa zawartość chrome.storage.local
  */
 export async function loadBackground(opts = {}) {
-  const store = {};
+  const store = opts.local ? structuredClone(opts.local) : {};
   const session = {};
   const state = {
     enabledRulesets: new Set(),
     dynamic: [],
-    registered: [],
+    registered: opts.registered ? structuredClone(opts.registered) : [],
     css: [],
     staticRuleUpdates: [],
     reloads: [],
@@ -46,7 +48,7 @@ export async function loadBackground(opts = {}) {
       onInstalled: ev('installed'),
       onStartup: ev('startup'),
       onMessage: ev('message'),
-      getManifest: () => ({ version: '0.2.4', version_name: '0.2.4-dev', manifest_version: 3 }),
+      getManifest: () => ({ version: '0.2.5', version_name: '0.2.5-dev', manifest_version: 3 }),
     },
     storage: {
       session: {
