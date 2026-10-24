@@ -17,8 +17,10 @@
 //   --shorts <url>    konkretny adres Shorts (domyślnie https://www.youtube.com/shorts/)
 //   --no-youtube      pomiń YouTube (SKIP)
 //   --no-consent      nie klikaj „Odrzuć wszystko” na ekranie zgody (wtedy YouTube → SKIP)
+//   --results <kat.>  katalog wyników (domyślnie tests/local/results)
 //
-// Kod wyjścia: 0 – PASS lub INCONCLUSIVE, 1 – FAIL, 2 – tester nie mógł się uruchomić.
+// Kod wyjścia: 0 – PASS, 1 – FAIL, 2 – błąd uruchomienia testera, 3 – INCONCLUSIVE (są SKIP).
+// Działa też z rozpakowanej paczki download/ChromeBlock-dev.zip (folder tester/, bez Gita).
 
 import fs from 'node:fs';
 import os from 'node:os';
@@ -50,6 +52,17 @@ export function overallStatus(checks) {
   if (checks.some((c) => c.status === 'FAIL')) return 'FAIL';
   if (checks.some((c) => c.status === 'SKIP')) return 'INCONCLUSIVE';
   return 'PASS';
+}
+
+export const EXIT = Object.freeze({ PASS: 0, FAIL: 1, ERROR: 2, INCONCLUSIVE: 3 });
+
+/** Kod wyjścia: PASS 0, FAIL 1, błąd uruchomienia 2, INCONCLUSIVE 3 (CI nie pomyli go z PASS). */
+export function exitCodeFor(r) {
+  if (!r || (r.fatal && !(r.checks || []).length)) return EXIT.ERROR;
+  if (r.overall === 'PASS') return EXIT.PASS;
+  if (r.overall === 'FAIL') return EXIT.FAIL;
+  if (r.overall === 'INCONCLUSIVE') return EXIT.INCONCLUSIVE;
+  return EXIT.ERROR;
 }
 
 export function counts(checks) {
@@ -157,7 +170,7 @@ export async function runLocalTests(opts = {}) {
       try {
         const file = path.join(screenshotDir, `fail-${id}.png`);
         await current.screenshot({ path: file, timeout: 10000 });
-        c.screenshot = path.relative(ROOT, file).split(path.sep).join('/');
+        c.screenshot = path.basename(file);
       } catch { /* bez screenshotu */ }
     }
     checks.push(c);
@@ -485,7 +498,7 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
 // ---------------------------------------------------------------------------
 
 export function parseArgs(argv) {
-  const o = { headless: process.platform === 'linux' && !process.env.DISPLAY, youtube: true, consent: true, extensionDir: null, video: DEFAULT_VIDEO, shortsUrl: DEFAULT_SHORTS };
+  const o = { headless: process.platform === 'linux' && !process.env.DISPLAY, youtube: true, consent: true, extensionDir: null, video: DEFAULT_VIDEO, shortsUrl: DEFAULT_SHORTS, resultsDir: RESULTS_DIR };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--headless') o.headless = true;
@@ -495,6 +508,7 @@ export function parseArgs(argv) {
     else if (a === '--dir') o.extensionDir = path.resolve(argv[++i]);
     else if (a === '--video') o.video = argv[++i];
     else if (a === '--shorts') o.shortsUrl = argv[++i];
+    else if (a === '--results') o.resultsDir = path.resolve(argv[++i]);
   }
   return o;
 }
@@ -510,23 +524,25 @@ async function main() {
   const o = parseArgs(process.argv.slice(2));
   if (o.extensionDir && !fs.existsSync(path.join(o.extensionDir, 'manifest.json'))) {
     console.log(`Brak manifest.json w ${o.extensionDir}`);
-    process.exitCode = 2;
+    process.exitCode = EXIT.ERROR;
     return;
   }
-  fs.mkdirSync(RESULTS_DIR, { recursive: true });
-  for (const f of fs.readdirSync(RESULTS_DIR)) if (/^fail-.*\.png$/.test(f)) fs.rmSync(path.join(RESULTS_DIR, f));
+  fs.mkdirSync(o.resultsDir, { recursive: true });
+  for (const f of fs.readdirSync(o.resultsDir)) if (/^fail-.*\.png$/.test(f)) fs.rmSync(path.join(o.resultsDir, f));
   console.log('ChromeBlock – lokalny test regresyjny (tymczasowy profil, bez Twoich danych)\n');
-  const r = await withTimeout(runLocalTests({ ...o, screenshotDir: RESULTS_DIR }), 20 * 60_000, 'cały test');
-  const files = writeResults(r);
+  const r = await withTimeout(runLocalTests({ ...o, screenshotDir: o.resultsDir }), 20 * 60_000, 'cały test');
+  r.exitCode = exitCodeFor(r);
+  const files = writeResults(r, o.resultsDir);
   console.log('\n' + formatReport(r));
   console.log(`Raport: ${files.txt}`);
-  process.exitCode = r.fatal && !r.checks.length ? 2 : r.overall === 'FAIL' ? 1 : 0;
+  process.exitCode = r.exitCode;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   main().catch((e) => {
     const r = { overall: 'FAIL', version: null, checks: [], errors: [String((e && e.stack) || e)], notes: [], fatal: String((e && e.message) || e), finishedAt: new Date().toISOString(), durationMs: 0 };
-    try { const f = writeResults(r); console.log(formatReport(r)); console.log(`Raport: ${f.txt}`); } catch { console.error(e); }
-    process.exitCode = 2;
+    r.exitCode = EXIT.ERROR;
+    try { const f = writeResults(r, parseArgs(process.argv.slice(2)).resultsDir); console.log(formatReport(r)); console.log(`Raport: ${f.txt}`); } catch { console.error(e); }
+    process.exitCode = EXIT.ERROR;
   });
 }
