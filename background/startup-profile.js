@@ -24,6 +24,8 @@ export function createStartupProfiler({ now = () => performance.now(), origin = 
       const t0 = now();
       try { return await fn(); } finally { record(name, now() - t0, startedAt); }
     },
+    /** Dopisuje zmierzony gdzie indziej czas do etapu `name` (np. oczekiwanie w kolejce). */
+    add(name, ms) { record(name, ms, rel()); },
     mark(name) { if (!(name in marks)) marks[name] = rel(); },
     setReason(r) { reason = r; },
     finish() { finishedAt = rel(); },

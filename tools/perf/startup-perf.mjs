@@ -202,6 +202,7 @@ async function scenario(chromium) {
 }
 
 const stage = (p, name) => { const s = p && p.stages.find((x) => x.name === name); return s ? s.totalMs : null; };
+const calls = (p, name) => { const s = p && p.stages.find((x) => x.name === name); return s ? s.count : 0; };
 const mark = (p, name) => (p && p.marks ? p.marks[name] ?? null : null);
 
 export function summarizeRun(r) {
@@ -214,6 +215,11 @@ export function summarizeRun(r) {
       dnrReadyMs: mark(p, 'DNR gotowy'),
       scriptletsReadyMs: mark(p, 'scriptlety gotowe'),
       healthOkMs: mark(p, 'health OK'),
+      syncScriptletsCalls: calls(p, 'syncScriptlets'),
+      syncScriptletsMs: stage(p, 'syncScriptlets'),
+      queueWaitMs: stage(p, 'syncScriptlets: oczekiwanie w kolejce'),
+      registerCalls: calls(p, 'scriptlety: registerContentScripts'),
+      getRegisteredCalls: calls(p, 'scriptlety: getRegisteredContentScripts'),
       register: stage(p, 'scriptlety: registerContentScripts'),
       unregister: stage(p, 'scriptlety: unregisterContentScripts'),
       cosmetic: stage(p, 'checkCosmeticData'),
