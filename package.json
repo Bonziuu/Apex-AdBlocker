@@ -1,6 +1,6 @@
 {
   "name": "chromeblock",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "description": "ChromeBlock – bloker reklam dla Chrome (Manifest V3). Narzędzia deweloperskie: build reguł, audyt scriptletów, testy.",
   "type": "module",

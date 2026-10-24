@@ -51,7 +51,7 @@ export async function loadBackground(opts = {}) {
       onInstalled: ev('installed'),
       onStartup: ev('startup'),
       onMessage: ev('message'),
-      getManifest: () => ({ version: '0.3.0', version_name: '0.3.0-dev', manifest_version: 3 }),
+      getManifest: () => ({ version: '0.3.1', version_name: '0.3.1-dev', manifest_version: 3 }),
     },
     storage: {
       session: {
