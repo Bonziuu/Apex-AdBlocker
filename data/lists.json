@@ -10,7 +10,8 @@
   "scriptletFilters": 4550,
   "scriptletRejected": 513,
   "scriptletFiles": 24,
-  "scriptletPatterns": 59084,
+  "scriptletPatterns": 22149,
+  "scriptletSessionPatterns": 36931,
   "unmatchedScriptletExceptions": 21,
   "crossListScriptletExceptions": 0
  },
@@ -25,7 +26,8 @@
   "scriptletFilters": 267,
   "scriptletRejected": 79,
   "scriptletFiles": 1,
-  "scriptletPatterns": 1172,
+  "scriptletPatterns": 980,
+  "scriptletSessionPatterns": 192,
   "unmatchedScriptletExceptions": 0,
   "crossListScriptletExceptions": 0
  },
@@ -41,6 +43,7 @@
   "scriptletRejected": 4,
   "scriptletFiles": 1,
   "scriptletPatterns": 38,
+  "scriptletSessionPatterns": 0,
   "unmatchedScriptletExceptions": 0,
   "crossListScriptletExceptions": 0
  },
@@ -55,7 +58,8 @@
   "scriptletFilters": 1948,
   "scriptletRejected": 45,
   "scriptletFiles": 5,
-  "scriptletPatterns": 6340,
+  "scriptletPatterns": 3896,
+  "scriptletSessionPatterns": 2438,
   "unmatchedScriptletExceptions": 1,
   "crossListScriptletExceptions": 0
  },
@@ -70,7 +74,8 @@
   "scriptletFilters": 965,
   "scriptletRejected": 41,
   "scriptletFiles": 3,
-  "scriptletPatterns": 4510,
+  "scriptletPatterns": 2233,
+  "scriptletSessionPatterns": 2277,
   "unmatchedScriptletExceptions": 1,
   "crossListScriptletExceptions": 0
  }
