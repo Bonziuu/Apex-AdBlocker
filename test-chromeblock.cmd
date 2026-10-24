@@ -1,15 +1,37 @@
 @echo off
 rem ChromeBlock - lokalny test regresyjny (Windows). Uruchom dwuklikiem.
-rem Startuje Playwright Chromium z biezaca wersja ChromeBlock w TYMCZASOWYM profilu
-rem (nie uzywa Twojego profilu Chrome, nie zapisuje historii, loginow ani cookies)
-rem i zapisuje wynik w tests\local\results\latest.txt oraz latest.json.
-rem Opcje (z wiersza polecen): --headless  --no-youtube  --dir dist\ChromeBlock
+rem Dziala z rozpakowanej paczki ChromeBlock-dev.zip (foldery ChromeBlock i tester obok)
+rem albo z repozytorium. Wymaga tylko Node.js 20+ (bez Gita).
+rem Startuje Playwright Chromium z ChromeBlock w TYMCZASOWYM profilu
+rem (nie uzywa Twojego profilu Chrome, nie zapisuje historii, loginow ani cookies).
+rem Opcje (z wiersza polecen): --headless  --no-youtube
+rem Kod wyjscia: 0 PASS, 1 FAIL, 2 blad uruchomienia, 3 INCONCLUSIVE.
 setlocal
 chcp 65001 >nul
 title ChromeBlock - test lokalny
-cd /d "%~dp0"
 set "RC=2"
+set "BASE=%~dp0"
 
+if exist "%BASE%tester\tests\local\chromeblock-local-test.mjs" goto :package
+rem --- repozytorium ---
+set "PKG=0"
+set "TDIR=%BASE%."
+set "RES=%BASE%tests\local\results"
+goto :prepare
+
+:package
+set "PKG=1"
+set "TDIR=%BASE%tester"
+set "RES=%BASE%wyniki-testu"
+if not exist "%BASE%ChromeBlock\manifest.json" (
+  echo.
+  echo Nie znaleziono folderu "ChromeBlock" obok tego pliku.
+  echo Rozpakuj CALE archiwum ChromeBlock-dev.zip i uruchom test-chromeblock.cmd z rozpakowanego folderu.
+  goto :end
+)
+
+:prepare
+cd /d "%TDIR%"
 where node >nul 2>nul
 if errorlevel 1 (
   echo.
@@ -19,7 +41,7 @@ if errorlevel 1 (
 )
 
 if not exist "node_modules\playwright\package.json" (
-  echo Pierwsze uruchomienie: instaluje Playwright w folderze projektu ^(jednorazowo^)...
+  echo Pierwsze uruchomienie: instaluje Playwright ^(jednorazowo^)...
   call npm install --no-audit --no-fund
   if errorlevel 1 (
     echo.
@@ -37,16 +59,23 @@ if errorlevel 1 (
 )
 
 echo.
-node tests\local\chromeblock-local-test.mjs %*
+if "%PKG%"=="1" (
+  node tests\local\chromeblock-local-test.mjs --dir "%BASE%ChromeBlock" --results "%RES%" %*
+) else (
+  node tests\local\chromeblock-local-test.mjs --results "%RES%" %*
+)
 set "RC=%ERRORLEVEL%"
 
 echo.
-if "%RC%"=="0" echo Test zakonczony: PASS lub INCONCLUSIVE ^(szczegoly w raporcie^).
-if "%RC%"=="1" echo Test zakonczony: FAIL - zobacz raport i screenshoty fail-*.png.
-if "%RC%"=="2" echo Test nie mogl sie uruchomic - zobacz raport.
+echo ============================================================
+if "%RC%"=="0" echo   WYNIK: PASS - wszystkie testy przeszly.
+if "%RC%"=="1" echo   WYNIK: FAIL - co najmniej jeden test nie przeszedl ^(zobacz raport i fail-*.png^).
+if "%RC%"=="2" echo   WYNIK: BLAD URUCHOMIENIA - test nie mogl sie wykonac ^(zobacz raport^).
+if "%RC%"=="3" echo   WYNIK: INCONCLUSIVE - brak bledow, ale czesci nie dalo sie sprawdzic ^(np. brak sieci, YouTube^). To NIE jest PASS.
+echo ============================================================
 echo.
-echo Raport:  %~dp0tests\local\results\latest.txt
-echo JSON:    %~dp0tests\local\results\latest.json
+echo Raport:  %RES%\latest.txt
+echo JSON:    %RES%\latest.json
 
 :end
 echo.
