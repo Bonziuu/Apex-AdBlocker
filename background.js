@@ -178,6 +178,11 @@ function hostOf(url) {
   } catch { return ''; }
 }
 
+/** Czy host należy do YouTube (strony, na których działa YouTube Protection). */
+export function isYouTubeHost(host) {
+  return /(^|\.)(youtube\.com|youtube-nocookie\.com)$/.test(String(host || ''));
+}
+
 function isSiteDisabled(host, s) {
   if (!host) return false;
   const keys = hostKeys(host);
@@ -927,12 +932,17 @@ const handlers = {
     }
     const snap = await health.snapshot();
     const problems = Object.entries(snap.components).filter(([, v]) => v.status === 'error').map(([k]) => k);
+    // Na YouTube popup pokazuje stan YouTube Protection – tylko odczyt zapisanego stanu (bez synchronizacji)
+    const yt = isYouTubeHost(host) && snap.components.youtube
+      ? { status: snap.components.youtube.status, detail: snap.components.youtube.detail || '' }
+      : null;
     return {
       host,
       disabled: isSiteDisabled(host, s),
       blocked,
       canRun: !!host,
       problems,
+      youtube: yt,
     };
   },
 
