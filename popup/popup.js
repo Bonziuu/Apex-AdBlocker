@@ -15,6 +15,9 @@ function render(info) {
   $('sub').textContent = on ? 'Kliknij, aby wyłączyć na tej stronie' : 'Kliknij, aby ponownie włączyć';
   $('blocked').textContent = info.blocked === null ? '—' : info.blocked.toLocaleString('pl-PL');
   $('picker').disabled = !on;
+  const problems = info.problems || [];
+  $('problems').hidden = problems.length === 0;
+  if (problems.length) $('problems').textContent = `⚠ Problem z silnikiem (${problems.join(', ')}) – kliknij, aby zobaczyć diagnostykę`;
 }
 
 let info = tab ? await chrome.runtime.sendMessage({ type: 'popup:get', tabId: tab.id }) : null;
@@ -38,5 +41,10 @@ $('picker').addEventListener('click', async () => {
 
 $('settings').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
+  window.close();
+});
+
+$('problems').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#diag') });
   window.close();
 });

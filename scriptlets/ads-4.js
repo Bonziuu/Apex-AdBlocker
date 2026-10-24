@@ -1,853 +1,1980 @@
-/* Tarcza – scriptlety listy "Reklamy" (część 5/24). Plik generowany przez tools/build.mjs. */
+/* ChromeBlock – scriptlety listy "Reklamy" (część 5/24). Plik generowany przez tools/build.mjs. */
 (function () {
 'use strict';
-const CALLS = [["no-fetch-if","adsbygoogle"],["remove-node-text","script","/\"v4ac1eiZr0\"|\"\"\\)\\.split\\(\",\"\\)\\[4\\]|(\\.localStorage\\)|JSON\\.parse\\(\\w)\\.getItem\\(\"|[\"']_aQS0\\w+[\"']|decodeURI\\(decodeURI\\(\"|<a href=\"https:\\/\\/getad%|\"cmp\\.updated\"/"],["abort-current-script","showAds"],["no-setTimeout-if","adBlockerDetected"],["no-setTimeout-if","show"],["no-xhr-if","damoh"],["no-setTimeout-if",".call(null)","10"],["abort-on-property-read","_sp_._networkListenerData"],["abort-on-property-write","_sp_"],["abort-current-script","document.querySelector","popupBlocked"],["abort-current-script","Math","/\\}\\s*\\(.*?\\b(self|this|window)\\b.*?\\)/"],["abort-on-property-read","exoNoExternalUI38djdkjDDJsio96"],["no-window-open-if"],["abort-on-property-read","document.createElement"],["remove-attr","href|target","a[href=\"https://imgprime.com/view.php\"][target=\"_blank\"]","complete"],["abort-on-property-write","Fingerprint2"],["abort-current-script","$","show"],["abort-on-property-write","adBlockDetected"],["abort-on-property-read","ExoLoader.serve"],["remove-node-text","script","/h=decodeURIComponent|popundersPerIP/"],["abort-current-script","globalThis","break;case"],["abort-current-script","WebAssembly","atob"],["no-window-open-if","|"],["abort-current-script","setTimeout","admc"],["abort-current-script","String.fromCharCode","shift"],["remove-node-text","script","{delete window["],["abort-on-property-read","open"],["abort-on-property-read","loadTool"],["set-constant","page_params.holiday_promo","true"],["abort-current-script","blur"],["abort-on-property-write","smrtSB"],["set-constant","blurred","false"],["abort-on-property-read","__eiPb"],["abort-on-property-read","document.dispatchEvent"],["addEventListener-defuser","","_0x"],["set-constant","CnnXt.Event.fire","noopFunc"],["abort-current-script","atob","decodeURIComponent"],["abort-current-script","Math","zfgloaded"],["abort-on-property-write","KillAdBlock"],["abort-current-script","crakPopInParams"],["abort-current-script","onload","onclick"],["abort-on-stack-trace","Math.round","inlineScript"],["abort-on-property-read","blockAdBlock"],["addEventListener-defuser","DOMContentLoaded","src=atob"],["abort-current-script","addEventListener","nextFunction"],["adjust-setInterval"],["abort-on-property-read","_wm"],["addEventListener-defuser","load","nextFunction"],["addEventListener-defuser","load","2000"],["abort-on-property-read","popit"],["addEventListener-defuser","popstate","noPop"],["abort-on-property-read","encodeURIComponent"],["adjust-setTimeout"],["set-constant","adblockEnabled","false"],["abort-current-script","decodeURI","decodeURIComponent"],["abort-on-property-read","exoJsPop101"],["abort-current-script","document.querySelectorAll","popMagic"],["abort-current-script","adBlockDetected"],["abort-current-script","document.documentElement","break;case $."],["abort-on-property-write","block_detected"],["addEventListener-defuser","click"],["abort-on-property-read","AaDetector"],["abort-current-script","String.fromCharCode","/btoa|break/"],["abort-on-property-read","checkAds"],["abort-on-property-read","SmartWallSDK"],["no-setTimeout-if","displayCookieWallBanner"],["abort-on-property-read","Popunder"],["abort-current-script","setTimeout","bait.css"],["abort-on-property-read","popunders"],["set-constant","is_adblocked","false"],["set-constant","jQuery.adblock","false"],["abort-on-property-write","downloadJSAtOnload"],["abort-current-script","Date","='\\x"],["abort-current-script","document.head.appendChild","='\\x"],["set-constant","cnbc.canShowAds","true"],["abort-current-script","String.prototype.charAt"],["abort-on-property-read","decodeURI"],["abort-on-property-read","ExoLoader.addZone"],["abort-on-property-read","Math.floor"],["no-setTimeout-if","adb"],["abort-current-script","document.getElementsByTagName","script"],["addEventListener-defuser","","checkTarget"],["set-constant","blockAdBlock","trueFunc"],["abort-on-property-read","app_vars.force_disable_adblock"],["addEventListener-defuser","click","popunder"],["replace-node-text","script","/\\\"homad\\\",/"],["replace-node-text","script","useAdBlockDefend: true","useAdBlockDefend: false"],["remove-node-text","script","DisplayAcceptableAdIfAdblocked"],["abort-on-property-read","AdservingModule"],["abort-on-property-read","loadRunative"],["abort-current-script","document.getElementById","adblock"],["addEventListener-defuser","","break;case $."],["abort-on-property-read","onload"],["no-setTimeout-if","Delay"],["abort-current-script","jQuery","ai_adb"],["abort-on-property-read","adBlockDetected"],["no-setTimeout-if","alert"],["remove-node-text","script","/\\(async\\s*\\(\\)\\s*=>\\s*\\{\\s*try\\s*\\{\\s*(const|var)/"],["abort-current-script","document.createElement","abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/="],["remove-node-text","script","await eval"],["remove-node-text","script","html-load.com"],["remove-node-text","script","rcom_bdScriptLoaded"],["remove-node-text","script","/==undefined.*body/"],["abort-current-script","JSON.parse","Promise"],["remove-node-text","script","/WebAssembly|forceunder/"],["no-setInterval-if","adblock"],["abort-on-property-read","Adcash"],["abort-current-script","parseInt","break;case $."],["remove-node-text","script","justDetectAdblock"],["abort-current-script","EventTarget.prototype.addEventListener","delete window"],["abort-on-property-read","checkAdBlock"],["no-setTimeout-if","onDetected"],["abort-on-property-read","navigator.brave"],["remove-node-text","script",";}}};break;case $."],["abort-on-property-write","u_cfg"],["no-setTimeout-if","sadbl"],["remove-node-text","script","/adserverDomain|\\);break;case /"],["abort-current-script","JSON.parse","break;case $."],["abort-current-script","Math","break;case $."],["addEventListener-defuser","click","popMagic"],["no-fetch-if","googlesyndication"],["abort-on-property-write","p$00a"],["remove-node-text","script","ai_adb"],["remove-node-text","script","adserverDomain"],["no-window-open-if","_blank"],["abort-current-script","document.write"],["addEventListener-defuser","getexoloader"],["addEventListener-defuser","","0x"],["abort-on-property-write","tiPopAction"],["noeval-if","/chp_?ad/"],["addEventListener-defuser","","popMagic"],["remove-node-text","script","popMagic"],["abort-current-script","document.createElement","l.parentNode.insertBefore(s"],["remove-node-text","script","/popunder|contextmenu/"],["abort-on-property-write","__aaZoneid"],["abort-on-stack-trace","Math.floor","onClick"],["replace-node-text","script","window.csrf_token =","window.userID = 1;window.csrf_token =","excludes","window.userID"],["abort-on-property-read","popns"],["abort-current-script","addEventListener","HTMLAllCollection"],["abort-current-script","document.createElement","l.parentNode.insertBefore(s","/^data:/"],["noeval"],["abort-on-property-read","Aloader.serve"],["abort-current-script","document.dispatchEvent","myEl"],["abort-current-script","JSON.parse","atob"],["addEventListener-defuser","DOMContentLoaded","canRedirect"],["addEventListener-defuser","load","onload"],["abort-current-script","u_cfg"],["remove-node-text","script","/adblock|popunder|openedPop|WebAssembly|wpadmngr/"],["abort-on-property-read","__aaZoneid"],["abort-on-property-write","DoodPop"],["remove-node-text","script","wpadmngr.com"],["abort-on-property-read","aclib"],["abort-current-script","navigator","FingerprintJS"],["abort-on-property-read","initPu"],["abort-current-script","puShown","/doOpen|popundr/"],["abort-on-property-read","console.clear"],["adjust-setInterval","timer"],["no-window-open-if","!/prcf.fiyar|themes|pixsense|.jpg/"],["no-setTimeout-if","displayMessage","2000"],["addEventListener-defuser","load","block"],["remove-node-text","script","baits.push"],["no-fetch-if","/googlesyndication|doubleclick/","length:10","{\"type\": \"cors\"}"],["no-xhr-if","/googlesyndication|doubleclick/","length:10"],["abort-on-property-read","adsBlocked"],["abort-on-stack-trace","document.getElementById","fairAdblock"],["remove-node-text","script","/popMagic|pop1stp/"],["abort-on-property-write","ai_front"],["addEventListener-defuser","load","abDetectorPro"],["no-xhr-if","googlesyndication"],["remove-node-text","script","Datafadace"],["abort-on-property-read","googletag"],["remove-node-text","script","/__adblocker|html-load/","excludes","self.__next"],["remove-node-text","script","admiral","excludes","/,\\\\\"|self\\.__next|pageProps/"],["remove-node-text","script","/\\.cmd\\.unshift|adblockerDisabled/","excludes",",\\\""],["replace-node-text","script","/^/","(()=>{window.admiral=function(d,a,b){if(\"function\"==typeof b)try{b({})}catch(a){}}})();","sedCount","1"],["set-constant","__INITIAL_DATA__.siteData.admiralScript"],["abort-current-script","admiral"],["set-constant","Object.prototype.shouldExpectGoogleCMP","false"],["remove-node-text","script","/window\\.admiral|adblockerDisabled/","excludes",",\\\""],["remove-node-text","script","/\\(\\)=>eval|html-load\\.com|await eval|:window/"],["set-constant","Object.prototype.adService.initialize","noopFunc"],["remove-node-text","script","/admiral|\\[\\]\\)\\.push\\(arguments\\)/","excludes",",\\\""],["remove-node-text","script","[]).push(arguments)","excludes",",\\\""],["remove-node-text","script","adblockerDisabled","excludes",",\\\""],["remove-node-text","script",".cmd.unshift","excludes",",\\\""],["remove-node-text","script","admiral","excludes",",\\\""],["set-constant","gnt.x.uam","undefined","runAt","interactive"],["set-constant","_sp_.msg.displayMessage","noopFunc"],["set-constant","dc.adfree","true"],["no-setTimeout-if","error-report.com"],["remove-attr","onerror","script[id][onerror]","asap","quitAfter","10"],["remove-node-text","script","/\\(\\)=>eval|&&window\\}/"],["remove-node-text","script","/:window,|\\)\\.join\\(String\\.fromCharCode/"],["remove-node-text","script","/html-load\\.com|:\\[?window,/"],["remove-node-text","script","/:\\[?window,/"],["no-setInterval-if","0x"],["remove-node-text","script","error-report.com"],["no-fetch-if","ads"],["no-setTimeout-if","/getComputedStyle|bait/"],["set-constant","AController_3","noopFunc"],["replace-node-text","script","if (isBlocked)","if (false)"],["remove-node-text","script","assets/check"],["remove-node-text","script","void 0||window,"],["remove-node-text","script","()=>eval"],["remove-node-text","script","void 0 || window,"],["set-constant","SF.adblock","true"],["remove-node-text","script","/__adblocker|html-load/"],["remove-node-text","script","\"data-sdk\""],["no-setTimeout-if","[native code]","500"],["remove-node-text","script","/\\(\\)=>eval|html-load\\.com|await eval|:\\[?window,/"],["remove-node-text","script","/\\)\\.join\\(String\\.fromCharCode|siteActivateScripts/"],["remove-node-text","script","/\\)\\.join\\(String\\.fromCharCode|html-load\\.com/"],["set-constant","Object.prototype.htmlLoadScriptService.loadScript","noopFunc"],["remove-node-text","script","/\"__adblocker\"|\"data-sdk\"/"],["abort-on-property-read","adthrive.config"],["no-fetch-if","marmalade"],["set-constant","__INITIAL_STATE__.config.theme.ads.isAdBlockerEnabled","false"],["adjust-setInterval","generalTimeLeft","*","0.001"],["set-constant","console.clear","undefined"],["remove-node-text","script","/detectAdblock|WebAssembly|pop1stp|popMagic/i"],["no-fetch-if","googlesyndication","length:40000-60000"],["no-fetch-if","mode:no-cors"],["no-fetch-if","outbrain"],["remove-node-text","script","zIndex"],["no-fetch-if","doubleclick"],["set-constant","googletag._loaded_","true"],["remove-node-text","script","/bait/i"],["no-setTimeout-if","checkAdblockUser"],["replace-node-text","script","/manageAds\\(video_urls\\[activeItem\\], video_seconds\\[activeItem\\], ad_urls\\[activeItem],true\\);/","playVideo();","condition","playAdd"],["replace-node-text","script","prerollEnabled:true","prerollEnabled:false"],["remove-node-text","script","Adblock"],["abort-current-script","$","wrapfabtest"],["abort-current-script","eval","ignielAdBlock"],["set-constant","adBlockDetected","noopFunc"],["no-setTimeout-if","nextFunction","250"],["set-constant","paywallGateway.truncateContent","noopFunc"],["abort-current-script","onload"],["addEventListener-defuser","","pop"],["addEventListener-defuser","","Pop"],["set-constant","flashvars.adv_pause_html"],["set-constant","flashvars.popunder_url","undefined"],["no-setTimeout-if","swal","500"],["abort-on-property-read","wpsite_clickable_data"],["adjust-setInterval","","","0.3"],["adjust-setTimeout","","7000","0"],["no-setInterval-if","visibility","1000"],["set-constant","flashvars.adv_start_html"],["set-constant","flashvars.logo_text"],["set-constant","flashvars.mlogo"],["set-constant","flashvars.popunder_url"],["set-constant","hasPoped","true"],["no-setTimeout-if","bADBlock"],["abort-on-property-read","adp"],["abort-current-script","document.createElement","script"],["abort-on-property-write","ospen"],["adjust-setTimeout","download","1100"],["no-setTimeout-if","css_class.show"],["abort-on-stack-trace","localStorage","inlineScript"],["set-constant","flashvars.adv_pre_vast"],["set-constant","flashvars.adv_pre_vast_alt"],["addEventListener-defuser","contextmenu"],["abort-on-property-read","document.body.appendChild"],["abort-on-property-read","__Y"],["set-constant","sgpbCanRunAds","true"],["abort-current-script","document.addEventListener","google_ad_client"],["addEventListener-defuser","click","popundr"],["adjust-setTimeout",".fadeIn()","3000"],["abort-current-script","document.addEventListener","adsbygoogle"],["set-constant","google_unique_id","6"],["no-setTimeout-if","AdBlock"],["set-constant","isAdBlockActive","false"],["noeval-if","ads"],["abort-current-script","document.getElementById","JSON"],["set-constant","detectBlockAds","noopFunc"],["abort-current-script","document.getElementById","detect"],["adjust-setTimeout","isScrexed","5000"],["adjust-setTimeout","() => n(t)","*"],["adjust-setTimeout","() => t()","*"],["no-fetch-if","wtg-ads"],["abort-on-property-read","mm"],["no-window-open-if","!download"],["remove-node-text","script","/adbl/i"],["replace-node-text","script","const PerformanceTracker","aiptag.cmd.display.push=a=>{},aiptag.cmd.player.push=a=>a(),aipPlayer=class{constructor(a){this.o=a}startPreRoll(a,s){this.o.AIP_REWARDEDCOMPLETE()}},aipAPItag={sdkBlocked:!1};const PerformanceTracker"],["abort-current-script","onload","open"],["set-constant","detectAdBlock","noopFunc"],["no-xhr-if","ads"],["abort-current-script","document.getElementById","ads"],["adjust-setInterval","counter","2000"],["abort-on-property-read","jsPopunder"],["no-setTimeout-if","","500"],["abort-current-script","JSON.parse","htmlSectionsEncoded"],["abort-current-script","$","wbar"],["set-attr",".lazy","src","[data-sco-src]"],["set-constant","vastEnabled","false"],["abort-on-property-write","BetterJsPop"],["abort-current-script","alert"],["abort-current-script","document.createElement","adsBlocked"],["addEventListener-defuser","load","htmls"],["abort-current-script","eval","replace"],["no-setTimeout-if","keepChecking"],["abort-current-script","document.onkeypress"],["abort-current-script","document.oncontextmenu"],["no-xhr-if","doubleclick"],["remove-node-text","script","/ConsoleBan|alert|AdBlocker/"],["no-fetch-if","/^/"],["abort-on-stack-trace","document.createElement","onerror"],["no-setTimeout-if","()","150"],["no-setTimeout-if","offsetHeight"],["set-constant","timeLeft","0"],["abort-on-stack-trace","document.getElementsByTagName","adsBlocked"],["set-constant","adSettings","[]"],["adjust-setInterval","consoleLoaded?clearInterval"],["no-setTimeout-if","HubAPI","3000"],["addEventListener-defuser","message","t.origin===k"],["noeval-if","replace"],["addEventListener-defuser","DOMContentLoaded","adsBlocked"],["abort-on-stack-trace","atob","eval"],["no-fetch-if","doubleclick.net/instream/ad_status.js","war:doubleclick_instream_ad_status.js"],["no-setTimeout-if","redURL"],["no-fetch-if","google-analytics"],["no-setTimeout-if","/[a-z]\\(!0\\)/","800"],["no-setTimeout-if","/detectAdBlocker|window.open/"],["set-constant","art3m1sItemNames.affiliate-wrapper","\"\""],["remove-node-text","script","window.location.replace"],["no-setTimeout-if","/adScriptPath|MMDConfig/"],["remove-node-text","script","Exo"],["remove-node-text","script","/document\\.head\\.appendChild|window\\.open/"],["abort-current-script","document.cookie","document.head.appendChild"],["abort-current-script","OpenInNewTab_Over"],["set-cookie","ts_popunder","true","","reload","1"],["replace-node-text","script","popunder","","condition","popunder","stay","1"],["addEventListener-defuser","click","[native code]","elements",".main-wrap"],["abort-current-script","document.createElement","window.ts"],["remove-node-text","script","bannerRight"],["remove-cookie","video_view_count"],["no-xhr-if","/googlesyndication|googima\\.js|imasdk/"],["no-fetch-if","/googlesyndication|googima\\.js|imasdk/"],["replace-node-text","script","this.config.pop.enabled","false","sedCount","10"],["no-setTimeout-if","readyWait"],["adjust-setTimeout","countdown","*"],["no-setTimeout-if","nextFunction"],["trusted-set-cookie","adTakeOver","seen"],["json-prune","adRequest"],["set-constant","PageLoader.DetectAb","0"],["set-attr","iframe#pmt-smart-frame[src=\"about:blank\"][data-pmt-player-src^=\"http\"]","src","[data-pmt-player-src]"],["no-setTimeout-if","getComputedStyle"],["remove-node-text","script","adblocker"],["set-constant","amiblock","0"],["set-session-storage-item","_x9f2e_20251112","true"],["trusted-set-local-storage-item","account-storage","{\"state\":{\"_hasHydrated\":true","\"userId\":null","\"decryptedUserId\":null","\"email\":null","\"perks\":{\"adRemoval\":true","\"comments\":false","\"premiumFeatures\":true","\"previewReleaseAccess\":true}","\"showUserDialog\":false}","\"version\":2}"],["set-constant","Object.prototype.ADBLOCK_DETECTION"],["replace-node-text","script","this.ads.length > this.ads_start","1==2"],["remove-node-text","script","popundersPerIP"],["remove-node-text","script","m9-ad-modal"],["no-fetch-if","imasdk"],["replace-node-text","script","(self.__next_f=","[\"timeupdate\",\"durationchange\",\"ended\",\"enterpictureinpicture\",\"leavepictureinpicture\",\"loadeddata\",\"loadedmetadata\",\"loadstart\",\"pause\",\"play\",\"playing\",\"ratechange\",\"resize\",\"seeked\",\"seeking\",\"suspend\",\"volumechange\",\"waiting\"].forEach((e=>{window.addEventListener(e,(()=>{const e=document.getElementById(\"player\"),t=document.querySelector(\".plyr__time\");e.src.startsWith(\"https://i.imgur.com\")&&\"none\"===window.getComputedStyle(t).display&&(e.src=\"https://cdn.plyr.io/static/blank.mp4\",e.paused&&e.plyr.play())}))}));(self.__next_f=","sedCount","1"],["abort-on-property-write","Adcash"],["abort-on-property-write","window.onload"],["no-fetch-if","googletagmanager","length:10"],["abort-current-script","document.getElementById","window.open"],["json-prune","cuepointPlaylist vodPlaybackUrls.result.playbackUrls.cuepoints vodPlaylistedPlaybackUrls.result.playbackUrls.pauseBehavior vodPlaylistedPlaybackUrls.result.playbackUrls.pauseAdsResolution vodPlaylistedPlaybackUrls.result.playbackUrls.intraTitlePlaylist.[-].shouldShowOnScrubBar ads"],["replace-node-text","script","window.renderStoresWidgetsPluginList=","//window.renderStoresWidgetsPluginList=","condition","Custom Advertising/AWLS/Video Reveal"],["set-constant","canRunAds","1"],["set-constant","ue_adb_chk","1"],["trusted-click-element",".kw-ads-pagination-button:first-child,.kw-ads-pagination-button:first-child","","1000"],["no-xhr-if","adsbygoogle"],["no-setTimeout-if","modal"],["remove-node-text","script","delete window"],["remove-node-text","script","/delete window|popundersPerIP|var FingerprintJS|adserverDomain|globalThis;break;case|ai_adb|adContainer/"],["abort-on-property-read","LieDetector"],["noeval-if","adsbygoogle"],["set-constant","stoCazzo","true"],["abort-current-script","eval","fetchAdsScript"],["set-constant","dclm_ajax_var.disclaimer_redirect_url"],["no-setTimeout-if","sub"],["remove-node-text","script","adsbygoogle"],["abort-current-script","googletag"],["abort-current-script","EventTarget.prototype.addEventListener","onerror"],["no-window-open-if","!addons.mozilla.org"],["json-prune","*","rot_url"],["noeval-if","innerHTML"],["remove-cookie","/abd/"],["abort-on-property-read","btoa"],["abort-on-property-write","adcashMacros"],["abort-on-property-read","jwplayer.utils.Timer"],["set-constant","HTMLImageElement.prototype.onerror","undefined"],["no-fetch-if","method:/head/i"],["set-constant","__SSR_CONFIG__.monkey","undefined"],["trusted-set-local-storage-item","sc_last_pop","$now$"],["json-prune-fetch-response","data.promotions","","propsToMatch","/graphql"],["remove-node-text","script",".offsetParent"],["replace-node-text","script","/const (adsShowModeTime|hilltopDirectLinkConsentRequired) = true;/g","const $1 = false;"],["replace-node-text","script","intentUrl;","destination;"],["adjust-setInterval","/.?/","*","0.02"],["replace-node-text","script","/false;/gm","true;","condition","isSubscribed"],["replace-node-text","script","('t_modal')","('go_d2')"],["set-constant","timeSec","0"],["adjust-setTimeout","getlink","*","0.001"],["abort-on-property-read","AdBDetected"],["replace-node-text","script","timeLeft = duration","timeLeft = 0"],["no-setTimeout-if","/window\\.location\\.href|n/","8000"],["adjust-setTimeout","/\\$\\('|ai-close/","*","0.001"],["adjust-setInterval","counter","*","0.001"],["remove-node-text","script","AdbModel"],["addEventListener-defuser","DOMContentLoaded","history.go"],["addEventListener-defuser","click","shouldOpenPopUp"],["addEventListener-defuser","/blur|focus/"],["no-fetch-if","/scorecardresearch\\.com|outbrain\\.com|taboola\\.com|criteo\\.net|rubiconproject\\.com|adform\\.net|casalemedia\\.com|adservice\\.google\\.com/","","{\"type\": \"opaque\"}"],["addEventListener-defuser","DOMContentLoaded","onpopstate"],["remove-node-text","script","FingerprintJS"],["no-fetch-if","googlesyn"],["adjust-setTimeout","/.?/","*"],["abort-current-script","Math","localStorage['\\x"],["no-xhr-if","cloudflare.com/cdn-cgi/trace"],["set-constant","pa","{}"],["set-constant","Object.prototype.setConfigurations","noopFunc"],["set-constant","dplus","{}"],["set-constant","dplus.track","noopFunc"],["no-xhr-if","1.1.1.1/cdn-cgi/trace"],["remove-cookie","didomi_token"],["set-local-storage-item","didomi_token","$remove$"],["set-constant","_sp_.config.events.onSPPMObjectReady","noopFunc"],["set-constant","_vwo_code","{}"],["set-constant","_vwo_code.init","noopFunc"],["adjust-setInterval","redirectId"]];
-const HOSTS = {"allmusic.com":[0,1],"golem.de":[2,3,4,5,6],"muthead.com":[7],"car.com":[8],"transfermarkt.*":[9,10,6],"myreadingmanga.info":[11],"putlockerc.*":[12],"imgprime.com":[13,14],"pic-upload.de":[15],"farmeramania.de":[16],"theralphretort.com":[17],"imx.to":[18,19,20,21],"strikeout.*":[22,23,24,19,25],"mynakedwife.video":[26],"asiananimaltube.org":[12],"porntopic.com":[27],"bztube.com":[28],"peliculas24.*":[29,30,19],"adfloz.*":[12,31],"panlasangpinoymeatrecipes.com":[32],"imgtorrnt.in":[18,33,34],"sentinelandenterprise.com":[35],"converto.io":[36,37],"svipvids.com":[38],"camwhorescloud.com":[39,40,41],"photos-public-domain.com":[42],"formasyonhaber.net":[17],"hagalil.com":[17],"pornflixhd.com":[17,43],"4download.net":[44,45],"hotbabes.tv":[27,46],"novablogitalia.*":[47],"singingdalong.*":[48],"beegvideoz.com":[49,50],"hentaisexfilms.com":[49,50],"xvide.me":[49,50],"xxxanimevideos.com":[49,50],"ihub.live":[51],"siriusfiles.com":[52],"kfrfansub.com":[53],"nflstream.tv":[54],"streamextreme.cc":[54,55,56],"moretvtime.*":[57],"moviesrulz.*":[12,58],"6hiidude.gold":[58],"mtsproducoes.*":[59],"porndex.com":[60],"shortearn.*":[61,26,31,19,62],"tcheats.com":[63],"gamekult.com":[64,65],"fuckdy.com":[66],"m.kuku.lu":[67],"tonpornodujour.com":[68,69],"tuotromedico.com":[70],"softwarecrackguru.com":[71],"spring.org.uk":[72,73,32],"cnbc.com":[74],"yuvutu.com":[75],"sportlemons.*":[76],"sexybabesz.com":[77,27],"yandexcdn.com":[12],"movie4me.*":[78],"interssh.com":[48],"electriciansforums.net":[79],"imagetwist.com":[80,81],"cyclones.com":[82],"goexplorers.com":[82],"gogriz.com":[82],"goshockers.com":[82],"iuhoosiers.com":[82],"loyolaramblers.com":[82],"mutigers.com":[82],"umterps.com":[82],"gobadgers.ca":[82],"mauiinvitational.com":[82],"uclabruins.com":[82],"k-stateathletics.com":[82],"ksusports.com":[82],"megalink.*":[83,31,84],"spieletipps.de":[85,6],"sport.de":[86,6,87],"mangahere.onl":[88,89],"seeitworks.com":[90],"hexupload.net":[15,19,91],"arenabg.com":[61],"trendsderzukunft.de":[92,93],"mobilelegends.shop":[45],"wikipekes.com":[94],"plugincim.com":[95],"thelayoff.com":[96,97],"linkconfig.com":[45],"notiziemusica.it":[17],"allgemeine-zeitung.de":[6],"boerse.de":[6],"gamestar.de":[6],"gmuender-tagespost.de":[6],"hartziv.org":[6],"haus-garten-test.de":[6],"kabeleins.de":[6],"medisite.fr":[6],"motor-talk.de":[6,98],"motortests.de":[6],"nwzonline.de":[6],"pixelio.de":[6],"pons.com":[6,99,100],"profil.at":[6],"reuters.com":[6,101],"szene1.at":[6],"weather.us":[6],"beforeitsnews.com":[102],"conservativefiringline.com":[102],"letocard.fr":[102],"livinggospeldaily.com":[102],"freedomfirstnetwork.com":[102],"videogamesblogger.com":[102],"adblockstreamtape.*":[19,103,104,105,12,106],"ak47sports.com":[19],"anidl.org":[19,107],"b9good.co":[19],"blizzpaste.com":[19],"cashurl.in":[19],"cdn1.site":[19,21,12,108,109],"coins100s.fun":[19],"comohoy.com":[19,21,110,111,112],"daddylivehd.*":[19,113,58,23,114,115],"dlhd.*":[19,58,116],"dyngutter.net":[19],"fbstream.*":[19,117,107,91,118],"fsicomics.com":[19,119,120],"gemstreams.com":[19],"hdmoviesflix.*":[19,121],"hdpornflix.com":[19],"hwnaturkya.com":[19,113],"hxfile.co":[19,113,91,12],"infosgj.free.fr":[19],"jrants.com":[19,122],"kimochi.info":[19],"kimochi.tv":[19],"movieswbb.com":[19],"nflstream.*":[19,117,107,91,118],"novamovie.net":[19,117],"pelisflix20.*":[19,20],"plyvdo.*":[19,107,12],"pover.org":[19],"seir-sanduk.com":[19,123],"streamsport.*":[19,107,34,12],"supexfeeds.com":[19],"swzz.xyz":[19,83,31],"thothub.today":[19],"uniqueten.net":[19,56],"vikuy.click":[19,124],"virpe.cc":[19,125],"vladrustov.sx":[19],"xxgasm.com":[19,21,76],"3dhentai.club":[56],"3xfaktor.hu":[56],"allafricangirls.net":[56,33],"amateurfun.net":[56],"bbwfuckpic.com":[56],"bluetv.xyz":[56],"brazzersbabes.com":[56],"csrevo.com":[56],"desihoes.com":[56,33,76],"desimms.co":[56],"finevids.xxx":[56],"greensmut.com":[56],"hentai-cosplay-xxx.com":[56],"hotgirlhub.com":[56],"myxclip.com":[56],"pictoa.com":[56,126,127,128],"porndollz.com":[56,126],"pornloupe.com":[56],"porntrex.video":[56],"repicsx.com":[56],"shelovesporn.com":[56],"thecartoonporntube.com":[56],"upicsz.com":[56],"voyeurblog.net":[56],"xexle.com":[56],"xhamsterteen.com":[56],"xnxxhamster.net":[56],"xpicse.com":[56],"xxxshut.com":[56,129],"yporn.tv":[56],"frauporno.com":[130],"manwa.me":[131],"isekaitube.com":[132,122,133],"mangaraw.*":[132,91,58,21,134],"naijauncut.com":[132],"primewire.*":[132,113,117,135,124,136],"spotidownloader.com":[132],"mangagun.net":[137,138],"coinsbomb.com":[139],"freesexvideos24.com":[140,141],"grandmatube.pro":[140,141],"agedtubeporn.com":[140,141],"alltstube.com":[142],"asian-teen-sex.com":[33],"allschoolboysecrets.com":[18],"maxstream.*":[113,109],"myflixerz.to":[113,109],"roystream.com":[113,58,143,12],"skidrowcodex.net":[113,144],"tutlehd4.com":[113],"hitokin.net":[37],"bollywoodfilma.*":[117],"i123movies.net":[117],"lespassionsdechinouk.com":[117,107,91],"movies7.to":[117,12],"asianhdplay.net":[107],"bdmusic23.*":[107],"fastilinks.*":[107],"mangahere.today":[107],"stopstreamtv.net":[107],"tcpermaculture.com":[107],"whatshowto.com":[107],"worldgreynews.com":[107],"downloadapk.info":[91],"emulatorsite.com":[91,26],"musicsite.biz":[91,26],"solarmovies.*":[91],"8-ball-magic.com":[118],"bitlinks.pw":[118],"dramanice.*":[118],"ocnpj.com":[118],"stalkface.com":[118],"upfiles.*":[118],"steamverde.net":[20],"123movies-free.*":[58],"123movies-org.*":[58,61],"4movierulz1.*":[58,12],"ak4eg.*":[58,145,146],"asianhdplay.*":[58],"capo5play.com":[58],"moviesda4.*":[58],"myflixerz.*":[58],"series2watch.*":[58],"sharedisk.*":[58],"shortenlinks.top":[58],"tvfutbol.info":[58],"9n8o.com":[109],"cloudnestra.com":[109,138],"dramanice.video":[109],"embedcanais.com":[109],"enorme.tv":[109],"onlinekosh.com":[109],"pelisflix2.*":[109],"shopr.tv":[109],"vide0.net":[109,21,147,148,149,54,12],"vidply.com":[109,147,148,149,54,12],"g-streaming.com":[21,12],"luluvids.top":[21],"pemersatu.link":[21],"syosetu.*":[21],"thothub.lol":[150],"audioz.download":[123],"dramavideo.se":[151],"woiden.com":[152],"boobsrealm.com":[153,154],"pixbryexa.sbs":[155,156,157],"jurukunci.net":[158],"nklinks.click":[158],"altyazitube22.lat":[129],"aozoraapps.net":[129],"askushowto.com":[129],"casperhd.com":[129],"colliersnews.com":[129],"constructionplacement.org":[129],"crackthemes.com":[129],"davewigstone.com":[129],"dramafren.com":[129],"dumovies.com":[129],"entenpost.com":[129],"erotikclub35.pw":[129],"feyorra.top":[129,159],"financeehelp.com":[129],"fitpractise.com":[129],"girlydrop.com":[129],"gogetadoslinks.*":[129],"gotocam.net":[129],"greasygaming.com":[129],"inventionsdaily.com":[129],"itdmusic.*":[129],"korogashi-san.org":[129],"law101.org.za":[129],"learnodo-newtonic.com":[129],"luciferdonghua.in":[129,122,160],"marketedgeofficial.com":[129],"myglamwish.com":[129],"odekake-spots.com":[129],"ovnihoje.com":[129],"porlalibreportal.com":[129],"publicdomainq.net":[129],"ribbelmonster.de":[129],"rocketrevise.com":[129],"ryanmoore.marketing":[129],"ryansharich.com":[129],"searchmovie.wp.xdomain.jp":[129],"searchnsucceed.in":[129],"seogroup.bookmarking.info":[129],"shlly.com":[129],"starsgtech.in":[129],"start-to-run.be":[129],"swietaslowianskie.pl":[129],"symboleslowianskie.pl":[129],"taurus.topmanhuas.org":[129],"temporeale.info":[129],"theworldobits.com":[129],"throwsmallstone.com":[129],"vivrebordeaux.fr":[129],"ycongnghe.com":[129,161,162],"youpit.xyz":[129],"ziontutorial.com":[129],"alternativa104.net":[163],"hispajav.com":[164,165],"spa.center.ivof.com":[166],"bailbondsfinder.com":[167,168],"classifarms.com":[167,168],"comtasq.ca":[167,168],"dropnudes.com":[167,168],"nurulislam.org":[167,168],"arabshentai.com":[161,162],"mangacrab.org":[161,162,169],"sharedwebs.com":[161,162],"selfhacked.com":[170,171],"sporcle.com":[170,172,173],"247sports.com":[1,174,175],"celiacandthebeast.com":[1],"cheatsheet.com":[1,171],"danslescoulisses.com":[1],"fwmadebycarli.com":[1],"gulflive.com":[1],"nothingbutnewcastle.com":[1],"ontvtonight.com":[1],"patheos.com":[1],"ssnewstelegram.com":[1],"weather.com":[1,176],"worldstar.com":[1,176,177],"ottawacitizen.com":[178,179,180],"12news.com":[181],"9news.com":[181],"cbs19.tv":[181],"fox16.com":[181],"louisianafirstnews.com":[181],"ourquadcities.com":[181],"wbir.com":[181],"yourbigsky.com":[181],"sermonsearch.com":[182],"comingsoon.net":[183],"weather-forecast.com":[184,182],"motor1.com":[184,100],"naszahistoria.pl":[185],"azcentral.com":[186],"bucyrustelegraphforum.com":[186],"greenbaypressgazette.com":[186],"journalstandard.com":[186],"jsonline.com":[186],"newsleader.com":[186],"pnj.com":[186],"recordnet.com":[186],"recordonline.com":[186,187],"staugustine.com":[186],"the-review.com":[186],"tmnews.com":[186],"dailycaller.com":[188],"issuya.com":[189],"fourchette-et-bikini.fr":[190,191],"passeportsante.net":[190,191],"bronco6g.com":[190,192],"bikeperfect.com":[190,193],"techlearning.com":[190,193],"chillizet.pl":[190,194],"sport.pl":[190,194],"gutefrage.net":[195,99,194,100],"wisevoter.com":[196],"uranai.nosv.org":[100],"satkurier.pl":[190,194,197,198,199,200,201],"doviz.com":[97,202],"augustacrime.com":[203],"girlschannel.net":[203],"animalia.bio":[202],"greenwichmeantime.com":[204],"geoguessr.com":[100],"nbadraft.net":[100],"nyitvatartas24.hu":[100],"sourceforge.net":[100,205,52],"syosetu.com":[100],"traicy.com":[100],"winbuzzer.com":[100,206],"wordhippo.com":[100],"yutura.net":[100],"grasoku.com":[100],"badgerofhonor.com":[207,208],"blackandteal.com":[207,208],"risingapple.com":[207,208],"undeadwalking.com":[207,208],"myhomebook.de":[209],"donegallive.ie":[99],"scotsman.com":[99],"niederschlagsradar.de":[210],"radio-hrvatska.com":[211],"mandiner.hu":[212],"15minutebeauty.com":[206],"5thwheelforums.com":[206],"7-min.com":[206],"accountantforums.com":[171],"acooknamedmatt.com":[171],"allairfryerrecipes.com":[171],"allthenoodles.com":[171],"amycakesbakes.com":[171],"amytreasure.com":[171],"anestwithayard.com":[171],"artfulhomemaking.com":[171],"artsyfartsymama.com":[171],"arzyelbuilds.com":[171],"aseaofred.com":[171],"athomebyheather.com":[171],"athoughtfulplaceblog.com":[171],"avirtuouswoman.org":[171],"awarenessdays.com":[171],"bakeitwithlove.com":[171],"bakemeacookie.com":[171],"bakerstreetsociety.com":[171],"balancingeverything.com":[171],"barrescueupdates.com":[171],"basketballbuckets.com":[171],"beautifulwithbrains.com":[171],"beautymasterlist.com":[171],"becoming.is":[171],"beerconnoisseur.com":[171],"beyondcruise.com":[171],"bicycle-guider.com":[171],"biggerbolderbaking.com":[171],"blessthismeal.com":[171],"blondelish.com":[171],"bonnibakery.com":[171],"bootstrapbee.com":[171],"boundlessroads.com":[171],"brighteyedbaker.com":[171],"brightgreenrecipes.com":[171],"bsugarmama.com":[171],"business-opportunities.biz":[171],"bylisafonde.com":[171],"caroha.com":[171],"cattitudedaily.com":[171],"chainsawtalk.com":[171],"chefnotrequired.com":[171],"choosingnutrition.com":[171],"civicsquestions.com":[171],"cleangreensimple.com":[171],"cocinarodriguez.com":[171],"comfortablefood.com":[171],"comicsands.com":[171],"confettidaydreams.com":[171],"conscioushacker.io":[171],"contexturesblog.com":[171],"convertbinary.com":[171],"cookiedoughandovenmitt.com":[171],"cookingontheweekends.com":[171],"cookingupmemories.com":[171],"cookrepublic.com":[171],"cookwithkushi.com":[171],"cravinghomecooked.com":[171],"creamofthecropcrochet.com":[171],"createandfind.com":[171],"crohnsforum.com":[171],"crosswordjam.net":[171],"crystalmathlabs.com":[171],"danaberez.com":[171],"daysofjay.com":[171],"disneydreamer.com":[171],"dominicancooking.com":[171],"earthsfriends.com":[206],"easyrecipesfromhome.com":[206],"eatatmaudes.com":[206],"engineerboards.com":[206],"enjoysharepoint.com":[206],"epawaweather.com":[206],"eregulations.com":[206],"exceldemy.com":[206],"exclusivepumping.com":[206],"farmwifecooks.com":[171],"fauxsho.org":[171],"feelingfoodish.com":[171],"finearttutorials.com":[171],"fitbottomedgirls.com":[171],"fontsforpeas.com":[171],"foodiewithfamily.com":[171],"freetoursbyfoot.com":[171],"funattic.com":[171],"gadgetreview.com":[171],"gamedayculture.com":[171],"gamerempire.net":[171],"gatechecked.com":[171],"gedpracticequestions.com":[171],"girlgonegourmet.com":[171],"glutenfreeguidehq.com":[171],"golfspan.com":[171],"govalleykids.com":[171],"grabcraft.com":[171],"grownandflown.com":[171],"happihomemade.com":[213],"happyhooligans.ca":[213],"hauteandhealthyliving.com":[213],"healingtomato.com":[213],"healthylifetrainer.com":[213],"healthylittlevittles.com":[213],"heatherednest.com":[213],"henricocitizen.com":[213],"heyimreading.com":[213],"historic-uk.com":[213],"homeschoolhappiness.com":[213],"honkai.gg":[213],"hotelgyms.com":[213],"hotpankitchen.com":[213],"howmuchisin.com":[213],"howtodispose.info":[213],"humorliving.com":[213],"hungryhappens.net":[213],"hungrypaprikas.com":[213],"icancrochetthat.com":[171],"ihcubcadet.com":[171],"inchcalculator.com":[171],"inkatrinaskitchen.com":[171],"inkdecks.com":[171],"inkristaskitchen.com":[171],"intentionallyeat.com":[171],"jamesandcatrin.com":[206],"jessicanturner.com":[206],"justplaincooking.ca":[206],"kenarry.com":[206],"kevinandamanda.com":[206],"kindercraze.com":[206],"kindlyunspoken.com":[206],"kneadsomesweets.com":[206],"lanebakery.com":[206],"leafyjournal.com":[206],"lemonbin.com":[206],"lifebyleanna.com":[206],"lifeloveandgoodfood.com":[206],"lindseyeatsla.com":[206],"littlebinsbricks.com":[206],"livecrafteat.com":[206],"liveforlivemusic.com":[206],"lnn.co":[206],"low-offset.com":[206],"lowcarblove.com":[206],"madden-school.com":[171],"mallorynikolaus.com":[171],"mamasonabudget.com":[171],"maphappy.org":[171],"masalaherb.com":[171],"mathswithmum.com":[171],"megmadewithlove.com":[171],"mezzoguild.com":[171],"micocinadominicana.com":[171],"missdecarbo.com":[171],"momlovesbaking.com":[171],"mommylabornurse.com":[171],"momsneedtoknow.com":[171],"momsrecipecollection.com":[171],"momswhothink.com":[171],"momswithmouseears.com":[171],"montanaowners.com":[171],"muydelish.com":[171],"myfooddata.com":[171],"myfrugalhome.com":[171],"myglobalviewpoint.com":[171],"mylistoflists.com":[171],"mysweetsavannah.com":[171],"nailsalonsnearme.com":[206],"nationalparksmom.com":[206],"nickishomemadecrafts.com":[206],"norecipes.com":[206],"notenoughcinnamon.com":[206],"nourishingminimalism.com":[206],"nytcrosswordanswers.org":[206],"oakandmarlow.com":[206],"oceaninfo.com":[206],"ohhowcivilized.com":[206],"okonomikitchen.com":[206],"onebeautifulhomeblog.com":[206],"onesweetappetite.com":[206],"orlando-parenting.com":[206],"outsidergaming.com":[206],"paddlingmag.com":[171],"pagingsupermom.com":[171],"pastrybysaloni.com":[171],"pcosnutritionistalyssa.com":[171],"perchancetocook.com":[171],"percolately.com":[171],"persialou.com":[171],"pianodreamers.com":[171],"pieladybakes.com":[171],"pimylifeup.com":[171,214,215],"piratesandprincesses.net":[171],"plantbasedrdblog.com":[171],"popularrecipes.com":[171],"pressurecookingtoday.com":[171],"pricematchguarantee.net":[171],"printabulls.com":[171],"puppyleaks.com":[171],"puptraveller.com":[171],"putacupinit.com":[171],"randaderkson.com":[206],"realadvicegal.com":[206],"reallifenutritionist.com":[206],"recipesthatcrock.com":[206],"recipeswithessentialoils.com":[206],"reheardle.com":[206],"repurposingjunkie.com":[206],"retail-insider.com":[206],"rigorousthemes.com":[206],"rockguitaruniverse.com":[206],"rotoballer.com":[206],"savingdollarsandsense.com":[171],"sayyes.com":[171],"seevanessacraft.com":[171],"shoutoutmiami.com":[171],"siftwithkima.com":[171],"simplicityandastarter.com":[171],"simplyhomecooked.com":[171],"simplyscratch.com":[171],"skinnykitchen.com":[171],"skiptomylou.org":[171],"slashgear.com":[171],"snowbreak.gg":[171],"soapoperaspy.com":[171],"societyofrock.com":[171],"somethingaboutsandwiches.com":[171],"southernbite.com":[171],"sporttrac.org":[171],"spreadsheetpoint.com":[171],"starwarsunlimited.gg":[171],"studentofguitar.com":[171],"stylebyemilyhenderson.com":[171],"sugarlesscrystals.com":[171],"survivingthestores.com":[171],"swaddlesnbottles.com":[171],"sweetpotato3.com":[171],"syllablecounter.io":[171],"symbolsandsynchronicity.com":[171],"theatretrip.com":[171],"thebazaarzone.com":[171],"thechaotictable.com":[171],"thecheekychickpea.com":[171],"thecoconutmama.com":[171],"thecoppertable.com":[171],"thecouponchallenge.com":[171],"thedailypour.com":[171],"thedetroitbureau.com":[171],"thedinkpickleball.com":[171],"thefoodieaffair.com":[171],"theforgottensouth.com":[171],"thehealthfulideas.com":[171],"thehealthyepicurean.com":[171],"thehealthyhoneys.com":[171],"thenewbaguette.com":[171],"thenewcamera.com":[171],"thenourishinggourmet.com":[171],"thepastaqueen.cooking":[171],"theperfectloaf.com":[171],"thepeugeotforums.com":[171],"theproductanalyst.com":[171],"thereallife-rd.com":[171],"theroyalobserver.com":[171],"thestingyvegan.com":[171],"thetabletopfamily.com":[171],"thinkingcloset.com":[171],"thrivinginparenting.com":[171],"toolsofmen.com":[171],"toshistable.com":[171],"tothotornot.com":[171],"towingcap.com":[171],"tvtotalkabout.com":[171],"umamidays.com":[206],"unrulygardening.com":[206],"urbanfarmie.com":[206],"vanillaandbean.com":[206],"victoriamag.com":[206],"warbirdfanatics.com":[206],"webnots.com":[206],"weekendatthecottage.com":[206],"wgrv.com":[206],"whatagirleats.com":[206],"wildexplained.com":[206],"wintips.org":[206],"wmdesignhouse.com":[206],"word-crossy.com":[206],"wordcookieanswer.com":[206],"worldboxingnews.com":[206],"yaycoloringpages.com":[206],"yolopooch.com":[206],"youvegotthismath.com":[206],"1911talk.com":[100],"3dprinterful.com":[100],"959panigale.net":[100],"acadiaforum.net":[100],"amrapideforum.com":[100],"ascentforums.com":[100],"bmwevforum.com":[100],"bmwlt.com":[100],"camaros.net":[100],"canadianmoneyforum.com":[100],"dippy.org":[100],"discoverysport.net":[100],"ducati.ms":[100],"ducati.org":[100],"e-tronforum.com":[100],"flyfishbc.com":[100],"focaljet.com":[100],"fordescape.org":[100],"forteforums.com":[100],"forteturbo.org":[100],"geocaching101.com":[100],"goldenretrieverforum.com":[100],"grcorollaforum.com":[100],"havaneseforum.com":[100],"hemitruckclub.com":[100],"hondaevforum.com":[100],"integratalk.com":[100],"justlabradors.com":[100],"landroversonly.com":[100],"leapmotorforum.com":[100],"lightningrodder.com":[100],"magnetoforum.com":[100],"magnumforumz.com":[100],"morels.com":[100],"mymbonline.com":[100],"mytiguan.com":[100],"mytreg.com":[100],"nissankicksforum.com":[100],"nodakoutdoors.com":[100],"optimaforums.com":[100],"ourbeagleworld.com":[100],"paintballforum.com":[100],"patrol4x4.com":[100],"pistolsmith.com":[100],"plantedtank.net":[100],"powerstrokenation.com":[100],"priusforum.com":[100],"riderforums.com":[100],"saxontheweb.net":[100],"scramblerforum.com":[100],"serial1forum.com":[100],"springfieldforum.com":[100],"sr20forum.com":[100],"thelureforum.com":[100],"trxforums.com":[100],"tucson-forum.com":[100],"victoryforums.com":[100],"vtxoa.com":[100],"wranglerboard.com":[100],"xrv.org.uk":[100],"games.puzzlebaron.com":[216,217],"games.springfieldnewssun.com":[216,217],"games.theadvocate.com":[216,217],"jessicayeahcatch.com":[12,218,20,21],"tpead.net":[104],"cnpics.org":[219],"filmizip.com":[220,12,221,222,223],"lared.cl":[224,225],"saboroso.blog":[226],"elamigosgames.net":[227],"dizipal1567.com":[228],"dizipal1570.com":[228],"dizipal1600.com":[228],"inattv1289.xyz":[229],"inattv1292.xyz":[229],"inattv1319.xyz":[229],"inattv1322.xyz":[229],"latitude.to":[4],"althub.club":[230],"gtamaxprofit.com":[231],"gsmfirmware.net":[232],"haddoz.net":[233],"toppng.com":[234],"newyorker.com":[235],"deepfakeporn.net":[26],"camclips.tv":[236,155,237,238,239,240],"claimrbx.gg":[241],"img4fap.*":[76],"bdlink.pw":[45],"openloadmov.*":[12],"tautasdziesmas.lv":[242],"emulatorgames.net":[243,244],"mailocal2.xyz":[245],"camhoes.tv":[40,239,246,247,248,249,250],"brindisireport.it":[251],"radioitalylive.com":[252],"radiosantaclaus.com":[252],"radionatale.com":[252],"afrodity.sk":[253],"cotannualconference.org.uk":[253],"kat2.*":[91,254],"javynow.com":[12],"whatisareverseauction.com":[255],"sibtok.com":[255],"codesnail.com":[256],"thothub.*":[257,258,259],"momo-net.com":[260,261],"netxwatch.*":[262],"videosinlevels.com":[263],"pussy.org":[12],"kannadamasti.*":[12],"civilenggforall.com":[42],"codare.fun":[264],"pussy-hub.com":[265],"maxstream.video":[96,266,12],"xteensex.net":[11],"nudes7.com":[267],"eductin.com":[4],"kppk983.com":[268],"wcofun.*":[269,270],"dotadostube.com":[271],"cubshq.com":[272],"mobile-tracker-free.com":[273],"newsmondo.it":[274],"scrolller.com":[224],"quizack.com":[120,275],"media.cms.nova.cz":[276],"mediatn.cms.nova.cz":[277],"mmorpg.org.pl":[278],"fullxxxporn.net":[76],"xxxextreme.org":[126],"topembed.pw":[123],"xhomealone.com":[249],"afdah2.com":[279],"bestmp3converter.com":[280,281],"pics4upload.com":[27],"humanorganising.org":[282],"shellplay.*":[282],"shellshockers.*":[282],"camsstream.com":[283],"sattaguess.com":[284],"moviegan.*":[285,132],"bitssurf.com":[286],"gawbne.com":[287],"sab.bz":[288],"mangacrab.com":[289],"sexjobs.es":[290],"ozulscans.com":[197],"nudostar.com":[134,291],"woiden.id":[120],"youpouch.com":[292],"yesdownloader.com":[45],"uploadgig.com":[12],"zedporn.com":[293,294],"tagecoin.com":[295,296,297],"topsporter.net":[298,299,4,300,301,302,303,304],"compromath.com":[197],"dlhd.sx":[305,114,306],"moegirl.org.cn":[307],"my-subs.co":[308],"an1me.*":[309],"madoohd.com":[310],"kafeteria.pl":[311,312,313],"taodung.com":[314],"unitystr.com":[120],"kayifamilytv.com":[315],"fapdrop.com":[316,317,318],"freepic-downloader.com":[319],"hentai-one.com":[320],"w3cub.com":[321],"trakt.tv":[322],"kuponigo.com":[323],"povvvideo.*":[12],"bingsport.xyz":[58],"memedroid.com":[324],"xanimu.com":[325,126],"ecamrips.com":[326,327,328],"bizdustry.com":[4],"xhamster13.*":[329,330,331,332,333,334],"xhamster46.*":[329,330,331,332,333,334],"play.nova.bg":[335,336],"porntrex.com":[337],"richtoscan.com":[129],"byseraguci.com":[109,338,12],"an1.com":[339,12],"modcombo.com":[45],"wohnmobilforum.de":[340],"govtech.com":[341],"toggo.de":[342],"pink-sluts.net":[343],"video.pemersatu.org":[344],"kumapoi.info":[271],"vinstartheme.com":[120],"blocklayer.com":[345],"schoolgirls-asia.org":[27],"sharing.wtf":[346,347],"th.gl":[348,349],"shownieuws.nl":[350],"filmizlehdizle.com":[351],"hdstream.one":[352],"m9.news":[353],"btvnovinite.bg":[168,120,354],"lovetofu.cyou":[12],"nflscoop.xyz":[151],"wishflix.cc":[355],"flyplayer.xyz":[12],"ebook-hell.to":[12],"wooflix.tv":[356,12],"pngitem.com":[357],"tab-maker.com":[358],"wvt.free.nf":[129,12,359],"strikeout.im":[109],"www.amazon.com":[360,361],"www.amazon.de":[360],"read.amazon.*":[362,363,364],"gorro-4go5b3nj.fun":[12],"uptime4.com":[365],"afreesms.com":[12],"dramafren.org":[298,365,109,12],"bigconv.com":[12],"breznikar.com":[366],"sport.es":[221],"maxicast.*":[124],"apex2nova.com":[367],"fbstream.is":[368,151],"vegamovvies.to":[369],"manhuaga.com":[370],"latinluchas.com":[168],"cerberusapp.com":[371,372],"sexfilmkiste.com":[373],"towheaddeepthroat.com":[373],"elperiodicodearagon.com":[374],"negyzetmeterarak.hu":[375],"instantcloud.site":[12],"cricfy.net":[376],"thehealthsite.com":[377],"goplay.su":[378,379,380,381],"goplay.ml":[379],"steamplay.*":[382,15,155,383,12,384],"origami.me":[365],"eee1.lat":[385],"viduyy.com":[386,124],"anigo.to":[12],"miruro.*":[387],"drakkar.st":[345],"starcima.com":[124,388],"printables.com":[389],"pemersatu.top":[390],"narto-drama.com":[391],"get2.in":[392],"drop.carbikenation.com":[393,394,395],"livenewsflix.com":[396,397,314],"sharclub.in":[398,399],"faiviral.com":[400],"rawlazy.si":[401],"bigdata.rawlazy.si":[402],"sugarona.com":[403],"upfiles.app":[404,405,31,406,407],"intercelestial.com":[408,12],"bluemedialink.*":[76,26,409],"lokerwfh.net":[410,411,52,45,365,124],"classicoder.com":[309],"4k2h4w04.xyz":[12,412],"myair2.resmed.com":[413],"cerbahealthcare.it":[414,415],"digicol.dpm.org.cn":[416,417],"myair.resmed.com":[418],"tv5mondeplus.com":[419,420],"topgear.com":[421],"kb.arlo.com":[422,423],"motocykl-online.pl":[424]};
-const EXCEPT = {"uii.io":["noeval"],"pingit.com":["abort-on-property-read\u0001AaDetector","abort-on-property-read\u0001open","abort-on-property-read\u0001rmVideoPlay","abort-on-property-read\u0001_pop","abort-on-property-write\u0001Fingerprint2","set-constant\u0001blurred\u0001false"],"vr.pornhat.*":["abort-on-property-read\u0001document.dispatchEvent"],"vidsrc.*":["abort-current-script\u0001EventTarget.prototype.addEventListener\u0001delete window"],"bilibili.com":["json-prune-fetch-response\u0001data.item.[-].business_info.ad_desc\u0001\u0001/feed/rcmd"],"titulky.com":["set-constant\u0001xmxalr"],"idnes.cz":["abort-current-script\u0001HTMLIFrameElement.prototype.contentWindow"],"notube.com":["no-window-open-if"],"oxy.edu":["abort-current-script\u0001$\u0001window.open","no-setInterval-if\u0001.hide","abort-current-script\u0001$\u0001localStorage"],"money.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad","set-constant\u0001Object.prototype.rekids\u0001undefined","set-constant\u0001Object.prototype.gafSlot\u0001undefined","set-constant\u0001Object.prototype.advViewability\u0001undefined"],"kobieta.wp.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"gadzetomania.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"fotoblogia.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"komorkomania.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"wiadomosci.wp.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"tech.wp.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"dom.wp.pl":["no-setTimeout-if\u0001detected\u0001300"],"facet.wp.pl":["no-setTimeout-if\u0001detected\u0001300"],"film.wp.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"finanse.wp.pl":["no-setTimeout-if\u0001detected\u0001300"],"gry.wp.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"gwiazdy.wp.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"ksiazki.wp.pl":["no-setTimeout-if\u0001detected\u0001300"],"kuchnia.wp.pl":["no-setTimeout-if\u0001detected\u0001300"],"moto.wp.pl":["no-setTimeout-if\u0001detected\u0001300"],"opinie.wp.pl":["no-setTimeout-if\u0001detected\u0001300"],"pogoda.wp.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"teleshow.wp.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"turystyka.wp.pl":["no-setTimeout-if\u0001detected\u0001300"],"wideo.wp.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"wawalove.wp.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"autokult.pl":["no-setTimeout-if\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"horoskop.wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"tv.wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"twojeip.wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"sportowefakty.wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad","set-constant\u0001Object.prototype.loadBunch\u0001noopFunc","abort-on-property-read\u0001Object.prototype.bodyCode","abort-on-property-read\u0001WP.inline"],"fitness.wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad","abort-on-property-read\u0001WP.inline","no-setTimeout-if\u0001/getComputedStyle[\\s\\S]*?style\\.display=\"none\"[\\s\\S]*?styleBlocked[\\s\\S]*?detected/"],"www.wp.pl":["abort-on-property-read\u0001__headpayload","abort-on-stack-trace\u0001WP\u0001r https","set-constant\u0001WP.gaf.loadBunch\u0001noopFunc"],"games.dailymail.co.uk":["abort-on-property-read\u0001Notification"],"games.dailymail.com":["abort-on-property-read\u0001Notification"],"platform.twitter.com":["json-prune-xhr-response\u0001data.home.home_timeline_urt.instructions.[].entries.[-].content.itemContent.promotedMetadata\u0001\u0001propsToMatch\u0001url:/Home","json-prune-xhr-response\u0001data.search_by_raw_query.search_timeline.timeline.instructions.[].entries.[-].content.itemContent.promotedMetadata\u0001\u0001propsToMatch\u0001url:/SearchTimeline","json-prune-xhr-response\u0001data.threaded_conversation_with_injections_v2.instructions.[].entries.[-].content.items.[].item.itemContent.promotedMetadata\u0001\u0001propsToMatch\u0001url:/TweetDetail","json-prune-xhr-response\u0001data.user.result.timeline_v2.timeline.instructions.[].entries.[-].content.itemContent.promotedMetadata\u0001\u0001propsToMatch\u0001url:/UserTweets","json-prune-xhr-response\u0001data.immersiveMedia.timeline.instructions.[].entries.[-].content.itemContent.promotedMetadata\u0001\u0001propsToMatch\u0001url:/ImmersiveMedia"],"filmweb.pl":["abort-current-script\u0001decodeURIComponent\u0001newAdblockBoardDisplayed"],"linkneverdie.net":["no-setTimeout-if\u0001t"],"dziennik.pl":["abort-current-script\u0001parseInt\u0001adblock"],"gunauc.net":["no-fetch-if\u0001pagead2.googlesyndication.com"],"daddylive.link":["abort-on-property-read\u0001require"],"player.pl":["json-prune\u0001movie.advertising.ad_server"],"lookmovie.studio":["set-constant\u0001Yii2App.playbackTimeout\u00010"],"jobzhub.store":["replace-node-text\u0001script\u0001/initialTimeSeconds = \\d+/\u0001initialTimeSeconds = 7","adjust-setInterval\u0001tid\u0001*\u00010.02"],"fitdynamos.com":["replace-node-text\u0001script\u0001/initialTimeSeconds = \\d+/\u0001initialTimeSeconds = 7","adjust-setInterval\u0001tid\u0001*\u00010.02"],"labgame.io":["replace-node-text\u0001script\u0001/initialTimeSeconds = \\d+/\u0001initialTimeSeconds = 7","adjust-setInterval\u0001tid\u0001*\u00010.02"],"sayphotobooth.com":["adjust-setInterval\u0001tp-time\u0001*\u00010.001"],"encurtador.postazap.com":["adjust-setInterval\u0001timer\u0001*\u00010.001"],"intercelestial.com":["adjust-setTimeout\u0001\u0001*\u00010.1"],"hubdrive.com":["no-window-open-if","addEventListener-defuser\u0001\u0001history.go"],"hubdrive.de":["no-window-open-if","addEventListener-defuser\u0001\u0001history.go"],"dziennikbaltycki.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"dzienniklodzki.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"dziennikpolski24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"dziennikzachodni.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"echodnia.eu":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"expressbydgoski.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"expressilustrowany.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gazetakrakowska.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gazetalubuska.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gazetawroclawska.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gk24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gloswielkopolski.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gol24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gp24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gra.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gs24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"kurierlubelski.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"motofakty.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"naszemiasto.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"nowiny24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"nowosci.com.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"nto.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"polskatimes.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"pomorska.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"poranny.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"sportowy24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"strefaagro.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"strefabiznesu.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"stronakobiet.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"telemagazyn.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"to.com.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"wspolczesna.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"abczdrowie.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad","no-setTimeout-if\u0001visibility\u00010"],"job.mt.de":["no-setTimeout-if\u0001.call(null)\u000110"],"job.nw.de":["no-setTimeout-if\u0001.call(null)\u000110"],"uqload.co":["abort-current-script\u0001document.createElement\u0001break;case $."],"yandex.*":["abort-on-property-read\u0001Object.prototype.renderDirect):matches-path(/\\/(?:weather\\/|pogoda\\/|hava\\/)/"],"pilot.wp.pl":["abort-on-property-read\u0001WP.inline"],"poczta.wp.pl":["abort-on-property-read\u0001WP.inline"],"open.fm":["set-constant\u0001Object.prototype.gafSlot\u0001undefined"],"dobreprogramy.pl":["abort-on-property-read\u0001wp_consent_color"]};
-// Tarcza – biblioteka scriptletów (kompatybilna składniowo z uBlock Origin).
-// Ten kod jest wklejany przez build.mjs do scriptlets/<lista>.js i uruchamiany
-// w świecie MAIN strony na document_start, zanim wykonają się skrypty strony.
-// Wszystko jest zamknięte w IIFE – nic nie wycieka do globalnego zakresu strony.
-
+const CALLS = [["prevent-fetch","adsbygoogle"],["remove-node-text","script","/\"v4ac1eiZr0\"|\"\"\\)\\.split\\(\",\"\\)\\[4\\]|(\\.localStorage\\)|JSON\\.parse\\(\\w)\\.getItem\\(\"|[\"']_aQS0\\w+[\"']|decodeURI\\(decodeURI\\(\"|<a href=\"https:\\/\\/getad%|\"cmp\\.updated\"/"],["abort-current-script","showAds"],["prevent-setTimeout","adBlockerDetected"],["prevent-setTimeout","show"],["prevent-xhr","damoh"],["prevent-setTimeout",".call(null)","10"],["abort-on-property-read","_sp_._networkListenerData"],["abort-on-property-write","_sp_"],["abort-current-script","document.querySelector","popupBlocked"],["abort-current-script","Math","/\\}\\s*\\(.*?\\b(self|this|window)\\b.*?\\)/"],["abort-on-property-read","exoNoExternalUI38djdkjDDJsio96"],["prevent-window-open"],["abort-on-property-read","document.createElement"],["remove-attr","href|target","a[href=\"https://imgprime.com/view.php\"][target=\"_blank\"]","complete"],["abort-on-property-write","Fingerprint2"],["abort-current-script","$","show"],["abort-on-property-write","adBlockDetected"],["abort-on-property-read","ExoLoader.serve"],["remove-node-text","script","/h=decodeURIComponent|popundersPerIP/"],["abort-current-script","globalThis","break;case"],["abort-current-script","WebAssembly","atob"],["prevent-window-open","|"],["abort-current-script","setTimeout","admc"],["abort-current-script","String.fromCharCode","shift"],["remove-node-text","script","{delete window["],["abort-on-property-read","open"],["abort-on-property-read","loadTool"],["set-constant","page_params.holiday_promo","true"],["abort-current-script","blur"],["abort-on-property-write","smrtSB"],["set-constant","blurred","false"],["abort-on-property-read","__eiPb"],["abort-on-property-read","document.dispatchEvent"],["prevent-addEventListener","","_0x"],["set-constant","CnnXt.Event.fire","noopFunc"],["abort-current-script","atob","decodeURIComponent"],["abort-current-script","Math","zfgloaded"],["abort-on-property-write","KillAdBlock"],["abort-current-script","crakPopInParams"],["abort-current-script","onload","onclick"],["abort-on-property-read","blockAdBlock"],["prevent-addEventListener","DOMContentLoaded","src=atob"],["abort-current-script","addEventListener","nextFunction"],["adjust-setInterval"],["abort-on-property-read","_wm"],["prevent-addEventListener","load","nextFunction"],["prevent-addEventListener","load","2000"],["abort-on-property-read","popit"],["prevent-addEventListener","popstate","noPop"],["abort-on-property-read","encodeURIComponent"],["adjust-setTimeout"],["set-constant","adblockEnabled","false"],["abort-current-script","decodeURI","decodeURIComponent"],["abort-on-property-read","exoJsPop101"],["abort-current-script","document.querySelectorAll","popMagic"],["abort-current-script","adBlockDetected"],["abort-current-script","document.documentElement","break;case $."],["abort-on-property-write","block_detected"],["prevent-addEventListener","click"],["abort-on-property-read","AaDetector"],["abort-current-script","String.fromCharCode","/btoa|break/"],["abort-on-property-read","checkAds"],["abort-on-property-read","SmartWallSDK"],["prevent-setTimeout","displayCookieWallBanner"],["abort-on-property-read","Popunder"],["abort-current-script","setTimeout","bait.css"],["abort-on-property-read","popunders"],["set-constant","is_adblocked","false"],["set-constant","jQuery.adblock","false"],["abort-on-property-write","downloadJSAtOnload"],["abort-current-script","Date","='\\x"],["abort-current-script","document.head.appendChild","='\\x"],["set-constant","cnbc.canShowAds","true"],["abort-current-script","String.prototype.charAt"],["abort-on-property-read","decodeURI"],["abort-on-property-read","ExoLoader.addZone"],["abort-on-property-read","Math.floor"],["prevent-setTimeout","adb"],["abort-current-script","document.getElementsByTagName","script"],["prevent-addEventListener","","checkTarget"],["set-constant","blockAdBlock","trueFunc"],["abort-on-property-read","app_vars.force_disable_adblock"],["prevent-addEventListener","click","popunder"],["trusted-replace-node-text","script","/\\\"homad\\\",/"],["trusted-replace-node-text","script","useAdBlockDefend: true","useAdBlockDefend: false"],["remove-node-text","script","DisplayAcceptableAdIfAdblocked"],["trusted-replace-xhr-response","/\"enabled\":\\s*true/","\"enabled\":false","svonm.com"],["json-prune","adRequest"],["abort-on-property-read","AdservingModule"],["abort-on-property-read","loadRunative"],["abort-current-script","document.getElementById","adblock"],["prevent-addEventListener","","break;case $."],["abort-on-property-read","onload"],["prevent-setTimeout","Delay"],["abort-current-script","jQuery","ai_adb"],["abort-on-property-read","adBlockDetected"],["prevent-setTimeout","alert"],["remove-node-text","script","/\\(async\\s*\\(\\)\\s*=>\\s*\\{\\s*try\\s*\\{\\s*(const|var)/"],["abort-current-script","document.createElement","abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/="],["remove-node-text","script","await eval"],["remove-node-text","script","html-load.com"],["remove-node-text","script","rcom_bdScriptLoaded"],["remove-node-text","script","/==undefined.*body/"],["abort-current-script","JSON.parse","Promise"],["remove-node-text","script","/WebAssembly|forceunder/"],["prevent-setInterval","adblock"],["abort-on-property-read","Adcash"],["abort-current-script","parseInt","break;case $."],["remove-node-text","script","justDetectAdblock"],["abort-current-script","EventTarget.prototype.addEventListener","delete window"],["abort-on-property-read","checkAdBlock"],["prevent-setTimeout","onDetected"],["abort-on-property-read","navigator.brave"],["remove-node-text","script",";}}};break;case $."],["abort-on-property-write","u_cfg"],["prevent-setTimeout","sadbl"],["remove-node-text","script","/adserverDomain|\\);break;case /"],["abort-current-script","JSON.parse","break;case $."],["abort-current-script","Math","break;case $."],["prevent-addEventListener","click","popMagic"],["prevent-fetch","googlesyndication"],["abort-on-property-write","p$00a"],["remove-node-text","script","ai_adb"],["remove-node-text","script","adserverDomain"],["prevent-window-open","_blank"],["abort-current-script","document.write"],["prevent-addEventListener","getexoloader"],["prevent-addEventListener","","0x"],["abort-on-property-write","tiPopAction"],["noeval-if","/chp_?ad/"],["prevent-addEventListener","","popMagic"],["remove-node-text","script","popMagic"],["abort-current-script","document.createElement","l.parentNode.insertBefore(s"],["remove-node-text","script","/popunder|contextmenu/"],["abort-on-property-write","__aaZoneid"],["trusted-replace-node-text","script","window.csrf_token =","window.userID = 1;window.csrf_token =","excludes","window.userID"],["abort-on-property-read","popns"],["abort-current-script","addEventListener","HTMLAllCollection"],["abort-current-script","document.createElement","l.parentNode.insertBefore(s","/^data:/"],["noeval"],["abort-on-property-read","Aloader.serve"],["abort-current-script","document.dispatchEvent","myEl"],["abort-current-script","JSON.parse","atob"],["prevent-addEventListener","DOMContentLoaded","canRedirect"],["prevent-addEventListener","load","onload"],["abort-current-script","u_cfg"],["remove-node-text","script","/adblock|popunder|openedPop|WebAssembly|wpadmngr/"],["abort-on-property-read","__aaZoneid"],["abort-on-property-write","DoodPop"],["remove-node-text","script","wpadmngr.com"],["abort-on-property-read","aclib"],["abort-current-script","navigator","FingerprintJS"],["abort-on-property-read","initPu"],["abort-current-script","puShown","/doOpen|popundr/"],["abort-on-property-read","console.clear"],["adjust-setInterval","timer"],["prevent-window-open","!/prcf.fiyar|themes|pixsense|.jpg/"],["prevent-setTimeout","displayMessage","2000"],["prevent-addEventListener","load","block"],["remove-node-text","script","baits.push"],["prevent-fetch","/googlesyndication|doubleclick/","length:10","{\"type\": \"cors\"}"],["prevent-xhr","/googlesyndication|doubleclick/","length:10"],["abort-on-property-read","adsBlocked"],["abort-on-property-write","ai_front"],["prevent-addEventListener","load","abDetectorPro"],["prevent-xhr","googlesyndication"],["remove-node-text","script","Datafadace"],["abort-on-property-read","googletag"],["remove-node-text","script","/__adblocker|html-load/","excludes","self.__next"],["remove-node-text","script","admiral","excludes","/,\\\\\"|self\\.__next|pageProps/"],["remove-node-text","script","/\\.cmd\\.unshift|adblockerDisabled/","excludes",",\\\""],["trusted-replace-node-text","script","/^/","(()=>{window.admiral=function(d,a,b){if(\"function\"==typeof b)try{b({})}catch(a){}}})();","sedCount","1"],["set-constant","__INITIAL_DATA__.siteData.admiralScript"],["abort-current-script","admiral"],["set-constant","Object.prototype.shouldExpectGoogleCMP","false"],["remove-node-text","script","/window\\.admiral|adblockerDisabled/","excludes",",\\\""],["remove-node-text","script","/\\(\\)=>eval|html-load\\.com|await eval|:window/"],["set-constant","Object.prototype.adService.initialize","noopFunc"],["remove-node-text","script","/admiral|\\[\\]\\)\\.push\\(arguments\\)/","excludes",",\\\""],["remove-node-text","script","[]).push(arguments)","excludes",",\\\""],["remove-node-text","script","adblockerDisabled","excludes",",\\\""],["remove-node-text","script",".cmd.unshift","excludes",",\\\""],["remove-node-text","script","admiral","excludes",",\\\""],["set-constant","gnt.x.uam","undefined","runAt","interactive"],["set-constant","_sp_.msg.displayMessage","noopFunc"],["set-constant","dc.adfree","true"],["json-edit","..props.children.*[?.key==\"admiral-script\"]"],["trusted-json-edit","..props.config.ad.enabled=false"],["trusted-json-edit","..Admiral.isEnabled=false"],["trusted-json-edit","..admiral=false"],["trusted-json-edit","..AdShield.isEnabled=false"],["prevent-setTimeout","error-report.com"],["remove-attr","onerror","script[id][onerror]","asap","quitAfter","10"],["remove-node-text","script","/\\(\\)=>eval|&&window\\}/"],["remove-node-text","script","/:window,|\\)\\.join\\(String\\.fromCharCode/"],["remove-node-text","script","/html-load\\.com|:\\[?window,/"],["remove-node-text","script","/:\\[?window,/"],["prevent-setInterval","0x"],["remove-node-text","script","error-report.com"],["prevent-fetch","ads"],["prevent-setTimeout","/getComputedStyle|bait/"],["set-constant","AController_3","noopFunc"],["trusted-replace-node-text","script","if (isBlocked)","if (false)"],["remove-node-text","script","assets/check"],["remove-node-text","script","void 0||window,"],["remove-node-text","script","()=>eval"],["remove-node-text","script","void 0 || window,"],["set-constant","SF.adblock","true"],["remove-node-text","script","/__adblocker|html-load/"],["remove-node-text","script","\"data-sdk\""],["prevent-setTimeout","[native code]","500"],["remove-node-text","script","/\\(\\)=>eval|html-load\\.com|await eval|:\\[?window,/"],["remove-node-text","script","/\\)\\.join\\(String\\.fromCharCode|siteActivateScripts/"],["remove-node-text","script","/\\)\\.join\\(String\\.fromCharCode|html-load\\.com/"],["set-constant","Object.prototype.htmlLoadScriptService.loadScript","noopFunc"],["remove-node-text","script","/\"__adblocker\"|\"data-sdk\"/"],["abort-on-property-read","adthrive.config"],["prevent-fetch","marmalade"],["set-constant","__INITIAL_STATE__.config.theme.ads.isAdBlockerEnabled","false"],["adjust-setInterval","generalTimeLeft","*","0.001"],["set-constant","console.clear","undefined"],["remove-node-text","script","/detectAdblock|WebAssembly|pop1stp|popMagic/i"],["remove-node-text","script","/popMagic|pop1stp/"],["prevent-fetch","googlesyndication","length:40000-60000"],["prevent-fetch","mode:no-cors"],["prevent-fetch","outbrain"],["remove-node-text","script","zIndex"],["prevent-fetch","doubleclick"],["set-constant","googletag._loaded_","true"],["remove-node-text","script","/bait/i"],["prevent-setTimeout","checkAdblockUser"],["trusted-replace-node-text","script","/manageAds\\(video_urls\\[activeItem\\], video_seconds\\[activeItem\\], ad_urls\\[activeItem],true\\);/","playVideo();","condition","playAdd"],["trusted-replace-node-text","script","prerollEnabled:true","prerollEnabled:false"],["remove-node-text","script","Adblock"],["abort-current-script","$","wrapfabtest"],["abort-current-script","eval","ignielAdBlock"],["set-constant","adBlockDetected","noopFunc"],["prevent-setTimeout","nextFunction","250"],["set-constant","paywallGateway.truncateContent","noopFunc"],["abort-current-script","onload"],["prevent-addEventListener","","pop"],["prevent-addEventListener","","Pop"],["set-constant","flashvars.adv_pause_html"],["set-constant","flashvars.popunder_url","undefined"],["prevent-setTimeout","swal","500"],["abort-on-property-read","wpsite_clickable_data"],["adjust-setInterval","","","0.3"],["adjust-setTimeout","","7000","0"],["prevent-setInterval","visibility","1000"],["set-constant","flashvars.adv_start_html"],["set-constant","flashvars.logo_text"],["set-constant","flashvars.mlogo"],["set-constant","flashvars.popunder_url"],["set-constant","hasPoped","true"],["prevent-setTimeout","bADBlock"],["abort-on-property-read","adp"],["abort-current-script","document.createElement","script"],["abort-on-property-write","ospen"],["adjust-setTimeout","download","1100"],["prevent-setTimeout","css_class.show"],["prevent-addEventListener","contextmenu"],["abort-on-property-read","document.body.appendChild"],["abort-on-property-read","__Y"],["set-constant","sgpbCanRunAds","true"],["abort-current-script","document.addEventListener","google_ad_client"],["prevent-addEventListener","click","popundr"],["adjust-setTimeout",".fadeIn()","3000"],["abort-current-script","document.addEventListener","adsbygoogle"],["set-constant","google_unique_id","6"],["prevent-setTimeout","AdBlock"],["set-constant","isAdBlockActive","false"],["noeval-if","ads"],["abort-current-script","document.getElementById","JSON"],["set-constant","detectBlockAds","noopFunc"],["abort-current-script","document.getElementById","detect"],["adjust-setTimeout","isScrexed","5000"],["adjust-setTimeout","() => n(t)","*"],["adjust-setTimeout","() => t()","*"],["prevent-fetch","wtg-ads"],["abort-on-property-read","mm"],["prevent-window-open","!download"],["remove-node-text","script","/adbl/i"],["trusted-replace-node-text","script","const PerformanceTracker","aiptag.cmd.display.push=a=>{},aiptag.cmd.player.push=a=>a(),aipPlayer=class{constructor(a){this.o=a}startPreRoll(a,s){this.o.AIP_REWARDEDCOMPLETE()}},aipAPItag={sdkBlocked:!1};const PerformanceTracker"],["abort-current-script","onload","open"],["set-constant","detectAdBlock","noopFunc"],["prevent-xhr","ads"],["abort-current-script","document.getElementById","ads"],["adjust-setInterval","counter","2000"],["abort-on-property-read","jsPopunder"],["prevent-setTimeout","","500"],["abort-current-script","JSON.parse","htmlSectionsEncoded"],["abort-current-script","$","wbar"],["set-attr",".lazy","src","[data-sco-src]"],["set-constant","vastEnabled","false"],["abort-on-property-write","BetterJsPop"],["abort-current-script","alert"],["abort-current-script","document.createElement","adsBlocked"],["prevent-addEventListener","load","htmls"],["abort-current-script","eval","replace"],["prevent-setTimeout","keepChecking"],["abort-current-script","document.onkeypress"],["abort-current-script","document.oncontextmenu"],["prevent-xhr","doubleclick"],["remove-node-text","script","/ConsoleBan|alert|AdBlocker/"],["prevent-fetch","/^/"],["prevent-setTimeout","offsetHeight"],["set-constant","timeLeft","0"],["set-constant","adSettings","[]"],["adjust-setInterval","consoleLoaded?clearInterval"],["prevent-setTimeout","HubAPI","3000"],["prevent-addEventListener","message","t.origin===k"],["noeval-if","replace"],["prevent-addEventListener","DOMContentLoaded","adsBlocked"],["prevent-setTimeout","redURL"],["prevent-fetch","google-analytics"],["prevent-setTimeout","/[a-z]\\(!0\\)/","800"],["prevent-setTimeout","/detectAdBlocker|window.open/"],["remove-node-text","script","window.location.replace"],["prevent-setTimeout","/adScriptPath|MMDConfig/"],["remove-node-text","script","Exo"],["remove-node-text","script","/document\\.head\\.appendChild|window\\.open/"],["abort-current-script","document.cookie","document.head.appendChild"],["abort-current-script","OpenInNewTab_Over"],["set-cookie","ts_popunder","true","","reload","1"],["trusted-replace-node-text","script","popunder","","condition","popunder","stay","1"],["prevent-addEventListener","click","[native code]","elements",".main-wrap"],["abort-current-script","document.createElement","window.ts"],["remove-node-text","script","bannerRight"],["remove-cookie","video_view_count"],["prevent-xhr","/googlesyndication|googima\\.js|imasdk/"],["prevent-fetch","/googlesyndication|googima\\.js|imasdk/"],["trusted-replace-node-text","script","this.config.pop.enabled","false","sedCount","10"],["prevent-setTimeout","readyWait"],["adjust-setTimeout","countdown","*"],["prevent-setTimeout","nextFunction"],["trusted-set-cookie","adTakeOver","seen"],["set-constant","PageLoader.DetectAb","0"],["set-attr","iframe#pmt-smart-frame[src=\"about:blank\"][data-pmt-player-src^=\"http\"]","src","[data-pmt-player-src]"],["prevent-setTimeout","getComputedStyle"],["remove-node-text","script","adblocker"],["set-constant","amiblock","0"],["set-session-storage-item","_x9f2e_20251112","true"],["set-constant","Object.prototype.ADBLOCK_DETECTION"],["trusted-json-edit",".features.*[?.slug==\"adblock-detection\"].enabled=false"],["trusted-replace-node-text","script","this.ads.length > this.ads_start","1==2"],["remove-node-text","script","popundersPerIP"],["remove-node-text","script","m9-ad-modal"],["prevent-fetch","imasdk"],["trusted-replace-node-text","script","(self.__next_f=","[\"timeupdate\",\"durationchange\",\"ended\",\"enterpictureinpicture\",\"leavepictureinpicture\",\"loadeddata\",\"loadedmetadata\",\"loadstart\",\"pause\",\"play\",\"playing\",\"ratechange\",\"resize\",\"seeked\",\"seeking\",\"suspend\",\"volumechange\",\"waiting\"].forEach((e=>{window.addEventListener(e,(()=>{const e=document.getElementById(\"player\"),t=document.querySelector(\".plyr__time\");e.src.startsWith(\"https://i.imgur.com\")&&\"none\"===window.getComputedStyle(t).display&&(e.src=\"https://cdn.plyr.io/static/blank.mp4\",e.paused&&e.plyr.play())}))}));(self.__next_f=","sedCount","1"],["abort-on-property-write","Adcash"],["abort-on-property-write","window.onload"],["prevent-fetch","googletagmanager","length:10"],["abort-current-script","document.getElementById","window.open"],["prevent-setTimeout","()","150"],["json-prune","cuepointPlaylist vodPlaybackUrls.result.playbackUrls.cuepoints vodPlaylistedPlaybackUrls.result.playbackUrls.pauseBehavior vodPlaylistedPlaybackUrls.result.playbackUrls.pauseAdsResolution vodPlaylistedPlaybackUrls.result.playbackUrls.intraTitlePlaylist.[-].shouldShowOnScrubBar ads"],["trusted-replace-node-text","script","window.renderStoresWidgetsPluginList=","//window.renderStoresWidgetsPluginList=","condition","Custom Advertising/AWLS/Video Reveal"],["set-constant","canRunAds","1"],["set-constant","ue_adb_chk","1"],["trusted-click-element",".kw-ads-pagination-button:first-child,.kw-ads-pagination-button:first-child","","1000"],["trusted-prevent-fetch","imasdk","ad.doubleclick.net bid.g.doubleclick.net ggpht.com google.co.uk google.com googleads.g.doubleclick.net googleads4.g.doubleclick.net googleadservices.com googlesyndication.com googleusercontent.com gstatic.com gvt1.com prod.google.com pubads.g.doubleclick.net s0.2mdn.net static.doubleclick.net surveys.g.doubleclick.net youtube.com ytimg.com"],["prevent-xhr","adsbygoogle"],["trusted-set-cookie-reload","godbayadblock","godbayadblock"],["prevent-setTimeout","modal"],["remove-node-text","script","delete window"],["remove-node-text","script","/delete window|popundersPerIP|var FingerprintJS|adserverDomain|globalThis;break;case|ai_adb|adContainer/"],["abort-on-property-read","LieDetector"],["noeval-if","adsbygoogle"],["set-constant","stoCazzo","true"],["abort-current-script","eval","fetchAdsScript"],["set-constant","dclm_ajax_var.disclaimer_redirect_url"],["prevent-setTimeout","sub"],["remove-node-text","script","adsbygoogle"],["abort-current-script","googletag"],["abort-current-script","EventTarget.prototype.addEventListener","onerror"],["prevent-window-open","!addons.mozilla.org"],["json-prune","*","rot_url"],["noeval-if","innerHTML"],["remove-cookie","/abd/"],["abort-on-property-read","btoa"],["abort-on-property-write","adcashMacros"],["abort-on-property-read","jwplayer.utils.Timer"],["set-constant","flashvars.adv_pre_vast"],["set-constant","flashvars.adv_pre_vast_alt"],["set-constant","HTMLImageElement.prototype.onerror","undefined"],["prevent-fetch","method:/head/i"],["set-constant","__SSR_CONFIG__.monkey","undefined"],["trusted-set-local-storage-item","sc_last_pop","$now$"],["json-prune-fetch-response","data.promotions","","propsToMatch","/graphql"],["remove-node-text","script",".offsetParent"],["trusted-replace-node-text","script","/const (adsShowModeTime|hilltopDirectLinkConsentRequired) = true;/g","const $1 = false;"],["trusted-replace-node-text","script","intentUrl;","destination;"],["adjust-setInterval","/.?/","*","0.02"],["trusted-replace-node-text","script","/false;/gm","true;","condition","isSubscribed"],["trusted-replace-node-text","script","('t_modal')","('go_d2')"],["set-constant","timeSec","0"],["adjust-setTimeout","getlink","*","0.001"],["abort-on-property-read","AdBDetected"],["trusted-replace-node-text","script","timeLeft = duration","timeLeft = 0"],["prevent-setTimeout","/window\\.location\\.href|n/","8000"],["adjust-setTimeout","/\\$\\('|ai-close/","*","0.001"],["adjust-setInterval","counter","*","0.001"],["remove-node-text","script","AdbModel"],["prevent-addEventListener","DOMContentLoaded","history.go"],["prevent-addEventListener","click","shouldOpenPopUp"],["prevent-addEventListener","/blur|focus/"],["prevent-fetch","/scorecardresearch\\.com|outbrain\\.com|taboola\\.com|criteo\\.net|rubiconproject\\.com|adform\\.net|casalemedia\\.com|adservice\\.google\\.com/","","{\"type\": \"opaque\"}"],["prevent-addEventListener","DOMContentLoaded","onpopstate"],["remove-node-text","script","FingerprintJS"],["prevent-fetch","googlesyn"],["adjust-setTimeout","/.?/","*"],["abort-current-script","Math","localStorage['\\x"],["prevent-xhr","cloudflare.com/cdn-cgi/trace"],["set-constant","pa","{}"],["set-constant","Object.prototype.setConfigurations","noopFunc"],["set-constant","dplus","{}"],["set-constant","dplus.track","noopFunc"],["prevent-xhr","1.1.1.1/cdn-cgi/trace"],["remove-cookie","didomi_token"],["set-local-storage-item","didomi_token","$remove$"],["set-constant","_sp_.config.events.onSPPMObjectReady","noopFunc"],["set-constant","_vwo_code","{}"],["set-constant","_vwo_code.init","noopFunc"],["adjust-setInterval","redirectId"]];
+const HOSTS = {"allmusic.com":[0,1],"golem.de":[2,3,4,5,6],"muthead.com":[7],"car.com":[8],"transfermarkt.*":[9,10,6],"myreadingmanga.info":[11],"putlockerc.*":[12],"imgprime.com":[13,14],"pic-upload.de":[15],"farmeramania.de":[16],"theralphretort.com":[17],"imx.to":[18,19,20,21],"strikeout.*":[22,23,24,19,25],"mynakedwife.video":[26],"asiananimaltube.org":[12],"porntopic.com":[27],"bztube.com":[28],"peliculas24.*":[29,30,19],"adfloz.*":[12,31],"panlasangpinoymeatrecipes.com":[32],"imgtorrnt.in":[18,33,34],"sentinelandenterprise.com":[35],"converto.io":[36,37],"svipvids.com":[38],"camwhorescloud.com":[39,40],"photos-public-domain.com":[41],"formasyonhaber.net":[17],"hagalil.com":[17],"pornflixhd.com":[17,42],"4download.net":[43,44],"hotbabes.tv":[27,45],"novablogitalia.*":[46],"singingdalong.*":[47],"beegvideoz.com":[48,49],"hentaisexfilms.com":[48,49],"xvide.me":[48,49],"xxxanimevideos.com":[48,49],"ihub.live":[50],"siriusfiles.com":[51],"kfrfansub.com":[52],"nflstream.tv":[53],"streamextreme.cc":[53,54,55],"moretvtime.*":[56],"moviesrulz.*":[12,57],"6hiidude.gold":[57],"mtsproducoes.*":[58],"porndex.com":[59],"shortearn.*":[60,26,31,19,61],"tcheats.com":[62],"gamekult.com":[63,64],"fuckdy.com":[65],"m.kuku.lu":[66],"tonpornodujour.com":[67,68],"tuotromedico.com":[69],"softwarecrackguru.com":[70],"spring.org.uk":[71,72,32],"cnbc.com":[73],"yuvutu.com":[74],"sportlemons.*":[75],"sexybabesz.com":[76,27],"yandexcdn.com":[12],"movie4me.*":[77],"interssh.com":[47],"electriciansforums.net":[78],"imagetwist.com":[79,80],"cyclones.com":[81],"goexplorers.com":[81],"gogriz.com":[81],"goshockers.com":[81],"iuhoosiers.com":[81],"loyolaramblers.com":[81],"mutigers.com":[81],"umterps.com":[81],"gobadgers.ca":[81],"mauiinvitational.com":[81],"uclabruins.com":[81],"k-stateathletics.com":[81],"ksusports.com":[81],"megalink.*":[82,31,83],"spieletipps.de":[84,6],"sport.de":[85,6,86],"toggo.de":[87,88],"mangahere.onl":[89,90],"seeitworks.com":[91],"hexupload.net":[15,19,92],"arenabg.com":[60],"trendsderzukunft.de":[93,94],"mobilelegends.shop":[44],"wikipekes.com":[95],"plugincim.com":[96],"thelayoff.com":[97,98],"linkconfig.com":[44],"notiziemusica.it":[17],"allgemeine-zeitung.de":[6],"boerse.de":[6],"gamestar.de":[6],"gmuender-tagespost.de":[6],"hartziv.org":[6],"haus-garten-test.de":[6],"kabeleins.de":[6],"medisite.fr":[6],"motor-talk.de":[6,99],"motortests.de":[6],"nwzonline.de":[6],"pixelio.de":[6],"pons.com":[6,100,101],"profil.at":[6],"reuters.com":[6,102],"szene1.at":[6],"weather.us":[6],"beforeitsnews.com":[103],"conservativefiringline.com":[103],"letocard.fr":[103],"livinggospeldaily.com":[103],"freedomfirstnetwork.com":[103],"videogamesblogger.com":[103],"adblockstreamtape.*":[19,104,105,106,12,107],"ak47sports.com":[19],"anidl.org":[19,108],"b9good.co":[19],"blizzpaste.com":[19],"cashurl.in":[19],"cdn1.site":[19,21,12,109,110],"coins100s.fun":[19],"comohoy.com":[19,21,111,112,113],"daddylivehd.*":[19,114,57,23,115,116],"dlhd.*":[19,57,117],"dyngutter.net":[19],"fbstream.*":[19,118,108,92,119],"fsicomics.com":[19,120,121],"gemstreams.com":[19],"hdmoviesflix.*":[19,122],"hdpornflix.com":[19],"hwnaturkya.com":[19,114],"hxfile.co":[19,114,92,12],"infosgj.free.fr":[19],"jrants.com":[19,123],"kimochi.info":[19],"kimochi.tv":[19],"movieswbb.com":[19],"nflstream.*":[19,118,108,92,119],"novamovie.net":[19,118],"pelisflix20.*":[19,20],"plyvdo.*":[19,108,12],"pover.org":[19],"seir-sanduk.com":[19,124],"streamsport.*":[19,108,34,12],"supexfeeds.com":[19],"swzz.xyz":[19,82,31],"thothub.today":[19],"uniqueten.net":[19,55],"vikuy.click":[19,125],"virpe.cc":[19,126],"vladrustov.sx":[19],"xxgasm.com":[19,21,75],"3dhentai.club":[55],"3xfaktor.hu":[55],"allafricangirls.net":[55,33],"amateurfun.net":[55],"bbwfuckpic.com":[55],"bluetv.xyz":[55],"brazzersbabes.com":[55],"csrevo.com":[55],"desihoes.com":[55,33,75],"desimms.co":[55],"finevids.xxx":[55],"greensmut.com":[55],"hentai-cosplay-xxx.com":[55],"hotgirlhub.com":[55],"myxclip.com":[55],"pictoa.com":[55,127,128,129],"porndollz.com":[55,127],"pornloupe.com":[55],"porntrex.video":[55],"repicsx.com":[55],"shelovesporn.com":[55],"thecartoonporntube.com":[55],"upicsz.com":[55],"voyeurblog.net":[55],"xexle.com":[55],"xhamsterteen.com":[55],"xnxxhamster.net":[55],"xpicse.com":[55],"xxxshut.com":[55,130],"yporn.tv":[55],"frauporno.com":[131],"manwa.me":[132],"isekaitube.com":[133,123,134],"mangaraw.*":[133,92,57,21,135],"naijauncut.com":[133],"primewire.*":[133,114,118,125,136],"spotidownloader.com":[133],"mangagun.net":[137,138],"coinsbomb.com":[139],"freesexvideos24.com":[140,141],"grandmatube.pro":[140,141],"agedtubeporn.com":[140,141],"alltstube.com":[142],"asian-teen-sex.com":[33],"allschoolboysecrets.com":[18],"maxstream.*":[114,110],"myflixerz.to":[114,110],"roystream.com":[114,57,143,12],"skidrowcodex.net":[114,144],"tutlehd4.com":[114],"hitokin.net":[37],"bollywoodfilma.*":[118],"i123movies.net":[118],"lespassionsdechinouk.com":[118,108,92],"movies7.to":[118,12],"asianhdplay.net":[108],"bdmusic23.*":[108],"fastilinks.*":[108],"mangahere.today":[108],"stopstreamtv.net":[108],"tcpermaculture.com":[108],"whatshowto.com":[108],"worldgreynews.com":[108],"downloadapk.info":[92],"emulatorsite.com":[92,26],"musicsite.biz":[92,26],"solarmovies.*":[92],"8-ball-magic.com":[119],"bitlinks.pw":[119],"dramanice.*":[119],"ocnpj.com":[119],"stalkface.com":[119],"upfiles.*":[119],"steamverde.net":[20],"123movies-free.*":[57],"123movies-org.*":[57,60],"4movierulz1.*":[57,12],"ak4eg.*":[57,145,146],"asianhdplay.*":[57],"capo5play.com":[57],"moviesda4.*":[57],"myflixerz.*":[57],"series2watch.*":[57],"sharedisk.*":[57],"shortenlinks.top":[57],"tvfutbol.info":[57],"9n8o.com":[110],"cloudnestra.com":[110,138],"dramanice.video":[110],"embedcanais.com":[110],"enorme.tv":[110],"onlinekosh.com":[110],"pelisflix2.*":[110],"shopr.tv":[110],"vide0.net":[110,21,147,148,149,53,12],"vidply.com":[110,147,148,149,53,12],"g-streaming.com":[21,12],"luluvids.top":[21],"pemersatu.link":[21],"syosetu.*":[21],"thothub.lol":[150],"audioz.download":[124],"dramavideo.se":[151],"woiden.com":[152],"boobsrealm.com":[153,154],"pixbryexa.sbs":[155,156,157],"jurukunci.net":[158],"nklinks.click":[158],"altyazitube22.lat":[130],"aozoraapps.net":[130],"askushowto.com":[130],"casperhd.com":[130],"colliersnews.com":[130],"constructionplacement.org":[130],"crackthemes.com":[130],"davewigstone.com":[130],"dramafren.com":[130],"dumovies.com":[130],"entenpost.com":[130],"erotikclub35.pw":[130],"feyorra.top":[130,159],"financeehelp.com":[130],"fitpractise.com":[130],"girlydrop.com":[130],"gogetadoslinks.*":[130],"gotocam.net":[130],"greasygaming.com":[130],"inventionsdaily.com":[130],"itdmusic.*":[130],"korogashi-san.org":[130],"law101.org.za":[130],"learnodo-newtonic.com":[130],"luciferdonghua.in":[130,123,160],"marketedgeofficial.com":[130],"myglamwish.com":[130],"odekake-spots.com":[130],"ovnihoje.com":[130],"porlalibreportal.com":[130],"publicdomainq.net":[130],"ribbelmonster.de":[130],"rocketrevise.com":[130],"ryanmoore.marketing":[130],"ryansharich.com":[130],"searchmovie.wp.xdomain.jp":[130],"searchnsucceed.in":[130],"seogroup.bookmarking.info":[130],"shlly.com":[130],"starsgtech.in":[130],"start-to-run.be":[130],"swietaslowianskie.pl":[130],"symboleslowianskie.pl":[130],"taurus.topmanhuas.org":[130],"temporeale.info":[130],"theworldobits.com":[130],"throwsmallstone.com":[130],"vivrebordeaux.fr":[130],"ycongnghe.com":[130,161,162],"youpit.xyz":[130],"ziontutorial.com":[130],"alternativa104.net":[163],"spa.center.ivof.com":[164],"bailbondsfinder.com":[165,166],"classifarms.com":[165,166],"comtasq.ca":[165,166],"dropnudes.com":[165,166],"nurulislam.org":[165,166],"arabshentai.com":[161,162],"mangacrab.org":[161,162,167],"sharedwebs.com":[161,162],"selfhacked.com":[168,169],"sporcle.com":[168,170,171],"247sports.com":[1,172,173],"celiacandthebeast.com":[1],"cheatsheet.com":[1,169],"danslescoulisses.com":[1],"fwmadebycarli.com":[1],"gulflive.com":[1],"nothingbutnewcastle.com":[1],"ontvtonight.com":[1],"patheos.com":[1],"ssnewstelegram.com":[1],"weather.com":[1,174],"worldstar.com":[1,174,175],"ottawacitizen.com":[176,177,178],"12news.com":[179],"9news.com":[179],"cbs19.tv":[179],"fox16.com":[179],"louisianafirstnews.com":[179],"ourquadcities.com":[179],"wbir.com":[179],"yourbigsky.com":[179],"sermonsearch.com":[180],"comingsoon.net":[181],"weather-forecast.com":[182,180],"motor1.com":[182,101],"naszahistoria.pl":[183],"azcentral.com":[184],"bucyrustelegraphforum.com":[184],"greenbaypressgazette.com":[184],"journalstandard.com":[184],"jsonline.com":[184],"newsleader.com":[184],"pnj.com":[184],"recordnet.com":[184],"recordonline.com":[184,185],"staugustine.com":[184],"the-review.com":[184],"tmnews.com":[184],"dailycaller.com":[186],"paradehomeandgarden.com":[187,188,189,190,191],"thestreet.com":[187,188,189,190,191],"issuya.com":[192],"fourchette-et-bikini.fr":[193,194],"passeportsante.net":[193,194],"bronco6g.com":[193,195],"bikeperfect.com":[193,196],"techlearning.com":[193,196],"chillizet.pl":[193,197],"sport.pl":[193,197],"gutefrage.net":[198,100,197,101],"wisevoter.com":[199],"uranai.nosv.org":[101],"satkurier.pl":[193,197,200,201,202,203,204],"doviz.com":[98,205],"augustacrime.com":[206],"girlschannel.net":[206],"animalia.bio":[205],"greenwichmeantime.com":[207],"geoguessr.com":[101],"nbadraft.net":[101],"nyitvatartas24.hu":[101],"sourceforge.net":[101,208,51],"syosetu.com":[101],"traicy.com":[101],"winbuzzer.com":[101,209],"wordhippo.com":[101],"yutura.net":[101],"grasoku.com":[101],"badgerofhonor.com":[210,211],"blackandteal.com":[210,211],"risingapple.com":[210,211],"undeadwalking.com":[210,211],"myhomebook.de":[212],"donegallive.ie":[100],"scotsman.com":[100],"niederschlagsradar.de":[213],"radio-hrvatska.com":[214],"mandiner.hu":[215],"15minutebeauty.com":[209],"5thwheelforums.com":[209],"7-min.com":[209],"accountantforums.com":[169],"acooknamedmatt.com":[169],"allairfryerrecipes.com":[169],"allthenoodles.com":[169],"amycakesbakes.com":[169],"amytreasure.com":[169],"anestwithayard.com":[169],"artfulhomemaking.com":[169],"artsyfartsymama.com":[169],"arzyelbuilds.com":[169],"aseaofred.com":[169],"athomebyheather.com":[169],"athoughtfulplaceblog.com":[169],"avirtuouswoman.org":[169],"awarenessdays.com":[169],"bakeitwithlove.com":[169],"bakemeacookie.com":[169],"bakerstreetsociety.com":[169],"balancingeverything.com":[169],"barrescueupdates.com":[169],"basketballbuckets.com":[169],"beautifulwithbrains.com":[169],"beautymasterlist.com":[169],"becoming.is":[169],"beerconnoisseur.com":[169],"beyondcruise.com":[169],"bicycle-guider.com":[169],"biggerbolderbaking.com":[169],"blessthismeal.com":[169],"blondelish.com":[169],"bonnibakery.com":[169],"bootstrapbee.com":[169],"boundlessroads.com":[169],"brighteyedbaker.com":[169],"brightgreenrecipes.com":[169],"bsugarmama.com":[169],"business-opportunities.biz":[169],"bylisafonde.com":[169],"caroha.com":[169],"cattitudedaily.com":[169],"chainsawtalk.com":[169],"chefnotrequired.com":[169],"choosingnutrition.com":[169],"civicsquestions.com":[169],"cleangreensimple.com":[169],"cocinarodriguez.com":[169],"comfortablefood.com":[169],"comicsands.com":[169],"confettidaydreams.com":[169],"conscioushacker.io":[169],"contexturesblog.com":[169],"convertbinary.com":[169],"cookiedoughandovenmitt.com":[169],"cookingontheweekends.com":[169],"cookingupmemories.com":[169],"cookrepublic.com":[169],"cookwithkushi.com":[169],"cravinghomecooked.com":[169],"creamofthecropcrochet.com":[169],"createandfind.com":[169],"crohnsforum.com":[169],"crosswordjam.net":[169],"crystalmathlabs.com":[169],"danaberez.com":[169],"daysofjay.com":[169],"disneydreamer.com":[169],"dominicancooking.com":[169],"earthsfriends.com":[209],"easyrecipesfromhome.com":[209],"eatatmaudes.com":[209],"engineerboards.com":[209],"enjoysharepoint.com":[209],"epawaweather.com":[209],"eregulations.com":[209],"exceldemy.com":[209],"exclusivepumping.com":[209],"farmwifecooks.com":[169],"fauxsho.org":[169],"feelingfoodish.com":[169],"finearttutorials.com":[169],"fitbottomedgirls.com":[169],"fontsforpeas.com":[169],"foodiewithfamily.com":[169],"freetoursbyfoot.com":[169],"funattic.com":[169],"gadgetreview.com":[169],"gamedayculture.com":[169],"gamerempire.net":[169],"gatechecked.com":[169],"gedpracticequestions.com":[169],"girlgonegourmet.com":[169],"glutenfreeguidehq.com":[169],"golfspan.com":[169],"govalleykids.com":[169],"grabcraft.com":[169],"grownandflown.com":[169],"happihomemade.com":[216],"happyhooligans.ca":[216],"hauteandhealthyliving.com":[216],"healingtomato.com":[216],"healthylifetrainer.com":[216],"healthylittlevittles.com":[216],"heatherednest.com":[216],"henricocitizen.com":[216],"heyimreading.com":[216],"historic-uk.com":[216],"homeschoolhappiness.com":[216],"honkai.gg":[216],"hotelgyms.com":[216],"hotpankitchen.com":[216],"howmuchisin.com":[216],"howtodispose.info":[216],"humorliving.com":[216],"hungryhappens.net":[216],"hungrypaprikas.com":[216],"icancrochetthat.com":[169],"ihcubcadet.com":[169],"inchcalculator.com":[169],"inkatrinaskitchen.com":[169],"inkdecks.com":[169],"inkristaskitchen.com":[169],"intentionallyeat.com":[169],"jamesandcatrin.com":[209],"jessicanturner.com":[209],"justplaincooking.ca":[209],"kenarry.com":[209],"kevinandamanda.com":[209],"kindercraze.com":[209],"kindlyunspoken.com":[209],"kneadsomesweets.com":[209],"lanebakery.com":[209],"leafyjournal.com":[209],"lemonbin.com":[209],"lifebyleanna.com":[209],"lifeloveandgoodfood.com":[209],"lindseyeatsla.com":[209],"littlebinsbricks.com":[209],"livecrafteat.com":[209],"liveforlivemusic.com":[209],"lnn.co":[209],"low-offset.com":[209],"lowcarblove.com":[209],"madden-school.com":[169],"mallorynikolaus.com":[169],"mamasonabudget.com":[169],"maphappy.org":[169],"masalaherb.com":[169],"mathswithmum.com":[169],"megmadewithlove.com":[169],"mezzoguild.com":[169],"micocinadominicana.com":[169],"missdecarbo.com":[169],"momlovesbaking.com":[169],"mommylabornurse.com":[169],"momsneedtoknow.com":[169],"momsrecipecollection.com":[169],"momswhothink.com":[169],"momswithmouseears.com":[169],"montanaowners.com":[169],"muydelish.com":[169],"myfooddata.com":[169],"myfrugalhome.com":[169],"myglobalviewpoint.com":[169],"mylistoflists.com":[169],"mysweetsavannah.com":[169],"nailsalonsnearme.com":[209],"nationalparksmom.com":[209],"nickishomemadecrafts.com":[209],"norecipes.com":[209],"notenoughcinnamon.com":[209],"nourishingminimalism.com":[209],"nytcrosswordanswers.org":[209],"oakandmarlow.com":[209],"oceaninfo.com":[209],"ohhowcivilized.com":[209],"okonomikitchen.com":[209],"onebeautifulhomeblog.com":[209],"onesweetappetite.com":[209],"orlando-parenting.com":[209],"outsidergaming.com":[209],"paddlingmag.com":[169],"pagingsupermom.com":[169],"pastrybysaloni.com":[169],"pcosnutritionistalyssa.com":[169],"perchancetocook.com":[169],"percolately.com":[169],"persialou.com":[169],"pianodreamers.com":[169],"pieladybakes.com":[169],"pimylifeup.com":[169,217,218],"piratesandprincesses.net":[169],"plantbasedrdblog.com":[169],"popularrecipes.com":[169],"pressurecookingtoday.com":[169],"pricematchguarantee.net":[169],"printabulls.com":[169],"puppyleaks.com":[169],"puptraveller.com":[169],"putacupinit.com":[169],"randaderkson.com":[209],"realadvicegal.com":[209],"reallifenutritionist.com":[209],"recipesthatcrock.com":[209],"recipeswithessentialoils.com":[209],"reheardle.com":[209],"repurposingjunkie.com":[209],"retail-insider.com":[209],"rigorousthemes.com":[209],"rockguitaruniverse.com":[209],"rotoballer.com":[209],"savingdollarsandsense.com":[169],"sayyes.com":[169],"seevanessacraft.com":[169],"shoutoutmiami.com":[169],"siftwithkima.com":[169],"simplicityandastarter.com":[169],"simplyhomecooked.com":[169],"simplyscratch.com":[169],"skinnykitchen.com":[169],"skiptomylou.org":[169],"slashgear.com":[169],"snowbreak.gg":[169],"soapoperaspy.com":[169],"societyofrock.com":[169],"somethingaboutsandwiches.com":[169],"southernbite.com":[169],"sporttrac.org":[169],"spreadsheetpoint.com":[169],"starwarsunlimited.gg":[169],"studentofguitar.com":[169],"stylebyemilyhenderson.com":[169],"sugarlesscrystals.com":[169],"survivingthestores.com":[169],"swaddlesnbottles.com":[169],"sweetpotato3.com":[169],"syllablecounter.io":[169],"symbolsandsynchronicity.com":[169],"theatretrip.com":[169],"thebazaarzone.com":[169],"thechaotictable.com":[169],"thecheekychickpea.com":[169],"thecoconutmama.com":[169],"thecoppertable.com":[169],"thecouponchallenge.com":[169],"thedailypour.com":[169],"thedetroitbureau.com":[169],"thedinkpickleball.com":[169],"thefoodieaffair.com":[169],"theforgottensouth.com":[169],"thehealthfulideas.com":[169],"thehealthyepicurean.com":[169],"thehealthyhoneys.com":[169],"thenewbaguette.com":[169],"thenewcamera.com":[169],"thenourishinggourmet.com":[169],"thepastaqueen.cooking":[169],"theperfectloaf.com":[169],"thepeugeotforums.com":[169],"theproductanalyst.com":[169],"thereallife-rd.com":[169],"theroyalobserver.com":[169],"thestingyvegan.com":[169],"thetabletopfamily.com":[169],"thinkingcloset.com":[169],"thrivinginparenting.com":[169],"toolsofmen.com":[169],"toshistable.com":[169],"tothotornot.com":[169],"towingcap.com":[169],"tvtotalkabout.com":[169],"umamidays.com":[209],"unrulygardening.com":[209],"urbanfarmie.com":[209],"vanillaandbean.com":[209],"victoriamag.com":[209],"warbirdfanatics.com":[209],"webnots.com":[209],"weekendatthecottage.com":[209],"wgrv.com":[209],"whatagirleats.com":[209],"wildexplained.com":[209],"wintips.org":[209],"wmdesignhouse.com":[209],"word-crossy.com":[209],"wordcookieanswer.com":[209],"worldboxingnews.com":[209],"yaycoloringpages.com":[209],"yolopooch.com":[209],"youvegotthismath.com":[209],"1911talk.com":[101],"3dprinterful.com":[101],"959panigale.net":[101],"acadiaforum.net":[101],"amrapideforum.com":[101],"ascentforums.com":[101],"bmwevforum.com":[101],"bmwlt.com":[101],"camaros.net":[101],"canadianmoneyforum.com":[101],"dippy.org":[101],"discoverysport.net":[101],"ducati.ms":[101],"ducati.org":[101],"e-tronforum.com":[101],"flyfishbc.com":[101],"focaljet.com":[101],"fordescape.org":[101],"forteforums.com":[101],"forteturbo.org":[101],"geocaching101.com":[101],"goldenretrieverforum.com":[101],"grcorollaforum.com":[101],"havaneseforum.com":[101],"hemitruckclub.com":[101],"hondaevforum.com":[101],"integratalk.com":[101],"justlabradors.com":[101],"landroversonly.com":[101],"leapmotorforum.com":[101],"lightningrodder.com":[101],"magnetoforum.com":[101],"magnumforumz.com":[101],"morels.com":[101],"mymbonline.com":[101],"mytiguan.com":[101],"mytreg.com":[101],"nissankicksforum.com":[101],"nodakoutdoors.com":[101],"optimaforums.com":[101],"ourbeagleworld.com":[101],"paintballforum.com":[101],"patrol4x4.com":[101],"pistolsmith.com":[101],"plantedtank.net":[101],"powerstrokenation.com":[101],"priusforum.com":[101],"riderforums.com":[101],"saxontheweb.net":[101],"scramblerforum.com":[101],"serial1forum.com":[101],"springfieldforum.com":[101],"sr20forum.com":[101],"thelureforum.com":[101],"trxforums.com":[101],"tucson-forum.com":[101],"victoryforums.com":[101],"vtxoa.com":[101],"wranglerboard.com":[101],"xrv.org.uk":[101],"games.puzzlebaron.com":[219,220],"games.springfieldnewssun.com":[219,220],"games.theadvocate.com":[219,220],"jessicayeahcatch.com":[12,221,20,21],"tpead.net":[105],"cnpics.org":[222],"hispajav.com":[223],"filmizip.com":[224,12,225,226,227],"lared.cl":[228,229],"saboroso.blog":[230],"elamigosgames.net":[231],"dizipal1567.com":[232],"dizipal1570.com":[232],"dizipal1600.com":[232],"inattv1289.xyz":[233],"inattv1292.xyz":[233],"inattv1319.xyz":[233],"inattv1322.xyz":[233],"latitude.to":[4],"althub.club":[234],"gtamaxprofit.com":[235],"gsmfirmware.net":[236],"haddoz.net":[237],"toppng.com":[238],"newyorker.com":[239],"deepfakeporn.net":[26],"camclips.tv":[240,155,241,242,243,244],"claimrbx.gg":[245],"img4fap.*":[75],"bdlink.pw":[44],"openloadmov.*":[12],"tautasdziesmas.lv":[246],"emulatorgames.net":[247,248],"mailocal2.xyz":[249],"camhoes.tv":[40,243,250,251,252,253,254],"brindisireport.it":[255],"radioitalylive.com":[256],"radiosantaclaus.com":[256],"radionatale.com":[256],"afrodity.sk":[257],"cotannualconference.org.uk":[257],"kat2.*":[92,258],"javynow.com":[12],"whatisareverseauction.com":[259],"sibtok.com":[259],"codesnail.com":[260],"momo-net.com":[261,262],"netxwatch.*":[263],"videosinlevels.com":[264],"pussy.org":[12],"kannadamasti.*":[12],"civilenggforall.com":[41],"codare.fun":[265],"pussy-hub.com":[266],"maxstream.video":[97,267,12],"xteensex.net":[11],"nudes7.com":[268],"eductin.com":[4],"kppk983.com":[269],"wcofun.*":[270,271],"dotadostube.com":[272],"cubshq.com":[273],"mobile-tracker-free.com":[274],"newsmondo.it":[275],"scrolller.com":[228],"quizack.com":[121,276],"media.cms.nova.cz":[277],"mediatn.cms.nova.cz":[278],"mmorpg.org.pl":[279],"fullxxxporn.net":[75],"xxxextreme.org":[127],"topembed.pw":[124],"xhomealone.com":[253],"afdah2.com":[280],"bestmp3converter.com":[281,282],"pics4upload.com":[27],"humanorganising.org":[283],"shellplay.*":[283],"shellshockers.*":[283],"camsstream.com":[284],"sattaguess.com":[285],"moviegan.*":[286,133],"bitssurf.com":[287],"gawbne.com":[288],"sab.bz":[289],"mangacrab.com":[290],"sexjobs.es":[291],"ozulscans.com":[200],"nudostar.com":[135,292],"woiden.id":[121],"youpouch.com":[293],"yesdownloader.com":[44],"uploadgig.com":[12],"zedporn.com":[294,295],"tagecoin.com":[296,297,298],"topsporter.net":[299,300,4,301,302,303,304,305],"compromath.com":[200],"moegirl.org.cn":[306],"my-subs.co":[307],"madoohd.com":[308],"kafeteria.pl":[309,310,311],"taodung.com":[312],"unitystr.com":[121],"kayifamilytv.com":[313],"fapdrop.com":[314],"freepic-downloader.com":[315],"hentai-one.com":[316],"w3cub.com":[317],"kuponigo.com":[318],"povvvideo.*":[12],"bingsport.xyz":[57],"memedroid.com":[319],"xanimu.com":[320,127],"ecamrips.com":[321,322,323],"bizdustry.com":[4],"xhamster13.*":[324,325,326,327,328,329],"xhamster46.*":[324,325,326,327,328,329],"play.nova.bg":[330,331],"porntrex.com":[332],"richtoscan.com":[130],"byseraguci.com":[110,333,12],"an1.com":[334,12],"modcombo.com":[44],"wohnmobilforum.de":[335],"govtech.com":[336],"pink-sluts.net":[337],"video.pemersatu.org":[338],"kumapoi.info":[272],"vinstartheme.com":[121],"blocklayer.com":[339],"schoolgirls-asia.org":[27],"sharing.wtf":[340,341],"th.gl":[342],"shownieuws.nl":[343,344],"filmizlehdizle.com":[345],"hdstream.one":[346],"m9.news":[347],"btvnovinite.bg":[166,121,348],"lovetofu.cyou":[12],"nflscoop.xyz":[151],"wishflix.cc":[349],"flyplayer.xyz":[12],"ebook-hell.to":[12],"wooflix.tv":[350,12],"pngitem.com":[351],"tab-maker.com":[352],"wvt.free.nf":[130,12,353],"strikeout.im":[110],"dlhd.sx":[115,354],"www.amazon.com":[355,356],"www.amazon.de":[355],"read.amazon.*":[357,358,359],"bengals.com":[360],"patriots.com":[360],"philadelphiaeagles.com":[360],"gorro-4go5b3nj.fun":[12],"uptime4.com":[361],"afreesms.com":[12],"rustorkacom.lib":[362],"dramafren.org":[299,361,110,12],"bigconv.com":[12],"breznikar.com":[363],"sport.es":[225],"maxicast.*":[125],"apex2nova.com":[364],"fbstream.is":[365,151],"vegamovvies.to":[366],"manhuaga.com":[367],"latinluchas.com":[166],"cerberusapp.com":[368,369],"sexfilmkiste.com":[370],"towheaddeepthroat.com":[370],"elperiodicodearagon.com":[371],"negyzetmeterarak.hu":[372],"instantcloud.site":[12],"cricfy.net":[373],"thehealthsite.com":[374],"goplay.su":[375,376,377,378],"goplay.ml":[376],"steamplay.*":[379,15,155,380,12,381],"origami.me":[361],"thothub.*":[382,383],"eee1.lat":[384],"viduyy.com":[385,125],"anigo.to":[12],"miruro.*":[386],"drakkar.st":[339],"starcima.com":[125,387],"printables.com":[388],"pemersatu.top":[389],"narto-drama.com":[390],"get2.in":[391],"drop.carbikenation.com":[392,393,394],"livenewsflix.com":[395,396,312],"sharclub.in":[397,398],"faiviral.com":[399],"rawlazy.si":[400],"bigdata.rawlazy.si":[401],"sugarona.com":[402],"upfiles.app":[403,404,31,405,406],"intercelestial.com":[407,12],"bluemedialink.*":[75,26,408],"lokerwfh.net":[409,410,51,44,361,125],"4k2h4w04.xyz":[12,411],"myair2.resmed.com":[412],"cerbahealthcare.it":[413,414],"digicol.dpm.org.cn":[415,416],"myair.resmed.com":[417],"tv5mondeplus.com":[418,419],"topgear.com":[420],"kb.arlo.com":[421,422],"motocykl-online.pl":[423]};
+const EXCEPT = {"uii.io":["noeval"],"pingit.com":["abort-on-property-read\u0001AaDetector","abort-on-property-read\u0001open","abort-on-property-read\u0001rmVideoPlay","abort-on-property-read\u0001_pop","abort-on-property-write\u0001Fingerprint2","set-constant\u0001blurred\u0001false"],"vr.pornhat.*":["abort-on-property-read\u0001document.dispatchEvent"],"vidsrc.*":["abort-current-script\u0001EventTarget.prototype.addEventListener\u0001delete window"],"astral.sh":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"brew.sh":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"christitus.com":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"community-scripts.org":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"datadoghq.*":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"deno.com":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"devaccellabs.com":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"jetbrains.com":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"massgrave.dev":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"natfrp.com":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"ntriver.org":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"reaclassical.com":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"runpane.com":["prevent-clipboard-write\u0001/^ms(hta|iexec)(\\.exe)? |^(bash <<<|curl -kfsSL) \\$\\(echo .+? base64 -d\\b|^cmd \\/c .*?\\bcurl .+?(\\.exe|\\.bat)\\b|^cmd .*?\\bfor \\/f .*?\\bdelims .*?\\bpow |(^|\\\\)powershell(\\.exe)? .*?-w(indowStyle)? h(idden)?\\b|(^|\\\\)powershell(\\.exe)? .*?-w[a-z]* m[a-z]* |(^|\\\\)powershell(\\.exe)? .*?-NoP\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? b(ypass)?\\b|(^|\\\\)powershell(\\.exe)? .*?-e(xecution)?p(olicy)? u(nrestricted)?\\b|(^|\\\\)powershell(\\.exe)? .*?\\biex\\(|(^|\\\\)powershell(\\.exe)? .*?Invoke-Expression|(^|\\\\)powershell.+?Invoke-WebRequest|(^|\\\\)powershell.+?-UseBasicParsing|^cmd .*?\\/c .+? -nop .+? iex\\b|^(cmd|powershell)\\b.+?recaptcha|^(cmd|powershell)\\b.+?#(Verification|     )|^(cmd|powershell)\\b.+?     #|^osascript .+?\\bcurl http|^curl -s\\b.+?\\| (bash|sh|zsh)\\b|^\\/bin\\/(bash|sh|zsh) -c\\b.+?\\bcurl|^bash -c\\b.+?\\$\\(curl|^python3? -c\\b.+?\\b(exec|urllib|subprocess)\\b|^echo .+?base64 .+?\\b(bash|osascript|z?sh)\\b|openssl base64 -d|^curl\\b .+?chmod \\+x.+?&&|^(bash|sh|osascript)\\b.+?recaptcha|^(bash|sh|osascript)\\b.+?#(Verification|     )|^(bash|sh|osascript)\\b.+?     #|^wget .+?\\| (bash|sh)\\b|^curl\\b.+?-o\\b.+?\\/tmp\\/.+?&&|^nc .+?-e \\/bin\\/(bash|sh)\\b|^\\/tmp\\/.+?chmod \\+x.+?&&|^wget -q.+?\\.(sh|py|bin|elf)\\b|^cmd .+?\\bcertutil .+?\\b(\\.exe|\\.bat)\\b|(^|\\\\)powershell(\\.exe)? .+?\\birm .+?\\.[a-z]+\\/.+?powershell|\\bpcalua(\\.exe)? .*?\\b(curl|powershell|saps|cmd)\\b|^cmd .+?\\bcmdkey .+?\\bschtasks|^Invoke-Command .+?Base64String|^c(onhost|md) .*?--headless |^iex\\(i(rm|wr) |^\\(?irm .+?\\biex\\b|^%COMSPEC% .*?\\bstart .*?\\/min\\b|^cmd .*?\\/c .*?%TEMP%.*?\\.bat\\b|^cmd .*?\\/c .*?\\bCMDCMDLINE\\b|^cmd \\/v:on \\/q \\/c |\\bconvert\\b.*?\\$env:ComSpec\\b|^<#Verification|^Invoke-WebRequest .+?\\bwscript(\\.exe)?\\b|^\\$url\\b.+?\\n\\$filename\\b.+?\\.exe\\b/msi\u0001domAlert\u0001Beware, uBlock Origin blocked a potential ClickFix attack: ${text}\u0001excludeMatches\u0001/Maintainer|Contributor|^\\{|^http|^(git|import|require|use) /i"],"bilibili.com":["json-prune-fetch-response\u0001data.item.[-].business_info.ad_desc\u0001\u0001/feed/rcmd"],"titulky.com":["set-constant\u0001xmxalr"],"idnes.cz":["abort-current-script\u0001HTMLIFrameElement.prototype.contentWindow"],"notube.com":["prevent-window-open"],"oxy.edu":["abort-current-script\u0001$\u0001window.open","prevent-setInterval\u0001.hide","abort-current-script\u0001$\u0001localStorage"],"money.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad","set-constant\u0001Object.prototype.rekids\u0001undefined","set-constant\u0001Object.prototype.gafSlot\u0001undefined","set-constant\u0001Object.prototype.advViewability\u0001undefined"],"kobieta.wp.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"gadzetomania.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"fotoblogia.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"komorkomania.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"wiadomosci.wp.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"tech.wp.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"dom.wp.pl":["prevent-setTimeout\u0001detected\u0001300"],"facet.wp.pl":["prevent-setTimeout\u0001detected\u0001300"],"film.wp.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"finanse.wp.pl":["prevent-setTimeout\u0001detected\u0001300"],"gry.wp.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"gwiazdy.wp.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"ksiazki.wp.pl":["prevent-setTimeout\u0001detected\u0001300"],"kuchnia.wp.pl":["prevent-setTimeout\u0001detected\u0001300"],"moto.wp.pl":["prevent-setTimeout\u0001detected\u0001300"],"opinie.wp.pl":["prevent-setTimeout\u0001detected\u0001300"],"pogoda.wp.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"teleshow.wp.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"turystyka.wp.pl":["prevent-setTimeout\u0001detected\u0001300"],"wideo.wp.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"wawalove.wp.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"autokult.pl":["prevent-setTimeout\u0001detected\u0001300","abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"horoskop.wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"tv.wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"twojeip.wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"sportowefakty.wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad","set-constant\u0001Object.prototype.loadBunch\u0001noopFunc","abort-on-property-read\u0001Object.prototype.bodyCode","abort-on-property-read\u0001WP.inline"],"fitness.wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad"],"wp.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad","abort-on-property-read\u0001WP.inline","prevent-setTimeout\u0001/getComputedStyle[\\s\\S]*?style\\.display=\"none\"[\\s\\S]*?styleBlocked[\\s\\S]*?detected/"],"www.wp.pl":["abort-on-property-read\u0001__headpayload","abort-on-stack-trace\u0001WP\u0001r https","set-constant\u0001WP.gaf.loadBunch\u0001noopFunc"],"southpark.*":["google-ima"],"southpark.cc.com":["google-ima"],"southparkstudios.*":["google-ima"],"games.dailymail.co.uk":["abort-on-property-read\u0001Notification"],"games.dailymail.com":["abort-on-property-read\u0001Notification"],"platform.twitter.com":["json-prune-xhr-response\u0001data.home.home_timeline_urt.instructions.[].entries.[-].content.itemContent.promotedMetadata\u0001\u0001propsToMatch\u0001url:/Home","json-prune-xhr-response\u0001data.search_by_raw_query.search_timeline.timeline.instructions.[].entries.[-].content.itemContent.promotedMetadata\u0001\u0001propsToMatch\u0001url:/SearchTimeline","json-prune-xhr-response\u0001data.threaded_conversation_with_injections_v2.instructions.[].entries.[-].content.items.[].item.itemContent.promotedMetadata\u0001\u0001propsToMatch\u0001url:/TweetDetail","json-prune-xhr-response\u0001data.user.result.timeline_v2.timeline.instructions.[].entries.[-].content.itemContent.promotedMetadata\u0001\u0001propsToMatch\u0001url:/UserTweets","json-prune-xhr-response\u0001data.immersiveMedia.timeline.instructions.[].entries.[-].content.itemContent.promotedMetadata\u0001\u0001propsToMatch\u0001url:/ImmersiveMedia"],"filmweb.pl":["abort-current-script\u0001decodeURIComponent\u0001newAdblockBoardDisplayed"],"linkneverdie.net":["prevent-setTimeout\u0001t"],"dziennik.pl":["abort-current-script\u0001parseInt\u0001adblock"],"gunauc.net":["prevent-fetch\u0001pagead2.googlesyndication.com"],"daddylive.link":["abort-on-property-read\u0001require"],"player.pl":["json-prune\u0001movie.advertising.ad_server"],"lookmovie.studio":["set-constant\u0001Yii2App.playbackTimeout\u00010"],"jobzhub.store":["trusted-replace-node-text\u0001script\u0001/initialTimeSeconds = \\d+/\u0001initialTimeSeconds = 7","adjust-setInterval\u0001tid\u0001*\u00010.02"],"fitdynamos.com":["trusted-replace-node-text\u0001script\u0001/initialTimeSeconds = \\d+/\u0001initialTimeSeconds = 7","adjust-setInterval\u0001tid\u0001*\u00010.02"],"labgame.io":["trusted-replace-node-text\u0001script\u0001/initialTimeSeconds = \\d+/\u0001initialTimeSeconds = 7","adjust-setInterval\u0001tid\u0001*\u00010.02"],"sayphotobooth.com":["adjust-setInterval\u0001tp-time\u0001*\u00010.001"],"encurtador.postazap.com":["adjust-setInterval\u0001timer\u0001*\u00010.001"],"intercelestial.com":["adjust-setTimeout\u0001\u0001*\u00010.1"],"hubdrive.com":["prevent-window-open","prevent-addEventListener\u0001\u0001history.go"],"hubdrive.de":["prevent-window-open","prevent-addEventListener\u0001\u0001history.go"],"dziennikbaltycki.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"dzienniklodzki.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"dziennikpolski24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"dziennikzachodni.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"echodnia.eu":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"expressbydgoski.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"expressilustrowany.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gazetakrakowska.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gazetalubuska.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gazetawroclawska.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gk24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gloswielkopolski.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gol24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gp24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gra.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"gs24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"kurierlubelski.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"motofakty.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"naszemiasto.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"nowiny24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"nowosci.com.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"nto.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"polskatimes.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"pomorska.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"poranny.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"sportowy24.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"strefaagro.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"strefabiznesu.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"stronakobiet.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"telemagazyn.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"to.com.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"wspolczesna.pl":["set-constant\u0001pp_adblock_is_off\u0001trueFunc"],"abczdrowie.pl":["abort-on-stack-trace\u0001WP.prebid\u0001onLoad","prevent-setTimeout\u0001visibility\u00010"],"job.mt.de":["prevent-setTimeout\u0001.call(null)\u000110"],"job.nw.de":["prevent-setTimeout\u0001.call(null)\u000110"],"uqload.co":["abort-current-script\u0001document.createElement\u0001break;case $."],"yandex.*":["abort-on-property-read\u0001Object.prototype.renderDirect):matches-path(/\\/(?:weather\\/|pogoda\\/|hava\\/)/"],"pilot.wp.pl":["abort-on-property-read\u0001WP.inline"],"poczta.wp.pl":["abort-on-property-read\u0001WP.inline"],"open.fm":["set-constant\u0001Object.prototype.gafSlot\u0001undefined"],"dobreprogramy.pl":["abort-on-property-read\u0001wp_consent_color"]};
+class ChromeBlockJSONPath {
+static compileQuery(query) {
+const p = new ChromeBlockJSONPath();
+p.compile(query);
+return p;
+}
+constructor() {
+this.compiled = null;
+this.error = '';
+}
+get valid() { return this.compiled !== null; }
+get hasAssignment() { return this.compiled !== null && this.compiled.rval !== undefined; }
+get modifier() { return this.compiled ? this.compiled.modify : undefined; }
+compile(query) {
+this.compiled = null;
+this.error = '';
+let q = String(query);
+const v2 = q.startsWith('v2:');
+if (v2) q = q.slice(3);
+this.v2 = v2;
+const r = this._steps(q, 0);
+if (!r) { this.error = 'błąd składni zapytania'; return; }
+const out = { steps: r.steps, v2, modify: undefined, rval: undefined };
+if (r.i !== q.length) {
+const rest = q.slice(r.i);
+let raw;
+if (rest.startsWith('+=')) {
+out.modify = '+';
+raw = rest.slice(2);
+} else if (rest.startsWith('=')) {
+const fn = /^=([a-z]+)\((.+)\)$/.exec(rest);
+if (fn) {
+if (fn[1] !== 'repl') { this.error = `nieobsługiwany modyfikator =${fn[1]}()`; return; }
+out.modify = 'repl';
+raw = fn[2];
+} else {
+raw = rest.slice(1);
+}
+} else {
+this.error = 'nieoczekiwane znaki na końcu zapytania';
+return;
+}
+try { out.rval = JSON.parse(raw); } catch { this.error = 'wartość przypisania nie jest poprawnym JSON'; return; }
+if (out.modify === 'repl') {
+const v = out.rval;
+if (!v || typeof v !== 'object' || typeof v.replacement !== 'string'
+|| (typeof v.regex !== 'string' && typeof v.pattern !== 'string')) {
+this.error = 'niepoprawne repl()';
+return;
+}
+try {
+out.re = typeof v.regex === 'string'
+? new RegExp(v.regex, v.flags)
+: new RegExp(v.pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+} catch { this.error = 'niepoprawne wyrażenie w repl()'; return; }
+}
+}
+this.compiled = out;
+}
+_steps(q, start) {
+if (q.length === 0) return null;
+const steps = [];
+let i = start;
+if (q[i] === '$') { steps.push({ mv: 'root' }); i++; }
+else if (q[i] === '@') { steps.push({ mv: 'current' }); i++; }
+else steps.push({ mv: start === 0 ? 'root' : 'current' });
+let mv = null;
+while (i < q.length) {
+const c = q[i];
+if (c === ' ') { i++; continue; }
+if (c === '.') {
+if (mv !== null) return null;
+if (q.startsWith('..', i)) { mv = 'descendants'; i += 2; } else { mv = 'children'; i += 1; }
+continue;
+}
+if (c === ';') {
+if (!q.startsWith(';$', i)) return null;
+steps.push({ mv: 'quantifier', min: 1, max: 1e6 }, { mv: 'root' });
+i += 2;
+mv = null;
+continue;
+}
+if (c === '{') {
+const m = /^\{(\d+|\d+,\d+|\d+,|,\d+)\};\$/.exec(q.slice(i));
+if (!m) return null;
+let min;
+let max;
+const comma = m[1].indexOf(',');
+if (comma === -1) { min = max = parseInt(m[1], 10); }
+else { min = parseInt(m[1].slice(0, comma), 10) || 0; max = parseInt(m[1].slice(comma + 1), 10) || 1e6; }
+steps.push({ mv: 'quantifier', min, max }, { mv: 'root' });
+i += m[0].length;
+mv = null;
+continue;
+}
+if (c !== '[') {
+if (mv === null) {
+const last = steps[steps.length - 1];
+const j = this._expr(q, last, i);
+if (j === null) return null;
+if (j !== undefined) i = j;
+break;
+}
+const r = this._unquoted(q, i);
+if (!r) return null;
+steps.push({ mv, k: r.s });
+i = r.i;
+mv = null;
+continue;
+}
+if (mv === 'children') return null;
+if (q.startsWith('[?', i)) {
+const not = q[i + 2] === '!';
+const r = this._steps(q, i + 2 + (not ? 1 : 0));
+if (!r || q[r.i] !== ']') return null;
+if (not) r.steps[r.steps.length - 1].not = true;
+steps.push({ mv: mv || 'children', filter: r.steps });
+i = r.i + 1;
+mv = null;
+continue;
+}
+if (q.startsWith('[*]', i)) {
+steps.push({ mv: mv || 'children', k: '*' });
+i += 3;
+mv = null;
+continue;
+}
+const r = this._bracket(q, i + 1);
+if (!r) return null;
+steps.push({ mv: mv || 'children', k: r.s });
+i = r.i + 1;
+mv = null;
+}
+if (mv !== null) return null;
+return { steps, i };
+}
+_expr(q, step, i) {
+if (q.startsWith('=/', i)) {
+const r = this._until(q, '/', i + 2);
+if (!r) return i;
+let end = r.i;
+let flags;
+if (q[end] === 'i') { flags = 'i'; end++; }
+try { step.rval = new RegExp(r.s, flags); } catch { return null; }
+step.op = 're';
+return end;
+}
+const m = /^\s*([!=^$*]=|[<>]=?)\s*(.+?)\]/.exec(q.slice(i));
+if (!m) return undefined;
+const op = m[1];
+const raw = m[2];
+if (raw[0] === "'") {
+const r = this._until(raw, "'", 1);
+if (!r) return null;
+step.rval = r.s;
+} else {
+try { step.rval = JSON.parse(raw); } catch { return null; }
+}
+step.op = op;
+return i + m[0].length - 1;
+}
+_unquoted(q, i) {
+if (q[i] === '/') {
+const r = this._until(q, '/', i + 1);
+if (!r) return null;
+try { return { s: new RegExp(r.s), i: r.i }; } catch { return null; }
+}
+const m = /^[A-Za-z_][\w]*|^\*/.exec(q.slice(i));
+if (!m) return null;
+return { s: m[0], i: i + m[0].length };
+}
+_bracket(q, i) {
+const keys = [];
+let need = true;
+while (i < q.length) {
+const c = q[i];
+if (c === ']') break;
+if (c === ' ') { i++; continue; }
+if (c === ',') {
+if (need) return null;
+need = true;
+i++;
+continue;
+}
+if (c === '"' || c === "'") {
+const r = this._until(q, c, i + 1);
+if (!r) return null;
+keys.push(r.s);
+i = r.i;
+need = false;
+continue;
+}
+if (c === '-' || (c >= '0' && c <= '9')) {
+const m = /^-?\d+/.exec(q.slice(i));
+if (!m) return null;
+keys.push(parseInt(m[0], 10));
+i += m[0].length;
+need = false;
+continue;
+}
+if (this.v2) return null;
+const r = this._unquoted(q, i);
+if (!r) return null;
+keys.push(r.s);
+i = r.i;
+}
+if (need) return null;
+return { s: keys.length === 1 ? keys[0] : keys, i };
+}
+_until(q, target, i) {
+let out = '';
+let j = i;
+for (;;) {
+if (j >= q.length) return null;
+const c = q[j];
+if (c === target) return { s: out, i: j + 1 };
+if (c === '\\' && q[j + 1] === target) { out += target; j += 2; continue; }
+out += c;
+j++;
+}
+}
+evaluate(root) {
+if (!this.valid) return [];
+this._root = { $: root };
+const paths = this._run(this.compiled.steps, []);
+this._root = null;
+return paths;
+}
+/**
+* Stosuje zapytanie do obiektu (modyfikuje go w miejscu).
+* Zwraca obiekt po edycji albo undefined, gdy zapytanie nic nie dopasowało.
+*/
+apply(root) {
+if (!this.valid) return undefined;
+this._root = { $: root };
+const paths = this._run(this.compiled.steps, []);
+if (paths.length === 0) { this._root = null; return undefined; }
+for (let n = paths.length - 1; n >= 0; n--) {
+const { obj, key } = this._resolve(paths[n]);
+if (obj === undefined) continue;
+if (this.compiled.rval !== undefined) this._modify(obj, key);
+else if (Array.isArray(obj) && typeof key === 'number') obj.splice(key, 1);
+else delete obj[key];
+}
+const result = this._root.$ === undefined ? null : this._root.$;
+this._root = null;
+return result;
+}
+_run(steps, pathin) {
+let set = [];
+for (const step of steps) {
+if (step.mv === 'root') { set = [['$']]; continue; }
+if (step.mv === 'current') {
+if (step.op) {
+const { obj, key } = this._resolve(pathin);
+if (obj === undefined) return [];
+if (this._test(step, obj, key) !== true) continue;
+}
+set = [pathin];
+continue;
+}
+if (step.mv === 'quantifier') {
+if (set.length < step.min || set.length > step.max) return [];
+set = [];
+continue;
+}
+if (set.length === 0) continue;
+set = this._matches(set, step);
+}
+return set;
+}
+_matches(listin, step) {
+const out = [];
+for (const pathin of listin) {
+const owner = this._resolve(pathin).value;
+if (owner === undefined) continue;
+if (step.filter) { this._filterMatches(pathin, step, owner, out); continue; }
+const keys = this._expand(owner, step.k);
+if (keys) for (const k of keys) if (this._test(step, owner, k) === true) out.push([...pathin, k]);
+if (step.mv !== 'descendants') continue;
+for (const d of this._descendants(owner, true)) {
+const holder = d.obj[d.key];
+const ks = this._expand(holder, step.k);
+if (!ks) continue;
+for (const k of ks) if (this._test(step, holder, k) === true) out.push([...pathin, ...d.path, k]);
+}
+}
+return out;
+}
+_filterMatches(pathin, step, owner, out) {
+const recursive = step.mv === 'descendants';
+const perChild = this.compiled.v2 || recursive || Array.isArray(owner);
+for (const d of this._descendants(owner, recursive)) {
+const q = perChild ? [...pathin, ...d.path] : pathin;
+const r = this._run(step.filter, q);
+if (!r || r.length === 0) continue;
+out.push(q);
+if (!perChild) break;
+}
+}
+_expand(owner, k) {
+if (typeof owner !== 'object' || owner === null) return undefined;
+if (Array.isArray(k)) {
+const out = [];
+for (const a of k) { const ks = this._expand(owner, a); if (ks) out.push(...ks); }
+return out;
+}
+if (typeof k === 'number') {
+if (!Array.isArray(owner)) return undefined;
+return [k >= 0 ? k : owner.length + k];
+}
+if (k === '*') return Array.isArray(owner) ? [...owner.keys()] : Object.keys(owner);
+if (k instanceof RegExp) return Object.keys(owner).filter((key) => k.test(key));
+return [k];
+}
+* _descendants(v, recursive) {
+if (typeof v !== 'object' || v === null) return;
+const stack = [{ obj: v, keys: Array.isArray(v) ? [...v.keys()] : Object.keys(v), at: 0 }];
+const path = [];
+while (stack.length) {
+const top = stack[stack.length - 1];
+if (top.at >= top.keys.length) { stack.pop(); path.pop(); continue; }
+const key = top.keys[top.at++];
+path[stack.length - 1] = key;
+path.length = stack.length;
+yield { obj: top.obj, key, path: path.slice() };
+const child = top.obj[key];
+if (recursive && typeof child === 'object' && child !== null) {
+stack.push({ obj: child, keys: Array.isArray(child) ? [...child.keys()] : Object.keys(child), at: 0 });
+}
+}
+}
+_resolve(path) {
+if (path.length === 0) return { value: this._root };
+let obj = this._root;
+for (let n = 0; n < path.length - 1; n++) {
+obj = obj[path[n]];
+if (!(obj instanceof Object)) return {};
+}
+const key = path[path.length - 1];
+return { obj, key, value: obj[key] };
+}
+_test(step, owner, k) {
+if (owner === undefined || owner === null) return undefined;
+const has = owner[k] !== undefined || Object.prototype.hasOwnProperty.call(owner, k);
+if (step.op !== undefined && !has) return undefined;
+const expect = step.not !== true;
+const v = owner[k];
+switch (step.op) {
+case '==': return (v === step.rval) === expect;
+case '!=': return (v !== step.rval) === expect;
+case '<': return (v < step.rval) === expect;
+case '<=': return (v <= step.rval) === expect;
+case '>': return (v > step.rval) === expect;
+case '>=': return (v >= step.rval) === expect;
+case '^=': return `${v}`.startsWith(step.rval) === expect;
+case '$=': return `${v}`.endsWith(step.rval) === expect;
+case '*=': return `${v}`.includes(step.rval) === expect;
+case 're': return step.rval.test(`${v}`);
+default: return has === expect;
+}
+}
+_modify(obj, key) {
+let { modify, rval } = this.compiled;
+if (typeof rval === 'string') rval = rval.replace('${now}', `${Date.now()}`);
+if (modify === undefined) { obj[key] = rval; return; }
+if (modify === '+') {
+if (!(rval instanceof Object)) return;
+const lval = obj[key];
+if (!(lval instanceof Object) || Array.isArray(lval)) return;
+for (const [k, v] of Object.entries(rval)) lval[k] = v;
+return;
+}
+if (modify === 'repl') {
+const lval = obj[key];
+if (typeof lval !== 'string') return;
+obj[key] = lval.replace(this.compiled.re, rval.replacement);
+}
+}
+}
 const win = window;
 const doc = document;
-const nativeToString = Function.prototype.toString;
-const fnText = (fn) => { try { return typeof fn === 'function' ? nativeToString.call(fn) : String(fn); } catch { return ''; } };
-const safeReflect = Reflect;
-const ObjectDefineProperty = Object.defineProperty;
-const ObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-const magic = 'tarcza' + Math.random().toString(36).slice(2);
-
-win.addEventListener('error', (ev) => {
-  if (ev && typeof ev.message === 'string' && ev.message.includes(magic)) {
-    ev.preventDefault();
-    ev.stopImmediatePropagation();
-  }
-}, true);
-
-function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
-/** Wzorzec uBO: "/regex/flagi" albo dosłowny podciąg. Pusty → dopasowuje wszystko. */
-function toRegex(pattern, flags = '') {
-  if (pattern === undefined || pattern === '') return /^/;
-  const m = /^\/(.+)\/([gimsu]*)$/.exec(pattern);
-  if (m) { try { return new RegExp(m[1], m[2] || flags); } catch { return /(?!)/; } }
-  return new RegExp(escapeRe(pattern), flags);
-}
-
-/** Argumenty nazwane w stylu uBO: ..., 'nazwa', 'wartość', ... */
-function namedArgs(args) {
-  const out = {};
-  for (let i = 0; i + 1 < args.length; i += 2) out[args[i]] = args[i + 1];
-  return out;
-}
-
-function abort() { throw new ReferenceError(magic); }
-
-/**
- * Przechodzi po łańcuchu właściwości "a.b.c". Gdy pośredni obiekt jeszcze nie
- * istnieje, zakłada pułapkę, która dokończy przejście po jego przypisaniu.
- * onFinal(owner, prop) wywoływane jest dla ostatniego ogniwa.
- */
-function trapChain(root, chain, onFinal) {
-  const walk = (owner, path) => {
-    const dot = path.indexOf('.');
-    if (dot === -1) { onFinal(owner, path); return; }
-    const prop = path.slice(0, dot);
-    const rest = path.slice(dot + 1);
-    let value;
-    try { value = owner[prop]; } catch { return; }
-    if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
-      walk(value, rest);
-      return;
-    }
-    const desc = ObjectGetOwnPropertyDescriptor(owner, prop);
-    if (desc && desc.configurable === false) return;
-    let current = value;
-    try {
-      ObjectDefineProperty(owner, prop, {
-        configurable: true,
-        enumerable: true,
-        get() { return current; },
-        set(v) {
-          current = v;
-          if (v !== null && (typeof v === 'object' || typeof v === 'function')) walk(v, rest);
-        },
-      });
-    } catch { /* ignoruj */ }
-  };
-  walk(root, chain);
-}
-
-const REMOVE = Symbol('remove');
-
-function constantValue(raw, trusted) {
-  switch (raw) {
-    case 'undefined': return { v: undefined };
-    case 'false': return { v: false };
-    case 'true': return { v: true };
-    case 'null': return { v: null };
-    case "''": case '""': case 'emptyStr': case '': return { v: '' };
-    case '[]': case 'emptyArr': return { v: [] };
-    case '{}': case 'emptyObj': return { v: {} };
-    case 'noopFunc': return { v: function () {} };
-    case 'noopCallbackFunc': return { v: function () { return function () {}; } };
-    case 'trueFunc': return { v: function () { return true; } };
-    case 'falseFunc': return { v: function () { return false; } };
-    case 'throwFunc': return { v: function () { throw new Error(magic); } };
-    case 'noopPromiseResolve': return { v: function () { return Promise.resolve(); } };
-    case 'noopPromiseReject': return { v: function () { return Promise.reject(); } };
-    case 'yes': case 'no': case 'on': case 'off': return { v: raw };
-    case '$remove$': return { v: REMOVE };
-  }
-  if (/^-?\d+$/.test(raw)) {
-    const n = parseInt(raw, 10);
-    if (Math.abs(n) <= 0x7FFF || trusted) return { v: n };
-    return null;
-  }
-  if (/^-?\d*\.\d+$/.test(raw) && trusted) return { v: parseFloat(raw) };
-  if (trusted && raw.startsWith('json:')) {
-    try { return { v: JSON.parse(raw.slice(5)) }; } catch { return null; }
-  }
-  if (trusted) {
-    try { return { v: JSON.parse(raw) }; } catch { return { v: raw }; }
-  }
-  return null;
-}
-
-function setConstantImpl(chain, rawValue, trusted, extra) {
-  if (!chain) return;
-  const cv = constantValue(rawValue === undefined ? 'undefined' : rawValue, trusted);
-  if (!cv) return;
-  let value = cv.v;
-  const wrap = extra && extra[0];
-  if (wrap === 'asFunction') { const v = value; value = function () { return v; }; }
-  else if (wrap === 'asCallback') { const v = value; value = function () { return function () { return v; }; }; }
-  else if (wrap === 'asResolved') { const v = value; value = Promise.resolve(v); }
-  else if (wrap === 'asRejected') { const v = value; value = Promise.reject(v); }
-  trapChain(win, chain, (owner, prop) => {
-    const desc = ObjectGetOwnPropertyDescriptor(owner, prop);
-    if (desc && desc.configurable === false) {
-      if (desc.writable && value !== REMOVE) { try { owner[prop] = value; } catch {} }
-      return;
-    }
-    if (value === REMOVE) {
-      try {
-        ObjectDefineProperty(owner, prop, { configurable: true, get() { return undefined; }, set() {} });
-      } catch {}
-      return;
-    }
-    try {
-      ObjectDefineProperty(owner, prop, {
-        configurable: false,
-        enumerable: desc ? desc.enumerable : true,
-        get() { return value; },
-        set() { /* strona nie może nadpisać */ },
-      });
-    } catch {}
-  });
-}
-
-function wrapAccessor(chain, validate) {
-  trapChain(win, chain, (owner, prop) => {
-    const desc = ObjectGetOwnPropertyDescriptor(owner, prop);
-    if (desc && desc.configurable === false) return;
-    let value = desc ? desc.value : undefined;
-    const getter = desc && desc.get;
-    const setter = desc && desc.set;
-    try {
-      ObjectDefineProperty(owner, prop, {
-        configurable: true,
-        enumerable: desc ? desc.enumerable : true,
-        get() { validate(); return getter ? getter.call(this) : value; },
-        set(v) { validate(); if (setter) setter.call(this, v); else value = v; },
-      });
-    } catch {}
-  });
-}
-
-function getScriptText(el) {
-  let text = el.textContent || '';
-  if (el.src) text = el.src + '\n' + text;
-  return text;
-}
-
-function matchesNumber(rawDelay, delay) {
-  if (rawDelay === undefined || rawDelay === '' || rawDelay === '*') return true;
-  const not = rawDelay.startsWith('!');
-  const n = parseInt(not ? rawDelay.slice(1) : rawDelay, 10);
-  return (Number(delay) === n) !== not;
-}
-
-function timerDefuser(name, needle = '', rawDelay) {
-  const not = needle.startsWith('!');
-  const re = toRegex(not ? needle.slice(1) : needle);
-  const orig = win[name];
-  win[name] = new Proxy(orig, {
-    apply(target, thisArg, args) {
-      const [cb, delay] = args;
-      const text = fnText(cb);
-      if (re.test(text) !== not && matchesNumber(rawDelay, delay)) {
-        args[0] = function () {};
-      }
-      return safeReflect.apply(target, thisArg, args);
-    },
-  });
-}
-
-function timerBooster(name, needle = '', rawDelay = '1000', rawBoost = '0.05') {
-  const re = toRegex(needle);
-  const delay = rawDelay === '*' ? -1 : parseInt(rawDelay, 10) || 1000;
-  let boost = parseFloat(rawBoost);
-  if (!isFinite(boost)) boost = 0.05;
-  boost = Math.min(50, Math.max(0.001, boost));
-  const orig = win[name];
-  win[name] = new Proxy(orig, {
-    apply(target, thisArg, args) {
-      const [cb, d] = args;
-      if ((delay === -1 || Number(d) === delay) && re.test(fnText(cb))) args[1] = (Number(d) || 0) * boost;
-      return safeReflect.apply(target, thisArg, args);
-    },
-  });
-}
-
-function parsePropsToMatch(raw, urlKey = 'url') {
-  const out = {};
-  if (!raw) return out;
-  for (const part of raw.split(/\s+/)) {
-    if (!part) continue;
-    const m = /^([a-zA-Z]+):(.*)$/.exec(part);
-    if (m) out[m[1]] = toRegex(m[2]);
-    else out[urlKey] = toRegex(part);
-  }
-  return out;
-}
-
-function propsMatch(props, details) {
-  for (const k of Object.keys(props)) {
-    const v = details[k];
-    if (v === undefined || !props[k].test(String(v))) return false;
-  }
-  return true;
-}
-
-function fakeBody(raw) {
-  if (raw === 'emptyObj') return '{}';
-  if (raw === 'emptyArr') return '[]';
-  if (raw === 'true') return Math.random().toString(36).slice(2, 12);
-  return '';
-}
-
-// ----- JSON ----------------------------------------------------------------
-
-function pathTokens(p) { return p.split('.'); }
-
-function findOwners(obj, tokens, out) {
-  if (obj === null || typeof obj !== 'object') return;
-  if (tokens.length === 1) { out.push([obj, tokens[0]]); return; }
-  const [head, ...rest] = tokens;
-  if (head === '[]' || head === '*') {
-    for (const k of Object.keys(obj)) findOwners(obj[k], rest, out);
-    return;
-  }
-  if (Object.prototype.hasOwnProperty.call(obj, head)) findOwners(obj[head], rest, out);
-}
-
-function hasPath(obj, p) {
-  const owners = [];
-  findOwners(obj, pathTokens(p), owners);
-  return owners.some(([o, k]) => {
-    if (k === '[]' || k === '*') return Object.keys(o).length > 0;
-    return Object.prototype.hasOwnProperty.call(o, k);
-  });
-}
-
-function makePruner(rawPrune = '', rawNeedle = '') {
-  const prunePaths = rawPrune.split(/ +/).filter(Boolean);
-  const needlePaths = rawNeedle.split(/ +/).filter(Boolean);
-  const removeElements = (obj, p) => {
-    // "a.[-].b.c" – usuń z tablicy a elementy, które mają ścieżkę b.c
-    const at = p.indexOf('[-]');
-    const prefix = p.slice(0, at).replace(/\.$/, '');
-    const rest = p.slice(at + 3).replace(/^\./, '');
-    const holders = [];
-    if (prefix) findOwners(obj, pathTokens(prefix), holders);
-    const arrays = prefix ? holders.map(([o, k]) => o[k]) : [obj];
-    let changed = false;
-    for (const arr of arrays) {
-      if (!Array.isArray(arr)) continue;
-      for (let i = arr.length - 1; i >= 0; i--) {
-        if (!rest || hasPath(arr[i], rest)) { arr.splice(i, 1); changed = true; }
-      }
-    }
-    return changed;
-  };
-  return function prune(obj) {
-    if (!prunePaths.length || obj === null || typeof obj !== 'object') return false;
-    if (needlePaths.length && !needlePaths.every((p) => hasPath(obj, p))) return false;
-    let changed = false;
-    for (const p of prunePaths) {
-      if (p.includes('[-]')) { if (removeElements(obj, p)) changed = true; continue; }
-      const owners = [];
-      findOwners(obj, pathTokens(p), owners);
-      for (const [o, k] of owners) {
-        if (k === '[]' || k === '*') {
-          if (Array.isArray(o)) { if (o.length) { o.length = 0; changed = true; } }
-          else for (const kk of Object.keys(o)) { delete o[kk]; changed = true; }
-        } else if (Object.prototype.hasOwnProperty.call(o, k)) {
-          delete o[k];
-          changed = true;
-        }
-      }
-    }
-    return changed;
-  };
-}
-
-// ----- DOM -----------------------------------------------------------------
-
-function onDomChange(fn, stay) {
-  fn();
-  let pending = false;
-  const run = () => { pending = false; fn(); };
-  const mo = new MutationObserver(() => {
-    if (pending) return;
-    pending = true;
-    (win.requestAnimationFrame || setTimeout)(run);
-  });
-  const start = () => mo.observe(doc.documentElement || doc, { childList: true, subtree: true, attributes: true });
-  start();
-  if (!stay) {
-    const stop = () => setTimeout(() => mo.disconnect(), 2000);
-    if (doc.readyState === 'complete') stop();
-    else win.addEventListener('load', stop, { once: true });
-  }
-  doc.addEventListener('DOMContentLoaded', fn, { once: true });
-}
-
-function safeValue(raw) {
-  const allowed = ['accept', 'reject', 'yes', 'no', 'y', 'n', 'true', 'false', 'ok', 'on', 'off', 'allow',
-    'deny', 'allowed', 'denied', 'necessary', 'required', 'approved', 'disapproved', 'hide', 'hidden',
-    'essential', 'nonessential', 'checked', 'unchecked', 'forbidden', 'forever', 'dismiss', 'dismissed',
-    'done', 'closed', 'disabled', 'enabled', 'agree', 'agreed', '', 'null', 'undefined', 'emptyObj', 'emptyArr'];
-  if (allowed.includes(String(raw).toLowerCase())) {
-    if (raw === 'emptyObj') return '{}';
-    if (raw === 'emptyArr') return '[]';
-    if (raw === 'null' || raw === 'undefined') return raw;
-    return raw;
-  }
-  if (/^\d{1,5}$/.test(raw) && parseInt(raw, 10) <= 32767) return raw;
-  return null;
-}
-
-function setStorageItem(storageName, key, raw, trusted) {
-  if (!key) return;
-  let storage;
-  try { storage = win[storageName]; } catch { return; }
-  if (!storage) return;
-  try {
-    if (raw === '$remove$') { storage.removeItem(key); return; }
-    let value = trusted ? raw : safeValue(raw);
-    if (value === null) return;
-    if (trusted) {
-      if (raw === '$now$') value = String(Date.now());
-      else if (raw === '$currentDate$') value = String(new Date());
-      else if (raw === '$currentISODate$') value = new Date().toISOString();
-    }
-    if (storage.getItem(key) === value) return;
-    storage.setItem(key, value);
-  } catch {}
-}
-
-function setCookieImpl(name, value, path, maxAgeSec) {
-  if (!name) return;
-  const existing = doc.cookie.split(/;\s*/).find((c) => c.startsWith(encodeURIComponent(name) + '='));
-  if (existing && existing.slice(existing.indexOf('=') + 1) === value) return;
-  let cookie = `${encodeURIComponent(name)}=${value}; path=${path || '/'}`;
-  if (maxAgeSec) cookie += `; max-age=${maxAgeSec}`;
-  try { doc.cookie = cookie; } catch {}
-}
-
-// ----- Scriptlety ----------------------------------------------------------
-
-const S = {
-  'set-constant'(chain, value, ...extra) { setConstantImpl(chain, value, false, extra); },
-  'trusted-set-constant'(chain, value, ...extra) { setConstantImpl(chain, value, true, extra); },
-
-  'abort-on-property-read'(chain) {
-    if (!chain) return;
-    trapChain(win, chain, (owner, prop) => {
-      try { ObjectDefineProperty(owner, prop, { configurable: true, get: abort, set() {} }); } catch {}
-    });
-  },
-
-  'abort-on-property-write'(chain) {
-    if (!chain) return;
-    trapChain(win, chain, (owner, prop) => {
-      try { ObjectDefineProperty(owner, prop, { configurable: true, get() { return undefined; }, set: abort }); } catch {}
-    });
-  },
-
-  'abort-current-script'(chain, needle = '') {
-    if (!chain) return;
-    const re = needle ? toRegex(needle) : null;
-    const self = doc.currentScript;
-    wrapAccessor(chain, () => {
-      const el = doc.currentScript;
-      if (!(el instanceof HTMLScriptElement) || el === self) return;
-      if (re && !re.test(getScriptText(el))) return;
-      abort();
-    });
-  },
-
-  'abort-on-stack-trace'(chain, needle = '') {
-    if (!chain || !needle) return;
-    const re = toRegex(needle === 'inlineScript' || needle === 'injectedScript'
-      ? escapeRe(location.href.split('#')[0]) : needle);
-    wrapAccessor(chain, () => {
-      const stack = new Error().stack || '';
-      if (re.test(stack.split('\n').slice(2).join('\n'))) abort();
-    });
-  },
-
-  'addEventListener-defuser'(type = '', handler = '') {
-    if (!type && !handler) return;
-    const reType = toRegex(type);
-    const reHandler = toRegex(handler);
-    const proto = EventTarget.prototype;
-    proto.addEventListener = new Proxy(proto.addEventListener, {
-      apply(target, thisArg, args) {
-        let t = '';
-        let h = '';
-        try { t = String(args[0]); h = fnText(args[1]); } catch {}
-        if (reType.test(t) && reHandler.test(h)) return undefined;
-        return safeReflect.apply(target, thisArg, args);
-      },
-    });
-  },
-
-  'no-setTimeout-if'(needle, delay) { timerDefuser('setTimeout', needle, delay); },
-  'no-setInterval-if'(needle, delay) { timerDefuser('setInterval', needle, delay); },
-  'adjust-setTimeout'(needle, delay, boost) { timerBooster('setTimeout', needle, delay, boost); },
-  'adjust-setInterval'(needle, delay, boost) { timerBooster('setInterval', needle, delay, boost); },
-
-  'no-window-open-if'(pattern = '', delay = '', decoy = '') {
-    const not = pattern.startsWith('!');
-    const re = toRegex(not ? pattern.slice(1) : pattern);
-    win.open = new Proxy(win.open, {
-      apply(target, thisArg, args) {
-        const url = String(args[0] === undefined ? '' : args[0]);
-        if (re.test(url) === not) return safeReflect.apply(target, thisArg, args);
-        if (decoy === 'obj' || decoy === 'blank') {
-          // atrapa okna
-        }
-        const fake = new Proxy({}, {
-          get(t, p) {
-            if (p === 'closed') return false;
-            if (p === 'opener') return win;
-            if (p === 'document') return doc.implementation.createHTMLDocument('');
-            if (p === 'location') return { href: url, assign() {}, replace() {} };
-            if (p === 'window' || p === 'self') return fake;
-            return function () {};
-          },
-          set() { return true; },
-        });
-        return fake;
-      },
-    });
-  },
-
-  'no-fetch-if'(rawProps = '', responseBody = '') {
-    if (!rawProps) return;
-    const props = parsePropsToMatch(rawProps);
-    const origFetch = win.fetch;
-    if (typeof origFetch !== 'function') return;
-    win.fetch = new Proxy(origFetch, {
-      apply(target, thisArg, args) {
-        const details = {};
-        try {
-          const [res, init] = args;
-          if (res instanceof Request) {
-            for (const k of ['url', 'method', 'mode', 'credentials', 'cache', 'redirect', 'referrer', 'integrity']) details[k] = res[k];
-          } else {
-            details.url = String(res);
-          }
-          if (init && typeof init === 'object') {
-            for (const k of Object.keys(init)) { const v = init[k]; details[k] = typeof v === 'string' ? v : (k === 'body' ? String(v) : JSON.stringify(v)); }
-          }
-          if (!details.method) details.method = 'GET';
-        } catch {}
-        if (!propsMatch(props, details)) return safeReflect.apply(target, thisArg, args);
-        const response = new Response(fakeBody(responseBody), { status: 200, statusText: 'OK' });
-        try {
-          ObjectDefineProperty(response, 'url', { value: details.url || '' });
-          ObjectDefineProperty(response, 'type', { value: 'basic' });
-        } catch {}
-        return Promise.resolve(response);
-      },
-    });
-  },
-
-  'no-xhr-if'(rawProps = '', directive = '') {
-    if (!rawProps) return;
-    const props = parsePropsToMatch(rawProps);
-    const Native = win.XMLHttpRequest;
-    if (!Native) return;
-    const fakes = new WeakMap();
-    win.XMLHttpRequest = class extends Native {
-      open(method, url, ...rest) {
-        const details = { method: String(method).toUpperCase(), url: String(url) };
-        if (propsMatch(props, details)) fakes.set(this, details);
-        else fakes.delete(this);
-        return super.open(method, url, ...rest);
-      }
-      send(...args) {
-        const d = fakes.get(this);
-        if (!d) return super.send(...args);
-        const body = fakeBody(directive);
-        try {
-          ObjectDefineProperties(this, body);
-        } catch {}
-        setTimeout(() => {
-          for (const type of ['readystatechange', 'load', 'loadend']) {
-            try { this.dispatchEvent(new Event(type)); } catch {}
-          }
-        }, 1);
-        function ObjectDefineProperties(xhr, text) {
-          const v = (value) => ({ value, configurable: true });
-          Object.defineProperties(xhr, {
-            readyState: v(4), status: v(200), statusText: v('OK'),
-            response: v(xhr.responseType === 'json' ? (text ? JSON.parse(text) : null) : text),
-            responseText: v(text), responseURL: v(d.url),
-          });
-        }
-        return undefined;
-      }
-    };
-  },
-
-  'remove-attr'(rawAttrs = '', selector = '', behavior = '') {
-    const attrs = rawAttrs.split(/\s*\|\s*/).filter(Boolean);
-    if (!attrs.length) return;
-    const sel = selector || attrs.map((a) => `[${CSS.escape(a)}]`).join(',');
-    const run = () => {
-      try {
-        for (const el of doc.querySelectorAll(sel)) for (const a of attrs) el.removeAttribute(a);
-      } catch {}
-    };
-    onDomChange(run, behavior.includes('stay'));
-  },
-
-  'remove-class'(rawClasses = '', selector = '', behavior = '') {
-    const classes = rawClasses.split(/\s*\|\s*/).filter(Boolean);
-    if (!classes.length) return;
-    const sel = selector || classes.map((c) => '.' + CSS.escape(c)).join(',');
-    const run = () => {
-      try {
-        for (const el of doc.querySelectorAll(sel)) el.classList.remove(...classes);
-      } catch {}
-    };
-    onDomChange(run, behavior.includes('stay'));
-  },
-
-  'set-attr'(selector = '', attr = '', value = '') {
-    if (!selector || !attr) return;
-    if (!/^(|true|false|-?\d{1,5}|\[[\w-]+\])$/.test(value)) return;
-    const run = () => {
-      try {
-        for (const el of doc.querySelectorAll(selector)) {
-          const v = value.startsWith('[') ? (el.getAttribute(value.slice(1, -1)) || '') : value;
-          if (el.getAttribute(attr) !== v) el.setAttribute(attr, v);
-        }
-      } catch {}
-    };
-    onDomChange(run, true);
-  },
-
-  'remove-node-text'(nodeName = '', pattern = '') {
-    if (!nodeName) return;
-    const reName = toRegex(nodeName.startsWith('/') ? nodeName : '^' + escapeRe(nodeName) + '$');
-    const reText = toRegex(pattern);
-    const check = (node) => {
-      if (!reName.test(node.nodeName.toLowerCase())) return;
-      const text = node.textContent || '';
-      if (pattern && !reText.test(text)) return;
-      if (node.nodeType === 3) node.textContent = '';
-      else if (node.parentNode) node.textContent = '', node.remove();
-    };
-    const mo = new MutationObserver((records) => {
-      for (const r of records) for (const n of r.addedNodes) { check(n); if (n.nodeType === 1 && n.nodeName === 'SCRIPT') {} }
-    });
-    mo.observe(doc, { childList: true, subtree: true });
-    doc.addEventListener('DOMContentLoaded', () => setTimeout(() => mo.disconnect(), 5000), { once: true });
-  },
-
-  'replace-node-text'(nodeName = '', pattern = '', replacement = '') {
-    if (!nodeName || !pattern) return;
-    const reName = toRegex(nodeName.startsWith('/') ? nodeName : '^' + escapeRe(nodeName) + '$');
-    const rePattern = toRegex(pattern, 'g');
-    const check = (node) => {
-      if (!reName.test(node.nodeName.toLowerCase())) return;
-      const text = node.textContent || '';
-      rePattern.lastIndex = 0;
-      if (!rePattern.test(text)) return;
-      rePattern.lastIndex = 0;
-      node.textContent = text.replace(rePattern, replacement);
-    };
-    const mo = new MutationObserver((records) => {
-      for (const r of records) for (const n of r.addedNodes) check(n);
-    });
-    mo.observe(doc, { childList: true, subtree: true });
-    doc.addEventListener('DOMContentLoaded', () => setTimeout(() => mo.disconnect(), 5000), { once: true });
-  },
-
-  'json-prune'(rawPrune = '', rawNeedle = '') {
-    const prune = makePruner(rawPrune, rawNeedle);
-    JSON.parse = new Proxy(JSON.parse, {
-      apply(target, thisArg, args) {
-        const r = safeReflect.apply(target, thisArg, args);
-        try { prune(r); } catch {}
-        return r;
-      },
-    });
-    Response.prototype.json = new Proxy(Response.prototype.json, {
-      apply(target, thisArg, args) {
-        return safeReflect.apply(target, thisArg, args).then((o) => { try { prune(o); } catch {} return o; });
-      },
-    });
-  },
-
-  'json-prune-fetch-response'(rawPrune = '', rawNeedle = '', ...rest) {
-    const extra = namedArgs(rest);
-    const props = parsePropsToMatch(extra.propsToMatch || '');
-    const prune = makePruner(rawPrune, rawNeedle);
-    const origFetch = win.fetch;
-    if (typeof origFetch !== 'function') return;
-    win.fetch = new Proxy(origFetch, {
-      apply(target, thisArg, args) {
-        const p = safeReflect.apply(target, thisArg, args);
-        let details;
-        try {
-          const [res, init] = args;
-          details = res instanceof Request ? { url: res.url, method: res.method } : { url: String(res), method: (init && init.method) || 'GET' };
-        } catch { return p; }
-        if (!propsMatch(props, details)) return p;
-        return p.then((resp) => resp.clone().json().then((obj) => {
-          if (!prune(obj)) return resp;
-          const out = new Response(JSON.stringify(obj), { status: resp.status, statusText: resp.statusText, headers: resp.headers });
-          try {
-            ObjectDefineProperty(out, 'url', { value: resp.url });
-            ObjectDefineProperty(out, 'type', { value: resp.type });
-            ObjectDefineProperty(out, 'redirected', { value: resp.redirected });
-          } catch {}
-          return out;
-        }).catch(() => resp));
-      },
-    });
-  },
-
-  'json-prune-xhr-response'(rawPrune = '', rawNeedle = '', ...rest) {
-    const extra = namedArgs(rest);
-    const props = parsePropsToMatch(extra.propsToMatch || '');
-    const prune = makePruner(rawPrune, rawNeedle);
-    const Native = win.XMLHttpRequest;
-    if (!Native) return;
-    const urls = new WeakMap();
-    const cache = new WeakMap();
-    const responseDesc = ObjectGetOwnPropertyDescriptor(Native.prototype, 'response');
-    const textDesc = ObjectGetOwnPropertyDescriptor(Native.prototype, 'responseText');
-    const compute = (xhr) => {
-      if (cache.has(xhr)) return cache.get(xhr);
-      const raw = responseDesc.get.call(xhr);
-      let result = { response: raw, text: null };
-      try {
-        if (xhr.readyState === 4) {
-          const type = xhr.responseType;
-          let obj = null;
-          if (type === 'json') obj = raw;
-          else if (type === '' || type === 'text') obj = JSON.parse(raw);
-          if (obj && prune(obj)) {
-            const text = JSON.stringify(obj);
-            result = { response: type === 'json' ? obj : text, text };
-          }
-          cache.set(xhr, result);
-        }
-      } catch { if (xhr.readyState === 4) cache.set(xhr, result); }
-      return result;
-    };
-    win.XMLHttpRequest = class extends Native {
-      open(method, url, ...r) {
-        cache.delete(this);
-        urls.set(this, propsMatch(props, { method: String(method).toUpperCase(), url: String(url) }));
-        return super.open(method, url, ...r);
-      }
-      get response() {
-        if (!urls.get(this)) return responseDesc.get.call(this);
-        return compute(this).response;
-      }
-      get responseText() {
-        if (!urls.get(this)) return textDesc.get.call(this);
-        const r = compute(this);
-        return r.text !== null ? r.text : textDesc.get.call(this);
-      }
-    };
-  },
-
-  'set-cookie'(name = '', value = '', path = '') {
-    const v = safeValue(value);
-    if (v === null) return;
-    setCookieImpl(name, encodeURIComponent(v), path === 'none' ? '' : path);
-  },
-
-  'trusted-set-cookie'(name = '', value = '', offset = '', path = '') {
-    let v = value;
-    if (v === '$now$') v = String(Date.now());
-    else if (v === '$currentDate$') v = String(new Date());
-    else if (v === '$currentISODate$') v = new Date().toISOString();
-    let maxAge = 0;
-    if (offset === '1day') maxAge = 86400;
-    else if (offset === '1year') maxAge = 31536000;
-    else if (/^\d+$/.test(offset)) maxAge = parseInt(offset, 10);
-    setCookieImpl(name, encodeURIComponent(v), path === 'none' ? '' : path, maxAge);
-  },
-
-  'remove-cookie'(needle = '') {
-    const re = toRegex(needle);
-    const remove = () => {
-      for (const c of doc.cookie.split(/;\s*/)) {
-        const name = c.split('=')[0];
-        if (!name || !re.test(name)) continue;
-        const parts = location.hostname.split('.');
-        const expire = '=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        for (let i = 0; i < parts.length - 1; i++) {
-          const domain = parts.slice(i).join('.');
-          doc.cookie = `${name}${expire}; path=/; domain=${domain}`;
-          doc.cookie = `${name}${expire}; path=/; domain=.${domain}`;
-        }
-        doc.cookie = `${name}${expire}; path=/`;
-        doc.cookie = `${name}${expire}`;
-      }
-    };
-    remove();
-    win.addEventListener('beforeunload', remove);
-    doc.addEventListener('visibilitychange', remove);
-  },
-
-  'set-local-storage-item'(key, value) { setStorageItem('localStorage', key, value, false); },
-  'set-session-storage-item'(key, value) { setStorageItem('sessionStorage', key, value, false); },
-  'trusted-set-local-storage-item'(key, value) { setStorageItem('localStorage', key, value, true); },
-  'trusted-set-session-storage-item'(key, value) { setStorageItem('sessionStorage', key, value, true); },
-
-  'noeval'() {
-    win.eval = new Proxy(win.eval, { apply() { return undefined; } });
-  },
-
-  'noeval-if'(needle = '') {
-    const re = toRegex(needle);
-    win.eval = new Proxy(win.eval, {
-      apply(target, thisArg, args) {
-        if (re.test(String(args[0]))) return undefined;
-        return safeReflect.apply(target, thisArg, args);
-      },
-    });
-  },
-
-  'nowebrtc'() {
-    const names = ['RTCPeerConnection', 'webkitRTCPeerConnection', 'mozRTCPeerConnection'];
-    const Fake = function () {
-      return {
-        close() {}, createDataChannel() { return { close() {} }; }, createOffer() { return Promise.resolve(); },
-        createAnswer() { return Promise.resolve(); }, setLocalDescription() { return Promise.resolve(); },
-        setRemoteDescription() { return Promise.resolve(); }, addIceCandidate() { return Promise.resolve(); },
-        addEventListener() {}, removeEventListener() {}, getStats() { return Promise.resolve(new Map()); },
-      };
-    };
-    for (const n of names) if (n in win) { try { win[n] = Fake; } catch {} }
-  },
-
-  'trusted-click-element'(rawSelectors = '', extraMatch = '', rawDelay = '') {
-    const selectors = rawSelectors.split(/\s*,\s+/).map((s) => s.trim()).filter(Boolean);
-    if (!selectors.length) return;
-    // dodatkowe warunki: cookie:nazwa / localStorage:klucz (+ opcjonalnie !negacja)
-    if (extraMatch) {
-      for (const cond of extraMatch.split(/\s*,\s*/)) {
-        const m = /^(!)?(cookie|localStorage):(.+)$/.exec(cond);
-        if (!m) continue;
-        const [, not, kind, key] = m;
-        const re = toRegex(key);
-        let present = false;
-        try {
-          present = kind === 'cookie'
-            ? doc.cookie.split(/;\s*/).some((c) => re.test(c.split('=')[0]))
-            : Object.keys(localStorage).some((k) => re.test(k));
-        } catch {}
-        if (present === !!not) return;
-      }
-    }
-    const delay = Math.max(1, parseInt(rawDelay, 10) || 1);
-    const deadline = Date.now() + 10000;
-    let index = 0;
-    const query = (s) => {
-      // obsługa "a >>> b" (shadow DOM)
-      const parts = s.split(/\s*>>>\s*/);
-      let root = doc;
-      let el = null;
-      for (const p of parts) {
-        el = root.querySelector(p);
-        if (!el) return null;
-        root = el.shadowRoot || el;
-      }
-      return el;
-    };
-    const step = () => {
-      if (index >= selectors.length || Date.now() > deadline) { mo.disconnect(); return; }
-      const el = query(selectors[index]);
-      if (!el) return;
-      index++;
-      setTimeout(() => { try { el.click(); } catch {} step(); }, delay);
-    };
-    const mo = new MutationObserver(() => step());
-    const start = () => { mo.observe(doc.documentElement || doc, { childList: true, subtree: true }); step(); };
-    if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start, { once: true }); else start();
-    setTimeout(() => mo.disconnect(), 10000);
-  },
+const nativeFnToString = Function.prototype.toString;
+const NativeRegExp = RegExp;
+const reflectApply = Reflect.apply;
+const defineProperty = Object.defineProperty;
+const getOwnDesc = Object.getOwnPropertyDescriptor;
+const textContentGetter = getOwnDesc(Node.prototype, 'textContent').get;
+const nativeJSONParse = JSON.parse;
+const nativeJSONStringify = JSON.stringify;
+const PERF_EVENT = 'chromeblock:scriptlet-perf';
+const perf = (() => {
+let on = false;
+try { on = win[Symbol.for('chromeblock.scriptletPerf')] === true; } catch { /* */ }
+if (!on) return null;
+const now = performance.now.bind(performance);
+const nativeSetTimeout = win.setTimeout.bind(win);
+const NativeCustomEvent = win.CustomEvent;
+const dispatch = EventTarget.prototype.dispatchEvent;
+const stats = new Map();
+let timer = 0;
+const flush = () => {
+timer = 0;
+if (stats.size === 0) return;
+const rows = [];
+for (const [label, st] of stats) rows.push([label, st.count, st.total, st.max]);
+stats.clear();
+try {
+reflectApply(dispatch, doc, [new NativeCustomEvent(PERF_EVENT, { detail: nativeJSONStringify({ v: 1, rows }) })]);
+} catch { /* */ }
 };
-
+try { win.addEventListener('pagehide', flush, true); } catch { /* */ }
+return {
+now,
+record(label, ms) {
+let st = stats.get(label);
+if (!st) { st = { count: 0, total: 0, max: 0 }; stats.set(label, st); }
+st.count++;
+st.total += ms;
+if (ms > st.max) st.max = ms;
+if (!timer) timer = nativeSetTimeout(flush, 2000);
+},
+};
+})();
+let currentScriptlet = '';
+const perfLabel = (target) => `${currentScriptlet} · ${target}`;
+/** Przy włączonym profilerze mierzy wywołania fn; przy wyłączonym zwraca fn bez zmian. */
+function perfWrap(label, fn) {
+if (perf === null) return fn;
+return function (...args) {
+const t0 = perf.now();
+try { return reflectApply(fn, this, args); } finally { perf.record(label, perf.now() - t0); }
+};
+}
+/** Pułapka apply dla Proxy: przy profilerze mierzy czas własny (bez czasu oryginalnej funkcji). */
+function makeApplyTrap(label, run) {
+if (perf === null) return (target, thisArg, args) => run(target, thisArg, args, () => reflectApply(target, thisArg, args));
+return (target, thisArg, args) => {
+let inner = 0;
+const reflect = () => {
+const t = perf.now();
+try { return reflectApply(target, thisArg, args); } finally { inner += perf.now() - t; }
+};
+const t0 = perf.now();
+try { return run(target, thisArg, args, reflect); } finally { perf.record(label, perf.now() - t0 - inner); }
+};
+}
+const exceptionToken = 'cb' + Math.random().toString(36).slice(2);
+(() => {
+const previous = win.onerror;
+win.onerror = function (msg, ...rest) {
+if (typeof msg === 'string' && msg.includes(exceptionToken)) return true;
+if (previous instanceof Function) return previous.call(this, msg, ...rest);
+return undefined;
+};
+})();
+function fnToString(fn) {
+try { return nativeFnToString.call(fn); } catch { return ''; }
+}
+function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+/** "/re/flagi" → RegExp (flagi z argumentu ignorowane), tekst → RegExp dosłowny. */
+function patternToRegex(pattern, flags, verbatim = false) {
+if (pattern === undefined || pattern === '') return /^/;
+const m = /^\/(.+)\/([gimsu]*)$/.exec(pattern);
+if (m === null) {
+const re = escapeRe(pattern);
+return new NativeRegExp(verbatim ? `^${re}$` : re, flags);
+}
+try { return new NativeRegExp(m[1], m[2] || undefined); } catch { return /(?!)/; }
+}
+/** Wzorzec z opcjonalną negacją "!" i trybem "dopasuj wszystko" dla pustego. */
+function initPattern(pattern, { canNegate = false, flags } = {}) {
+if (pattern === undefined || pattern === '') return { matchAll: true, expect: true };
+let p = pattern;
+const expect = !(canNegate && p.startsWith('!'));
+if (!expect) p = p.slice(1);
+const m = /^\/(.+)\/([gimsu]*)$/.exec(p);
+if (m) {
+try { return { re: new NativeRegExp(m[1], m[2] || flags), expect }; } catch { return { re: /(?!)/, expect }; }
+}
+if (flags !== undefined) return { re: new NativeRegExp(escapeRe(p), flags), expect };
+return { text: p, expect };
+}
+function testPattern(details, haystack) {
+if (details.matchAll) return true;
+if (details.re) return details.re.test(haystack) === details.expect;
+return haystack.includes(details.text) === details.expect;
+}
+/** Varargi "nazwa, wartość, ..." → obiekt; wartości liczbowe są zamieniane na liczby. */
+function parseVarargs(arr) {
+const out = {};
+for (let i = 0; i + 1 < arr.length; i += 2) {
+const v = arr[i + 1];
+out[arr[i]] = /^\d+$/.test(v) ? parseInt(v, 10) : v;
+}
+return out;
+}
+const READY_STATE = { loading: 1, asap: 1, interactive: 2, end: 2, 2: 2, complete: 3, idle: 3, 3: 3 };
+function readyLevel(tokens) {
+for (const t of (Array.isArray(tokens) ? tokens : [tokens])) {
+const k = `${t}`;
+if (Object.prototype.hasOwnProperty.call(READY_STATE, k)) return READY_STATE[k];
+}
+return 0;
+}
+/** Uruchom fn, gdy dokument osiągnie wskazany stan (domyślnie od razu). */
+function runAt(fn, when) {
+const target = readyLevel(when);
+if (readyLevel(doc.readyState) >= target) { fn(); return; }
+const onChange = () => {
+if (readyLevel(doc.readyState) < target) return;
+doc.removeEventListener('readystatechange', onChange, true);
+fn();
+};
+doc.addEventListener('readystatechange', onChange, true);
+}
+function runAtHtmlElement(fn) {
+if (doc.documentElement) { fn(); return; }
+const mo = new MutationObserver(() => { mo.disconnect(); fn(); });
+mo.observe(doc, { childList: true });
+}
+function onIdle(fn, options) {
+if (win.requestIdleCallback) return win.requestIdleCallback(fn, options);
+return win.requestAnimationFrame(fn);
+}
+/** Zastępuje metodę wskazaną łańcuchem ("Node.prototype.appendChild") pośrednikiem. */
+function proxyApply(chain, handler) {
+let context = globalThis;
+let prop = chain;
+for (;;) {
+const pos = prop.indexOf('.');
+if (pos === -1) break;
+context = context[prop.slice(0, pos)];
+if (!(context instanceof Object)) return;
+prop = prop.slice(pos + 1);
+}
+const fn = context[prop];
+if (typeof fn !== 'function') return;
+if (perf === null) {
+context[prop] = new Proxy(fn, {
+apply(target, thisArg, args) {
+return handler({
+thisArg,
+callArgs: args,
+reflect: () => reflectApply(target, thisArg, args),
+});
+},
+});
+return;
+}
+const trap = makeApplyTrap(perfLabel(chain), (target, thisArg, args, reflect) => handler({ thisArg, callArgs: args, reflect }));
+context[prop] = new Proxy(fn, { apply: trap });
+}
+const arraySlice = Array.prototype.slice;
+const chainedHooks = new Map(); // łańcuch → { owner, prop, proxy, handlers }
+/**
+* Jak proxyApply, ale kolejne filtry na TĘ SAMĄ funkcję dopisują handler do jednego wrappera
+* zamiast zakładać kolejny Proxy (Proxy(Proxy(Proxy(fn))) → jeden Proxy + lista handlerów).
+* Semantyka jak przy zagnieżdżeniu: ostatnio dodany handler działa pierwszy, a jego reflect()
+* wywołuje poprzedni (z kopią argumentów, jak Reflect.apply na kolejnym Proxy), aż do oryginału.
+* Jeśli funkcję owinął w międzyczasie ktoś inny, powstaje nowa warstwa – kolejność zostaje zachowana.
+* Używane (na razie) dla: JSON.stringify / trusted-edit-inbound-object
+* i Node.prototype.appendChild / trusted-prevent-dom-bypass.
+*/
+function proxyApplyChained(chain, handler) {
+let context = globalThis;
+let prop = chain;
+for (;;) {
+const pos = prop.indexOf('.');
+if (pos === -1) break;
+context = context[prop.slice(0, pos)];
+if (!(context instanceof Object)) return;
+prop = prop.slice(pos + 1);
+}
+const fn = context[prop];
+if (typeof fn !== 'function') return;
+const entry = { handler, label: perf === null ? '' : perfLabel(chain) };
+const hook = chainedHooks.get(chain);
+if (hook && hook.owner === context && hook.prop === prop && context[prop] === hook.proxy) {
+hook.handlers.push(entry);
+return;
+}
+const handlers = [entry];
+const invoke = (i, thisArg, args) => {
+if (i < 0) return reflectApply(fn, thisArg, args);
+const h = handlers[i];
+const next = () => invoke(i - 1, thisArg, reflectApply(arraySlice, args, []));
+if (perf === null) return h.handler({ thisArg, callArgs: args, reflect: next });
+let inner = 0;
+const reflect = () => {
+const t = perf.now();
+try { return next(); } finally { inner += perf.now() - t; }
+};
+const t0 = perf.now();
+try { return h.handler({ thisArg, callArgs: args, reflect }); } finally { perf.record(h.label, perf.now() - t0 - inner); }
+};
+const proxy = new Proxy(fn, {
+apply(target, thisArg, args) { return invoke(handlers.length - 1, thisArg, args); },
+});
+context[prop] = proxy;
+chainedHooks.set(chain, { owner: context, prop, proxy, handlers });
+}
+function parsePropsToMatch(propsToMatch, implicit = '') {
+const needles = new Map();
+if (propsToMatch === undefined || propsToMatch === '') return needles;
+for (const needle of String(propsToMatch).split(/\s+/)) {
+let [prop, pattern] = needle.split(':');
+if (prop === '') continue;
+if (pattern !== undefined && /[^$\w -]/.test(prop)) {
+prop = `${prop}:${pattern}`;
+pattern = undefined;
+}
+if (pattern !== undefined) needles.set(prop, initPattern(pattern, { canNegate: true }));
+else if (implicit !== '') needles.set(implicit, initPattern(prop, { canNegate: true }));
+}
+return needles;
+}
+/**
+* Zwraca listę dopasowanych właściwości albo undefined, gdy któraś nie pasuje.
+* Właściwości nieobecne w obiekcie są pomijane (jak w uBO).
+*/
+function matchObjectProps(needles, ...objs) {
+const matched = [];
+for (const obj of objs) {
+if (!(obj instanceof Object)) continue;
+for (const [prop, details] of needles) {
+let value = obj[prop];
+if (value === undefined) continue;
+if (typeof value !== 'string') {
+try { value = nativeJSONStringify(value); } catch { /* */ }
+if (typeof value !== 'string') continue;
+}
+if (!testPattern(details, value)) return undefined;
+matched.push(prop);
+}
+}
+return matched;
+}
+const FETCH_PROPS = ['body', 'cache', 'credentials', 'duplex', 'headers', 'integrity', 'keepalive',
+'method', 'mode', 'priority', 'redirect', 'referrer', 'referrerPolicy', 'url'];
+function collateFetchArgs(resource, options) {
+const out = {};
+const copy = (src) => { for (const p of FETCH_PROPS) if (src[p] !== undefined) out[p] = src[p]; };
+if (typeof resource !== 'object' || Object.prototype.toString.call(resource) !== '[object Request]') {
+out.url = `${resource}`;
+} else {
+let clone;
+try { clone = resource.clone(); } catch { /* */ }
+copy(clone || resource);
+}
+if (typeof options === 'object' && options !== null) copy(options);
+return out;
+}
+function respondLike(before, body) {
+const after = new Response(body, { status: before.status, statusText: before.statusText, headers: before.headers });
+try {
+Object.defineProperties(after, {
+ok: { value: before.ok },
+redirected: { value: before.redirected },
+type: { value: before.type },
+url: { value: before.url },
+});
+} catch { /* */ }
+return after;
+}
+function randomText(len) {
+const chunks = [];
+let size = 0;
+do { const s = Math.random().toString(36).slice(2); chunks.push(s); size += s.length; } while (size < len);
+return chunks.join(' ').slice(0, len);
+}
+/** Treść zastępcza dla prevent-fetch/prevent-xhr. */
+function generateContent(trusted, directive) {
+if (directive === 'true') return randomText(10);
+if (directive === 'emptyObj') return '{}';
+if (directive === 'emptyArr') return '[]';
+if (directive === 'emptyStr') return '';
+if (directive.startsWith('length:')) {
+const m = /^length:(\d+)(?:-(\d+))?$/.exec(directive);
+if (!m) return '';
+const min = parseInt(m[1], 10);
+const extent = Math.max(parseInt(m[2], 10) || 0, min) - min;
+return randomText(Math.min(min + extent * Math.random(), 500000) | 0);
+}
+return trusted ? directive : '';
+}
+/**
+* Szuka ścieżki "a.b.c" (z tokenami [] {} * [-] {-}) w obiekcie.
+* prune=false: czy ścieżka istnieje; prune=true: usuwa wskazane właściwości.
+*/
+function findOwner(root, path, prune = false) {
+let owner = root;
+let chain = path;
+for (;;) {
+if (typeof owner !== 'object' || owner === null) return false;
+const pos = chain.indexOf('.');
+if (pos === -1) {
+if (!prune) return Object.prototype.hasOwnProperty.call(owner, chain);
+let modified = false;
+if (chain === '*') {
+for (const key in owner) {
+if (!Object.prototype.hasOwnProperty.call(owner, key)) continue;
+delete owner[key];
+modified = true;
+}
+} else if (Object.prototype.hasOwnProperty.call(owner, chain)) {
+delete owner[chain];
+modified = true;
+}
+return modified;
+}
+const prop = chain.slice(0, pos);
+const next = chain.slice(pos + 1);
+let found = false;
+if (prop === '[-]' && Array.isArray(owner)) {
+for (let i = owner.length - 1; i >= 0; i--) {
+if (findOwner(owner[i], next) === false) continue;
+owner.splice(i, 1);
+found = true;
+}
+return found;
+}
+if (prop === '{-}' && owner instanceof Object) {
+for (const key of Object.keys(owner)) {
+if (findOwner(owner[key], next) === false) continue;
+delete owner[key];
+found = true;
+}
+return found;
+}
+if ((prop === '[]' && Array.isArray(owner)) || ((prop === '{}' || prop === '*') && owner instanceof Object)) {
+for (const key of Object.keys(owner)) {
+if (findOwner(owner[key], next, prune) === false) continue;
+found = true;
+}
+return found;
+}
+if (!Object.prototype.hasOwnProperty.call(owner, prop)) return false;
+owner = owner[prop];
+chain = next;
+}
+}
+/** Zwraca obiekt, gdy coś usunięto, w przeciwnym razie undefined. */
+function pruneObject(obj, rawPrune, rawNeedle) {
+if (typeof rawPrune !== 'string' || rawPrune === '') return undefined;
+const prunePaths = rawPrune.split(/ +/);
+const needlePaths = rawNeedle ? rawNeedle.split(/ +/) : [];
+for (const p of needlePaths) if (findOwner(obj, p) === false) return undefined;
+let matched = false;
+for (const p of prunePaths) if (findOwner(obj, p, true)) matched = true;
+return matched ? obj : undefined;
+}
+/** Pułapka z obsługą wielu procedur (jak przy kilku filtrach acs na tej samej właściwości). */
+const trapDb = new WeakMap();
+function trapProperty(chain, handler, options = {}) {
+let owner = win;
+let prop = chain;
+for (;;) {
+const pos = prop.indexOf('.');
+if (pos === -1) break;
+owner = owner[prop.slice(0, pos)];
+if (!(owner instanceof Object)) return undefined;
+prop = prop.slice(pos + 1);
+}
+let handlers = trapDb.get(owner);
+if (!handlers) { handlers = new Map(); trapDb.set(owner, handlers); }
+let entry = handlers.get(prop);
+if (entry) { entry.stack.push(handler); return entry.value; }
+entry = { value: owner[prop], stack: [handler], canThrow: !!options.canThrow };
+handlers.set(prop, entry);
+const desc = getOwnDesc(owner, prop);
+if (desc instanceof Object && (desc.get || desc.set)) entry.stack.push(desc);
+try {
+defineProperty(owner, prop, {
+get() {
+let r = entry.value;
+for (const d of entry.stack) {
+try { r = d.get(); } catch (e) { if (entry.canThrow) throw e; }
+}
+return r;
+},
+set(value) {
+entry.value = value;
+for (const d of entry.stack) {
+try { d.set(value); } catch (e) { if (entry.canThrow) throw e; }
+}
+},
+});
+} catch { /* */ }
+return entry.value;
+}
+function validateConstant(trusted, raw, extra) {
+let value;
+let ok = true;
+if (raw === 'undefined') value = undefined;
+else if (raw === 'false') value = false;
+else if (raw === 'true') value = true;
+else if (raw === 'null') value = null;
+else if (raw === "''" || raw === '') value = '';
+else if (raw === '[]' || raw === 'emptyArr') value = [];
+else if (raw === '{}' || raw === 'emptyObj') value = {};
+else if (raw === 'noopFunc') value = function () {};
+else if (raw === 'trueFunc') value = function () { return true; };
+else if (raw === 'falseFunc') value = function () { return false; };
+else if (raw === 'throwFunc') value = function () { throw ''; };
+else if (/^-?\d+$/.test(raw)) {
+value = parseInt(raw, 10);
+if (Math.abs(value) > 0x7FFF) ok = false;
+} else if (trusted && raw.startsWith('json:')) {
+try { value = JSON.parse(raw.slice(5)); } catch { ok = false; }
+} else if (trusted && raw.startsWith('{') && raw.endsWith('}')) {
+try { value = JSON.parse(raw).value; } catch { ok = false; }
+} else ok = false;
+if (!ok) return { ok: false };
+if (extra.as === 'function') return { ok, value: () => value };
+if (extra.as === 'callback') return { ok, value: () => (() => value) };
+if (extra.as === 'resolved') return { ok, value: Promise.resolve(value) };
+if (extra.as === 'rejected') return { ok, value: Promise.reject(value) };
+return { ok, value };
+}
+function setConstantImpl(trusted, chain = '', rawValue = '', ...varargs) {
+if (chain === '') return;
+const extra = parseVarargs(varargs);
+runAt(() => {
+const checked = validateConstant(trusted, rawValue, extra);
+if (!checked.ok) return;
+let normalValue = checked.value;
+const thisScript = doc.currentScript || {};
+let aborted = false;
+const mustAbort = (v) => {
+if (trusted) return false;
+if (aborted) return true;
+aborted = v !== undefined && v !== null && normalValue !== undefined && normalValue !== null
+&& typeof v !== typeof normalValue;
+return aborted;
+};
+const trapProp = (owner, prop, configurable, handler) => {
+if (handler.init(configurable ? owner[prop] : normalValue) === false) return;
+const odesc = getOwnDesc(owner, prop);
+let prevGetter;
+let prevSetter;
+if (odesc instanceof Object) {
+try { owner[prop] = normalValue; } catch { /* */ }
+if (odesc.get instanceof Function) prevGetter = odesc.get;
+if (odesc.set instanceof Function) prevSetter = odesc.set;
+}
+try {
+defineProperty(owner, prop, {
+configurable,
+get() { if (prevGetter !== undefined) prevGetter(); return handler.getter(); },
+set(a) { if (prevSetter !== undefined) prevSetter(a); handler.setter(a); },
+});
+} catch { /* */ }
+};
+const trapChain = (owner, path) => {
+const pos = path.indexOf('.');
+if (pos === -1) {
+trapProp(owner, path, false, {
+v: undefined,
+init(v) { if (mustAbort(v)) return false; this.v = v; return true; },
+getter() { return doc.currentScript === thisScript ? this.v : normalValue; },
+setter(a) { if (mustAbort(a) === false) return; normalValue = a; },
+});
+return;
+}
+const prop = path.slice(0, pos);
+const rest = path.slice(pos + 1);
+const v = owner[prop];
+if (v instanceof Object || (typeof v === 'object' && v !== null)) { trapChain(v, rest); return; }
+trapProp(owner, prop, true, {
+v: undefined,
+init(x) { this.v = x; return true; },
+getter() { return this.v; },
+setter(a) { this.v = a; if (a instanceof Object) trapChain(a, rest); },
+});
+};
+trapChain(win, chain);
+}, extra.runAt);
+}
+function replaceNodeTextImpl(nodeName = '', pattern = '', replacement = '', ...varargs) {
+const reNodeName = patternToRegex(nodeName, 'i', true);
+const rePattern = patternToRegex(pattern, 'gms');
+const extra = parseVarargs(varargs);
+const reIncludes = extra.includes || extra.condition
+? patternToRegex(extra.includes || extra.condition, 'ms') : null;
+const reExcludes = extra.excludes ? patternToRegex(extra.excludes, 'ms') : null;
+const textFactory = (() => {
+const plain = { createScript: (s) => s };
+const tt = win.trustedTypes;
+try {
+if (tt instanceof Object && typeof tt.getPropertyType === 'function'
+&& tt.getPropertyType('script', 'textContent') === 'TrustedScript') {
+return tt.createPolicy('chromeblock-' + Math.random().toString(36).slice(2), plain);
+}
+} catch { /* */ }
+return plain;
+})();
+let sedCount = extra.sedCount !== undefined ? extra.sedCount : Number.MAX_SAFE_INTEGER;
+const handleNode = (node) => {
+const before = textContentGetter.call(node);
+if (reIncludes) { reIncludes.lastIndex = 0; if (!reIncludes.test(before)) return; }
+if (reExcludes) { reExcludes.lastIndex = 0; if (reExcludes.test(before)) return; }
+rePattern.lastIndex = 0;
+if (!rePattern.test(before)) return;
+rePattern.lastIndex = 0;
+const after = pattern !== '' ? before.replace(rePattern, replacement) : replacement;
+node.textContent = node.nodeName === 'SCRIPT' ? textFactory.createScript(after) : after;
+sedCount -= 1;
+};
+const handleTree = (root) => {
+const walker = doc.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+const { currentScript } = doc;
+for (;;) {
+const node = walker.nextNode();
+if (node === null) break;
+if (node === currentScript) continue;
+if (reNodeName.test(node.nodeName)) handleNode(node);
+else if (node.nodeName === 'TEMPLATE') handleTree(node.content);
+else continue;
+if (sedCount === 0) break;
+}
+};
+if (doc.documentElement) handleTree(doc.documentElement);
+const stay = Boolean(extra.stay);
+if (sedCount === 0 && !stay) return;
+let observer;
+const handleMutations = (mutations) => {
+for (const m of mutations) {
+for (const node of m.addedNodes) {
+if (reNodeName.test(node.nodeName)) handleNode(node);
+else if (node.nodeName === 'TEMPLATE') handleTree(node.content);
+else continue;
+if (sedCount === 0) { stop(false); return; }
+}
+}
+};
+const stop = (takeRecords = true) => {
+const pending = takeRecords ? observer.takeRecords() : [];
+observer.disconnect();
+handleMutations(pending);
+};
+observer = new MutationObserver(perfWrap(perfLabel('MutationObserver'), handleMutations));
+observer.observe(doc, { childList: true, subtree: true });
+if (stay) return;
+runAt(() => {
+const quitAfter = extra.quitAfter || 0;
+if (quitAfter === 0) { stop(); return; }
+setTimeout(() => stop(), quitAfter);
+}, 'interactive');
+}
+function getCookie(name) {
+for (const s of doc.cookie.split(/\s*;\s*/)) {
+const pos = s.indexOf('=');
+if (pos === -1) continue;
+if (s.slice(0, pos) !== name) continue;
+return s.slice(pos + 1).trim();
+}
+return undefined;
+}
+function setCookieImpl(trusted, name = '', value = '', expires = '', path = '', options = {}) {
+let n = name;
+let v = value;
+if (!trusted && /[^!#$%&'*+\-.0-9A-Z[\]^_`a-z|~]/.test(n)) n = encodeURIComponent(n);
+if (/[^ -:<-[\]-~]/.test(v)) v = encodeURIComponent(v);
+const before = getCookie(n);
+if (before !== undefined && options.dontOverwrite) return false;
+if (before === v && options.reload) return false;
+const parts = [n, '=', v];
+if (expires !== '') parts.push('; expires=', expires);
+let p = path;
+if (p === '') p = '/';
+else if (p === 'none') p = '';
+if (p !== '' && p !== '/') return false;
+if (p === '/') parts.push('; path=/');
+if (trusted) {
+if (options.domain) {
+let domain = options.domain;
+if (/^\/.+\//.test(domain)) {
+const m = new NativeRegExp(domain.slice(1, -1)).exec(new URL(doc.baseURI).hostname);
+domain = m ? m[0] : undefined;
+}
+if (domain) parts.push(`; domain=${domain}`);
+}
+parts.push('; Secure');
+} else if (/^__(Host|Secure)-/.test(n)) {
+parts.push('; Secure');
+}
+try { doc.cookie = parts.join(''); } catch { /* */ }
+const done = getCookie(n) === v;
+if (done && options.reload) win.location.reload();
+return done;
+}
+function setStorageImpl(which, trusted, key = '', value = '', options = {}) {
+if (key === '') return;
+let v = value;
+if (v === 'emptyArr') v = '[]';
+else if (v === 'emptyObj') v = '{}';
+if (trusted) {
+if (v.includes('$now$')) v = v.replaceAll('$now$', Date.now());
+if (v.includes('$currentDate$')) v = v.replaceAll('$currentDate$', `${Date()}`);
+if (v.includes('$currentISODate$')) v = v.replaceAll('$currentISODate$', new Date().toISOString());
+}
+let modified = false;
+try {
+const storage = win[`${which}Storage`];
+if (v === '$remove$') {
+const re = patternToRegex(key, undefined, true);
+const toRemove = [];
+for (let i = 0, n = storage.length; i < n; i++) {
+const k = storage.key(i);
+if (re.test(k)) toRemove.push(k);
+}
+modified = toRemove.length !== 0;
+for (const k of toRemove) storage.removeItem(k);
+} else {
+const before = storage.getItem(key);
+const after = `${v}`;
+modified = after !== before;
+if (modified) storage.setItem(key, after);
+}
+} catch { /* */ }
+if (modified && typeof options.reload === 'number') setTimeout(() => win.location.reload(), options.reload);
+}
+function fetchPrevent(trusted, propsToMatch = '', responseBody = '', responseType = '', ...varargs) {
+const extra = parseVarargs(varargs);
+const needles = parsePropsToMatch(propsToMatch, 'url');
+const responseProps = { statusText: { value: 'OK' } };
+const responseHeaders = {};
+const validProps = {
+ok: [false, true], status: [403], statusText: ['', 'Not Found'], type: ['basic', 'cors', 'default', 'error', 'opaque'],
+};
+if (/^\{.*\}$/.test(responseType)) {
+try {
+for (const [p, v] of Object.entries(JSON.parse(responseType))) {
+if (p === 'headers' && trusted) { Object.assign(responseHeaders, v); continue; }
+if (validProps[p] === undefined || !validProps[p].includes(v)) continue;
+responseProps[p] = { value: v };
+}
+} catch { /* */ }
+} else if (responseType !== '' && validProps.type.includes(responseType)) {
+responseProps.type = { value: responseType };
+}
+const nativeSetTimeout = win.setTimeout;
+proxyApply('fetch', (ctx) => {
+if (propsToMatch === '' && responseBody === '') return ctx.reflect();
+const details = collateFetchArgs(...ctx.callArgs);
+const matched = matchObjectProps(needles, details);
+if (matched === undefined || matched.length === 0) return ctx.reflect();
+return Promise.resolve(generateContent(trusted, responseBody)).then((text) => {
+const headers = Object.assign({}, responseHeaders);
+if (headers['content-length'] === undefined) headers['content-length'] = text.length;
+const response = new Response(text, { headers });
+try { Object.defineProperties(response, { url: { value: details.url }, ...responseProps }); } catch { /* */ }
+if (extra.throttle) return new Promise((resolve) => nativeSetTimeout(() => resolve(response), extra.throttle));
+return response;
+});
+});
+}
+function xhrPrevent(trusted, propsToMatch = '', directive = '') {
+const instances = new WeakMap();
+const needles = parsePropsToMatch(propsToMatch, 'url');
+const dispatch = (xhr, type) => { try { xhr.dispatchEvent(new Event(type)); } catch { /* */ } };
+proxyApply('XMLHttpRequest.prototype.open', (ctx) => {
+const { thisArg, callArgs } = ctx;
+instances.delete(thisArg);
+const [method, url, ...rest] = callArgs;
+if (propsToMatch === '' && directive === '') return ctx.reflect();
+const haystack = { method, url };
+if (matchObjectProps(needles, haystack)) {
+instances.set(thisArg, {
+xhr: thisArg,
+url,
+defer: rest.length === 0 || !!rest[0],
+directive,
+headers: { date: '', 'content-type': '', 'content-length': '' },
+props: { response: { value: '' }, responseText: { value: '' }, responseXML: { value: null } },
+});
+}
+return ctx.reflect();
+});
+proxyApply('XMLHttpRequest.prototype.send', (ctx) => {
+const d = instances.get(ctx.thisArg);
+if (d === undefined) return ctx.reflect();
+d.headers.date = new Date().toUTCString();
+switch (ctx.thisArg.responseType) {
+case 'arraybuffer':
+d.props.response.value = new ArrayBuffer(0);
+d.headers['content-type'] = 'application/octet-stream';
+break;
+case 'blob':
+d.props.response.value = new Blob([]);
+d.headers['content-type'] = 'application/octet-stream';
+break;
+case 'document': {
+const parsed = new DOMParser().parseFromString('', 'text/html');
+d.props.response.value = parsed;
+d.props.responseXML.value = parsed;
+d.headers['content-type'] = 'text/html';
+break;
+}
+case 'json':
+d.props.response.value = {};
+d.props.responseText.value = '{}';
+d.headers['content-type'] = 'application/json';
+break;
+default: {
+if (directive === '') break;
+const text = generateContent(trusted, d.directive);
+d.props.response.value = text;
+d.props.responseText.value = text;
+d.headers['content-type'] = 'text/plain';
+break;
+}
+}
+if (d.defer === false) {
+d.headers['content-length'] = `${d.props.response.value}`.length;
+Object.defineProperties(d.xhr, {
+readyState: { value: 4 }, responseURL: { value: d.url }, status: { value: 200 }, statusText: { value: 'OK' },
+});
+Object.defineProperties(d.xhr, d.props);
+return undefined;
+}
+Promise.resolve().then(() => {
+Object.defineProperties(d.xhr, { readyState: { value: 1, configurable: true }, responseURL: { value: d.url } });
+dispatch(d.xhr, 'readystatechange');
+}).then(() => {
+d.headers['content-length'] = `${d.props.response.value}`.length;
+Object.defineProperties(d.xhr, { readyState: { value: 2, configurable: true }, status: { value: 200 }, statusText: { value: 'OK' } });
+dispatch(d.xhr, 'readystatechange');
+}).then(() => {
+Object.defineProperties(d.xhr, { readyState: { value: 3, configurable: true } });
+Object.defineProperties(d.xhr, d.props);
+dispatch(d.xhr, 'readystatechange');
+}).then(() => {
+Object.defineProperties(d.xhr, { readyState: { value: 4 } });
+dispatch(d.xhr, 'readystatechange');
+dispatch(d.xhr, 'load');
+dispatch(d.xhr, 'loadend');
+});
+return undefined;
+});
+proxyApply('XMLHttpRequest.prototype.getResponseHeader', (ctx) => {
+const d = instances.get(ctx.thisArg);
+if (d === undefined || ctx.thisArg.readyState < 2) return ctx.reflect();
+const value = d.headers[`${ctx.callArgs[0]}`.toLowerCase()];
+return value !== undefined && value !== '' ? value : null;
+});
+proxyApply('XMLHttpRequest.prototype.getAllResponseHeaders', (ctx) => {
+const d = instances.get(ctx.thisArg);
+if (d === undefined || ctx.thisArg.readyState < 2) return ctx.reflect();
+const out = [];
+for (const [name, value] of Object.entries(d.headers)) if (value) out.push(`${name}: ${value}`);
+if (out.length) out.push('');
+return out.join('\r\n');
+});
+}
+/**
+* Podklasa XMLHttpRequest, która podmienia odpowiedź (tekstową lub JSON) dla
+* żądań pasujących do propsToMatch. transform(innerResponse) → nowa odpowiedź.
+*/
+function installXhrResponseTransform(needles, rawTransform) {
+const transform = perfWrap(perfLabel('XMLHttpRequest:response'), rawTransform);
+const instances = new WeakMap();
+const Native = win.XMLHttpRequest;
+win.XMLHttpRequest = class XMLHttpRequest extends Native {
+open(method, url, ...rest) {
+const details = { method, url };
+if (needles.size === 0 || matchObjectProps(needles, details) !== undefined) instances.set(this, details);
+else instances.delete(this);
+return super.open(method, url, ...rest);
+}
+get response() {
+const inner = super.response;
+const d = instances.get(this);
+if (d === undefined) return inner;
+const len = typeof inner === 'string' ? inner.length : undefined;
+if (d.lastLength !== len) { d.response = undefined; d.lastLength = len; }
+if (d.response !== undefined) return d.response;
+d.response = transform(inner);
+return d.response;
+}
+get responseText() {
+const r = this.response;
+return typeof r !== 'string' ? super.responseText : r;
+}
+};
+}
+const SCRIPTLETS = {
+'set-constant'(...args) { setConstantImpl(false, ...args); },
+'trusted-set-constant'(...args) { setConstantImpl(true, ...args); },
+'abort-on-property-read'(chain = '') {
+if (chain === '') return;
+const abort = () => { throw new ReferenceError(exceptionToken); };
+const makeProxy = (owner, path) => {
+const pos = path.indexOf('.');
+if (pos === -1) {
+const desc = getOwnDesc(owner, path);
+if (!desc || desc.get !== abort) {
+try { defineProperty(owner, path, { get: abort, set() {} }); } catch { /* */ }
+}
+return;
+}
+const prop = path.slice(0, pos);
+let v = owner[prop];
+const rest = path.slice(pos + 1);
+if (v) { try { makeProxy(v, rest); } catch { /* */ } return; }
+const desc = getOwnDesc(owner, prop);
+if (desc && desc.set !== undefined) return;
+try {
+defineProperty(owner, prop, {
+get() { return v; },
+set(a) { v = a; if (a instanceof Object) makeProxy(a, rest); },
+});
+} catch { /* */ }
+};
+makeProxy(win, chain);
+},
+'abort-on-property-write'(prop = '') {
+if (prop === '') return;
+let owner = win;
+let p = prop;
+for (;;) {
+const pos = p.indexOf('.');
+if (pos === -1) break;
+owner = owner[p.slice(0, pos)];
+if (!(owner instanceof Object)) return;
+p = p.slice(pos + 1);
+}
+try {
+delete owner[p];
+defineProperty(owner, p, { set() { throw new ReferenceError(exceptionToken); } });
+} catch { /* */ }
+},
+'abort-current-script'(target = '', needle = '', context = '') {
+if (target === '') return;
+runAtHtmlElement(() => {
+const reNeedle = patternToRegex(needle);
+const reContext = patternToRegex(context);
+const thisScript = doc.currentScript;
+const decoded = new WeakMap();
+const scriptText = (el) => {
+let text = textContentGetter.call(el);
+if (text.trim() !== '') return text;
+if (decoded.has(el)) return decoded.get(el);
+const [, mime, content] = /^data:([^,]*),(.+)$/.exec(el.src.trim()) || ['', '', ''];
+try { text = mime.endsWith(';base64') ? win.atob(content) : win.decodeURIComponent(content); } catch { /* */ }
+decoded.set(el, text);
+return text;
+};
+const validate = () => {
+const e = doc.currentScript;
+if (!(e instanceof HTMLScriptElement)) return;
+if (e === thisScript) return;
+if (context !== '' && reContext.test(e.src) === false) return;
+if (reNeedle.test(scriptText(e)) === false) return;
+throw new ReferenceError(exceptionToken);
+};
+let current = trapProperty(target, {
+get() { validate(); return current; },
+set(a) { validate(); current = a; },
+}, { canThrow: true });
+});
+},
+'prevent-addEventListener'(type = '', pattern = '', ...varargs) {
+const extra = parseVarargs(varargs);
+const reType = patternToRegex(type, undefined, true);
+const rePattern = patternToRegex(pattern);
+const targetSelector = extra.elements || undefined;
+const elementMatches = (el) => {
+if (targetSelector === 'window') return el === win;
+if (targetSelector === 'document') return el === doc;
+try {
+if (el && el.matches && el.matches(targetSelector)) return true;
+return Array.from(doc.querySelectorAll(targetSelector)).includes(el);
+} catch { return false; }
+};
+const shouldPrevent = (thisArg, t, h) => {
+const both = reType.test(t) && rePattern.test(h);
+if (both && targetSelector !== undefined && !elementMatches(thisArg)) return false;
+return both;
+};
+const handler = (ctx) => {
+const { callArgs, thisArg } = ctx;
+let t;
+let h;
+try {
+t = String(callArgs[0]);
+if (typeof callArgs[1] === 'function') h = String(fnToString(callArgs[1]));
+else if (typeof callArgs[1] === 'object' && callArgs[1] !== null) {
+if (typeof callArgs[1].handleEvent === 'function') h = String(fnToString(callArgs[1].handleEvent));
+} else h = String(callArgs[1]);
+} catch { /* */ }
+if ((type !== '' || pattern !== '') && shouldPrevent(thisArg, t, h)) return undefined;
+return ctx.reflect();
+};
+const protect = (owner) => {
+const { addEventListener } = owner;
+try { defineProperty(owner, 'addEventListener', { set() {}, get() { return addEventListener; } }); } catch { /* */ }
+};
+runAt(() => {
+proxyApply('EventTarget.prototype.addEventListener', handler);
+if (extra.protect) protect(EventTarget.prototype);
+if (Object.prototype.hasOwnProperty.call(doc, 'addEventListener')) {
+proxyApply('document.addEventListener', handler);
+if (extra.protect) protect(doc);
+}
+if (Object.prototype.hasOwnProperty.call(win, 'addEventListener')) {
+proxyApply('window.addEventListener', handler);
+if (extra.protect) protect(win);
+}
+}, extra.runAt);
+},
+'prevent-setTimeout'(needle = '', delay = '') { timerPrevent('setTimeout', needle, delay); },
+'prevent-setInterval'(needle = '', delay = '') { timerPrevent('setInterval', needle, delay); },
+'adjust-setTimeout'(needle = '', delay = '', boost = '') { timerAdjust('setTimeout', needle, delay, boost); },
+'adjust-setInterval'(needle = '', delay = '', boost = '') { timerAdjust('setInterval', needle, delay, boost); },
+'prevent-window-open'(pattern = '', delay = '', decoy = '') {
+const expect = !pattern.startsWith('!');
+const rePattern = patternToRegex(expect ? pattern : pattern.slice(1));
+const autoRemoveAfter = (parseFloat(delay) || 0) * 1000;
+const nativeSetTimeout = win.setTimeout;
+const createDecoy = (tag, urlProp, url) => {
+const el = doc.createElement(tag);
+el[urlProp] = url;
+el.style.setProperty('height', '1px', 'important');
+el.style.setProperty('position', 'fixed', 'important');
+el.style.setProperty('top', '-1px', 'important');
+el.style.setProperty('width', '1px', 'important');
+doc.body.appendChild(el);
+nativeSetTimeout(() => el.remove(), autoRemoveAfter);
+return el;
+};
+const noop = function () {};
+proxyApply('open', (ctx) => {
+const { callArgs } = ctx;
+if (rePattern.test(callArgs.join(' ')) !== expect) return ctx.reflect();
+if (delay === '') return null;
+if (decoy === 'blank') {
+callArgs[0] = 'about:blank';
+const r = ctx.reflect();
+nativeSetTimeout(() => { try { r.close(); } catch { /* */ } }, autoRemoveAfter);
+return r;
+}
+const el = decoy === 'obj' ? createDecoy('object', 'data', ...callArgs) : createDecoy('iframe', 'src', ...callArgs);
+let popup = el.contentWindow;
+if (typeof popup === 'object' && popup !== null) {
+try { defineProperty(popup, 'closed', { value: false }); } catch { /* */ }
+} else {
+popup = new Proxy(win, {
+get(target, prop, ...rest) {
+if (prop === 'closed') return false;
+const r = Reflect.get(target, prop, ...rest);
+return typeof r === 'function' ? noop : r;
+},
+set(...rest) { return Reflect.set(...rest); },
+});
+}
+return popup;
+});
+},
+'prevent-fetch'(...args) { fetchPrevent(false, ...args); },
+'trusted-prevent-fetch'(...args) { fetchPrevent(true, ...args); },
+'prevent-xhr'(...args) { xhrPrevent(false, ...args); },
+'trusted-prevent-xhr'(...args) { xhrPrevent(true, ...args); },
+'remove-attr'(rawToken = '', rawSelector = '', behavior = '', ...varargs) {
+if (rawToken === '') return;
+const tokens = rawToken.split(/\s*\|\s*/);
+const selector = tokens.map((a) => {
+const b = CSS.escape(a);
+return rawSelector.includes(`[${b}]`) ? rawSelector : `${rawSelector}[${b}]`;
+}).join(',');
+const lazily = !/\basap\b/.test(behavior);
+const options = parseVarargs(varargs);
+const fromNode = (node) => { for (const a of tokens) if (node.hasAttribute(a)) node.removeAttribute(a); };
+const removeAll = (nodes) => {
+try { for (const node of nodes || doc.querySelectorAll(selector)) fromNode(node); } catch { /* */ }
+};
+let timer;
+const lazy = () => {
+if (timer !== undefined) return;
+timer = onIdle(() => { timer = undefined; removeAll(); }, { timeout: 17 });
+};
+let observer;
+const onMutations = (mutations) => {
+for (const { addedNodes, removedNodes } of mutations) {
+for (const node of addedNodes) {
+if (node.nodeType !== 1) continue;
+if (lazily) { lazy(); return; }
+try {
+if (node.matches(selector)) fromNode(node);
+if (node.childElementCount) removeAll(node.querySelectorAll(selector));
+} catch { /* */ }
+}
+if (lazily) return;
+for (const node of removedNodes) {
+if (node.nodeType !== 1) continue;
+try { if (node.matches(selector)) fromNode(node); } catch { /* */ }
+}
+}
+};
+const start = () => {
+removeAll();
+if (!/\bstay\b/.test(behavior) && options.quitAfter === undefined) return;
+observer = new MutationObserver(onMutations);
+observer.observe(doc, { attributes: true, attributeFilter: tokens, childList: true, subtree: true });
+if (options.quitAfter) setTimeout(() => observer.disconnect(), options.quitAfter * 1000);
+};
+runAt(start, behavior.split(/\s+/));
+},
+'remove-class'(rawToken = '', rawSelector = '', behavior = '') {
+if (rawToken === '') return;
+const tokens = rawToken.split(/\s*\|\s*/);
+const selector = tokens.map((a) => `${rawSelector}.${CSS.escape(a)}`).join(',');
+const mustStay = /\bstay\b/.test(behavior);
+let timer;
+let observer;
+const removeAll = () => {
+timer = undefined;
+try { for (const node of doc.querySelectorAll(selector)) node.classList.remove(...tokens); } catch { /* */ }
+if (mustStay) return;
+if (doc.readyState !== 'complete') return;
+observer.disconnect();
+};
+const onMutations = (mutations) => {
+if (timer !== undefined) return;
+let skip = true;
+for (let i = 0; i < mutations.length && skip; i++) {
+const { type, addedNodes, removedNodes } = mutations[i];
+if (type === 'attributes') skip = false;
+for (let j = 0; j < addedNodes.length && skip; j++) if (addedNodes[j].nodeType === 1) skip = false;
+for (let j = 0; j < removedNodes.length && skip; j++) if (removedNodes[j].nodeType === 1) skip = false;
+}
+if (skip) return;
+timer = onIdle(removeAll, { timeout: 67 });
+};
+observer = new MutationObserver(onMutations);
+runAt(() => {
+removeAll();
+observer.observe(doc, { attributes: true, attributeFilter: ['class'], childList: true, subtree: true });
+}, /\bcomplete\b/.test(behavior) ? 'idle' : 'loading');
+},
+'set-attr'(selector = '', attr = '', value = '', ...varargs) {
+let v = value;
+if (!['', 'false', 'true'].includes(v.toLowerCase()) && /^\d+$/.test(v)) v = `${parseInt(v, 10)}`;
+setAttrImpl(false, selector, attr, v, parseVarargs(varargs));
+},
+'trusted-set-attr'(selector = '', attr = '', value = '', ...varargs) {
+setAttrImpl(true, selector, attr, value, parseVarargs(varargs));
+},
+'remove-node-text'(nodeName = '', includes = '', ...varargs) {
+replaceNodeTextImpl(nodeName, '', '', 'includes', includes || '', ...varargs);
+},
+'trusted-replace-node-text'(nodeName = '', pattern = '', replacement = '', ...varargs) {
+replaceNodeTextImpl(nodeName, pattern, replacement, ...varargs);
+},
+'json-prune'(rawPrune = '', rawNeedle = '') {
+proxyApply('JSON.parse', (ctx) => {
+const before = ctx.reflect();
+const after = pruneObject(before, rawPrune, rawNeedle);
+return after === undefined ? before : after;
+});
+},
+'json-prune-fetch-response'(rawPrune = '', rawNeedle = '', ...varargs) {
+const extra = parseVarargs(varargs);
+const needles = parsePropsToMatch(extra.propsToMatch, 'url');
+const respLabel = perfLabel('fetch:response');
+proxyApply('fetch', (ctx) => {
+const fetchPromise = ctx.reflect();
+if (needles.size !== 0 && matchObjectProps(needles, collateFetchArgs(...ctx.callArgs)) === undefined) return fetchPromise;
+return fetchPromise.then((before) => before.clone().json().then(perfWrap(respLabel, (obj) => {
+if (typeof obj !== 'object') return before;
+const after = pruneObject(obj, rawPrune, rawNeedle);
+if (typeof after !== 'object') return before;
+return respondLike(before, nativeJSONStringify(after));
+})).catch(() => before)).catch(() => fetchPromise);
+});
+},
+'json-prune-xhr-response'(rawPrune = '', rawNeedle = '', ...varargs) {
+const extra = parseVarargs(varargs);
+installXhrResponseTransform(parsePropsToMatch(extra.propsToMatch, 'url'), (inner) => {
+let obj;
+if (typeof inner === 'object') obj = inner;
+else if (typeof inner === 'string') { try { obj = nativeJSONParse(inner); } catch { /* */ } }
+if (typeof obj !== 'object') return inner;
+const after = pruneObject(obj, rawPrune, rawNeedle);
+if (typeof after !== 'object') return inner;
+return typeof inner === 'string' ? nativeJSONStringify(after) : after;
+});
+},
+'trusted-replace-fetch-response'(pattern = '', replacement = '', propsToMatch = '', ...varargs) {
+const rePattern = patternToRegex(pattern);
+const needles = parsePropsToMatch(propsToMatch, 'url');
+const extra = parseVarargs(varargs);
+const reIncludes = extra.includes ? patternToRegex(extra.includes) : null;
+const respLabel = perfLabel('fetch:response');
+proxyApply('fetch', (ctx) => {
+const fetchPromise = ctx.reflect();
+if (pattern === '') return fetchPromise;
+if (needles.size !== 0 && matchObjectProps(needles, collateFetchArgs(...ctx.callArgs)) === undefined) return fetchPromise;
+return fetchPromise.then((before) => before.clone().text().then(perfWrap(respLabel, (textBefore) => {
+if (reIncludes && reIncludes.test(textBefore) === false) return before;
+const textAfter = textBefore.replace(rePattern, replacement);
+if (textAfter === textBefore) return before;
+return respondLike(before, textAfter);
+})).catch(() => before)).catch(() => fetchPromise);
+});
+},
+'trusted-replace-xhr-response'(pattern = '', replacement = '', propsToMatch = '', ...varargs) {
+const rePattern = patternToRegex(pattern);
+const extra = parseVarargs(varargs);
+const reIncludes = extra.includes ? patternToRegex(extra.includes) : null;
+installXhrResponseTransform(parsePropsToMatch(propsToMatch, 'url'), (inner) => {
+if (typeof inner !== 'string') return inner;
+if (reIncludes && reIncludes.test(inner) === false) return inner;
+return inner.replace(rePattern, replacement);
+});
+},
+'json-edit'(q = '', ...varargs) { jsonEditParse(false, q, ...varargs); },
+'trusted-json-edit'(q = '', ...varargs) { jsonEditParse(true, q, ...varargs); },
+'json-edit-fetch-response'(q = '', ...varargs) { jsonEditFetch(false, q, ...varargs); },
+'trusted-json-edit-fetch-response'(q = '', ...varargs) { jsonEditFetch(true, q, ...varargs); },
+'json-edit-xhr-response'(q = '', ...varargs) { jsonEditXhr(false, q, ...varargs); },
+'trusted-json-edit-xhr-response'(q = '', ...varargs) { jsonEditXhr(true, q, ...varargs); },
+'edit-inbound-object'(chain = '', pos = '', q = '') { editInbound(false, chain, pos, q); },
+'trusted-edit-inbound-object'(chain = '', pos = '', q = '') { editInbound(true, chain, pos, q); },
+'trusted-prevent-dom-bypass'(methodPath = '', targetProp = '') {
+if (methodPath === '') return;
+const install = methodPath === 'Node.prototype.appendChild' ? proxyApplyChained : proxyApply;
+install(methodPath, (ctx) => {
+const args = ctx.callArgs;
+let elems = null;
+for (let i = 0; i < args.length; i++) {
+const e = args[i];
+if (e instanceof HTMLElement && 'contentWindow' in e) (elems || (elems = new Set())).add(e);
+}
+if (elems === null) return ctx.reflect();
+const r = ctx.reflect();
+for (const el of elems) {
+try {
+if (`${el.contentWindow}` !== '[object Window]') continue;
+const href = el.contentWindow.location.href;
+if (href !== 'about:blank' && href !== win.location.href) continue;
+if (targetProp !== '') {
+let me = win;
+let it = el.contentWindow;
+let chain = targetProp;
+for (;;) {
+const pos = chain.indexOf('.');
+if (pos === -1) break;
+const prop = chain.slice(0, pos);
+me = me[prop];
+it = it[prop];
+chain = chain.slice(pos + 1);
+}
+it[chain] = me[chain];
+} else {
+defineProperty(el, 'contentWindow', { value: win });
+}
+} catch { /* */ }
+}
+return r;
+});
+},
+'set-cookie'(name = '', value = '', path = '', ...varargs) {
+if (name === '') return;
+setCookieImpl(false, name, value, '', path, parseVarargs(varargs));
+},
+'set-cookie-reload'(name = '', value = '', path = '') {
+if (name === '') return;
+setCookieImpl(false, name, value, '', path, { reload: 1 });
+},
+'trusted-set-cookie'(name = '', value = '', offset = '', path = '', ...varargs) {
+trustedSetCookie(name, value, offset, path, parseVarargs(varargs));
+},
+'trusted-set-cookie-reload'(name = '', value = '', offset = '', path = '') {
+trustedSetCookie(name, value, offset, path, { reload: 1 });
+},
+'remove-cookie'(needle = '', ...varargs) {
+const reName = patternToRegex(needle);
+const extra = parseVarargs(varargs);
+const baseURL = new URL(doc.baseURI);
+let targetDomain = extra.domain;
+if (targetDomain && /^\/.+\//.test(targetDomain)) {
+const m = new NativeRegExp(targetDomain.slice(1, -1)).exec(baseURL.hostname);
+targetDomain = m ? m[0] : undefined;
+}
+let throttleTimer;
+const throttle = (fn, ms = 500) => {
+if (throttleTimer !== undefined) return;
+throttleTimer = setTimeout(() => { throttleTimer = undefined; fn(); }, ms);
+};
+const remove = () => {
+doc.cookie.split(';').forEach((cookieStr) => {
+const pos = cookieStr.indexOf('=');
+if (pos === -1) return;
+const name = cookieStr.slice(0, pos).trim();
+if (!reName.test(name)) return;
+const p1 = name + '=';
+const p2a = `; domain=${baseURL.hostname}`;
+const p2b = `; domain=.${baseURL.hostname}`;
+let p2c;
+let p2d;
+if (targetDomain) {
+p2c = `; domain=${targetDomain}`;
+p2d = `; domain=.${targetDomain}`;
+} else if (doc.domain) {
+const domain = doc.domain;
+if (domain !== baseURL.hostname) p2c = `; domain=.${domain}`;
+if (domain.startsWith('www.')) p2d = `; domain=${domain.replace('www', '')}`;
+}
+const p3 = '; path=/';
+const p4 = '; Max-Age=-1000; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+doc.cookie = p1 + p4;
+doc.cookie = p1 + p2a + p4;
+doc.cookie = p1 + p2b + p4;
+doc.cookie = p1 + p3 + p4;
+doc.cookie = p1 + p2a + p3 + p4;
+doc.cookie = p1 + p2b + p3 + p4;
+if (p2c !== undefined) doc.cookie = p1 + p2c + p3 + p4;
+if (p2d !== undefined) doc.cookie = p1 + p2d + p3 + p4;
+});
+};
+remove();
+win.addEventListener('beforeunload', remove);
+if (typeof extra.when !== 'string') return;
+for (const type of extra.when.split(/\s/)) {
+if (!['scroll', 'keydown'].includes(type)) continue;
+doc.addEventListener(type, () => throttle(remove), { passive: true });
+}
+},
+'set-local-storage-item'(key = '', value = '', ...varargs) { setStorageImpl('local', false, key, value, parseVarargs(varargs)); },
+'set-session-storage-item'(key = '', value = '', ...varargs) { setStorageImpl('session', false, key, value, parseVarargs(varargs)); },
+'trusted-set-local-storage-item'(key = '', value = '', ...varargs) { setStorageImpl('local', true, key, value, parseVarargs(varargs)); },
+'trusted-set-session-storage-item'(key = '', value = '', ...varargs) { setStorageImpl('session', true, key, value, parseVarargs(varargs)); },
+'noeval'() { proxyApply('eval', () => undefined); },
+'noeval-silent'() { proxyApply('eval', () => undefined); },
+'noeval-if'(needle = '') {
+const reNeedle = patternToRegex(needle);
+proxyApply('eval', (ctx) => {
+if (needle !== '' && reNeedle.test(String(ctx.callArgs[0]))) return undefined;
+return ctx.reflect();
+});
+},
+'nowebrtc'() {
+const rtcName = win.RTCPeerConnection ? 'RTCPeerConnection'
+: (win.webkitRTCPeerConnection ? 'webkitRTCPeerConnection' : '');
+if (rtcName === '') return;
+const noop = function () {};
+const pc = function () {};
+pc.prototype = {
+close: noop, createDataChannel: noop, createOffer: noop, setRemoteDescription: noop,
+toString() { return '[object RTCPeerConnection]'; },
+};
+const original = win[rtcName];
+win[rtcName] = pc.bind(win);
+if (original.prototype) {
+original.prototype.createDataChannel = function () { return { close() {}, send() {} }; }.bind(null);
+}
+},
+'trusted-click-element'(selectors = '', extraMatch = '', delay = '') {
+if (extraMatch !== '') {
+const assertions = extraMatch.split(',').map((s) => {
+const pos1 = s.indexOf(':');
+const s1 = pos1 !== -1 ? s.slice(0, pos1) : s;
+const not = s1.startsWith('!');
+const type = not ? s1.slice(1) : s1;
+const s2 = pos1 !== -1 ? s.slice(pos1 + 1).trim() : '';
+if (s2 === '') return undefined;
+const out = { not, type };
+const m = /^\/(.+)\/(i?)$/.exec(s2);
+if (m !== null) { out.re = new NativeRegExp(m[1], m[2] || undefined); return out; }
+const pos2 = s2.indexOf('=');
+const key = pos2 !== -1 ? s2.slice(0, pos2).trim() : s2;
+const value = pos2 !== -1 ? s2.slice(pos2 + 1).trim() : '';
+out.re = new NativeRegExp(`^${escapeRe(key)}=${escapeRe(value)}`);
+return out;
+}).filter((d) => d !== undefined);
+const cookies = assertions.some((o) => o.type === 'cookie')
+? doc.cookie.split(/\s*;\s*/).map((s) => {
+const pos = s.indexOf('=');
+if (pos === 0) return undefined;
+if (pos === -1) return { key: s.trim(), value: '' };
+return { key: s.slice(0, pos).trim(), value: s.slice(pos + 1).trim() };
+}).filter(Boolean)
+: [];
+const has = (haystack, needle) => haystack.some(({ key, value }) => needle.test(`${key}=${value}`));
+for (const { not, type, re } of assertions) {
+if (type === 'cookie' && has(cookies, re) === not) return;
+}
+}
+const steps = (/^[;|]/.test(selectors) ? selectors.slice(1).split(selectors.charAt(0)) : selectors.split(','))
+.map((a) => { const t = a.trim(); return /^\d+$/.test(t) ? parseInt(t, 10) : t; });
+if (steps.length === 0) return;
+const clickDelay = parseInt(delay, 10) || 1;
+for (let i = steps.length - 1; i > 0; i--) {
+if (typeof steps[i] !== 'string' || typeof steps[i - 1] !== 'string') continue;
+steps.splice(i, 0, clickDelay);
+}
+if (steps.length === 1 && delay !== '') steps.unshift(clickDelay);
+if (typeof steps[steps.length - 1] !== 'number') steps.push(11000);
+const timeout = steps.pop();
+const lookup = (directive) => {
+const visible = directive.startsWith('when-visible:');
+const selector = visible ? directive.slice(13) : directive;
+let elems;
+if (selector.startsWith('xpath:')) {
+elems = [];
+const res = doc.evaluate(selector.slice(6), doc, null, 7, null);
+for (let i = 0; i < res.snapshotLength; i++) elems.push(res.snapshotItem(i));
+} else {
+try { elems = Array.from(doc.querySelectorAll(selector)); } catch { elems = []; }
+}
+return visible ? elems.filter((a) => a.checkVisibility({ opacityProperty: true, visibilityProperty: true })) : elems;
+};
+const waitForElement = (directive) => new Promise((resolve) => {
+const until = Date.now() + timeout;
+let observer;
+let timer;
+const check = () => {
+const elems = lookup(directive);
+if (elems.length || Date.now() >= until) {
+if (observer) observer.disconnect();
+if (timer) (win.cancelIdleCallback || win.cancelAnimationFrame)(timer);
+resolve(elems);
+return;
+}
+if (!observer) {
+observer = new MutationObserver(check);
+observer.observe(doc, { attributes: true, childList: true, subtree: true });
+}
+if (!timer) timer = onIdle(() => { timer = undefined; check(); }, { timeout: 151 });
+};
+check();
+}).then((elems) => {
+if (elems.length === 0) return false;
+elems[0].click();
+return true;
+});
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const run = async () => {
+while (steps.length !== 0) {
+const step = steps.shift();
+if (step === undefined) break;
+if (typeof step === 'number') { await wait(step); continue; }
+if (step.startsWith('!')) continue;
+if (!(await waitForElement(step))) break;
+}
+};
+runAtHtmlElement(run);
+},
+};
+function timerPrevent(name, needleRaw, delayRaw) {
+const not = needleRaw.charAt(0) === '!';
+const reNeedle = patternToRegex(not ? needleRaw.slice(1) : needleRaw);
+const range = parseRange(delayRaw);
+proxyApply(name, (ctx) => {
+const { callArgs } = ctx;
+const a = callArgs[0] instanceof Function ? String(fnToString(callArgs[0])) : String(callArgs[0]);
+if (needleRaw === '' && range.unbound) return ctx.reflect();
+if (reNeedle.test(a) !== not && range.test(callArgs[1])) callArgs[0] = function () {};
+return ctx.reflect();
+});
+}
+/** Zakres opóźnienia: "", "100", "!100", "100-200", "-200", "100-". */
+function parseRange(raw) {
+let s = raw;
+const not = s.charAt(0) === '!';
+if (not) s = s.slice(1);
+let min;
+let max;
+if (s !== '') {
+const pos = s.indexOf('-');
+if (pos !== 0) min = max = parseInt(s, 10) || 0;
+if (pos !== -1) max = parseInt(s.slice(pos + 1), 10) || Number.MAX_SAFE_INTEGER;
+}
+return {
+unbound: min === undefined && max === undefined,
+test(v) {
+const n = Math.min(Math.max(Number(v) || 0, 0), Number.MAX_SAFE_INTEGER);
+if (min === max) return (min === undefined || n === min) !== not;
+if (min === undefined) return (n <= max) !== not;
+if (max === undefined) return (n >= min) !== not;
+return (n >= min && n <= max) !== not;
+},
+};
+}
+function timerAdjust(name, needleArg, delayArg, boostArg) {
+const reNeedle = patternToRegex(needleArg);
+let delay = delayArg !== '*' ? parseInt(delayArg, 10) : -1;
+if (Number.isNaN(delay) || !Number.isFinite(delay)) delay = 1000;
+let boost = parseFloat(boostArg);
+boost = !Number.isNaN(boost) && Number.isFinite(boost) ? Math.min(Math.max(boost, 0.001), 50) : 0.05;
+if (perf === null) {
+win[name] = new Proxy(win[name], {
+apply(target, thisArg, args) {
+const [a, b] = args;
+if ((delay === -1 || b === delay) && reNeedle.test(a.toString())) args[1] = b * boost;
+return target.apply(thisArg, args);
+},
+});
+return;
+}
+win[name] = new Proxy(win[name], {
+apply: makeApplyTrap(perfLabel(name), (target, thisArg, args, reflect) => {
+const [a, b] = args;
+if ((delay === -1 || b === delay) && reNeedle.test(a.toString())) args[1] = b * boost;
+return reflect();
+}),
+});
+}
+function setAttrImpl(trusted, selector, attr, value, options) {
+if (selector === '' || attr === '') return;
+const copyFrom = !trusted && /^\[.+\]$/.test(value) ? value.slice(1, -1) : '';
+const extract = (el) => (copyFrom !== '' ? el.getAttribute(copyFrom) || '' : value);
+const apply = () => {
+let elems;
+try { elems = doc.querySelectorAll(selector); } catch { return false; }
+for (const el of elems) {
+const before = el.getAttribute(attr);
+const after = extract(el);
+if (after === before) continue;
+if (after !== '' && /^on/i.test(attr) && attr.toLowerCase() in el) continue;
+el.setAttribute(attr, after);
+}
+return true;
+};
+let timer;
+const onChanged = (mutations) => {
+if (timer !== undefined) return;
+const work = mutations.some((m) => Array.from(m.addedNodes).some((n) => n.nodeType === 1));
+if (!work) return;
+timer = win.requestAnimationFrame(() => { timer = undefined; apply(); });
+};
+runAt(() => {
+if (apply() === false) return;
+const root = doc.documentElement;
+if (!(root instanceof win.Node)) return;
+new MutationObserver(onChanged).observe(root, { subtree: true, childList: true });
+}, options.runAt || 'idle');
+}
+function trustedSetCookie(name, value, offset, path, options) {
+if (name === '') return;
+const time = new Date();
+let v = value;
+if (v.includes('$now$')) v = v.replaceAll('$now$', time.getTime());
+if (v.includes('$currentDate$')) v = v.replaceAll('$currentDate$', time.toUTCString());
+if (v.includes('$currentISODate$')) v = v.replaceAll('$currentISODate$', time.toISOString());
+let expires = '';
+if (offset !== '') {
+if (offset === '1day') time.setDate(time.getDate() + 1);
+else if (offset === '1year') time.setFullYear(time.getFullYear() + 1);
+else {
+if (!/^\d+$/.test(offset)) return;
+time.setSeconds(time.getSeconds() + parseInt(offset, 10));
+}
+expires = time.toUTCString();
+}
+setCookieImpl(true, name, v, expires, path, options);
+}
+function compileJsonPath(trusted, q) {
+const jsonp = ChromeBlockJSONPath.compileQuery(q);
+if (!jsonp.valid) return null;
+if (jsonp.hasAssignment && !trusted) return null;
+return jsonp;
+}
+function jsonEditParse(trusted, q, ...varargs) {
+const jsonp = compileJsonPath(trusted, q);
+if (!jsonp) return;
+const extra = parseVarargs(varargs);
+const pattern = extra.matches ? initPattern(extra.matches) : null;
+proxyApply('JSON.parse', (ctx) => {
+const json = ctx.callArgs[0];
+const obj = ctx.reflect();
+if (pattern && testPattern(pattern, json) === false) return obj;
+const after = jsonp.apply(obj);
+return after === undefined ? obj : after;
+});
+}
+function jsonEditFetch(trusted, q, ...varargs) {
+const jsonp = compileJsonPath(trusted, q);
+if (!jsonp) return;
+const extra = parseVarargs(varargs);
+const needles = parsePropsToMatch(extra.propsToMatch, 'url');
+const respLabel = perfLabel('fetch:response');
+proxyApply('fetch', (ctx) => {
+const fetchPromise = ctx.reflect();
+if (needles.size !== 0 && matchObjectProps(needles, collateFetchArgs(...ctx.callArgs)) === undefined) return fetchPromise;
+return fetchPromise.then((before) => before.clone().json().then(perfWrap(respLabel, (obj) => {
+if (typeof obj !== 'object') return before;
+const after = jsonp.apply(obj);
+if (after === undefined) return before;
+return respondLike(before, nativeJSONStringify(after));
+})).catch(() => before)).catch(() => fetchPromise);
+});
+}
+function jsonEditXhr(trusted, q, ...varargs) {
+const jsonp = compileJsonPath(trusted, q);
+if (!jsonp) return;
+const extra = parseVarargs(varargs);
+installXhrResponseTransform(parsePropsToMatch(extra.propsToMatch, 'url'), (inner) => {
+let obj;
+if (typeof inner === 'object') obj = inner;
+else if (typeof inner === 'string') { try { obj = nativeJSONParse(inner); } catch { /* */ } }
+if (typeof obj !== 'object' || obj === null) return inner;
+const after = jsonp.apply(obj);
+if (after === undefined) return inner;
+return typeof inner === 'string' ? nativeJSONStringify(after).replace(/\//g, '\\/') : after;
+});
+}
+function editInbound(trusted, chain, argPosRaw, q) {
+if (chain === '') return;
+const jsonp = compileJsonPath(trusted, q);
+if (!jsonp) return;
+const argPos = parseInt(argPosRaw, 10);
+if (Number.isNaN(argPos)) return;
+const index = (args) => {
+if (!Array.isArray(args)) return undefined;
+if (argPos >= 0) return args.length <= argPos ? undefined : argPos;
+return args.length < -argPos ? undefined : args.length + argPos;
+};
+const nativeParse = nativeJSONParse;
+const nativeStringify = nativeJSONStringify;
+const install = chain === 'JSON.stringify' ? proxyApplyChained : proxyApply;
+install(chain, (ctx) => {
+const i = index(ctx.callArgs);
+if (i !== undefined) {
+let clone;
+try { clone = nativeParse(nativeStringify(ctx.callArgs[i])); } catch { /* */ }
+if (typeof clone === 'object' && clone !== null) {
+const after = jsonp.apply(clone);
+if (after) ctx.callArgs[i] = after;
+}
+}
+return ctx.reflect();
+});
+}
+/** Ustala, które scriptlety dotyczą bieżącego hosta, i je uruchamia. */
 function hostCandidates(hostname) {
-  const labels = hostname.split('.');
-  const out = [];
-  for (let i = 0; i < labels.length; i++) {
-    const suffix = labels.slice(i);
-    out.push(suffix.join('.'));
-    if (suffix.length >= 2) out.push(suffix.slice(0, -1).join('.') + '.*');
-    if (suffix.length >= 3) out.push(suffix.slice(0, -2).join('.') + '.*');
-  }
-  return out;
+const labels = hostname.split('.');
+const out = [];
+for (let i = 0; i < labels.length; i++) {
+const suffix = labels.slice(i);
+out.push(suffix.join('.'));
+if (suffix.length >= 2) out.push(suffix.slice(0, -1).join('.') + '.*');
+if (suffix.length >= 3) out.push(suffix.slice(0, -2).join('.') + '.*');
 }
-
+return out;
+}
 function runForHost(calls, hosts, except) {
-  let hostname = '';
-  try { hostname = location.hostname; } catch {}
-  if (!hostname) {
-    try { hostname = new URL(location.ancestorOrigins[0]).hostname; } catch { return; }
-  }
-  const selected = new Set();
-  const excluded = new Set();
-  for (const h of hostCandidates(hostname)) {
-    const list = hosts[h];
-    if (list) for (const i of list) selected.add(i);
-    const ex = except[h];
-    if (ex) for (const k of ex) excluded.add(k);
-  }
-  if (excluded.has('*')) return;
-  for (const i of selected) {
-    const call = calls[i];
-    if (excluded.has(call.join('\u0001'))) continue;
-    const fn = S[call[0]];
-    if (!fn) continue;
-    try { fn(...call.slice(1)); } catch { /* scriptlet nie może zepsuć strony */ }
-  }
+let hostname = '';
+try { hostname = location.hostname; } catch { /* */ }
+if (!hostname) {
+try { hostname = new URL(location.ancestorOrigins[0]).hostname; } catch { return; }
 }
-
+const selected = new Set();
+const excluded = new Set();
+for (const h of hostCandidates(hostname)) {
+const list = hosts[h];
+if (list) for (const i of list) selected.add(i);
+const ex = except[h];
+if (ex) for (const k of ex) excluded.add(k);
+}
+if (excluded.has('*')) return;
+for (const i of selected) {
+const call = calls[i];
+if (excluded.has(call.join('\u0001'))) continue;
+const fn = SCRIPTLETS[call[0]];
+if (!fn) continue;
+currentScriptlet = call[0];
+try { fn(...call.slice(1)); } catch { /* scriptlet nie może zepsuć strony */ }
+}
+}
 runForHost(CALLS, HOSTS, EXCEPT);
 })();
