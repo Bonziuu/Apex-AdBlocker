@@ -8,6 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   overallStatus, counts, isChromeBlockError, networkErrorOf, formatReport, parseArgs, writeResults, ROOT, exitCodeFor, EXIT, classifySeek, SEEK_RESUME_WAIT_S,
+  seekFacts, seekFailureKinds, classifyAB, formatSeekAB, browserArgs, AB,
 } from '../local/chromeblock-local-test.mjs';
 import { packageDev, missingTesterImports, TESTER_FILES, testerPackageJson } from '../../tools/package-dev.mjs';
 import { createRequire } from 'node:module';
@@ -179,4 +180,81 @@ test('seek: przeskok widoczny dopiero po chwili (pozycja aktualizuje się z opó
   const r = classifySeek({ before: 18, samples: S([[18], [18, true], [78, true], [78], [79], [80]]) });
   assert.equal(r.seek.status, 'PASS');
   assert.equal(r.resume.status, 'PASS');
+});
+
+// --- A/B seek (kontrola bez ChromeBlock) --------------------------------------
+const URL_W = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ';
+// prawdziwy przypadek z Windows: 16 s → 76 s, potem trwały .ytp-error i cofnięcie pozycji
+const brokenSeek = () => seekFacts({ before: 16, samples: S([[76], [76, true], [76, false, true], [0, false, true], [0, false, true], [0, false, true]]), videoError: 0, finalUrl: URL_W });
+const goodSeek = () => seekFacts({ before: 14, samples: S([[74, true], [74, true], [75], [76], [77]]), finalUrl: URL_W });
+
+test('A/B: fakty seek do raportu (przypadek z Windows)', () => {
+  const f = brokenSeek();
+  assert.equal(f.before, 16);
+  assert.equal(f.target, 76);
+  assert.equal(f.afterSeek, 76);
+  assert.equal(f.jumpedTo, 76);
+  assert.equal(f.ytpErrorPersistent, true);
+  assert.equal(f.videoErrorCode, 0);
+  assert.equal(f.fellBack, true);
+  assert.equal(f.resumed, false);
+  assert.equal(f.finalUrl, URL_W);
+  assert.deepEqual(seekFailureKinds(f), ['ytp-error', 'fell-back', 'not-resumed']);
+  assert.deepEqual(seekFailureKinds(goodSeek()), []);
+});
+
+test('A/B: ten sam błąd także bez ChromeBlock → CONTROL ALSO FAILS (nie obwiniamy ChromeBlock)', () => {
+  const r = classifyAB(brokenSeek(), brokenSeek());
+  assert.equal(r.verdict, AB.CONTROL_ALSO_FAILS);
+  assert.match(r.detail, /ytp-error, fell-back/);
+  // częściowa zgodność też wystarcza (np. kontrola: tylko trwały .ytp-error + video.error)
+  const control = seekFacts({ before: 15, samples: S([[75, false, true], [75, false, true], [75, false, true]]), videoError: 2, finalUrl: URL_W });
+  assert.equal(classifyAB(brokenSeek(), control).verdict, AB.CONTROL_ALSO_FAILS);
+});
+
+test('A/B: bez ChromeBlock działa, z ChromeBlock nie → CHROMEBLOCK-SPECIFIC FAIL', () => {
+  const r = classifyAB(brokenSeek(), goodSeek());
+  assert.equal(r.verdict, AB.CHROMEBLOCK_SPECIFIC);
+  assert.match(r.detail, /bez ChromeBlock seek i odtwarzanie działają/);
+});
+
+test('A/B: kontrola nie może się wykonać → INCONCLUSIVE', () => {
+  for (const c of [null, { skipped: 'INCONCLUSIVE – YouTube niedostępny (net::ERR_NAME_NOT_RESOLVED)' }, { skipped: 'odtwarzanie w kontroli nie wystartowało' }]) {
+    assert.equal(classifyAB(brokenSeek(), c).verdict, AB.INCONCLUSIVE);
+  }
+  assert.match(classifyAB(brokenSeek(), { skipped: 'CAPTCHA' }).detail, /nie wykonała się: CAPTCHA/);
+});
+
+test('A/B: kontrola z innym błędem albo tylko bez wznowienia → INCONCLUSIVE', () => {
+  const noJump = seekFacts({ before: 14, samples: S([[15], [16], [17]]), finalUrl: URL_W }); // inny błąd: brak przeskoku
+  assert.equal(classifyAB(brokenSeek(), noJump).verdict, AB.INCONCLUSIVE);
+  const stalled = seekFacts({ before: 14, samples: S(Array.from({ length: 25 }, () => [74, true])), finalUrl: URL_W }); // bez błędu, tylko buforuje
+  const r = classifyAB(brokenSeek(), stalled);
+  assert.equal(r.verdict, AB.INCONCLUSIVE);
+  assert.match(r.detail, /bez błędu playera, ale odtwarzanie się nie wznowiło/);
+});
+
+test('A/B: raport zawiera before / target / po seek / .ytp-error / video.error.code / cofnięcie / wznowienie / URL dla obu przebiegów', () => {
+  const ab = { ...classifyAB(brokenSeek(), goodSeek()), with: brokenSeek(), without: goodSeek() };
+  const t = formatSeekAB(ab).join('\n');
+  assert.match(t, /Diagnostyka A\/B seek: CHROMEBLOCK-SPECIFIC FAIL/);
+  for (const row of ['before', 'seek target', 'currentTime po seek', '.ytp-error', 'video.error.code', 'pozycja się cofnęła', 'odtwarzanie wznowione', 'końcowy URL']) assert.match(t, new RegExp(row.replace('.', '\\.')));
+  assert.match(t, /Z ChromeBlock\s+BEZ ChromeBlock/);
+  assert.match(t, /\.ytp-error\s+TAK \(trwały\)\s+nie/);
+  assert.match(t, /pozycja się cofnęła\s+TAK\s+nie/);
+  assert.match(t, /odtwarzanie wznowione\s+nie\s+TAK/);
+  const skipped = formatSeekAB({ ...classifyAB(brokenSeek(), { skipped: 'brak sieci' }), with: brokenSeek(), without: { skipped: 'brak sieci' } }).join('\n');
+  assert.match(skipped, /INCONCLUSIVE/);
+  assert.match(skipped, /nie wykonano: brak sieci/);
+  // sekcja w pełnym raporcie
+  const full = formatReport({ overall: 'FAIL', version: 'v', checks: [c('FAIL', 'YouTube: seek A/B (kontrola bez ChromeBlock)')], errors: [], notes: [], finishedAt: 'x', durationMs: 1, seekAB: ab });
+  assert.match(full, /Diagnostyka A\/B seek/);
+});
+
+test('A/B: kontrola uruchamiana BEZ rozszerzenia, z tymi samymi flagami odtwarzania', () => {
+  const without = browserArgs(null);
+  const withExt = browserArgs('/tmp/ext');
+  assert.ok(!without.some((a) => a.includes('load-extension') || a.includes('disable-extensions-except')));
+  assert.ok(withExt.includes('--load-extension=/tmp/ext'));
+  assert.deepEqual(withExt.filter((a) => !a.includes('extension')), without);
 });
