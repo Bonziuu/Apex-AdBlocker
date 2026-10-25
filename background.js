@@ -15,6 +15,7 @@ import { buildDiagnosticsReport } from './background/diagnostics-report.js';
 import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js';
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
 import { PROTECTION_MODES, isPresetMode, listsForMode, modeForLists } from './shared/protection-modes.js';
+import { FOCUS_STORAGE_KEY, FOCUS_DEFAULTS, normalizeFocus, focusCss, activeFocusOptions, isFocusHost } from './shared/youtube-focus.js';
 
 // Pomiar etapów startu (czas od uruchomienia service workera). Ostatni zakończony pomiar
 // trafia do chrome.storage.session i do Diagnostyki.
@@ -185,6 +186,12 @@ function hostOf(url) {
 /** Czy host należy do YouTube (strony, na których działa YouTube Protection). */
 export function isYouTubeHost(host) {
   return /(^|\.)(youtube\.com|youtube-nocookie\.com)$/.test(String(host || ''));
+}
+
+// YouTube Focus Mode – ustawienia w chrome.storage.local (niezależne od YouTube Protection)
+async function getFocus() {
+  const stored = await chrome.storage.local.get(FOCUS_STORAGE_KEY);
+  return normalizeFocus(stored[FOCUS_STORAGE_KEY]);
 }
 
 function isSiteDisabled(host, s) {
@@ -970,6 +977,8 @@ const handlers = {
       canRun: !!host,
       problems,
       youtube: yt,
+      // Focus Mode: tylko na youtube.com (osobno od YouTube Protection)
+      youtubeFocus: isFocusHost(host) ? { enabled: (await getFocus()).enabled } : null,
       protectionMode: s.protectionMode,
     };
   },
@@ -1013,8 +1022,29 @@ const handlers = {
       userCount: user.count,
       dynamicRules: dyn.length,
       availableStaticRules: available,
+      youtubeFocus: await getFocus(),
       version: chrome.runtime.getManifest().version,
     };
+  },
+
+  /** Zmiana ustawień Focus Mode: tylko znane klucze z wartością boolean; reszta bez zmian. */
+  async 'options:setYouTubeFocus'(msg) {
+    const patch = msg && msg.settings && typeof msg.settings === 'object' ? msg.settings : null;
+    if (!patch) return { ok: false, error: 'brak ustawień Focus Mode' };
+    const next = await getFocus();
+    for (const k of Object.keys(FOCUS_DEFAULTS)) if (typeof patch[k] === 'boolean') next[k] = patch[k];
+    await chrome.storage.local.set({ [FOCUS_STORAGE_KEY]: next });
+    return { ok: true, youtubeFocus: next };
+  },
+
+  /** CSS Focus Mode dla karty YouTube (skrypt youtube/focus.js); '' gdy wyłączony lub ochrona strony wyłączona. */
+  async 'youtubeFocus:css'(msg, sender) {
+    const host = sender && sender.tab ? hostOf(sender.tab.url) : '';
+    if (!isYouTubeHost(host)) return { css: '', active: [] };
+    const s = await getState();
+    if (isSiteDisabled(host, s)) return { css: '', active: [] };
+    const focus = await getFocus();
+    return { css: focusCss(focus), active: activeFocusOptions(focus) };
   },
 
   async 'options:setLists'(msg) {
@@ -1075,7 +1105,7 @@ const handlers = {
 // Wiadomości zmieniające ustawienia wykonujemy jedna po drugiej. Każda czyta stan, modyfikuje go
 // i synchronizuje z Chrome; równoległe wykonanie gubiło zmiany (np. dwa szybkie przełączenia
 // stron albo dwa „Ukryj element” – druga zapisywała stan bez pierwszej).
-const MUTATING = new Set(['site:toggle', 'options:setLists', 'options:setProtectionMode', 'options:setUserFilters', 'options:setDisabledSites',
+const MUTATING = new Set(['site:toggle', 'options:setLists', 'options:setProtectionMode', 'options:setYouTubeFocus', 'options:setUserFilters', 'options:setDisabledSites',
   'options:setDevPerf', 'picker:add', 'health:resync']);
 let settingsQueue = Promise.resolve();
 function runHandler(h, msg, sender) {

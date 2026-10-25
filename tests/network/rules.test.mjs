@@ -13,10 +13,10 @@ const TYPES = new Set(['main_frame', 'sub_frame', 'stylesheet', 'script', 'image
 const COND_KEYS = new Set(['urlFilter', 'regexFilter', 'isUrlFilterCaseSensitive', 'initiatorDomains', 'excludedInitiatorDomains',
   'requestDomains', 'excludedRequestDomains', 'resourceTypes', 'excludedResourceTypes', 'requestMethods', 'excludedRequestMethods', 'domainType']);
 
-test('manifest: MV3, wersja developerska 0.3.1, wymagane pliki istnieją', () => {
+test('manifest: MV3, wersja developerska 0.3.2, wymagane pliki istnieją', () => {
   assert.equal(manifest.manifest_version, 3);
-  assert.equal(manifest.version, '0.3.1');
-  assert.equal(manifest.version_name, '0.3.1-dev');
+  assert.equal(manifest.version, '0.3.2');
+  assert.equal(manifest.version_name, '0.3.2-dev');
   assert.equal(manifest.name, 'ChromeBlock');
   const files = [manifest.background.service_worker, manifest.action.default_popup, manifest.options_page,
     ...manifest.content_scripts.flatMap((c) => c.js), ...Object.values(manifest.icons)];

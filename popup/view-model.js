@@ -35,6 +35,7 @@ export function viewModel(info) {
       ? `Problem z silnikiem: ${problems.map((p) => COMPONENT_PL[p] || p).join(', ')} – otwórz diagnostykę`
       : '',
     protectionMode: modeDisplay(info.protectionMode).mode,
-    youtube: yt ?{ status: yt.status, label: STATUS_PL[yt.status] || yt.status, detail: yt.detail || '' } : null,
+    focus: info.youtubeFocus ? { enabled: !!info.youtubeFocus.enabled } : null,
+    youtube: yt ? { status: yt.status, label: STATUS_PL[yt.status] || yt.status, detail: yt.detail || '' } : null,
   };
 }

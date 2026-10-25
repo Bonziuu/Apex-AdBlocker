@@ -90,7 +90,7 @@ test('manifest: brak nowych uprawnień', () => {
   assert.deepEqual([...m.permissions].sort(), ['declarativeNetRequest', 'declarativeNetRequestFeedback', 'scripting', 'storage', 'webNavigation']);
   assert.deepEqual(m.host_permissions, ['<all_urls>']);
   assert.equal(m.optional_permissions, undefined);
-  assert.equal(m.version_name, '0.3.1-dev');
+  assert.equal(m.version_name, '0.3.2-dev');
 });
 
 test('widok: polska odmiana licznika', async () => {

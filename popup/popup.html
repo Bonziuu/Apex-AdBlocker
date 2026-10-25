@@ -58,6 +58,18 @@
       <span class="pill" id="youtubeStatus"></span>
     </div>
 
+    <!-- YouTube Focus Mode (tylko na youtube.com) -->
+    <div class="row focus-row" id="focus" hidden>
+      <svg class="row-icon focus-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+      <span class="row-label" id="focusLabel">Focus Mode</span>
+      <button type="button" class="mode-link focus-customize" id="focusCustomize">Dostosuj</button>
+      <button id="focusToggle" class="toggle toggle-sm" type="button" role="switch" aria-checked="false" aria-labelledby="focusLabel" aria-describedby="focusHint">
+        <span class="knob" aria-hidden="true"></span>
+      </button>
+      <span id="focusHint" class="visually-hidden">Ukrywa Shorts, proponowane filmy, komentarze i sugestie na końcu filmu. Działa od razu, bez przeładowania karty.</span>
+    </div>
+    <div class="mode-err" id="focusErr" role="alert" hidden></div>
+
     <!-- problemy silnika -->
     <button id="problems" class="alert" type="button" hidden>
       <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2 1 21h22L12 2Zm1 15h-2v-2h2v2Zm0-4h-2V9h2v4Z"/></svg>
