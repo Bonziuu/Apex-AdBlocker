@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "measuredAt": "2026-10-25T23:30:27.452Z",
+  "commit": "9ee1041d39e9344f3dbeb0fbec741e5e3027679f",
+  "environment": {
+    "os": "Linux 6.18.44-fc-v153 x64",
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.80GHz ×2",
+    "memGB": 8,
+    "node": "v22.22.0",
+    "chromium": "141.0.7390.37",
+    "headless": true
+  },
+  "size": {
+    "packageSha256": "ee39d172986109ed8e8567d22f6ef3cc3154b3a6255762a294d22a8b42a004ec",
+    "files": 115,
+    "unpackedBytes": 18522602,
+    "zipBytes": 4519619,
+    "categories": {
+      "rules/ (rulesety DNR)": {
+        "files": 5,
+        "bytes": 6725089
+      },
+      "data/ (kosmetyka, scriptlety, metadane)": {
+        "files": 19,
+        "bytes": 6460685
+      },
+      "scriptlets/ (wygenerowane scriptlety)": {
+        "files": 34,
+        "bytes": 5050123
+      },
+      "JS rozszerzenia (SW, content scripts, shared)": {
+        "files": 19,
+        "bytes": 193295
+      },
+      "UI (popup, opcje, powitanie)": {
+        "files": 11,
+        "bytes": 56979
+      },
+      "ikony / zasoby / manifest": {
+        "files": 27,
+        "bytes": 36431
+      }
+    }
+  },
+  "startup": {
+    "note": "internalInstall = profiler SW (timeOrigin workera → finishStartupProfile, świeża instalacja); freshInstallToReady = zegar ścienny z uruchomieniem Chromium; wake* = eksperymentalne, zegar ścienny ze strony rozszerzenia",
+    "internalInstallMs": {
+      "median": 3187.9,
+      "p95": 3457.2,
+      "min": 2967.4,
+      "max": 3572.1,
+      "n": 20
+    },
+    "freshInstallToReadyMs": {
+      "median": 4308.1,
+      "p95": 4665.9,
+      "min": 4023.5,
+      "max": 4700.4,
+      "n": 20
+    },
+    "wakeMinimalMs": {
+      "median": 37.9,
+      "p95": 53.9,
+      "min": 30.2,
+      "max": 54.7,
+      "n": 20
+    },
+    "wakeCosmeticMs": {
+      "median": 101.9,
+      "p95": 129.7,
+      "min": 87.2,
+      "max": 141.2,
+      "n": 20
+    },
+    "warmCosmeticMs": {
+      "median": 3.9,
+      "p95": 5.7,
+      "min": 3,
+      "max": 8.6,
+      "n": 20
+    }
+  },
+  "runtime": {
+    "enabledRulesets": [
+      "ads",
+      "privacy",
+      "security"
+    ],
+    "staticRulesActive": 21691,
+    "registeredScripts": 51,
+    "contentScriptJsFiles": {
+      "zwykła": 1,
+      "youtube": 3
+    }
+  }
+}
