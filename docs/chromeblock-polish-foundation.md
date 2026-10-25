@@ -290,3 +290,28 @@ Pytanie audytu: ile reklam i treści sponsorowanych zostaje na popularnych polsk
 - **Podsumowanie na końcu raportu** (także pole `summary` w `latest.json`): liczba stron OK / BROKEN / UNREACHABLE / ERROR, liczba obserwacji, liczba `likely_false_positive`, domeny z co najmniej jedną obserwacją do przeglądu (lista).
 - Tester nie generuje reguł: nie czyta ani nie zapisuje listy ChromeBlock Polish ani `provenance.json`, zapisuje tylko do katalogu wyników.
 - Realny audyt: do uruchomienia u użytkownika (środowisko budowania nie ma internetu).
+
+## 11. Partia 3A (2026-10-25)
+
+Źródło: realny audyt 50 stron (GAP + evidence) wykonany przez użytkownika. Zrzuty kontekstu wizualnie potwierdziły rzeczywistą treść promocyjną lub puste sloty. Reguł nie porównywano z Polskimi Filtrami ani z EasyList Polish.
+
+| Domena | Dowód | Reguła | Zakres |
+|---|---|---|---|
+| komputerswiat.pl | `komputerswiat.pl#1-#28` (kafle ok. 300×290, „MATERIAŁ PROMOCYJNY”) | `flat-ad-wrapper[id^="flat-natleft-"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(flat-ad-wrapper)` | wariant 1: slot `flat-natleft-*` (prefiks zamiast konkretnych ID) z dokładną etykietą |
+| komputerswiat.pl | jw. | `.ods-c-card-wrapper *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.ods-c-card-wrapper)` | wariant 2: karta z dokładną etykietą, nie wszystkie karty |
+| pb.pl | `pb.pl#1-#14` („MATERIAŁ PARTNERA”) | `article.m-home-news-item *:has-text(/^\s*materiał partnera\s*$/i):upward(article.m-home-news-item)` | pojedynczy kafel bez względu na wariant (`-lt1`, `-lt3`, `-lt4`, `-st-in-row`); `#15` (stopka) pominięty |
+| ofeminin.pl | `ofeminin.pl#1-#11` („MATERIAŁ PROMOCYJNY”) | `a.itemLink.isSponsored *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.itemLink.isSponsored)` | pojedynczy kafel bez względu na rozmiar (`large`, `tiny`, `square`, `vertical`, `default`); siatka nieukrywana |
+| weszlo.com | `weszlo.com#1-#7` (puste boksy z „REKLAMA”) | `div.my-12.hidden[class~="lg:block"] *:has-text(/^\s*reklama\s*$/i):upward(div.my-12.hidden[class~="lg:block"])` | pojedynczy blok; `[class~="lg:block"]` zamiast escapowania `lg\:block`; `#8` (stopka) pominięty |
+
+Pominięte: **rp.pl** (zrzuty kontekstu zasłonięte przez CMP).
+
+Stan listy: **18 reguł kosmetycznych**. `provenance.json` ma 18 wpisów.
+
+Test mechaniki w Chromium:
+
+| Domena | Ukryte | Widoczne |
+|---|---|---|
+| komputerswiat.pl | dwa sloty `flat-natleft-*` i karta ODS z etykietą | zwykła karta ODS, karta z frazą w tytule, feed |
+| pb.pl | trzy warianty kafla z etykietą | zwykły kafel, fraza w tytule, sekcja, stopka |
+| ofeminin.pl | trzy rozmiary `isSponsored` z etykietą | zwykły `itemLink`, `isSponsored` bez dokładnej etykiety, siatka |
+| weszlo.com | dwa bloki z etykietą | blok `my-12 hidden lg:block` bez etykiety, artykuł, kontener strony, stopka |

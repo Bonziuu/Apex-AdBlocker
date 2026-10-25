@@ -89,6 +89,40 @@ const PAGES = {
       <a class="slot slot_7 slot__small" id="se-title" href="#"><span>Rozrywka</span><h3>Materiał sponsorowany w tytule to nie etykieta</h3></a>
     </div>
     <footer id="se-footer"><span>Materiał sponsorowany</span> <span>Regulamin</span></footer></body>`,
+  // partia 3A
+  'www.komputerswiat.pl': `<!doctype html><meta charset="utf-8"><title>KS</title><body>${filler('Technologia.')}
+    <section id="ks-feed">
+      <flat-ad-wrapper id="flat-natleft-1" style="display:block;width:300px;height:290px"><div><span>MATERIAŁ PROMOCYJNY</span><h3>Tytuł 1</h3></div></flat-ad-wrapper>
+      <flat-ad-wrapper id="flat-natleft-7" style="display:block;width:300px;height:290px"><div><span>Materiał promocyjny</span><h3>Tytuł 7</h3></div></flat-ad-wrapper>
+      <div class="ods-c-card-wrapper" id="ks-card-promo"><article><span>MATERIAŁ PROMOCYJNY</span><h3>Tytuł karty</h3></article></div>
+      <div class="ods-c-card-wrapper" id="ks-card-normal"><article><span>Recenzje</span><h3>Test laptopa</h3></article></div>
+      <div class="ods-c-card-wrapper" id="ks-card-title"><article><span>Poradniki</span><h3>Materiał promocyjny – jak go rozpoznać</h3></article></div>
+    </section></body>`,
+  'www.pb.pl': `<!doctype html><meta charset="utf-8"><title>PB</title><body>${filler('Puls Biznesu.')}
+    <section id="pb-home">
+      <article class="m-home-news-item m-home-news-item-lt1" id="pb-p1"><span>MATERIAŁ PARTNERA</span><h3>Oferta 1</h3></article>
+      <article class="m-home-news-item m-home-news-item-lt3" id="pb-p3"><span>Materiał partnera</span><h3>Oferta 3</h3></article>
+      <article class="m-home-news-item m-home-news-item-st-in-row" id="pb-p4"><div><span>MATERIAŁ PARTNERA</span></div><h3>Oferta 4</h3></article>
+      <article class="m-home-news-item m-home-news-item-lt1" id="pb-normal"><span>Rynki</span><h3>Kursy walut</h3></article>
+      <article class="m-home-news-item m-home-news-item-lt4" id="pb-title"><span>Firmy</span><h3>Materiał partnera w tytule nie jest etykietą</h3></article>
+    </section>
+    <footer id="pb-footer"><span>Materiał partnera</span> <span>Kontakt</span></footer></body>`,
+  'www.ofeminin.pl': `<!doctype html><meta charset="utf-8"><title>OF</title><body>${filler('Lifestyle.')}
+    <div class="itemList gridItem" id="of-grid">
+      <a class="itemLink isSponsored large" id="of-large" href="#"><span>MATERIAŁ PROMOCYJNY</span><h3>Kosmetyki</h3></a>
+      <a class="itemLink isSponsored tiny square" id="of-tiny" href="#"><span>Materiał promocyjny</span><h3>Moda</h3></a>
+      <a class="itemLink isSponsored vertical default" id="of-vertical" href="#"><div><span>MATERIAŁ PROMOCYJNY</span></div><h3>Zdrowie</h3></a>
+      <a class="itemLink default" id="of-normal" href="#"><span>Uroda</span><h3>Zwykły artykuł</h3></a>
+      <a class="itemLink isSponsored default" id="of-sponsored-nolabel" href="#"><span>Partner</span><h3>Bez dokładnej etykiety</h3></a>
+    </div></body>`,
+  'www.weszlo.com': `<!doctype html><meta charset="utf-8"><title>WE</title><body>
+    <main id="we-page">${filler('Piłka nożna.')}
+      <div class="my-12 hidden lg:block" id="we-ad1" style="height:250px"><div class="mx-auto px-6 pb-5"><span>REKLAMA</span></div></div>
+      <article id="we-art">Relacja z meczu</article>
+      <div class="my-12 hidden lg:block" id="we-ad2" style="height:250px"><div class="mx-auto px-6 pb-5"><span>Reklama</span></div></div>
+      <div class="my-12 hidden lg:block" id="we-normal" style="height:120px"><div class="mx-auto px-6 pb-5"><span>Tabela ligowa</span></div></div>
+    </main>
+    <footer id="we-footer"><span>Reklama</span> <span>Kontakt</span></footer></body>`,
   'www.gazeta.pl': `<!doctype html><meta charset="utf-8"><title>G</title><body>${filler('Wiadomości.')}
     <article class="tile" id="t1"><div class="tile__meta"><span>MATERIAŁ PROMOCYJNY</span></div><h2>Promocja 1</h2></article>
     <article class="tile tile--big" id="t2"><span> Materiał promocyjny </span><h2>Promocja 2</h2></article>
@@ -101,7 +135,7 @@ const PAGES = {
     <footer id="stopka"><span>Materiał promocyjny</span> <span>Kontakt</span></footer></body>`,
 };
 
-test('Chromium (lokalne strony testowe): reguły partii 1, 2A i 2B ukrywają tylko obserwowane sloty / kafle z dokładną etykietą', { skip, timeout: 600_000 }, async () => {
+test('Chromium (lokalne strony testowe): reguły partii 1, 2A, 2B i 3A ukrywają tylko obserwowane sloty / kafle z dokładną etykietą', { skip, timeout: 600_000 }, async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-polish-rules-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
@@ -146,6 +180,11 @@ test('Chromium (lokalne strony testowe): reguły partii 1, 2A i 2B ukrywają tyl
     // partia 2B
     await check('https://www.interia.pl/', ['#in-promo', '#in-pinned'], ['#in-main', '#in-normal', '#in-title', '#in-footer']);
     await check('https://www.se.pl/', ['#se-promo4', '#se-promo6'], ['#se-slots', '#se-normal', '#se-title', '#se-footer']);
+    // partia 3A
+    await check('https://www.komputerswiat.pl/', ['#flat-natleft-1', '#flat-natleft-7', '#ks-card-promo'], ['#ks-feed', '#ks-card-normal', '#ks-card-title']);
+    await check('https://www.pb.pl/', ['#pb-p1', '#pb-p3', '#pb-p4'], ['#pb-home', '#pb-normal', '#pb-title', '#pb-footer']);
+    await check('https://www.ofeminin.pl/', ['#of-large', '#of-tiny', '#of-vertical'], ['#of-grid', '#of-normal', '#of-sponsored-nolabel']);
+    await check('https://www.weszlo.com/', ['#we-ad1', '#we-ad2'], ['#we-page', '#we-art', '#we-normal', '#we-footer']);
   } finally {
     await ctx.close();
     fs.rmSync(tmp, { recursive: true, force: true });

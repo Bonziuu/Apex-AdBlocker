@@ -49,3 +49,18 @@ se.pl##.section__slots > a.slot.slot__small *:has-text(/^\s*materiał sponsorowa
 !
 ! onet.pl – pojedyncza karta SmallCard w prawym feedzie z etykietą „MATERIAŁ PROMOCYJNY” (bez hasha klasy)
 onet.pl##[class*="StandardRightFeed"] article[class*="SmallCard"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article[class*="SmallCard"])
+!
+! Partia 3A (2026-10-25): obserwacje z audytu 50 stron (GAP + evidence).
+!
+! komputerswiat.pl – kafle z etykietą „MATERIAŁ PROMOCYJNY” (2 warianty DOM, bez konkretnych ID)
+komputerswiat.pl##flat-ad-wrapper[id^="flat-natleft-"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(flat-ad-wrapper)
+komputerswiat.pl##.ods-c-card-wrapper *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.ods-c-card-wrapper)
+!
+! pb.pl – kafle z etykietą „MATERIAŁ PARTNERA”
+pb.pl##article.m-home-news-item *:has-text(/^\s*materiał partnera\s*$/i):upward(article.m-home-news-item)
+!
+! ofeminin.pl – kafle isSponsored z etykietą „MATERIAŁ PROMOCYJNY”
+ofeminin.pl##a.itemLink.isSponsored *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.itemLink.isSponsored)
+!
+! weszlo.com – puste boksy z etykietą „REKLAMA”
+weszlo.com##div.my-12.hidden[class~="lg:block"] *:has-text(/^\s*reklama\s*$/i):upward(div.my-12.hidden[class~="lg:block"])

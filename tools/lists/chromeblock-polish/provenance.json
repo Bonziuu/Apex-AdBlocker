@@ -128,6 +128,51 @@
       "observation": "Zrzut elementu i otoczenia potwierdził pojedynczą promocyjną kartę SmallCard (ok. 300x86) w prawym feedzie z etykietą MATERIAŁ PROMOCYJNY. Tylko karta z dokładną etykietą.",
       "method": "automated-browser",
       "evidence": "onet.pl#1"
+    },
+    {
+      "rule": "komputerswiat.pl##flat-ad-wrapper[id^=\"flat-natleft-\"] *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(flat-ad-wrapper)",
+      "domain": "komputerswiat.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Część z 28 kafli 300x290 z etykietą MATERIAŁ PROMOCYJNY: wariant flat-ad-wrapper (flat-natleft-*). Zrzuty kontekstu użytkownika potwierdziły promocyjne kafle. Bez konkretnych ID.",
+      "method": "automated-browser",
+      "evidence": "komputerswiat.pl#1-#28"
+    },
+    {
+      "rule": "komputerswiat.pl##.ods-c-card-wrapper *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(.ods-c-card-wrapper)",
+      "domain": "komputerswiat.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Część z 28 kafli 300x290 z etykietą MATERIAŁ PROMOCYJNY: wariant ods-c-card-wrapper. Zrzuty kontekstu potwierdziły promocyjne kafle. Tylko karta z dokładną etykietą.",
+      "method": "automated-browser",
+      "evidence": "komputerswiat.pl#1-#28"
+    },
+    {
+      "rule": "pb.pl##article.m-home-news-item *:has-text(/^\\s*materiał partnera\\s*$/i):upward(article.m-home-news-item)",
+      "domain": "pb.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "14 kafli article.m-home-news-item (różne warianty) z etykietą MATERIAŁ PARTNERA. Zrzuty kontekstu potwierdziły kafle partnerskie. #15 (stopka) pominięty.",
+      "method": "automated-browser",
+      "evidence": "pb.pl#1-#14"
+    },
+    {
+      "rule": "ofeminin.pl##a.itemLink.isSponsored *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(a.itemLink.isSponsored)",
+      "domain": "ofeminin.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "11 kafli a.itemLink.isSponsored (różne rozmiary siatki) z etykietą MATERIAŁ PROMOCYJNY. Zrzuty kontekstu potwierdziły promocyjne kafle. Siatka nieukrywana.",
+      "method": "automated-browser",
+      "evidence": "ofeminin.pl#1-#11"
+    },
+    {
+      "rule": "weszlo.com##div.my-12.hidden[class~=\"lg:block\"] *:has-text(/^\\s*reklama\\s*$/i):upward(div.my-12.hidden[class~=\"lg:block\"])",
+      "domain": "weszlo.com",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "7 dużych pustych boksów (div.my-12 hidden lg:block) z etykietą REKLAMA. Zrzuty kontekstu potwierdziły puste sloty reklamowe. #8 (stopka) pominięty.",
+      "method": "automated-browser",
+      "evidence": "weszlo.com#1-#7"
     }
   ]
 }
