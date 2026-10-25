@@ -15,16 +15,13 @@ import { collectScriptletFilters, readBaseline } from './audit-scriptlets.mjs';
 import { YOUTUBE_STRICT_LISTS, compareWithBaseline } from '../youtube/compatibility.js';
 
 const UBO = 'https://ublockorigin.github.io/uAssets/filters/';
-const PL = 'https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-adblock-filters/';
 
 const FILES = {
   'easylist/easylist.txt': 'https://easylist.to/easylist/easylist.txt',
   'easylist/easyprivacy.txt': 'https://easylist.to/easylist/easyprivacy.txt',
   'easylist/fanboy-annoyance.txt': 'https://secure.fanboy.co.nz/fanboy-annoyance.txt',
-  'pl/adblock.txt': PL + 'adblock.txt',
-  'pl/adblock_adguard.txt': PL + 'adblock_adguard.txt',
-  'pl/adblock_suplement.txt': PL + 'adblock_suplement.txt',
-  'pl/adblock_ublock.txt': PL + 'adblock_ublock.txt',
+  // EasyList Polish – oficjalna lista (licencja: https://easylist.to/pages/licence.html)
+  'easylist/easylistpolish.txt': 'https://easylist-downloads.adblockplus.org/easylistpolish.txt',
 };
 for (const name of [
   'filters', 'filters-2020', 'filters-2021', 'filters-2022', 'filters-2023', 'filters-2024', 'filters-2025',

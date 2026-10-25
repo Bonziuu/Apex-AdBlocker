@@ -147,7 +147,7 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
         <li><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, podmieniane są fragmenty kodu strony. ChromeBlock wykonuje tylko te warianty scriptletów, których semantykę zna; pozostałe są pomijane (szczegóły w zakładce Diagnostyka i w raporcie <code>npm run audit:scriptlets</code>).</li>
       </ul>
       <h2>Listy filtrów</h2>
-      <p>EasyList, EasyPrivacy, Fanboy Annoyances (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.</p>
+      <p>EasyList, EasyPrivacy, Fanboy Annoyances (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), EasyList Polish (<a href="https://github.com/easylistpolish/easylistpolish" target="_blank" rel="noopener">github.com/easylistpolish/easylistpolish</a>, <a href="https://easylist.to/pages/licence.html" target="_blank" rel="noopener">licencja EasyList</a>). Listy są wbudowane we wtyczkę i przetwarzane przez build ChromeBlock (konwersja do reguł Manifest V3; nieobsługiwane filtry są pomijane) – aby je odświeżyć, zobacz plik README.</p>
       <h2>Ograniczenia MV3</h2>
       <p>Części filtrów nie da się wyrazić w Manifest V3 (np. filtrowanie HTML, modyfikacja nagłówków CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma jeszcze implementacji w ChromeBlock. Na pojedynczych stronach skuteczność może być więc niższa niż w dawnym uBlock Origin. ChromeBlock nie obiecuje niewykrywalności przez strony.</p>
       <div id="stats" class="muted"></div>

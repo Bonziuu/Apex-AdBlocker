@@ -17,8 +17,8 @@ Chrome ładuje rozszerzenie bezpośrednio z tego folderu – nie przenoś go po 
 
 | Mechanizm | Opis |
 |---|---|
-| Blokowanie sieciowe | ~131 tys. filtrów z EasyList, EasyPrivacy, uBlock filters i Polskich Filtrów zamienionych na reguły `declarativeNetRequest` |
-| Ukrywanie elementów | ~97 tys. filtrów kosmetycznych wstrzykiwanych jako arkusz stylów użytkownika |
+| Blokowanie sieciowe | ~131 tys. filtrów z EasyList, EasyList Polish, EasyPrivacy i uBlock filters zamienionych na reguły `declarativeNetRequest` |
+| Ukrywanie elementów | ~95 tys. filtrów kosmetycznych wstrzykiwanych jako arkusz stylów użytkownika |
 | Filtry proceduralne | `:has-text()`, `:upward()`, `:remove()`, `:style()`, `:matches-path()`, `:min-text-length()` |
 | Scriptlety | Własne implementacje scriptletów uBO (lista i warianty – sekcja Compatibility) |
 | YouTube Protection | Domyślnie włączona; kontrola zgodności filtrów YouTube przy buildzie i lokalna diagnostyka odtwarzacza |
@@ -152,4 +152,6 @@ ChromeBlock jest w 100% darmowy – bez wersji Pro, płatnych funkcji, paywalla,
 
 ## Źródła list i licencje
 
-EasyList, EasyPrivacy, Fanboy Annoyances © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3) · Polskie Filtry Reklamowe © MajkiIT (CC BY-NC-SA 4.0). Listy są wbudowane w repozytorium (`tools/lists/`). Pełny audyt licencyjny zostanie wykonany przed ewentualnym publicznym wydaniem.
+EasyList, EasyPrivacy, Fanboy Annoyances © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3). Listy są wbudowane w repozytorium (`tools/lists/`).
+
+**EasyList Polish** (lista „Reklamy”, polskie strony) – upstream: [github.com/easylistpolish/easylistpolish](https://github.com/easylistpolish/easylistpolish), oficjalna lista: `https://easylist-downloads.adblockplus.org/easylistpolish.txt`, licencja: [EasyList licence](https://easylist.to/pages/licence.html). Lista jest przetwarzana przez build ChromeBlock (konwersja do reguł DNR, filtrów kosmetycznych i scriptletów; filtry nieobsługiwane w MV3 są pomijane). Szczegóły zmiany źródła: [docs/polish-filter-migration.md](docs/polish-filter-migration.md). Pełny audyt licencyjny zostanie wykonany przed ewentualnym publicznym wydaniem.

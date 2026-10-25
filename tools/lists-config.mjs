@@ -16,14 +16,14 @@ export const LISTS = [
   {
     id: 'ads',
     name: 'Reklamy',
-    desc: 'EasyList, uBlock filters i Polskie Filtry Reklamowe',
+    desc: 'EasyList, EasyList Polish i uBlock filters',
     enabled: true,
     sources: [
       { file: 'easylist/easylist.txt' },
       { file: 'ubo/filters.txt', trusted: true },
       { file: 'ubo/quick-fixes.txt', trusted: true },
       { file: 'ubo/unbreak.txt', trusted: true },
-      { file: 'pl/adblock.txt' },
+      { file: 'easylist/easylistpolish.txt' },
     ],
   },
   {

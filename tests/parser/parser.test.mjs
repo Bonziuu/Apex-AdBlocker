@@ -13,9 +13,12 @@ const cos = (line, trusted = false) => parseCosmeticFilter(classifyLine(line), {
 
 // ------------------------------------------------------------- sieciowe
 
-test('block: "||doubleclick.net^" (EasyList) → requestDomains', () => {
-  const hit = findLine(/^\|\|doubleclick\.net\^$/);
-  assert.deepEqual(net(hit.line).rule, { priority: PRIORITY.block, action: { type: 'block' }, condition: { requestDomains: ['doubleclick.net'] } });
+test('block: "||domena^" (EasyList) → requestDomains', () => {
+  // dawniej dosłownie "||doubleclick.net^" – ta postać była tylko w Polskich Filtrach (usuniętych)
+  const hit = findLine(/^\|\|[a-z0-9-]+(\.[a-z0-9-]+)+\^$/, { list: 'ads' });
+  assert.equal(hit.source, 'easylist/easylist.txt');
+  const host = hit.line.slice(2, -1);
+  assert.deepEqual(net(hit.line).rule, { priority: PRIORITY.block, action: { type: 'block' }, condition: { requestDomains: [host] } });
 });
 
 test('allow: "@@||…^$…" z aktywnych list → reguła allow z wyższym priorytetem', () => {
