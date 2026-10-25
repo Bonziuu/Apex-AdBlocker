@@ -183,3 +183,21 @@ test('retest-polish-batch1.cmd: run-polish-test.cmd --evidence bankier.pl busine
   const o = parseArgs(['--gap-mode', ...m[1].split(/\s+/)]);
   assert.deepEqual([o.gap, o.evidence, o.domains], [true, true, ['bankier.pl', 'businessinsider.com.pl', 'gazeta.pl']]);
 });
+
+// --- test-polish-batch2.cmd: evidence dla partii 2 -----------------------------------------------------
+
+test('test-polish-batch2.cmd: run-polish-test.cmd --evidence wykop.pl wp.pl o2.pl onet.pl interia.pl se.pl, kod wyjścia przekazany', () => {
+  const raw = read('test-polish-batch2.cmd');
+  assert.ok(raw.startsWith('@echo off'));
+  assert.equal(raw.split('\n').length - 1, (raw.match(/\r\n/g) || []).length, 'CRLF');
+  const m = /^call "%~dp0run-polish-test\.cmd" (.+) %\*\r?$/m.exec(raw);
+  assert.ok(m, 'wywołuje istniejący run-polish-test.cmd');
+  const args = m[1].split(/\s+/);
+  assert.deepEqual(args, ['--evidence', 'wykop.pl', 'wp.pl', 'o2.pl', 'onet.pl', 'interia.pl', 'se.pl']);
+  assert.match(raw, /^exit \/b %ERRORLEVEL%\r?$/m);
+  const cmds = commandsOf(raw);
+  assert.doesNotMatch(cmds, /npm |npx |where node|playwright install/i, 'bez duplikowania przygotowania');
+  assert.equal((cmds.match(/^\s*call /gim) || []).length, 1);
+  const o = parseArgs(['--gap-mode', ...args]);
+  assert.deepEqual([o.gap, o.evidence, o.domains], [true, true, args.slice(1)]);
+});
