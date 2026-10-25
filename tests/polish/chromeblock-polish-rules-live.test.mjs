@@ -65,7 +65,13 @@ const PAGES = {
       <article class="StandardCard_card__x1y2 StandardCard_withImage__z3" id="on-promo"><div><span>MATERIAŁ PROMOCYJNY</span></div><h2>Oferta</h2></article>
       <article class="StandardCard_card__x1y2" id="on-normal"><div><span>Kraj</span></div><h2>Wiadomość</h2></article>
       <article class="StandardCard_card__x1y2" id="on-title"><div><span>Biznes</span></div><h2>Materiał promocyjny – czym jest i jak go oznaczać</h2></article>
-    </div></body>`,
+    </div>
+    <section class="StandardRightFeed_feed__q7w8" id="on-right"><div>
+      <article class="SmallCard_card__m3n4" id="on-small-promo" style="width:300px;height:86px"><div><span>MATERIAŁ PROMOCYJNY</span></div><h3>Monitor – poradnik zakupowy</h3></article>
+      <article class="SmallCard_card__m3n4" id="on-small-normal" style="width:300px;height:86px"><div><span>Kraj</span></div><h3>Wiadomość</h3></article>
+      <article class="SmallCard_card__m3n4" id="on-small-title" style="width:300px;height:86px"><div><span>Tech</span></div><h3>Materiał promocyjny – co oznacza ta etykieta</h3></article>
+    </div></section>
+    <aside class="OtherFeed_box__k1" id="on-other"><article class="SmallCard_card__m3n4" id="on-small-outside" style="width:300px;height:86px"><div><span>MATERIAŁ PROMOCYJNY</span></div><h3>Poza prawym feedem</h3></article></aside></body>`,
   // partia 2B
   'www.interia.pl': `<!doctype html><meta charset="utf-8"><title>I</title><body>${filler('Interia.')}
     <div class="content-main" id="in-main">
@@ -136,7 +142,7 @@ test('Chromium (lokalne strony testowe): reguły partii 1, 2A i 2B ukrywają tyl
     await check('https://www.wykop.pl/', ['#wy-ad'], ['#wy-content', '#wy-1', '#wy-2', '#wy-footer']);
     await check('https://www.wp.pl/', ['#\\39 081726354'], ['#wp-row', '#wp-2', '#wp-3', '#wp-footer']);
     await check('https://www.o2.pl/', ['#\\35 647382910'], ['#o2-row', '#o2-2', '#o2-3', '#o2-footer']);
-    await check('https://www.onet.pl/', ['#on-promo'], ['#on-feed', '#on-normal', '#on-title']);
+    await check('https://www.onet.pl/', ['#on-promo', '#on-small-promo'], ['#on-feed', '#on-normal', '#on-title', '#on-right', '#on-small-normal', '#on-small-title', '#on-other', '#on-small-outside']);
     // partia 2B
     await check('https://www.interia.pl/', ['#in-promo', '#in-pinned'], ['#in-main', '#in-normal', '#in-title', '#in-footer']);
     await check('https://www.se.pl/', ['#se-promo4', '#se-promo6'], ['#se-slots', '#se-normal', '#se-title', '#se-footer']);

@@ -119,6 +119,15 @@
       "observation": "Własny realny GAP/evidence: 2 sloty a.slot.slot__small z etykietą MATERIAŁ SPONSOROWANY; zrzuty częściowo zasłonięte przez CMP. Tylko slot z dokładną etykietą; #3 (stopka) pominięty.",
       "method": "automated-browser",
       "evidence": "se.pl#1-#2"
+    },
+    {
+      "rule": "onet.pl##[class*=\"StandardRightFeed\"] article[class*=\"SmallCard\"] *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(article[class*=\"SmallCard\"])",
+      "domain": "onet.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Zrzut elementu i otoczenia potwierdził pojedynczą promocyjną kartę SmallCard (ok. 300x86) w prawym feedzie z etykietą MATERIAŁ PROMOCYJNY. Tylko karta z dokładną etykietą.",
+      "method": "automated-browser",
+      "evidence": "onet.pl#1"
     }
   ]
 }

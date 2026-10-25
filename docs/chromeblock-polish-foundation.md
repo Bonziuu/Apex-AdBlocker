@@ -247,3 +247,20 @@ Test mechaniki w Chromium:
 |---|---|---|
 | interia.pl | `a.tile-a` i `a.tile-a.pinned` z etykietą | zwykły kafel, kafel z frazą tylko w tytule, `content-main`, stopka |
 | se.pl | dwa różne sloty `a.slot.slot__small` z etykietą | zwykły slot, slot z frazą tylko w tytule, `.section__slots`, stopka |
+
+## 9. Onet: prawy feed (2026-10-25)
+
+Źródło: własny realny GAP/evidence (`test-onet-evidence.cmd`). Element znikał z DOM przed zrzutem, więc dowód powstał z zapasowego zrzutu z zapamiętanego prostokąta. Zrzut elementu i otoczenia potwierdził pojedynczą kartę promocyjną `article.SmallCard…` (ok. 300×86) w sekcji `StandardRightFeed`, z dokładną etykietą „MATERIAŁ PROMOCYJNY”.
+
+| Domena | Dowód | Reguła | Zakres |
+|---|---|---|---|
+| onet.pl | `onet.pl#1` (test `test-onet-evidence.cmd`) | `onet.pl##[class*="StandardRightFeed"] article[class*="SmallCard"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article[class*="SmallCard"])` | pojedyncza `SmallCard` w prawym feedzie, tylko z dokładną etykietą |
+
+Reguła nie opiera się na tytule artykułu, na dopisku o partnerze ani na pełnych klasach z hashem. Nie ukrywa całego `StandardRightFeed`.
+
+Stan listy: **13 reguł kosmetycznych**. `provenance.json` ma 13 wpisów.
+
+Test mechaniki w Chromium:
+
+- ukryta: `SmallCard` z etykietą w `StandardRightFeed`;
+- widoczne: zwykła `SmallCard`, `SmallCard` z frazą tylko w tytule, cały `StandardRightFeed`, `SmallCard` z etykietą poza prawym feedem.

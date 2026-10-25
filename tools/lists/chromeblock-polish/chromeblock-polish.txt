@@ -46,3 +46,6 @@ interia.pl##div.content-main a.tile-a *:has-text(/^\s*materiał promocyjny\s*$/i
 !
 ! se.pl – sloty a.slot.slot__small z etykietą „MATERIAŁ SPONSOROWANY” (bez numerów slot_N)
 se.pl##.section__slots > a.slot.slot__small *:has-text(/^\s*materiał sponsorowany\s*$/i):upward(a.slot.slot__small)
+!
+! onet.pl – pojedyncza karta SmallCard w prawym feedzie z etykietą „MATERIAŁ PROMOCYJNY” (bez hasha klasy)
+onet.pl##[class*="StandardRightFeed"] article[class*="SmallCard"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article[class*="SmallCard"])
