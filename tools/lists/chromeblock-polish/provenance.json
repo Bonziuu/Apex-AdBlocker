@@ -11,5 +11,42 @@
     "method": "manual | automated-browser",
     "evidence": "opcjonalnie: odniesienie do raportu test:polish-sites (plik / identyfikator obserwacji)"
   },
-  "rules": []
+  "rules": [
+    {
+      "rule": "bankier.pl##div#n2b-ad-r2.n2b-ad-container",
+      "domain": "bankier.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Pusty kontener reklamowy ok. 940x200 z widoczną etykietą REKLAMA, bez treści (slot n2b-ad-r2). Wpisy #2 i #3 tej strony to false positive – pominięte.",
+      "method": "automated-browser",
+      "evidence": "bankier.pl#1"
+    },
+    {
+      "rule": "businessinsider.com.pl##flat-ad-wrapper#flat-natleft-2 *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(flat-ad-wrapper)",
+      "domain": "businessinsider.com.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Kafel w slocie flat-natleft-2 oznaczony etykietą MATERIAŁ PROMOCYJNY. Reguła ukrywa slot tylko, gdy zawiera element z dokładnie tą etykietą.",
+      "method": "automated-browser",
+      "evidence": "businessinsider.com.pl#1"
+    },
+    {
+      "rule": "businessinsider.com.pl##.ods-c-card-wrapper *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(.ods-c-card-wrapper)",
+      "domain": "businessinsider.com.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Karta (ods-c-card-wrapper) oznaczona etykietą MATERIAŁ PROMOCYJNY. Ukrywana tylko karta z elementem o dokładnie tej etykiecie, nie wszystkie karty.",
+      "method": "automated-browser",
+      "evidence": "businessinsider.com.pl#2"
+    },
+    {
+      "rule": "gazeta.pl##article.tile *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(article.tile)",
+      "domain": "gazeta.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "19 kafli artykułów (głównie article.tile) z etykietą MATERIAŁ PROMOCYJNY. Jedna reguła: tylko kafel z elementem o dokładnie tej etykiecie. Wpis #20 (footer) pominięty.",
+      "method": "automated-browser",
+      "evidence": "gazeta.pl#1-#19"
+    }
+  ]
 }

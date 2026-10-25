@@ -11,11 +11,15 @@ const LIST_FILE = 'chromeblock-polish/chromeblock-polish.txt';
 const listText = () => fs.readFileSync(path.join(LISTS_DIR, LIST_FILE), 'utf8');
 const prov = () => JSON.parse(fs.readFileSync(path.join(LISTS_DIR, 'chromeblock-polish', 'provenance.json'), 'utf8'));
 
-/** Linie wszystkich innych list wbudowanych w ChromeBlock (z rozwinięciem !#include). */
+/**
+ * Linie innych list wbudowanych w ChromeBlock (z rozwinięciem !#include) – zabezpieczenie przed
+ * przypadkowym duplikatem. BEZ Polskich Filtrów (pl/): zgodnie z zasadą clean room nie porównujemy
+ * naszych reguł z ich regułami (ich pliki nie są tu wczytywane).
+ */
 function otherBundledLines() {
   const set = new Set();
   for (const l of LISTS) for (const s of l.sources) {
-    if (s.file === LIST_FILE) continue;
+    if (s.file === LIST_FILE || s.file.startsWith('pl/')) continue;
     for (const line of loadListLines(s.file)) set.add(line.trim());
   }
   return set;

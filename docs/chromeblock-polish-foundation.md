@@ -130,3 +130,33 @@ Następnie przejrzeć `tests/polish-sites/results/latest.txt` i, przy stronach z
 3. Wpis w `provenance.json`: `rule`, `domain`, `type`, `date`, `observation` (własne słowa, maks. 200 znaków), `method`, opcjonalnie `evidence` (np. `polish-sites-<data>.json#onet.pl#2`).
 4. Aktualizacja `! Last modified` w nagłówku listy.
 5. `npm run build`, `node --test tests/polish/*.test.mjs`, ponowny `test:polish-sites` dla tej domeny: strona działa, obserwacja zniknęła, brak nowych błędów JS.
+
+## 6. Partia 1 (2026-10-25)
+
+Źródło: raport użytkownika z `npm run test:polish-sites -- --gap-mode --evidence`, czyli obserwacje i zrzuty własnego testu. Reguł nie porównywano z Polskimi Filtrami ani z EasyList Polish. Test duplikatów w `tests/polish/chromeblock-polish-list.test.mjs` nie wczytuje plików `pl/`.
+
+| Domena | Dowód | Reguła (typ) | Zakres |
+|---|---|---|---|
+| bankier.pl | `bankier.pl#1` | `bankier.pl##div#n2b-ad-r2.n2b-ad-container` (cosmetic) | jeden slot (id + klasa); `#2` i `#3` = false positive (cała strona / footer), pominięte |
+| businessinsider.com.pl | `businessinsider.com.pl#1` | `flat-ad-wrapper#flat-natleft-2 *:has-text(/^\s*materiał promocyjny\s*$/i):upward(flat-ad-wrapper)` (cosmetic, proceduralna) | slot `flat-natleft-2` tylko z elementem o dokładnej etykiecie |
+| businessinsider.com.pl | `businessinsider.com.pl#2` | `.ods-c-card-wrapper *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.ods-c-card-wrapper)` (cosmetic, proceduralna) | tylko karta z elementem o dokładnej etykiecie, nie wszystkie `.ods-c-card-wrapper` |
+| gazeta.pl | `gazeta.pl#1`–`#19` | `article.tile *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article.tile)` (cosmetic, proceduralna) | jedna reguła zamiast 19; tylko kafel `article.tile` z elementem o dokładnej etykiecie; `#20` (footer) pominięty |
+
+Razem: **4 reguły kosmetyczne** (1 zwykła, 3 proceduralne), 0 sieciowych, 0 scriptletów. Każda ma wpis w `provenance.json` (metoda `automated-browser`, pole `evidence`).
+
+**Dokładna etykieta.** `:has-text(/^\s*materiał promocyjny\s*$/i)` dopasowuje tylko element, którego cały tekst to „materiał promocyjny” (dowolna wielkość liter, także „Ł”). Tytuł zawierający te słowa („Materiał promocyjny – recenzja…”) nie pasuje.
+
+**Ryzyko false positive: niskie, do potwierdzenia retestem.**
+
+- bankier.pl: reguła dotyczy jednego slotu po id.
+- gazeta.pl i businessinsider.com.pl ukrywają kafel tylko z dokładną etykietą, ale:
+  - jeśli `.ods-c-card-wrapper` obejmuje więcej niż jedną kartę (np. cały rząd), ukryje się cały rząd. Do sprawdzenia na zrzucie po reteście;
+  - kafle gazeta.pl, które nie są `article.tile` (z 19 obserwacji „większość” jest `article.tile`), zostaną nieukryte. Retest pokaże, czy coś zostało.
+- Reguły proceduralne działają w skrypcie treści, po wczytaniu strony, a nie przez CSS od startu: kafel może mignąć przed ukryciem.
+
+**Test mechaniki** (`tests/polish/chromeblock-polish-rules-live.test.mjs`): Chromium z rozszerzeniem, w którym lista „Reklamy” ma wyłącznie ChromeBlock Polish Supplement, na lokalnych stronach testowych o opisanej strukturze.
+
+- Ukryte: `#n2b-ad-r2`, `#flat-natleft-2`, karta z etykietą, kafle z etykietą.
+- Widoczne: `#n2b-ad-r3`, inne sloty i karty, kafel z tymi słowami w tytule, stopka.
+
+**Retest na prawdziwych stronach: WYMAGANY u użytkownika.** W środowisku budowania wszystkie 3 domeny mają status UNREACHABLE (`net::ERR_TUNNEL_CONNECTION_FAILED`), więc retestu stąd nie ma.

@@ -8,4 +8,14 @@
 ! Last modified: 2026-10-25
 ! License: TBD
 !
-! (brak reguł – pierwsza partia wymaga obserwacji z `npm run test:polish-sites`)
+! Partia 1 (2026-10-25): obserwacje z `npm run test:polish-sites -- --gap-mode --evidence`.
+!
+! bankier.pl – pusty slot reklamowy z etykietą „REKLAMA”
+bankier.pl##div#n2b-ad-r2.n2b-ad-container
+!
+! businessinsider.com.pl – kafle oznaczone etykietą „MATERIAŁ PROMOCYJNY”
+businessinsider.com.pl##flat-ad-wrapper#flat-natleft-2 *:has-text(/^\s*materiał promocyjny\s*$/i):upward(flat-ad-wrapper)
+businessinsider.com.pl##.ods-c-card-wrapper *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.ods-c-card-wrapper)
+!
+! gazeta.pl – kafle artykułów oznaczone etykietą „MATERIAŁ PROMOCYJNY”
+gazeta.pl##article.tile *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article.tile)
