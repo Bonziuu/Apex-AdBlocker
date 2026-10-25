@@ -9,6 +9,7 @@ import path from 'node:path';
 import {
   overallStatus, counts, isChromeBlockError, networkErrorOf, formatReport, parseArgs, writeResults, ROOT, exitCodeFor, EXIT, classifySeek, SEEK_RESUME_WAIT_S,
   seekFacts, seekFailureKinds, classifyAB, formatSeekAB, browserArgs, AB, hardSeekFailures,
+  classifyFocusGroup, FOCUS_CHECKS,
 } from '../local/chromeblock-local-test.mjs';
 import { packageDev, missingTesterImports, TESTER_FILES, testerPackageJson } from '../../tools/package-dev.mjs';
 import { createRequire } from 'node:module';
@@ -289,4 +290,23 @@ test('A/B: kontrola uruchamiana BEZ rozszerzenia, z tymi samymi flagami odtwarza
   assert.ok(!without.some((a) => a.includes('load-extension') || a.includes('disable-extensions-except')));
   assert.ok(withExt.includes('--load-extension=/tmp/ext'));
   assert.deepEqual(withExt.filter((a) => !a.includes('extension')), without);
+});
+
+// --- YouTube Focus Mode w testerze -----------------------------------------------------------------
+test('Focus Mode w testerze: grupa obecna → ukryta = PASS; widoczna = FAIL; brak w DOM = SKIP (nie FAIL)', () => {
+  assert.equal(classifyFocusGroup({ matched: 3, visible: 0, visibleSelectors: [], pages: ['strona filmu'] }).status, 'PASS');
+  const fail = classifyFocusGroup({ matched: 3, visible: 1, visibleSelectors: ['ytd-comments#comments'], pages: ['strona filmu'] });
+  assert.equal(fail.status, 'FAIL');
+  assert.match(fail.detail, /1 z 3 elementów nadal widocznych.*ytd-comments#comments/);
+  const skip = classifyFocusGroup({ matched: 0, visible: 0, visibleSelectors: [], pages: [] });
+  assert.equal(skip.status, 'SKIP');
+  assert.match(skip.detail, /^INCONCLUSIVE – YouTube nie pokazał tej grupy/);
+  assert.equal(classifyFocusGroup(null).status, 'SKIP');
+});
+
+test('Focus Mode w testerze: komplet kroków (domyślnie OFF, popup, zapis, bez reloadu, 4 grupy, odtwarzacz, wyłączenie)', () => {
+  assert.deepEqual(FOCUS_CHECKS.map(([id]) => id), ['yt-focus-default', 'yt-focus-popup', 'yt-focus-saved', 'yt-focus-noreload',
+    'yt-focus-shorts', 'yt-focus-recommendations', 'yt-focus-comments', 'yt-focus-endscreen', 'yt-focus-player', 'yt-focus-off']);
+  const src = fs.readFileSync(path.join(ROOT, 'tests/local/chromeblock-local-test.mjs'), 'utf8');
+  assert.match(src, /skipRest\(\[\.\.\.YT, \.\.\.FOCUS\], 'INCONCLUSIVE – brak dostępu do internetu'\)/, 'bez sieci Focus = SKIP');
 });

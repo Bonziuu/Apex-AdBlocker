@@ -132,3 +132,7 @@ textarea.report { min-height: 220px; margin: 10px 0; font-size: 12px; }
 .mode-state { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .mode-custom { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 10px 14px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
 .mode-custom strong { color: var(--fg); }
+
+/* YouTube Focus Mode */
+.focus-master { margin-bottom: 10px; }
+.focus-options.focus-off .card { opacity: .6; }

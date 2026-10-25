@@ -39,6 +39,16 @@ function render(info) {
     pill.dataset.status = vm.youtube.status;
     $('youtube').title = vm.youtube.detail;
   }
+
+  $('focus').hidden = !vm.focus;
+  if (vm.focus) renderFocus(vm.focus.enabled);
+}
+
+// --- YouTube Focus Mode (tylko na youtube.com) ---
+let focusBusy = false;
+function renderFocus(enabled) {
+  $('focusToggle').setAttribute('aria-checked', String(enabled));
+  $('focusToggle').disabled = focusBusy;
 }
 
 let info = null;
@@ -98,6 +108,26 @@ $('toggle').addEventListener('click', async () => {
   const res = await chrome.runtime.sendMessage({ type: 'site:toggle', host: info.host, tabId: tab.id }).catch(() => null);
   if (res && res.ok) info = { ...info, disabled: res.disabled, blocked: 0 };
   render(info);
+});
+
+$('focusToggle').addEventListener('click', async () => {
+  if (focusBusy || !info || !info.youtubeFocus) return;
+  const previous = !!info.youtubeFocus.enabled;
+  const next = !previous;
+  focusBusy = true;
+  $('focusErr').hidden = true;
+  renderFocus(next);
+  let res = null;
+  try { res = await chrome.runtime.sendMessage({ type: 'options:setYouTubeFocus', settings: { enabled: next } }); } catch { res = null; }
+  focusBusy = false;
+  if (res && res.ok) info = { ...info, youtubeFocus: { enabled: !!res.youtubeFocus.enabled } };
+  else { $('focusErr').textContent = 'Nie udało się zmienić Focus Mode.'; $('focusErr').hidden = false; }
+  renderFocus(!!info.youtubeFocus.enabled);
+});
+
+$('focusCustomize').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#youtube') });
+  window.close();
 });
 
 $('picker').addEventListener('click', async () => {
