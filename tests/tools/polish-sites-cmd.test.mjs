@@ -164,3 +164,22 @@ test('run-polish-evidence.cmd: przez run-polish-test.cmd, --evidence, dokładnie
   assert.deepEqual(o.domains, EVIDENCE_SITES);
   assert.doesNotMatch(commandsOf(raw), /npm install|npx playwright install|chromeblock-polish\.txt|provenance/i, 'bez instalacji i bez zmian list');
 });
+
+// --- retest-polish-batch1.cmd: retest partii 1 na 3 domenach -------------------------------------------
+
+test('retest-polish-batch1.cmd: run-polish-test.cmd --evidence bankier.pl businessinsider.com.pl gazeta.pl, kod wyjścia przekazany', () => {
+  const raw = read('retest-polish-batch1.cmd');
+  assert.ok(raw.startsWith('@echo off'));
+  assert.equal(raw.split('\n').length - 1, (raw.match(/\r\n/g) || []).length, 'CRLF');
+  const m = /^call "%~dp0run-polish-test\.cmd" (.+) %\*\r?$/m.exec(raw);
+  assert.ok(m, 'wywołuje istniejący run-polish-test.cmd');
+  assert.deepEqual(m[1].split(/\s+/), ['--evidence', 'bankier.pl', 'businessinsider.com.pl', 'gazeta.pl']);
+  assert.match(raw, /^exit \/b %ERRORLEVEL%\r?$/m);
+  assert.match(raw, /tests\\polish-sites\\results\\latest\.txt/);
+  assert.match(raw, /tests\\polish-sites\\results\\evidence\\/);
+  const cmds = commandsOf(raw);
+  assert.doesNotMatch(cmds, /npm |npx |where node|playwright install/i, 'bez duplikowania przygotowania');
+  assert.equal((cmds.match(/^\s*call /gim) || []).length, 1, 'jedno wywołanie');
+  const o = parseArgs(['--gap-mode', ...m[1].split(/\s+/)]);
+  assert.deepEqual([o.gap, o.evidence, o.domains], [true, true, ['bankier.pl', 'businessinsider.com.pl', 'gazeta.pl']]);
+});

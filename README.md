@@ -95,6 +95,8 @@ Pierwsze uruchomienie Windows: `run-polish-test.cmd` – po rozpakowaniu ZIP-a r
 
 Dowody (zrzuty ekranu obserwacji) dla 9 stron: dwuklik `run-polish-evidence.cmd` (GAP + `--evidence`: onet.pl, wp.pl, interia.pl, o2.pl, gazeta.pl, wykop.pl, businessinsider.com.pl, se.pl, bankier.pl). Zrzuty: `tests/polish-sites/results/evidence/<domena>-<nr>.png` i `<domena>-<nr>-context.png`.
 
+Retest partii 1 ChromeBlock Polish (bankier.pl, businessinsider.com.pl, gazeta.pl): dwuklik `retest-polish-batch1.cmd`.
+
 Aktualizacja list:
 
 ```bash
