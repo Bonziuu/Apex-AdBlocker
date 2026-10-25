@@ -97,6 +97,8 @@ Dowody (zrzuty ekranu obserwacji) dla 9 stron: dwuklik `run-polish-evidence.cmd`
 
 Retest partii 1 ChromeBlock Polish (bankier.pl, businessinsider.com.pl, gazeta.pl): dwuklik `retest-polish-batch1.cmd`. Evidence dla partii 2 (wykop.pl, wp.pl, o2.pl, onet.pl, interia.pl, se.pl, jbzd.com.pl): dwuklik `test-polish-batch2.cmd`. Tylko jbzd.com.pl: dwuklik `test-jbzd.cmd`. Tylko onet.pl: dwuklik `test-onet-evidence.cmd`.
 
+Praca z repozytorium Git (bez pobierania ZIP-a po każdym commicie): jednorazowo `git clone -b chromeblock-polish-foundation https://github.com/Bonziuu/Chromeblock.git`, potem dwuklik `update-and-test-polish.cmd`. Plik bezpiecznie aktualizuje repozytorium (`git fetch` + `git pull --ff-only`; odmawia przy innym branchu albo lokalnych zmianach; bez force, `reset --hard` i `stash`) i uruchamia `run-polish-test.cmd --evidence` (domyślna próbka, GAP + evidence). Sama aktualizacja bez testu: `update-only.cmd`.
+
 Aktualizacja list:
 
 ```bash

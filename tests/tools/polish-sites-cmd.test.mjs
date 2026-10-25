@@ -241,3 +241,80 @@ test('test-onet-evidence.cmd: run-polish-test.cmd --evidence onet.pl, kod wyjśc
   const o = parseArgs(['--gap-mode', ...m[1].split(/\s+/)]);
   assert.deepEqual([o.gap, o.evidence, o.domains], [true, true, ['onet.pl']]);
 });
+
+// --- update-only.cmd / update-and-test-polish.cmd: bezpieczna aktualizacja przez Git -----------------
+
+/** Sprawdza, że nawiasy w blokach if ( … ) są escapowane, a bloki domknięte (jak w run-polish-test.cmd). */
+function assertCmdBlocks(t, name) {
+  let depth = 0;
+  for (const line of t.split(/\r?\n/)) {
+    if (/^\s*rem\b/i.test(line)) continue;
+    const code = line.replace(/\^[()]/g, '').replace(/"[^"]*"/g, '').replace(/'[^']*'/g, '');
+    if (depth > 0 && /^\s*echo\b/i.test(line)) assert.doesNotMatch(code.replace(/^\s*echo/i, ''), /[()]/, `${name}: nieescapowany nawias w bloku: ${line}`);
+    depth += (code.match(/\(/g) || []).length - (code.match(/\)/g) || []).length;
+    assert.ok(depth >= 0 && depth <= 1, `${name}: zagnieżdżenie bloków: ${line}`);
+  }
+  assert.equal(depth, 0, `${name}: bloki domknięte`);
+}
+
+test('update-only.cmd: wymagany branch, odmowa przy lokalnych zmianach, fetch + pull --ff-only, bez force/reset/stash', () => {
+  const t = read('update-only.cmd');
+  assert.equal(t.split('\n').length - 1, (t.match(/\r\n/g) || []).length, 'CRLF');
+  assert.match(t, /^cd \/d "%~dp0"\r?$/m);
+  const c = commandsOf(t);
+  // wymagany branch – bez przełączania
+  assert.match(t, /^set "BRANCH=chromeblock-polish-foundation"\r?$/m);
+  assert.match(c, /git rev-parse --abbrev-ref HEAD/);
+  assert.match(t, /^if not "%CUR%"=="%BRANCH%" \(\r?\n\s+set "RC=3"/m);
+  assert.doesNotMatch(c, /git (checkout|switch)\b/, 'nie zmienia brancha (polecenie tylko w komunikacie)');
+  // bezpieczeństwo
+  assert.doesNotMatch(c, /reset\s+--hard|git reset|--force|\s-f\b|stash|git clean|git push|checkout\s+--|restore/i, 'brak force/reset/stash/clean/push');
+  // kolejność: git → repo → branch → lokalne zmiany → fetch → pull
+  const idx = (s) => { const i = t.indexOf(s); assert.ok(i >= 0, s); return i; };
+  const order = ['where git', 'git rev-parse --is-inside-work-tree', 'git rev-parse --abbrev-ref HEAD', "'git status --porcelain'", 'git fetch origin\r\n', 'git pull --ff-only origin %BRANCH%\r\n'].map(idx);
+  assert.deepEqual([...order].sort((a, b) => a - b), order, 'kolejność kroków');
+  assert.match(t, /^if defined DIRTY \(\r?\n\s+set "RC=4"/m);
+  const dirtyBlock = t.slice(t.indexOf('if defined DIRTY ('), t.indexOf('for /f "delims=" %%h in (\'git rev-parse HEAD\')'));
+  assert.match(dirtyBlock, /goto :end/, 'przy lokalnych zmianach koniec przed fetch/pull');
+  assert.doesNotMatch(dirtyBlock, /git (fetch|pull)/);
+  assert.match(c, /^git pull --ff-only origin %BRANCH%\r?$/m);
+  assert.equal((c.match(/git pull/g) || []).length, 1, 'jedno git pull');
+  assert.match(t, /^if errorlevel 1 \(\r?\n\s+set "RC=6"/m, 'błąd pull → kod 6');
+  // HEAD, pause (z opcją --no-pause), kod wyjścia
+  assert.match(t, /^echo HEAD: %NEWHEAD%\r?$/m);
+  assert.match(t, /^if \/i not "%~1"=="--no-pause" pause\r?\nexit \/b %RC%\r?\n?$/m);
+  assert.doesNotMatch(c, /run-polish-test|npm |npx /, 'bez uruchamiania testów i instalacji');
+  assertCmdBlocks(t, 'update-only.cmd');
+});
+
+test('update-and-test-polish.cmd: najpierw update-only, przy błędzie bez testu; potem run-polish-test.cmd --evidence; kod wyjścia i ścieżki', () => {
+  const t = read('update-and-test-polish.cmd');
+  assert.equal(t.split('\n').length - 1, (t.match(/\r\n/g) || []).length, 'CRLF');
+  assert.match(t, /^cd \/d "%~dp0"\r?$/m);
+  const c = commandsOf(t);
+  assert.doesNotMatch(c, /reset\s+--hard|git reset|--force|stash|git clean|git push|git pull|git fetch|checkout|switch/i, 'aktualizacja tylko przez update-only.cmd');
+  assert.match(c, /^call "%~dp0update-only\.cmd" --no-pause\r?$/m);
+  assert.match(t, /^set "UPD=%ERRORLEVEL%"\r?\nif not "%UPD%"=="0" \(\r?\n\s+set "RC=%UPD%"/m, 'błąd aktualizacji → kod update-only');
+  const failBlock = t.slice(t.indexOf('if not "%UPD%"=="0" ('), t.indexOf('set "NEWHEAD="'));
+  assert.match(failBlock, /goto :end/);
+  assert.ok(t.indexOf('call "%~dp0update-only.cmd"') < t.indexOf('call "%~dp0run-polish-test.cmd"'), 'test po aktualizacji');
+  // test: run-polish-test.cmd --evidence (domyślna próbka, GAP przez test-polish-sites.cmd), bez duplikowania instalacji
+  assert.match(c, /^call "%~dp0run-polish-test\.cmd" --evidence < nul\r?\nset "RC=%ERRORLEVEL%"\r?$/m);
+  assert.doesNotMatch(c, /npm |npx |where node|playwright install/i);
+  const o = parseArgs(['--gap-mode', '--evidence']);
+  assert.deepEqual([o.gap, o.evidence], [true, true]);
+  assert.ok(o.domains.length > 0 && o.domains.length <= 20, 'domyślna próbka');
+  // podsumowanie
+  assert.match(t, /HEAD:\s+%NEWHEAD%/);
+  assert.match(t, /Zaktualizowano: %UPDATED%/);
+  assert.match(t, /Kod wyjscia testu: %RC%/);
+  assert.match(t, /tests\\polish-sites\\results\\latest\.txt/);
+  assert.match(t, /tests\\polish-sites\\results\\evidence\\/);
+  assert.match(t, /^:end\r?\necho\.\r?\npause\r?\nexit \/b %RC%\r?\n?$/m);
+  assertCmdBlocks(t, 'update-and-test-polish.cmd');
+});
+
+test('wyniki testu i npm install nie brudzą repozytorium (inaczej update-only odmówi aktualizacji)', () => {
+  const ignored = (f) => spawnSync('git', ['check-ignore', '-q', f], { cwd: ROOT }).status === 0;
+  for (const f of ['tests/polish-sites/results/latest.txt', 'tests/polish-sites/results/evidence/x.png', 'node_modules/playwright/package.json', 'package-lock.json']) assert.ok(ignored(f), `${f} ignorowany przez git`);
+});

@@ -7,3 +7,4 @@ _metadata/
 dist/
 !download/ChromeBlock-dev.zip
 tests/polish-sites/results/
+package-lock.json
