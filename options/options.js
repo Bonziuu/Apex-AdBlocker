@@ -1,5 +1,6 @@
 import { PRESETS, MODE_LABEL, MODE_CONTENTS, MODE_ERROR, modeDisplay } from '../shared/protection-mode-ui.js';
 import { FOCUS_OPTIONS, FOCUS_LABELS, FOCUS_DESCRIPTIONS, normalizeFocus } from '../shared/youtube-focus.js';
+import { importFailureMessage } from '../shared/settings-backup.js';
 
 const $ = (id) => document.getElementById(id);
 const send = (msg) => chrome.runtime.sendMessage(msg);
@@ -193,7 +194,7 @@ $('importFile').addEventListener('change', async () => {
   if (!file) return;
   $('importSummary').hidden = true;
   $('importErrors').hidden = true;
-  if (file.size > 2 * 1024 * 1024) { showImportErrors(['plik jest za duży (maks. 2 MB)']); return; }
+  if (file.size > 2 * 1024 * 1024) { showImportErrors({ ok: false, errors: ['plik jest za duży (maks. 2 MB)'] }); return; }
   $('importSettings').disabled = true;
   $('exportSettings').disabled = true;
   flash($('backupMsg'), 'Importowanie…', '');
@@ -210,16 +211,29 @@ $('importFile').addEventListener('change', async () => {
     $('importSummary').hidden = false;
     flash($('backupMsg'), 'Ustawienia przywrócone', 'ok');
   } else {
-    showImportErrors((r && r.errors) || ['nieznany błąd'], r && r.rolledBack);
+    showImportErrors(r);
   }
 });
 
-function showImportErrors(errors, rolledBack = false) {
+function showImportErrors(result) {
+  const m = importFailureMessage(result);
   const box = $('importErrors');
-  box.textContent = rolledBack ? 'Chrome nie przyjął zmian – przywrócono poprzednie ustawienia:' : 'Nie zaimportowano – plik jest niepoprawny (ustawienia bez zmian):';
+  box.textContent = '';
+  const title = document.createElement('div');
+  title.className = 'import-title';
+  title.textContent = m.title;
+  box.appendChild(title);
   const ul = document.createElement('ul');
-  for (const e of errors) { const li = document.createElement('li'); li.textContent = e; ul.appendChild(li); }
+  for (const e of m.items) { const li = document.createElement('li'); li.textContent = e; ul.appendChild(li); }
   box.appendChild(ul);
+  if (m.diagnostics) {
+    const b = document.createElement('button');
+    b.className = 'secondary';
+    b.id = 'openDiag';
+    b.textContent = 'Otwórz Diagnostykę';
+    b.addEventListener('click', () => document.querySelector('.tab[data-tab="diag"]').click());
+    box.appendChild(b);
+  }
   box.hidden = false;
   flash($('backupMsg'), '', '');
 }

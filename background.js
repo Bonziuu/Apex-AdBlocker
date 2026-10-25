@@ -607,6 +607,34 @@ async function applyEnabledLists(enabledLists) {
     : { ok: false, error: 'Listy zmienione, ale scriptlety nie zarejestrowały się: ' + sl.message, protectionMode: state.protectionMode };
 }
 
+/**
+ * Rollback importu ustawień: przywraca poprzednie ustawienia i Focus Mode (zapis albo usunięcie wg
+ * snapshotu), SPRAWDZA zapis w storage i wynik każdego kroku synchronizacji poprzedniego stanu.
+ * @returns {Promise<string[]>} błędy przywracania (pusta lista = rollback kompletny)
+ */
+async function rollbackImport(previous, prevStored, syncAllSteps) {
+  const errors = [];
+  try {
+    await saveState(previous);
+    if (FOCUS_STORAGE_KEY in prevStored) await chrome.storage.local.set({ [FOCUS_STORAGE_KEY]: prevStored[FOCUS_STORAGE_KEY] });
+    else await chrome.storage.local.remove(FOCUS_STORAGE_KEY);
+  } catch (e) {
+    errors.push(`zapis poprzednich ustawień: ${(e && e.message) || e}`);
+  }
+  // weryfikacja zapisu
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const now = await chrome.storage.local.get(['enabledLists', 'disabledSites', 'userFilters', FOCUS_STORAGE_KEY]).catch(() => ({}));
+  if (!same(now.enabledLists, previous.enabledLists)) errors.push('storage: listy filtrów nie zostały przywrócone');
+  if (!same(now.disabledSites, previous.disabledSites)) errors.push('storage: wyłączone strony nie zostały przywrócone');
+  if (now.userFilters !== previous.userFilters) errors.push('storage: Moje filtry nie zostały przywrócone');
+  if (FOCUS_STORAGE_KEY in prevStored ? !same(now[FOCUS_STORAGE_KEY], prevStored[FOCUS_STORAGE_KEY]) : FOCUS_STORAGE_KEY in now) {
+    errors.push('storage: Focus Mode nie został przywrócony');
+  }
+  // synchronizacja poprzedniego stanu – każdy krok osobno
+  for (const [name, r] of await syncAllSteps()) if (!r.ok) errors.push(`synchronizacja (${name}): ${r.message}`);
+  return errors;
+}
+
 /** Wykonuje jeden krok synchronizacji i zapisuje jego wynik (np. po zmianie ustawień). */
 async function runStep(step, fn) {
   const results = await runSyncSteps({ [step]: fn }, health);
@@ -1078,23 +1106,28 @@ const handlers = {
       protectionMode: modeForLists(prevState.enabledLists),
     };
     const prevStored = await chrome.storage.local.get(FOCUS_STORAGE_KEY);
+    // wynik KAŻDEGO kroku synchronizacji: [nazwa, {ok, message}]
     const syncAllSteps = async () => {
-      const rs = await runStep('rulesets', syncRulesets);
-      const dyn = await runStep('dynamicRules', syncDynamicRules);
-      const sl = await runStep('scriptlets', syncScriptlets);
-      return [['listy filtrów', rs], ['moje filtry / wyłączone strony', dyn], ['scriptlety', sl]].filter(([, r]) => !r.ok);
+      const step = async (name, id, fn) => {
+        try { return [name, await runStep(id, fn)]; } catch (e) { return [name, { ok: false, message: String((e && e.message) || e) }]; }
+      };
+      return [
+        await step('listy filtrów', 'rulesets', syncRulesets),
+        await step('moje filtry / wyłączone strony', 'dynamicRules', syncDynamicRules),
+        await step('scriptlety', 'scriptlets', syncScriptlets),
+      ];
     };
     await saveState({ enabledLists: next.enabledLists, disabledSites: next.disabledSites, userFilters: next.userFilters, protectionMode: next.protectionMode });
     await chrome.storage.local.set({ [FOCUS_STORAGE_KEY]: next.youtubeFocus }); // otwarte karty YouTube: storage.onChanged
-    const failed = await syncAllSteps();
+    const failed = (await syncAllSteps()).filter(([, r]) => !r.ok);
     if (failed.length) {
-      // rollback: poprzednie ustawienia i ponowna synchronizacja
-      await saveState(previous);
-      if (FOCUS_STORAGE_KEY in prevStored) await chrome.storage.local.set({ [FOCUS_STORAGE_KEY]: prevStored[FOCUS_STORAGE_KEY] });
-      else await chrome.storage.local.remove(FOCUS_STORAGE_KEY);
-      await syncAllSteps();
+      const errors = failed.map(([name, r]) => `${name}: ${r.message}`);
+      const rollbackErrors = await rollbackImport(previous, prevStored, syncAllSteps);
       await refreshYouTubeStatus();
-      return { ok: false, rolledBack: true, errors: failed.map(([name, r]) => `${name}: ${r.message}`) };
+      if (!rollbackErrors.length) return { ok: false, rolledBack: true, errors };
+      // niepełne przywrócenie – jawnie (bez twierdzenia, że przywrócono) + wpis w dzienniku błędów (Diagnostyka)
+      await health.error('filters', `import ustawień nie powiódł się (${errors.join('; ')}), a przywrócenie poprzedniego stanu jest niepełne: ${rollbackErrors.join('; ')}`);
+      return { ok: false, rolledBack: false, errors, rollbackErrors };
     }
     await checkCosmeticData();
     await refreshYouTubeStatus();
