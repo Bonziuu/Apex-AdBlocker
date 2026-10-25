@@ -83,6 +83,56 @@ export function networkErrorOf(err) {
   return m ? m[0] : null;
 }
 
+export const SEEK_DELTA_S = 60;          // o ile przewijamy
+export const SEEK_MIN_JUMP = 0.75;        // przeskok uznany za wykonany: ≥ 75% żądanej odległości (45 s)
+export const SEEK_RESUME_WAIT_S = 25;     // ile czekamy na wznowienie odtwarzania po seek (buforowanie)
+export const SEEK_RESUME_PROGRESS_S = 2;  // wznowienie = przyrost czasu ≥ 2 s po przeskoku
+
+/**
+ * Ocena seek (czysta logika). Rozdziela SAM seek (pozycja przeskoczyła) od wznowienia odtwarzania.
+ * @param {{before:number|null, delta?:number, samples:Array<{currentTime:number|null, error?:boolean, spinner?:boolean}>, videoError?:number}} o
+ *   samples – próbki co 1 s od chwili seek (do SEEK_RESUME_WAIT_S)
+ * @returns {{seek:{status,detail}, resume:{status,detail}, jumpedTo:number|null}}
+ */
+export function classifySeek({ before, delta = SEEK_DELTA_S, samples = [], videoError = 0 }) {
+  const times = samples.map((x) => x.currentTime).filter((t) => typeof t === 'number');
+  const tail = samples.slice(-3);
+  const playerError = videoError ? `błąd elementu video (kod ${videoError})`
+    : (tail.length >= 3 && tail.every((x) => x.error) ? 'trwały komunikat błędu odtwarzacza (.ytp-error)' : '');
+  if (before == null || !times.length) {
+    return { seek: { status: 'FAIL', detail: 'brak elementu video podczas seek' }, resume: { status: 'SKIP', detail: 'INCONCLUSIVE – brak seek' }, jumpedTo: null };
+  }
+  const need = before + delta * SEEK_MIN_JUMP;
+  const jumpIdx = samples.findIndex((x) => typeof x.currentTime === 'number' && x.currentTime >= need);
+  const maxSeen = Math.max(...times);
+  if (jumpIdx < 0) {
+    const detail = `pozycja nie przeskoczyła: ${Math.round(before)} s → maks. ${Math.round(maxSeen)} s (wymagane ≥ ${Math.round(need)} s)`;
+    return { seek: { status: 'FAIL', detail: playerError ? `${detail}; ${playerError}` : detail }, resume: { status: 'SKIP', detail: 'INCONCLUSIVE – seek się nie wykonał' }, jumpedTo: null };
+  }
+  const jumpedTo = samples[jumpIdx].currentTime;
+  const afterJump = samples.slice(jumpIdx);
+  // pozycja wróciła wyraźnie przed punkt seek (np. odtwarzacz zresetował film) → jednoznaczna awaria
+  const fellBack = afterJump.some((x) => typeof x.currentTime === 'number' && x.currentTime < need - 10);
+  if (playerError || fellBack) {
+    const why = [playerError, fellBack && 'pozycja cofnęła się przed punkt seek'].filter(Boolean).join('; ');
+    return { seek: { status: 'FAIL', detail: `${Math.round(before)} s → ${Math.round(jumpedTo)} s, ale: ${why}` }, resume: { status: 'FAIL', detail: why }, jumpedTo };
+  }
+  const seek = { status: 'PASS', detail: `${Math.round(before)} s → ${Math.round(jumpedTo)} s` };
+  const progress = progressOf(afterJump);
+  if (progress >= SEEK_RESUME_PROGRESS_S) {
+    // ile sekund minęło do pierwszego przyrostu czasu (buforowanie po seek)
+    let waitS = 0;
+    for (let i = 1; i < afterJump.length; i++) { if (afterJump[i].currentTime > afterJump[i - 1].currentTime) { waitS = jumpIdx + i; break; } }
+    return { seek, resume: { status: 'PASS', detail: `wznowione po ok. ${waitS} s, postęp ${progress} s` }, jumpedTo };
+  }
+  const buffering = afterJump.filter((x) => x.spinner).length;
+  return {
+    seek,
+    resume: { status: 'SKIP', detail: `INCONCLUSIVE – po ${samples.length} s odtwarzanie się nie wznowiło (postęp ${progress} s${buffering ? `, buforowanie przez ${buffering} s` : ''}); bez błędu playera` },
+    jumpedTo,
+  };
+}
+
 /** Czytelny raport tekstowy. */
 export function formatReport(r) {
   const n = counts(r.checks);
@@ -373,7 +423,7 @@ export async function runLocalTests(opts = {}) {
 
     // 6. YouTube
     const YT = [['yt-watch', 'YouTube: strona watch'], ['yt-video', 'YouTube: element video'], ['yt-play', 'YouTube: odtwarzanie startuje'],
-      ['yt-seek', 'YouTube: seek'], ['yt-player-error', 'YouTube: brak błędu playera'], ['yt-ads', 'YouTube: reklamy (tylko z dowodem)'], ['yt-shorts', 'YouTube: Shorts']];
+      ['yt-seek', 'YouTube: seek'], ['yt-seek-resume', 'YouTube: odtwarzanie po seek'], ['yt-player-error', 'YouTube: brak błędu playera'], ['yt-ads', 'YouTube: reklamy (tylko z dowodem)'], ['yt-shorts', 'YouTube: Shorts']];
     if (!youtube) await skipRest(YT, 'pominięto (--no-youtube)');
     else if (!online) await skipRest(YT, 'INCONCLUSIVE – brak dostępu do internetu');
     else await runYouTube({ context, add, skipRest, YT, video, shortsUrl, consent, setCurrent: (pg) => { current = pg; }, notes });
@@ -454,16 +504,23 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
   await add('yt-play', 'YouTube: odtwarzanie startuje', playback.ok ? 'PASS' : 'FAIL', playback.ok ? `postęp ${playback.progress} s w 15 s` : playback.reasons.join('; '));
 
   if (playback.ok) {
-    const before = await seekForward(page, 60);
-    await page.waitForTimeout(2000);
-    const after = await samplePlayer(page, 'player', 6);
-    const jumped = before != null && typeof after[0].currentTime === 'number' && after[0].currentTime >= before + 45;
-    const grew = progressOf(after) >= 2;
-    await add('yt-seek', 'YouTube: seek', jumped && grew ? 'PASS' : 'FAIL',
-      jumped && grew ? `${Math.round(before)} s → ${Math.round(after[0].currentTime)} s, odtwarzanie trwa` : [!jumped && 'pozycja nie przeskoczyła o ≥ 45 s', !grew && 'czas nie rośnie po seek'].filter(Boolean).join('; '));
+    const before = await seekForward(page, SEEK_DELTA_S);
+    // próbki co 1 s; kończymy wcześniej, gdy po przeskoku odtwarzanie już ruszyło
+    const after = [];
+    for (let i = 0; i < SEEK_RESUME_WAIT_S; i++) {
+      await page.waitForTimeout(1000);
+      after.push(await page.evaluate(pageSample, 'player'));
+      const r = classifySeek({ before, samples: after });
+      if (r.seek.status === 'PASS' && r.resume.status === 'PASS') break;
+    }
+    const videoError = await page.evaluate(() => { const v = document.querySelector('#movie_player video'); return v && v.error ? v.error.code : 0; }).catch(() => 0);
+    const r = classifySeek({ before, samples: after, videoError });
+    await add('yt-seek', 'YouTube: seek', r.seek.status, r.seek.detail);
+    await add('yt-seek-resume', 'YouTube: odtwarzanie po seek', r.resume.status, r.resume.detail);
     samples.push(...after);
   } else {
     await add('yt-seek', 'YouTube: seek', 'SKIP', 'INCONCLUSIVE – odtwarzanie nie wystartowało');
+    await add('yt-seek-resume', 'YouTube: odtwarzanie po seek', 'SKIP', 'INCONCLUSIVE – odtwarzanie nie wystartowało');
   }
 
   const videoError = await page.evaluate(() => { const v = document.querySelector('#movie_player video'); return v && v.error ? v.error.code : 0; }).catch(() => 0);

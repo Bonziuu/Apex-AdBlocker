@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {
-  overallStatus, counts, isChromeBlockError, networkErrorOf, formatReport, parseArgs, writeResults, ROOT, exitCodeFor, EXIT,
+  overallStatus, counts, isChromeBlockError, networkErrorOf, formatReport, parseArgs, writeResults, ROOT, exitCodeFor, EXIT, classifySeek, SEEK_RESUME_WAIT_S,
 } from '../local/chromeblock-local-test.mjs';
 import { packageDev, missingTesterImports, TESTER_FILES, testerPackageJson } from '../../tools/package-dev.mjs';
 import { createRequire } from 'node:module';
@@ -121,4 +121,62 @@ test('paczka: tester importuje się poza repozytorium', async () => {
     assert.equal(typeof m.runLocalTests, 'function');
     assert.equal(m.ROOT, path.join(out, 'tester'));
   } finally { fs.rmSync(out, { recursive: true, force: true }); }
+});
+
+// --- seek -----------------------------------------------------------------
+// próbki co 1 s od chwili seek; t = currentTime, b = spinner (buforowanie)
+const S = (list) => list.map(([t, b = false, error = false]) => ({ currentTime: t, spinner: b, error }));
+const progressOld = (xs) => { let n = 0; for (let i = 1; i < xs.length; i++) { const d = xs[i].currentTime - xs[i - 1].currentTime; if (d > 0 && d <= 5) n += d; } return n; };
+
+test('REGRESJA: seek wykonany poprawnie + chwilowe buforowanie → seek PASS, wznowienie PASS', () => {
+  // prawdziwy przypadek z Windows: 18 s → 78 s, ok. 9 s buforowania, potem odtwarzanie rusza
+  const samples = S([[78, true], [78, true], [78, true], [78, true], [78, true], [78, true], [78, true], [78, true], [78, true], [79], [80], [81]]);
+  // stara logika (2 s przerwy + 6 próbek, wymagany postęp ≥ 2 s) dawała tu fałszywy FAIL
+  assert.ok(progressOld(samples.slice(2, 8)) < 2, 'stara logika: „czas nie rośnie po seek”');
+  const r = classifySeek({ before: 18, samples });
+  assert.equal(r.seek.status, 'PASS');
+  assert.match(r.seek.detail, /18 s → 78 s/);
+  assert.equal(r.resume.status, 'PASS');
+  assert.match(r.resume.detail, /wznowione po ok\. \d+ s/);
+});
+
+test('seek poprawny, ale buforowanie przez całe okno → seek PASS, wznowienie SKIP (INCONCLUSIVE), nie FAIL', () => {
+  const samples = S(Array.from({ length: SEEK_RESUME_WAIT_S }, () => [78, true]));
+  const r = classifySeek({ before: 18, samples });
+  assert.equal(r.seek.status, 'PASS');
+  assert.equal(r.resume.status, 'SKIP');
+  assert.match(r.resume.detail, /INCONCLUSIVE.*nie wznowiło.*buforowanie przez 25 s.*bez błędu playera/);
+});
+
+test('seek: FAIL tylko przy jednoznacznym dowodzie', () => {
+  // pozycja nie przeskoczyła
+  let r = classifySeek({ before: 18, samples: S([[19], [20], [21], [22]]) });
+  assert.equal(r.seek.status, 'FAIL');
+  assert.match(r.seek.detail, /nie przeskoczyła.*wymagane ≥ 63 s/);
+  // przeskok za mały (30 s zamiast ~60 s)
+  assert.equal(classifySeek({ before: 18, samples: S([[48], [49], [50]]) }).seek.status, 'FAIL');
+  // przeskoczyła, ale błąd elementu video
+  r = classifySeek({ before: 18, samples: S([[78], [78], [78]]), videoError: 3 });
+  assert.equal(r.seek.status, 'FAIL');
+  assert.match(r.seek.detail, /video \(kod 3\)/);
+  // przeskoczyła, ale trwały komunikat błędu odtwarzacza
+  r = classifySeek({ before: 18, samples: S([[78, false, true], [78, false, true], [78, false, true]]) });
+  assert.equal(r.seek.status, 'FAIL');
+  assert.equal(r.resume.status, 'FAIL');
+  // przeskoczyła, a potem odtwarzacz zresetował film
+  r = classifySeek({ before: 18, samples: S([[78], [0], [1], [2]]) });
+  assert.equal(r.seek.status, 'FAIL');
+  assert.match(r.seek.detail, /cofnęła się/);
+  // chwilowy .ytp-error w trakcie (nie trwały) przy poprawnym seek → nie FAIL
+  r = classifySeek({ before: 18, samples: S([[78, true, true], [78], [79], [80], [81]]) });
+  assert.equal(r.seek.status, 'PASS');
+  assert.equal(r.resume.status, 'PASS');
+  // brak video
+  assert.equal(classifySeek({ before: null, samples: [] }).seek.status, 'FAIL');
+});
+
+test('seek: przeskok widoczny dopiero po chwili (pozycja aktualizuje się z opóźnieniem) → PASS', () => {
+  const r = classifySeek({ before: 18, samples: S([[18], [18, true], [78, true], [78], [79], [80]]) });
+  assert.equal(r.seek.status, 'PASS');
+  assert.equal(r.resume.status, 'PASS');
 });
