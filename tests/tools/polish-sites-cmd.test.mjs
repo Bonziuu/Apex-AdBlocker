@@ -224,3 +224,20 @@ test('test-jbzd.cmd: run-polish-test.cmd --evidence jbzd.com.pl; batch2 nadal ob
   assert.deepEqual([o.gap, o.evidence, o.domains], [true, true, ['jbzd.com.pl']]);
   assert.match(read('test-polish-batch2.cmd'), /^call "%~dp0run-polish-test\.cmd" --evidence .*\bjbzd\.com\.pl %\*\r?$/m);
 });
+
+// --- test-onet-evidence.cmd: GAP + evidence tylko dla onet.pl ------------------------------------------
+
+test('test-onet-evidence.cmd: run-polish-test.cmd --evidence onet.pl, kod wyjścia przekazany', () => {
+  const raw = read('test-onet-evidence.cmd');
+  assert.ok(raw.startsWith('@echo off'));
+  assert.equal(raw.split('\n').length - 1, (raw.match(/\r\n/g) || []).length, 'CRLF');
+  const m = /^call "%~dp0run-polish-test\.cmd" (.+) %\*\r?$/m.exec(raw);
+  assert.ok(m, 'wywołuje istniejący run-polish-test.cmd');
+  assert.deepEqual(m[1].split(/\s+/), ['--evidence', 'onet.pl']);
+  assert.match(raw, /^exit \/b %ERRORLEVEL%\r?$/m);
+  const cmds = commandsOf(raw);
+  assert.doesNotMatch(cmds, /npm |npx |where node|playwright install/i);
+  assert.equal((cmds.match(/^\s*call /gim) || []).length, 1);
+  const o = parseArgs(['--gap-mode', ...m[1].split(/\s+/)]);
+  assert.deepEqual([o.gap, o.evidence, o.domains], [true, true, ['onet.pl']]);
+});

@@ -119,6 +119,8 @@ Na Windows wystarczy dwuklik na `test-polish-sites.cmd` w katalogu repozytorium 
 - kontener obejmuje co najmniej połowę powierzchni strony;
 - kontener jest nienaturalnie duży względem okna: wyższy niż 2× okno, szerszy niż 1,2× okno albo o powierzchni większej niż 1,5× okno.
 
+**Elementy dynamiczne.** Analiza zapisuje dla każdej obserwacji prostokąt kontenera i etykiety we współrzędnych dokumentu (`rect`, `labelRect`, plus `scroll` i rozmiar strony). To same liczby, bez treści strony. Pierwszą metodą zrzutu pozostaje lokator Playwright. Gdy element odpina się od DOM albo lokator nie znajduje go na czas (np. karty przebudowywane przez skrypt strony), tester robi zrzut zapasowy `page.screenshot({ fullPage: true, clip })` z zapamiętanego prostokąta, przycięty do rozmiaru strony; otoczenie dostaje margines 120 px. Obserwacja dostaje wtedy `evidence.fallback`, a raport oznacza zrzut jako zapasowy. Zrzut pokazuje miejsce na stronie w chwili zrzutu, więc element mógł już zostać zastąpiony inną treścią.
+
 Takie wpisy **nie są usuwane**. Raport liczy je osobno, a dla dużych kontenerów zrzut obejmuje samą etykietę.
 
 Następnie przejrzeć `tests/polish-sites/results/latest.txt` i, przy stronach z obserwacjami, otworzyć je ręcznie (`--headed`).

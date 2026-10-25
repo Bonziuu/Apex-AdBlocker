@@ -78,6 +78,7 @@ export function observationsFor(domain, snapshot, blockedUrls = new Set()) {
       element: short(l.el, 160),
       container: short(c.desc, 160),
       size: c.w && c.h ? `${Math.round(c.w)}x${Math.round(c.h)}` : '',
+      ...(l.rect ? { rect: roundRect(l.rect), labelRect: roundRect(l.labelRect), scroll: l.scroll, page: l.page } : {}),
       note: empty ? 'widoczna etykieta reklamy, kontener bez treści/mediów' : 'widoczna etykieta reklamy obok treści/mediów (reklama nie została usunięta)',
     });
   }
@@ -91,6 +92,29 @@ export function observationsFor(domain, snapshot, blockedUrls = new Set()) {
     });
   }
   return out;
+}
+
+const roundRect = (r) => (r ? { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) } : null);
+
+/** Błąd zrzutu lokatorem, przy którym używamy zapasowego zrzutu z zapamiętanego prostokąta. */
+export const isDetachedError = (msg) => /not attached|detached|Timeout|timed out|waiting for/i.test(String(msg || ''));
+
+/**
+ * Obszar zrzutu (współrzędne dokumentu) z zapamiętanego prostokąta + margines, przycięty do strony.
+ * pageSize: { w, h } dokumentu; maxHeight ogranicza bardzo wysokie obszary.
+ */
+export function clipFromRect(rect, pageSize, margin = 0, maxHeight = 2000) {
+  if (!rect || !(rect.width > 0) || !(rect.height > 0)) return null;
+  const pw = pageSize && pageSize.w > 0 ? pageSize.w : Infinity;
+  const ph = pageSize && pageSize.h > 0 ? pageSize.h : Infinity;
+  const x = Math.max(0, Math.floor(rect.x - margin));
+  const y = Math.max(0, Math.floor(rect.y - margin));
+  const right = Math.min(pw, Math.ceil(rect.x + rect.width + margin));
+  const bottom = Math.min(ph, Math.ceil(rect.y + rect.height + margin), y + maxHeight);
+  const width = right - x;
+  const height = bottom - y;
+  if (width < 1 || height < 1) return null;
+  return { x, y, width, height };
 }
 
 /** Ocena działania strony (nie ocenia ChromeBlock – tylko czy strona się wyświetla). */
@@ -136,7 +160,7 @@ export function formatReport(run) {
     L.push(`    etykiety reklam/sponsorowanych: ${labels}; puste kontenery reklamowe: ${empty}${fpCount ? `; prawdopodobne false positive: ${fpCount}` : ''}`);
     for (const o of s.observations) {
       L.push(`    • ${o.id} ${o.kind}${o.label ? ` „${o.label}”` : ''}${o.frameHost ? ` ramka ${o.frameHost}` : ''} ${o.size} – ${o.container || o.element}${o.likely_false_positive ? ` [likely_false_positive: ${o.false_positive_reasons.join(', ')}]` : ''}`);
-      if (o.evidence) L.push(`      dowód: ${[o.evidence.element, o.evidence.context].filter(Boolean).join(' + ') || '—'}${o.evidence.error ? ` (${o.evidence.error})` : ''}`);
+      if (o.evidence) L.push(`      dowód: ${[o.evidence.element, o.evidence.context].filter(Boolean).join(' + ') || '—'}${o.evidence.fallback ? ' [zrzut zapasowy z zapamiętanego prostokąta – element zniknął z DOM]' : ''}${o.evidence.error ? ` (${o.evidence.error})` : ''}`);
     }
     L.push(`    niezablokowane hosty 3rd-party (do ręcznego przeglądu): ${s.unblockedThirdPartyHosts.length ? s.unblockedThirdPartyHosts.map((h) => `${h.host}×${h.count}`).join(', ') : 'brak'}`);
   }

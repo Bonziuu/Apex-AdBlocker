@@ -27,7 +27,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadPlaywright, EXTENSION_ENTRIES } from '../chromium-smoke.mjs';
-import { observationsFor, pageVerdict, topHosts, formatReport, isThirdParty, hostOf, siteUrl, AD_LABELS } from './analyze.mjs';
+import { observationsFor, pageVerdict, topHosts, formatReport, isThirdParty, hostOf, siteUrl, AD_LABELS, clipFromRect, isDetachedError } from './analyze.mjs';
 import { LISTS } from '../lists-config.mjs';
 import { buildAll } from '../build.mjs';
 
@@ -99,6 +99,7 @@ export function collectInPage(labels) {
     if (cls.length) s += `.${cls.join('.')}`;
     return s;
   };
+  const docRect = (e) => { const b = e.getBoundingClientRect(); return { x: b.left + window.scrollX, y: b.top + window.scrollY, width: b.width, height: b.height }; };
   const path3 = (el) => { const parts = []; let e = el; for (let i = 0; e && e.nodeType === 1 && i < 3; i++, e = e.parentElement) parts.unshift(desc(e)); return parts.join(' > '); };
   const mediaIn = (el) => [...el.querySelectorAll('img,iframe,video,canvas,picture,svg')].some((m) => { const r = m.getBoundingClientRect(); return r.width > 30 && r.height > 30 && visible(m); });
   const out = { labels: [], frames: [], title: document.title || '', textLength: (document.body && document.body.innerText || '').length, consentDialog: false };
@@ -128,6 +129,10 @@ export function collectInPage(labels) {
       inFooter: !!el.closest('footer, [role="contentinfo"]'),
       viewport: { w: window.innerWidth, h: window.innerHeight },
       page: { w: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight },
+      // prostokąty w układzie współrzędnych dokumentu – do zapasowego zrzutu, gdy element zniknie z DOM
+      rect: docRect(c),
+      labelRect: docRect(el),
+      scroll: { x: window.scrollX, y: window.scrollY },
     });
   }
   for (const f of document.querySelectorAll('iframe')) {
@@ -210,11 +215,43 @@ export async function captureEvidence(page, observations, evidenceDir) {
     const huge = (o.false_positive_reasons || []).some((r) => /stron|duży/.test(r));
     const target = page.locator(huge ? `[data-cb-evidence-label="${o.labelIndex}"]` : `[data-cb-evidence-c~="${o.labelIndex}"]`).first();
     const ev = { element: null, context: null };
+    // prostokąt zapamiętany podczas analizy (współrzędne dokumentu) – dla elementów, które zniknęły z DOM
+    const savedRect = huge ? o.labelRect : o.rect;
+    const pageSize = await currentPageSize(page, o.page);
+    const clipShot = async (file, margin) => {
+      const clip = clipFromRect(savedRect, pageSize, margin);
+      if (!clip) throw new Error('brak zapamiętanego prostokąta');
+      await page.screenshot({ path: path.join(evidenceDir, file), fullPage: true, clip, timeout: 15000 });
+    };
+    let elementFailed = false;
     try {
+      // 1. metoda podstawowa: zrzut elementu przez lokator
       await target.scrollIntoViewIfNeeded({ timeout: 5000 });
       await target.screenshot({ path: path.join(evidenceDir, `${base}.png`), timeout: 10000 });
       ev.element = `evidence/${base}.png`;
-    } catch (e) { ev.error = `zrzut elementu: ${String((e && e.message) || e).split('\n')[0].slice(0, 120)}`; }
+    } catch (e) {
+      elementFailed = true;
+      const msg = String((e && e.message) || e).split('\n')[0].slice(0, 120);
+      // 2. tylko gdy element odpiął się od DOM / nie dał się znaleźć na czas: zrzut z zapamiętanego prostokąta
+      if (isDetachedError(msg) && savedRect) {
+        try {
+          await clipShot(`${base}.png`, 0);
+          ev.element = `evidence/${base}.png`;
+          ev.fallback = { element: 'clip-from-saved-rect', reason: msg };
+        } catch (e2) { ev.error = `zrzut elementu: ${msg}; zapasowy: ${String((e2 && e2.message) || e2).split('\n')[0].slice(0, 80)}`; }
+      } else {
+        ev.error = `zrzut elementu: ${msg}`;
+      }
+    }
+    if (elementFailed && ev.fallback) {
+      try {
+        await clipShot(`${base}-context.png`, CONTEXT_MARGIN);
+        ev.context = `evidence/${base}-context.png`;
+        ev.fallback.context = 'clip-from-saved-rect';
+      } catch (e) { ev.error = `${ev.error ? `${ev.error}; ` : ''}zrzut otoczenia (zapasowy): ${String((e && e.message) || e).split('\n')[0].slice(0, 120)}`; }
+      o.evidence = ev;
+      continue;
+    }
     try {
       const box = await target.boundingBox();
       const vp = page.viewportSize() || { width: 1366, height: 900 };
@@ -233,8 +270,17 @@ export async function captureEvidence(page, observations, evidenceDir) {
   }
 }
 
+/** Aktualny rozmiar dokumentu (do przycięcia zrzutu); przy błędzie – rozmiar z analizy. */
+async function currentPageSize(page, fallback) {
+  try {
+    const s = await evaluateIsolated(page, () => ({ w: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight }));
+    if (s && s.w > 0 && s.h > 0) return s;
+  } catch { /* */ }
+  return fallback || null;
+}
+
 // --- tryb fixture: strony testowe bez sieci ------------------------------------------------------
-export const FIXTURE_SITES = ['fixture-a.example', 'fixture-b.example', 'fixture-c.example', 'fixture-d.example'];
+export const FIXTURE_SITES = ['fixture-a.example', 'fixture-b.example', 'fixture-c.example', 'fixture-d.example', 'fixture-e.example'];
 const FIXTURE_HTML = {
   'www.fixture-a.example': `<!doctype html><title>Fixture A</title><body>
     <p>${'Treść artykułu testowego. '.repeat(20)}</p>
@@ -257,6 +303,17 @@ const FIXTURE_HTML = {
     <script>window.eval = function () { return undefined; };</script>
     <p>${'Czwarta strona testowa. '.repeat(20)}</p>
     <div id="slot-d" style="width:300px;height:250px"><span>Reklama</span></div>
+  </body>`,
+  // element dynamiczny: znika z DOM zaraz po analizie (przed zrzutem) – jak karty przebudowywane przez skrypt strony
+  'www.fixture-e.example': `<!doctype html><title>Fixture E</title><body style="margin:0">
+    <p>${'Piąta strona testowa. '.repeat(20)}</p>
+    <div id="slot-e" style="width:300px;height:250px;background:#e0e0e0"><span>Reklama</span></div>
+    <p>${'Dalsza treść. '.repeat(40)}</p>
+    <script>
+      new MutationObserver((records) => {
+        for (const r of records) if (r.target.id === 'slot-e' && r.target.isConnected) r.target.remove();
+      }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-cb-evidence-c'] });
+    </script>
   </body>`,
 };
 

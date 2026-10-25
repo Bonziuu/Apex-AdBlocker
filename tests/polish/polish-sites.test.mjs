@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { isAdLabel, observationsFor, pageVerdict, siteUrl, isThirdParty, topHosts, formatReport, falsePositiveReasons } from '../../tools/polish-sites/analyze.mjs';
+import { isAdLabel, observationsFor, pageVerdict, siteUrl, isThirdParty, topHosts, formatReport, falsePositiveReasons, clipFromRect, isDetachedError } from '../../tools/polish-sites/analyze.mjs';
 import os from 'node:os';
 import path from 'node:path';
 import { parseArgs, run, MAX_SITES } from '../../tools/polish-sites/test-polish-sites.mjs';
@@ -162,6 +162,52 @@ test('Chromium (fixture-d): analiza i evidence działają mimo podmienionego win
     assert.equal(d.observations[0].size, '300x250');
     assert.equal(d.observations[0].evidence.element, 'evidence/fixture-d.example-1.png');
     assert.ok(fs.existsSync(path.join(outDir, 'evidence', 'fixture-d.example-1.png')));
+  } finally {
+    fs.rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('zapasowy zrzut: obszar z zapamiętanego prostokąta (margines, przycięcie do strony), rozpoznanie błędu odpięcia', () => {
+  const page = { w: 1366, h: 3000 };
+  assert.deepEqual(clipFromRect({ x: 500, y: 800, width: 300, height: 86 }, page), { x: 500, y: 800, width: 300, height: 86 });
+  assert.deepEqual(clipFromRect({ x: 500, y: 800, width: 300, height: 86 }, page, 120), { x: 380, y: 680, width: 540, height: 326 });
+  assert.deepEqual(clipFromRect({ x: 10, y: 20, width: 300, height: 250 }, page, 120), { x: 0, y: 0, width: 430, height: 390 }, 'przycięcie do lewej/górnej krawędzi');
+  assert.deepEqual(clipFromRect({ x: 1200, y: 2900, width: 300, height: 250 }, page, 120), { x: 1080, y: 2780, width: 286, height: 220 }, 'przycięcie do prawej/dolnej krawędzi strony');
+  assert.equal(clipFromRect({ x: 0, y: 0, width: 1366, height: 9000 }, { w: 1366, h: 9000 }).height, 2000, 'limit wysokości');
+  assert.equal(clipFromRect(null, page), null);
+  assert.equal(clipFromRect({ x: 0, y: 0, width: 0, height: 10 }, page), null);
+  assert.equal(clipFromRect({ x: 5000, y: 0, width: 10, height: 10 }, page), null, 'poza stroną');
+  assert.ok(isDetachedError('locator.screenshot: Element is not attached to the DOM'));
+  assert.ok(isDetachedError('locator.scrollIntoViewIfNeeded: Timeout 5000ms exceeded.'));
+  assert.ok(!isDetachedError('locator.screenshot: Target page, context or browser has been closed'));
+  // obserwacja niesie prostokąty (liczby) – bez treści strony
+  const o = observationsFor('strona.pl', { labels: [{ label: 'reklama', el: 'span', container: { desc: 'article.SmallCard', w: 300, h: 86, media: false, otherText: 40 }, rect: { x: 1000.4, y: 800.6, width: 300, height: 86 }, labelRect: { x: 1010, y: 805, width: 120, height: 14 }, scroll: { x: 0, y: 0 }, page }] });
+  assert.deepEqual(o[0].rect, { x: 1000, y: 801, width: 300, height: 86 });
+  assert.deepEqual(o[0].labelRect, { x: 1010, y: 805, width: 120, height: 14 });
+});
+
+test('Chromium (fixture-e): element znika z DOM po analizie – lokator go nie znajduje, zrzut zapasowy z zapamiętanego prostokąta', { skip, timeout: 300_000 }, async () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-detached-'));
+  try {
+    const r = await run({ fixture: true, gap: true, evidence: true, log: () => {}, outDir, domains: ['fixture-e.example', 'fixture-a.example'] });
+    const [e, a] = r.sites;
+    assert.equal(e.verdict.status, 'OK');
+    assert.equal(e.observations.length, 1, 'element wykryty podczas analizy');
+    const o = e.observations[0];
+    assert.equal(o.kind, 'empty-ad-container');
+    assert.deepEqual(o.rect, { x: 0, y: o.rect.y, width: 300, height: 250 });
+    assert.ok(o.evidence.fallback, 'użyto zrzutu zapasowego');
+    assert.match(o.evidence.fallback.reason, /Timeout|not attached/, 'lokator nie znalazł elementu');
+    assert.equal(o.evidence.fallback.element, 'clip-from-saved-rect');
+    assert.equal(o.evidence.fallback.context, 'clip-from-saved-rect');
+    const png = fs.readFileSync(path.join(outDir, o.evidence.element));
+    assert.equal(png.subarray(1, 4).toString(), 'PNG');
+    assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [300, 250], 'rozmiar = zapamiętany prostokąt');
+    const ctx = fs.readFileSync(path.join(outDir, o.evidence.context));
+    assert.ok(ctx.readUInt32BE(16) > 300 && ctx.readUInt32BE(20) > 250, 'otoczenie z marginesem');
+    assert.equal(o.evidence.error, undefined);
+    // stabilne elementy: zrzut lokatorem, bez zmian (bez pola fallback)
+    for (const x of a.observations) assert.deepEqual(Object.keys(x.evidence).sort(), ['context', 'element']);
   } finally {
     fs.rmSync(outDir, { recursive: true, force: true });
   }
