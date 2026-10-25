@@ -25,6 +25,13 @@
     </nav>
 
     <section id="lists" class="panel">
+      <h2 class="mode-h" id="modeHeading">Tryb ochrony</h2>
+      <p class="muted">Tryb to gotowy zestaw list. Kolejne tryby dodają więcej ingerencji w wygląd stron – wybierz poziom, który Ci odpowiada. YouTube Protection działa w każdym trybie.</p>
+      <div id="modeCards" class="mode-cards" role="radiogroup" aria-labelledby="modeHeading"></div>
+      <div id="modeCustom" class="mode-custom" hidden><strong>Własny</strong> – listy poniżej zostały ustawione ręcznie i nie pasują do żadnego trybu.</div>
+      <div id="modeMsg" class="msg" role="alert" hidden></div>
+
+      <h2 class="mode-h">Listy filtrów</h2>
       <p class="muted">Włączone listy decydują o tym, co jest blokowane. Domyślnie działają reklamy, śledzenie i złośliwe strony – to odpowiednik domyślnych ustawień uBlock Origin.</p>
       <div id="listContainer" class="cards"></div>
       <div id="listMsg" class="msg" hidden></div>

@@ -26,6 +26,16 @@ ChromeBlock jest instalowany do folderu `%LOCALAPPDATA%\ChromeBlock`. **Nie usuw
 
 Ustawienia i Twoje filtry zostają zachowane.
 
+## Automatyczny test (opcjonalnie)
+
+W rozpakowanym folderze kliknij dwukrotnie **test-chromeblock.cmd**. Wymaga [Node.js](https://nodejs.org) w wersji 20 lub nowszej (Git nie jest potrzebny).
+
+- Przy pierwszym uruchomieniu tester pobiera Playwright i przeglądarkę testową Chromium (ok. 150 MB).
+- Test działa w osobnej, tymczasowej przeglądarce. Nie używa Twojego Chrome ani Twoich danych (bez historii, loginów i cookies).
+- Testowana jest wersja z folderu `ChromeBlock` obok pliku `.cmd`.
+- Wynik pojawi się w oknie (**PASS**, **FAIL** albo **INCONCLUSIVE**), a raport w `wyniki-testu\latest.txt`.
+- **INCONCLUSIVE** oznacza, że części testów nie dało się sprawdzić (np. brak internetu albo YouTube niedostępny). To nie jest PASS.
+
 ## Odinstalowanie
 
 1. W `chrome://extensions` kliknij **Usuń** na karcie ChromeBlock.
