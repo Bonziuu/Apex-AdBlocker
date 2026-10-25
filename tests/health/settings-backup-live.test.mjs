@@ -128,6 +128,8 @@ test('UI: niepełny rollback nie twierdzi, że przywrócono ustawienia; pokazuje
     });
     await opt.goto(`chrome-extension://${id}/options/options.html#backup`);
     await opt.waitForSelector('#importSettings');
+    // obsługa importu jest podpinana po pierwszym options:get – czekamy na pełne wyrenderowanie Opcji
+    await opt.waitForFunction(() => document.querySelectorAll('#listContainer input').length > 0, null, { timeout: 60000 });
     const file = path.join(tmp, 'kopia.json');
     fs.writeFileSync(file, '{}');
 
@@ -146,6 +148,7 @@ test('UI: niepełny rollback nie twierdzi, że przywrócono ustawienia; pokazuje
     await opt.click('.tab[data-tab="backup"]');
     await opt.evaluate(() => { window.__importResult = { ok: false, rolledBack: true, errors: ['listy filtrów: Internal error'] }; });
     // jak użytkownik: przycisk „Importuj ustawienia” → okno wyboru pliku (ten sam plik ponownie)
+    await opt.bringToFront(); // karta powitalna po instalacji mogła przejąć fokus
     const [chooser] = await Promise.all([opt.waitForEvent('filechooser'), opt.click('#importSettings')]);
     await chooser.setFiles(file);
     await opt.waitForFunction(() => /przywrócono poprzednie ustawienia/.test(document.getElementById('importErrors').textContent));

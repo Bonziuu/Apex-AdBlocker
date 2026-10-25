@@ -653,9 +653,18 @@ async function runStep(step, fn) {
   return results[step];
 }
 
+/** Strona powitalna tylko przy świeżej instalacji (nie przy aktualizacji, przeładowaniu ani starcie Chrome). */
+export function shouldOpenWelcome(details) {
+  return !!details && details.reason === 'install';
+}
+
 chrome.runtime.onInstalled.addListener(async (details) => {
   startup.setReason(`onInstalled: ${(details && details.reason) || '?'}`);
   startup.mark('onInstalled');
+  if (shouldOpenWelcome(details)) {
+    // bez czekania na synchronizację; wybór trybu i tak idzie przez kolejkę zmian ustawień
+    chrome.tabs.create({ url: chrome.runtime.getURL('welcome/welcome.html') }).catch(() => {});
+  }
   await startup.time('ustawienia plakietki', async () => {
     try {
       await chrome.declarativeNetRequest.setExtensionActionOptions({ displayActionCountAsBadgeText: true });

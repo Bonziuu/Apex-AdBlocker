@@ -9,7 +9,7 @@ import path from 'node:path';
 import {
   overallStatus, counts, isChromeBlockError, networkErrorOf, formatReport, parseArgs, writeResults, ROOT, exitCodeFor, EXIT, classifySeek, SEEK_RESUME_WAIT_S,
   seekFacts, seekFailureKinds, classifyAB, formatSeekAB, browserArgs, AB, hardSeekFailures,
-  classifyFocusGroup, FOCUS_CHECKS, BACKUP_CHECKS, checkBackupFile, settingsView, settingsDiff,
+  classifyFocusGroup, FOCUS_CHECKS, BACKUP_CHECKS, checkBackupFile, settingsView, settingsDiff, ONBOARDING_CHECKS,
 } from '../local/chromeblock-local-test.mjs';
 import { packageDev, missingTesterImports, TESTER_FILES, testerPackageJson } from '../../tools/package-dev.mjs';
 import { createRequire } from 'node:module';
@@ -344,4 +344,13 @@ test('Backup w testerze: porównanie ustawień (kolejność list i domen bez zna
   assert.deepEqual(settingsDiff(settingsView(o), SNAP), []);
   assert.deepEqual(settingsDiff({ ...SNAP, userFilters: '', youtubeFocus: { ...SNAP.youtubeFocus, enabled: true } }, SNAP), ['userFilters', 'youtubeFocus']);
   assert.deepEqual(settingsDiff(null, SNAP), ['brak danych']);
+});
+
+test('Onboarding w testerze: pozycje raportu; blok przed popupem i trybami', () => {
+  assert.deepEqual(ONBOARDING_CHECKS.map(([, n]) => n), ['Onboarding: otwarcie', 'Onboarding: domyślny tryb', 'Onboarding: start', 'Onboarding: bez błędów']);
+  const src = fs.readFileSync(path.join(ROOT, 'tests/local/chromeblock-local-test.mjs'), 'utf8');
+  const body = src.slice(src.indexOf('export async function runLocalTests'));
+  assert.ok(body.indexOf('await runOnboarding(') < body.indexOf("add('popup'"), 'onboarding przed testami popupu');
+  assert.ok(body.indexOf('await runOnboarding(') < body.indexOf('Tryb ${MODE_LABEL[from]}'), 'onboarding przed testami trybów');
+  assert.match(src, /protectionModes\.basic/, 'preset Basic z rozszerzenia (bez własnego mapowania list)');
 });
