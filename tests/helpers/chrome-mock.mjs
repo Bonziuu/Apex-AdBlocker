@@ -27,6 +27,7 @@ export async function loadBackground(opts = {}) {
     css: [],
     staticRuleUpdates: [],
     reloads: [],
+    tabsCreated: [],
     calls: { register: 0, unregister: 0, registeredInCalls: [] },
     fetches: [],
     listeners: {},
@@ -121,7 +122,7 @@ export async function loadBackground(opts = {}) {
       get: async (id) => ({ id, url: opts.tabUrl || 'https://www.example.com/' }),
       reload: (id) => state.reloads.push(id),
       onRemoved: ev('tabRemoved'),
-      create: async () => {},
+      create: async (o) => { state.tabsCreated.push(o); return { id: 900 + state.tabsCreated.length, ...o }; },
     },
   };
   const origError = console.error;

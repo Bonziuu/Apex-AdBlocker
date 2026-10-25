@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Witaj w ChromeBlock</title>
+  <link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="brand">
+      <img src="../icons/icon48.png" alt="" width="48" height="48">
+      <div>
+        <h1>Witaj w ChromeBlock</h1>
+        <p class="muted">Bloker reklam dla Chrome</p>
+      </div>
+    </header>
+
+    <p class="lead">ChromeBlock działa lokalnie w Twojej przeglądarce: blokuje reklamy, śledzenie i złośliwe strony na podstawie list filtrów zapisanych w rozszerzeniu. Nie wysyła Twojej historii ani żadnych danych.</p>
+
+    <section aria-labelledby="modeTitle">
+      <h2 id="modeTitle">Wybierz tryb ochrony</h2>
+      <p class="muted">Kolejne tryby dodają więcej ingerencji w wygląd stron. Tryb możesz później zmienić w każdej chwili – w ustawieniach albo w okienku rozszerzenia.</p>
+      <div id="modes" class="modes" role="radiogroup" aria-labelledby="modeTitle"></div>
+    </section>
+
+    <div class="actions">
+      <button id="start" class="primary" type="button">Zacznij korzystać</button>
+      <button id="openOptions" class="link" type="button">Otwórz ustawienia</button>
+    </div>
+    <p id="status" class="status" role="status" aria-live="polite" hidden></p>
+  </main>
+  <script src="welcome.js" type="module"></script>
+</body>
+</html>

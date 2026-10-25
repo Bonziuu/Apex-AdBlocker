@@ -828,6 +828,7 @@ async function runBackup({ context, add, extId, opt, dir, setCurrent }) {
     const importStart = await opt.evaluate(() => Date.now());
     await page.reload();
     await page.waitForSelector('#importSettings');
+    await page.bringToFront(); // np. karta powitalna po instalacji mogła przejąć fokus – okno wyboru pliku wymaga aktywnej karty
     const [chooser] = await Promise.all([page.waitForEvent('filechooser', { timeout: 15000 }), page.click('#importSettings')]);
     await chooser.setFiles(file);
     await page.waitForSelector('#importSummary:not([hidden]), #importErrors:not([hidden])', { timeout: 120000 });
@@ -873,6 +874,7 @@ async function runBackup({ context, add, extId, opt, dir, setCurrent }) {
     const bad = path.join(dir, 'uszkodzony.json');
     fs.writeFileSync(bad, '{"format": "chromeblock-settings", "version": 1, "settings": {');
     const beforeBad = await view();
+    await page.bringToFront();
     const [chooser2] = await Promise.all([page.waitForEvent('filechooser', { timeout: 15000 }), page.click('#importSettings')]);
     await chooser2.setFiles(bad);
     const rejected = await page.waitForSelector('#importErrors:not([hidden])', { timeout: 30000 }).then(() => true).catch(() => false);
