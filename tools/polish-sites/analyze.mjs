@@ -97,6 +97,8 @@ export function formatReport(run) {
   L.push('='.repeat(64));
   L.push(`Data:          ${run.date}`);
   L.push(`Wersja:        ${run.version}`);
+  L.push(`MODE: ${run.modeLabel || 'NORMAL — all lists (with MajkiIT Polish Filters)'}`);
+  if (run.adsSources) L.push(`Źródła ads:    ${run.adsSources.join(', ')}`);
   L.push(`Tryb:          ${run.fixture ? 'fixture (offline, strony testowe)' : 'prawdziwe strony'}`);
   L.push(`Strony:        ${run.sites.length} (OK ${run.sites.filter((s) => s.verdict.status === 'OK').length}, BROKEN ${run.sites.filter((s) => s.verdict.status === 'BROKEN').length}, UNREACHABLE ${run.sites.filter((s) => s.verdict.status === 'UNREACHABLE').length})`);
   L.push(`Obserwacje:    ${run.sites.reduce((n, s) => n + s.observations.length, 0)}`);
@@ -107,10 +109,13 @@ export function formatReport(run) {
     L.push(`    żądania: ${s.requests.total} (3rd-party ${s.requests.thirdParty}), zablokowane przez ChromeBlock: ${s.requests.blocked}`);
     L.push(`    błędy JS: ${s.jsErrors.count}${s.jsErrors.samples.length ? ` – ${s.jsErrors.samples.join(' | ')}` : ''}; błędy konsoli: ${s.consoleErrors}`);
     if (s.consentDialog) L.push('    okno zgody (CMP) widoczne – niczego nie klikano; część reklam może się nie załadować');
+    const labels = s.observations.filter((o) => o.kind === 'ad-label' || o.kind === 'empty-ad-container').length;
+    const empty = s.observations.filter((o) => o.kind === 'empty-ad-container' || o.kind === 'blocked-frame-space').length;
+    L.push(`    etykiety reklam/sponsorowanych: ${labels}; puste kontenery reklamowe: ${empty}`);
     for (const o of s.observations) {
       L.push(`    • ${o.id} ${o.kind}${o.label ? ` „${o.label}”` : ''}${o.frameHost ? ` ramka ${o.frameHost}` : ''} ${o.size} – ${o.container || o.element}`);
     }
-    if (s.unblockedThirdPartyHosts.length) L.push(`    niezablokowane hosty 3rd-party (do ręcznego przeglądu): ${s.unblockedThirdPartyHosts.map((h) => `${h.host}×${h.count}`).join(', ')}`);
+    L.push(`    niezablokowane hosty 3rd-party (do ręcznego przeglądu): ${s.unblockedThirdPartyHosts.length ? s.unblockedThirdPartyHosts.map((h) => `${h.host}×${h.count}`).join(', ') : 'brak'}`);
   }
   L.push('');
   L.push('Obserwacja NIE jest regułą. Regułę dodaje człowiek po sprawdzeniu dowodu, z wpisem w provenance.json.');

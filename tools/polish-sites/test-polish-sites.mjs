@@ -5,6 +5,12 @@
 //   npm run test:polish-sites -- onet.pl wp.pl      wybrane domeny
 //   npm run test:polish-sites -- --headed           z widocznym oknem przeglądarki
 //   npm run test:polish-sites -- --fixture          tryb offline na stronach testowych (samosprawdzenie narzędzia)
+//   npm run test:polish-sites -- --gap-mode         GAP: tymczasowy build BEZ Polskich Filtrów (MajkiIT / Certyficate IT)
+//
+// --gap-mode buduje rozszerzenie testowe w katalogu tymczasowym z konfiguracji list, z której
+// usunięte są wyłącznie źródła pl/ (pliki Polskich Filtrów nie są nawet wczytywane). EasyList,
+// uBlock filters, EasyPrivacy, pozostałe listy i ChromeBlock Polish Supplement – bez zmian.
+// Normalny build i pliki w repozytorium nie są zmieniane; katalog tymczasowy jest usuwany po teście.
 //
 // Dla każdej strony: liczba żądań zablokowanych przez ChromeBlock, widoczne etykiety reklam /
 // treści sponsorowanej, puste kontenery z taką etykietą, puste ramki po zablokowanych żądaniach,
@@ -20,9 +26,31 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadPlaywright, EXTENSION_ENTRIES } from '../chromium-smoke.mjs';
 import { observationsFor, pageVerdict, topHosts, formatReport, isThirdParty, hostOf, siteUrl, AD_LABELS } from './analyze.mjs';
+import { LISTS } from '../lists-config.mjs';
+import { buildAll } from '../build.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const MAX_SITES = 20;
+
+/** Źródła Polskich Filtrów (MajkiIT / Certyficate IT) – wyłączane w trybie GAP. */
+export const UPSTREAM_POLISH_SOURCE = /^pl\//;
+export const GAP_MODE_LABEL = 'GAP — without MajkiIT Polish Filters';
+
+/** Konfiguracja list dla trybu GAP: jak normalna, bez źródeł pl/ (tylko w buildzie testowym). */
+export function gapLists(lists = LISTS) {
+  return lists.map((l) => {
+    const sources = l.sources.filter((s) => !UPSTREAM_POLISH_SOURCE.test(s.file));
+    if (sources.length === l.sources.length) return l;
+    return { ...l, desc: `${l.desc} [GAP: bez Polskich Filtrów]`, sources };
+  });
+}
+
+/** Buduje reguły/dane/scriptlety trybu GAP do katalogu rozszerzenia testowego (nie do repozytorium). */
+export function buildGapExtension(extDir, { lists = gapLists(), listsDir } = {}) {
+  if (path.resolve(extDir) === path.resolve(ROOT)) throw new Error('build GAP nie może nadpisać repozytorium');
+  buildAll({ root: ROOT, outDir: extDir, lists, listsDir, log: () => {} });
+  return lists.find((l) => l.id === 'ads').sources.map((s) => s.file);
+}
 
 /** Zbieranie danych w stronie (bez kopiowania treści: tylko etykieta, opis elementu, rozmiar). */
 export function collectInPage(labels) {
@@ -134,13 +162,18 @@ const FIXTURE_HTML = {
     <script>throw new Error('fixture-js-error')</script></body>`,
 };
 
-export async function run({ domains, headed = false, fixture = false, timeout = 45000, log = console.log, outDir = path.join(ROOT, 'tests', 'polish-sites', 'results'), write = true } = {}) {
+export async function run({ domains, headed = false, fixture = false, gap = false, timeout = 45000, log = console.log, outDir = path.join(ROOT, 'tests', 'polish-sites', 'results'), write = true } = {}) {
   const chromium = await loadPlaywright({ root: ROOT });
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-polish-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });
   const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
+  let adsSources = LISTS.find((l) => l.id === 'ads').sources.map((s) => s.file);
+  if (gap) {
+    try { adsSources = buildGapExtension(ext); } catch (e) { fs.rmSync(tmp, { recursive: true, force: true }); throw e; }
+    log(`MODE: ${GAP_MODE_LABEL} (ads: ${adsSources.join(', ')})`);
+  }
   const context = await chromium.launchPersistentContext(path.join(tmp, 'profile'), {
     headless: !headed, channel: 'chromium', viewport: { width: 1366, height: 900 }, locale: 'pl-PL',
     args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update'],
@@ -159,7 +192,7 @@ export async function run({ domains, headed = false, fixture = false, timeout = 
     for (const p of context.pages()) if (/welcome\/welcome\.html/.test(p.url())) await p.close().catch(() => {});
     const sites = [];
     for (const d of domains) sites.push(await testSite(context, d, { timeout, log }));
-    const result = { date: new Date().toISOString(), version: manifest.version_name || manifest.version, fixture, sites };
+    const result = { date: new Date().toISOString(), version: manifest.version_name || manifest.version, fixture, mode: gap ? 'gap' : 'normal', modeLabel: gap ? GAP_MODE_LABEL : 'NORMAL — all lists (with MajkiIT Polish Filters)', adsSources, extDir: ext, sites };
     if (write) {
       fs.mkdirSync(outDir, { recursive: true });
       const stamp = result.date.replace(/[:.]/g, '-');
@@ -175,10 +208,11 @@ export async function run({ domains, headed = false, fixture = false, timeout = 
 }
 
 export function parseArgs(argv) {
-  const o = { domains: [], headed: false, fixture: false };
+  const o = { domains: [], headed: false, fixture: false, gap: false };
   for (const a of argv) {
     if (a === '--headed') o.headed = true;
     else if (a === '--fixture') o.fixture = true;
+    else if (a === '--gap-mode') o.gap = true;
     else if (!a.startsWith('--')) o.domains.push(a.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, ''));
   }
   if (o.fixture) o.domains = FIXTURE_SITES.slice();
@@ -189,7 +223,7 @@ export function parseArgs(argv) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const opts = parseArgs(process.argv.slice(2));
-  console.log(`ChromeBlock – test polskich stron: ${opts.domains.length} ${opts.fixture ? '(fixture)' : ''}`);
+  console.log(`ChromeBlock – test polskich stron: ${opts.domains.length} ${opts.fixture ? '(fixture)' : ''}${opts.gap ? ` [${GAP_MODE_LABEL}]` : ''}`);
   run(opts).then((r) => {
     console.log('\n' + formatReport(r));
     console.log('\nRaport: tests/polish-sites/results/latest.txt');

@@ -55,7 +55,16 @@ npm run test:polish-sites                     # domyślna próbka (tools/polish-
 npm run test:polish-sites -- onet.pl wp.pl    # wybrane domeny (maks. 20)
 npm run test:polish-sites -- --headed         # z widocznym oknem
 npm run test:polish-sites -- --fixture        # offline, strony testowe (samosprawdzenie)
+npm run test:polish-sites -- --gap-mode       # GAP: build testowy bez Polskich Filtrów
 ```
+
+**`--gap-mode`** pokazuje, czego brakuje bez Polskich Filtrów, czyli gdzie ChromeBlock Polish Supplement ma największy sens.
+
+- Narzędzie buduje rozszerzenie testowe **wyłącznie w katalogu tymczasowym** z konfiguracji list, z której usunięte są tylko źródła `pl/` (Polskie Filtry MajkiIT / Certyficate IT).
+- EasyList, uBlock filters, EasyPrivacy, pozostałe listy i ChromeBlock Polish Supplement zostają bez zmian.
+- Pliki Polskich Filtrów nie są w tym trybie wczytywane ani analizowane. Test buduje GAP z katalogu list bez folderu `pl/` i dostaje ten sam wynik.
+- Normalny build, `main` i pliki w repozytorium nie są zmieniane. Katalog tymczasowy jest usuwany po teście.
+- Raport zaczyna się od `MODE: GAP — without MajkiIT Polish Filters` i podaje źródła listy `ads`.
 
 Uruchamia Chromium z ChromeBlock w tymczasowym profilu (bez historii, loginów i cookies, usuwany po teście). Dla każdej strony sprawdza:
 
@@ -69,7 +78,7 @@ Uruchamia Chromium z ChromeBlock w tymczasowym profilu (bez historii, loginów i
 
 - Dodatkowo raport wypisuje niezablokowane hosty zewnętrzne (tylko nazwy hostów). Służą do ręcznego przeglądu i nie są kandydatami do reguł.
 - Okien zgody (CMP) narzędzie nie klika. Raport tylko odnotowuje, że okno było widoczne.
-- Raport trafia do `tests/polish-sites/results/latest.txt` / `.json` (poza repozytorium).
+- Raport trafia do `tests/polish-sites/results/latest.txt` / `.json` (poza repozytorium). Raport podaje tryb (`MODE: NORMAL …` / `MODE: GAP …`), a dla każdej domeny: czy strona działa, liczbę żądań zablokowanych, liczbę etykiet reklam / sponsorowanych, puste kontenery, niezablokowane hosty zewnętrzne i błędy JS.
 - **Narzędzie nie generuje reguł.** Obserwacja to dowód do ręcznej oceny.
 
 Testy narzędzia (`tests/polish/polish-sites.test.mjs`):
@@ -92,7 +101,7 @@ Testy narzędzia (`tests/polish/polish-sites.test.mjs`):
 **Wymagają sprawdzenia: wszystkie 20 stron.** Pierwszą próbkę trzeba uruchomić na komputerze z dostępem do internetu:
 
 ```
-npm run test:polish-sites
+npm run test:polish-sites -- --gap-mode
 ```
 
 Następnie przejrzeć `tests/polish-sites/results/latest.txt` i, przy stronach z obserwacjami, otworzyć je ręcznie (`--headed`).
