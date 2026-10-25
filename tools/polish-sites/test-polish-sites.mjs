@@ -54,6 +54,32 @@ export function buildGapExtension(extDir, { lists = gapLists(), listsDir } = {})
   return lists.find((l) => l.id === 'ads').sources.map((s) => s.file);
 }
 
+/**
+ * Wykonuje funkcję w IZOLOWANYM świecie strony (CDP Page.createIsolatedWorld), a nie w świecie strony.
+ *
+ * Dlaczego nie page.evaluate: Playwright wykonuje page.evaluate w świecie strony przez
+ * `globalThis.eval(expression)`. Jeśli strona (albo scriptlet, np. noeval) podmieni window.eval,
+ * page.evaluate kończy się „TypeError: result is not a function”, a analiza się nie wykonuje.
+ * Izolowany świat ma własne obiekty globalne (podmiany strony go nie dotyczą), ale ten sam DOM.
+ * fn musi być samodzielna (bez domknięć); arg – wartość serializowalna do JSON.
+ */
+export async function evaluateIsolated(page, fn, arg) {
+  const cdp = await page.context().newCDPSession(page);
+  try {
+    const { frameTree } = await cdp.send('Page.getFrameTree');
+    const { executionContextId } = await cdp.send('Page.createIsolatedWorld', { frameId: frameTree.frame.id, worldName: 'chromeblock-polish-sites' });
+    const expression = `(${fn.toString()})(${arg === undefined ? '' : JSON.stringify(arg)})`;
+    const r = await cdp.send('Runtime.evaluate', { expression, contextId: executionContextId, returnByValue: true, awaitPromise: true });
+    if (r.exceptionDetails) {
+      const d = r.exceptionDetails;
+      throw new Error(`analiza w stronie: ${(d.exception && d.exception.description) || d.text || 'wyjątek'}`.split('\n')[0]);
+    }
+    return r.result.value;
+  } finally {
+    await cdp.detach().catch(() => {});
+  }
+}
+
 /** Zbieranie danych w stronie (bez kopiowania treści: tylko etykieta, opis elementu, rozmiar). */
 export function collectInPage(labels) {
   const LABELS = new Set(labels);
@@ -128,23 +154,31 @@ async function testSite(context, domain, { timeout, log, evidenceDir = null }) {
   page.on('pageerror', (e) => jsErrors.push(String((e && e.message) || e).split('\n')[0].slice(0, 120)));
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors++; });
   let gotoError = null;
+  let analysisError = null;
   let status = 0;
   let snap = { labels: [], frames: [], title: '', textLength: 0, consentDialog: false };
   try {
     const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout });
     status = resp ? resp.status() : 0;
-    await page.waitForLoadState('load', { timeout: Math.min(timeout, 20000) }).catch(() => {});
-    // przewinięcie – reklamy ładowane leniwie
-    for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, 1200).catch(() => {}); await page.waitForTimeout(700); }
-    await page.evaluate(() => window.scrollTo(0, 0)).catch(() => {});
-    await page.waitForTimeout(1500);
-    snap = await page.evaluate(collectInPage, AD_LABELS);
   } catch (e) {
     gotoError = String((e && e.message) || e).split('\n')[0];
   }
+  if (!gotoError) {
+    // analiza w izolowanym świecie – odporna na podmianę window.eval itp. przez stronę
+    try {
+      await page.waitForLoadState('load', { timeout: Math.min(timeout, 20000) }).catch(() => {});
+      // przewinięcie – reklamy ładowane leniwie
+      for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, 1200).catch(() => {}); await page.waitForTimeout(700); }
+      await evaluateIsolated(page, () => window.scrollTo(0, 0)).catch(() => {});
+      await page.waitForTimeout(1500);
+      snap = await evaluateIsolated(page, collectInPage, AD_LABELS);
+    } catch (e) {
+      analysisError = String((e && e.message) || e).split('\n')[0];
+    }
+  }
   const pageHost = hostOf(url);
   const third = requests.filter((u) => /^https?:/.test(u) && isThirdParty(u, pageHost));
-  const verdict = pageVerdict({ gotoError, status, textLength: snap.textLength, title: snap.title });
+  const verdict = pageVerdict({ gotoError, analysisError, status, textLength: snap.textLength, title: snap.title });
   const result = {
     domain, url, verdict,
     requests: { total: requests.length, thirdParty: third.length, blocked: blocked.size },
@@ -153,9 +187,9 @@ async function testSite(context, domain, { timeout, log, evidenceDir = null }) {
     jsErrors: { count: jsErrors.length, samples: jsErrors.slice(0, 3) },
     consoleErrors,
     consentDialog: !!snap.consentDialog,
-    observations: gotoError ? [] : observationsFor(domain, snap, blocked),
+    observations: gotoError || analysisError ? [] : observationsFor(domain, snap, blocked),
   };
-  if (evidenceDir && !gotoError) await captureEvidence(page, result.observations, evidenceDir);
+  if (evidenceDir && !gotoError && !analysisError) await captureEvidence(page, result.observations, evidenceDir);
   log(`  ${verdict.status.padEnd(11)} ${domain}: zablokowane ${blocked.size}/${requests.length}, obserwacje ${result.observations.length}, błędy JS ${jsErrors.length}`);
   await page.close().catch(() => {});
   return result;
@@ -200,7 +234,7 @@ export async function captureEvidence(page, observations, evidenceDir) {
 }
 
 // --- tryb fixture: strony testowe bez sieci ------------------------------------------------------
-export const FIXTURE_SITES = ['fixture-a.example', 'fixture-b.example', 'fixture-c.example'];
+export const FIXTURE_SITES = ['fixture-a.example', 'fixture-b.example', 'fixture-c.example', 'fixture-d.example'];
 const FIXTURE_HTML = {
   'www.fixture-a.example': `<!doctype html><title>Fixture A</title><body>
     <p>${'Treść artykułu testowego. '.repeat(20)}</p>
@@ -216,6 +250,13 @@ const FIXTURE_HTML = {
     <p>${'Trzecia strona testowa. '.repeat(20)}</p>
     <div id="huge" style="width:100%;height:4000px"><span>Reklama</span></div>
     <footer style="height:80px"><span>Reklama</span> | <span>Kontakt</span> | <span>Regulamin</span></footer>
+  </body>`,
+  // strona podmieniająca window.eval (jak scriptlet noeval / skrypty anty-adblock) – page.evaluate
+  // Playwright kończy się wtedy „TypeError: result is not a function”; analiza musi nadal działać
+  'www.fixture-d.example': `<!doctype html><title>Fixture D</title><body>
+    <script>window.eval = function () { return undefined; };</script>
+    <p>${'Czwarta strona testowa. '.repeat(20)}</p>
+    <div id="slot-d" style="width:300px;height:250px"><span>Reklama</span></div>
   </body>`,
 };
 

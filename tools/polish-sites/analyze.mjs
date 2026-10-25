@@ -94,8 +94,10 @@ export function observationsFor(domain, snapshot, blockedUrls = new Set()) {
 }
 
 /** Ocena działania strony (nie ocenia ChromeBlock – tylko czy strona się wyświetla). */
-export function pageVerdict({ gotoError, status, textLength, title }) {
+export function pageVerdict({ gotoError, analysisError, status, textLength, title }) {
   if (gotoError) return { status: 'UNREACHABLE', reason: short(gotoError, 160) };
+  // strona się załadowała, ale analiza się nie wykonała – NIE jest to OK ani brak sieci
+  if (analysisError) return { status: 'ERROR', reason: `analiza nie wykonała się: ${short(analysisError, 140)}` };
   if (status && status >= 400) return { status: 'BROKEN', reason: `HTTP ${status}` };
   if ((textLength || 0) < 200) return { status: 'BROKEN', reason: `mało treści (${textLength || 0} znaków)` };
   return { status: 'OK', reason: short(title, 80) };
@@ -118,7 +120,7 @@ export function formatReport(run) {
   L.push(`MODE: ${run.modeLabel || 'NORMAL — all lists (with MajkiIT Polish Filters)'}`);
   if (run.adsSources) L.push(`Źródła ads:    ${run.adsSources.join(', ')}`);
   L.push(`Tryb:          ${run.fixture ? 'fixture (offline, strony testowe)' : 'prawdziwe strony'}${run.evidence ? ' + evidence (zrzuty: tests/polish-sites/results/evidence/)' : ''}`);
-  L.push(`Strony:        ${run.sites.length} (OK ${run.sites.filter((s) => s.verdict.status === 'OK').length}, BROKEN ${run.sites.filter((s) => s.verdict.status === 'BROKEN').length}, UNREACHABLE ${run.sites.filter((s) => s.verdict.status === 'UNREACHABLE').length})`);
+  L.push(`Strony:        ${run.sites.length} (OK ${run.sites.filter((s) => s.verdict.status === 'OK').length}, BROKEN ${run.sites.filter((s) => s.verdict.status === 'BROKEN').length}, UNREACHABLE ${run.sites.filter((s) => s.verdict.status === 'UNREACHABLE').length}, ERROR ${run.sites.filter((s) => s.verdict.status === 'ERROR').length})`);
   L.push(`Obserwacje:    ${run.sites.reduce((n, s) => n + s.observations.length, 0)}`);
   L.push('');
   for (const s of run.sites) {

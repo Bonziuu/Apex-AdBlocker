@@ -126,3 +126,43 @@ test('Chromium (fixture) --evidence: zrzuty elementu i otoczenia, ścieżki w la
     fs.rmSync(outDir, { recursive: true, force: true });
   }
 });
+
+test('werdykt: błąd analizy po załadowaniu strony = ERROR (nie OK, nie UNREACHABLE)', () => {
+  const v = pageVerdict({ analysisError: 'TypeError: result is not a function', status: 200, textLength: 5000, title: 'x' });
+  assert.equal(v.status, 'ERROR');
+  assert.match(v.reason, /analiza nie wykonała się: TypeError: result is not a function/);
+  assert.equal(pageVerdict({ gotoError: 'net::ERR_X', analysisError: 'y' }).status, 'UNREACHABLE', 'błąd wejścia na stronę ma pierwszeństwo');
+  assert.match(formatReport({ date: 'd', version: 'v', sites: [] }), /ERROR 0\)/);
+});
+
+test('Chromium: strona podmieniająca window.eval – page.evaluate pada („result is not a function”), evaluateIsolated działa', { skip, timeout: 120_000 }, async () => {
+  const { evaluateIsolated } = await import('../../tools/polish-sites/test-polish-sites.mjs');
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.setContent('<p id="x">treść</p><script>window.eval = function () { return undefined; };</script>');
+    // odtworzenie błędu z realnego testu jbzd.com.pl
+    await assert.rejects(page.evaluate(() => 1), /result is not a function/);
+    // izolowany świat: ten sam DOM, własne obiekty globalne
+    assert.equal(await evaluateIsolated(page, (sel) => document.querySelector(sel).textContent, '#x'), 'treść');
+    assert.equal(await evaluateIsolated(page, () => typeof window.eval('1')), 'number', 'eval strony nie wpływa na izolowany świat');
+    await assert.rejects(evaluateIsolated(page, () => { throw new Error('boom'); }), /analiza w stronie: Error: boom/);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Chromium (fixture-d): analiza i evidence działają mimo podmienionego window.eval', { skip, timeout: 300_000 }, async () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-evald-'));
+  try {
+    const r = await run({ fixture: true, gap: true, evidence: true, log: () => {}, outDir, domains: ['fixture-d.example'] });
+    const [d] = r.sites;
+    assert.equal(d.verdict.status, 'OK', JSON.stringify(d.verdict));
+    assert.deepEqual(d.observations.map((o) => [o.kind, o.label]), [['empty-ad-container', 'reklama']]);
+    assert.equal(d.observations[0].size, '300x250');
+    assert.equal(d.observations[0].evidence.element, 'evidence/fixture-d.example-1.png');
+    assert.ok(fs.existsSync(path.join(outDir, 'evidence', 'fixture-d.example-1.png')));
+  } finally {
+    fs.rmSync(outDir, { recursive: true, force: true });
+  }
+});
