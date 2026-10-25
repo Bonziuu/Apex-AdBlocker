@@ -18,3 +18,13 @@ Wyniki (poza gitem): `tests/local/results/latest.txt`, `latest.json` oraz `fail-
 Blokowanie reklam nie jest ogłaszane jako PASS bez dowodu: reklama widoczna ≥ 3 s → FAIL, dane reklam usunięte z odpowiedzi odtwarzacza → PASS, brak okazji reklamowej → SKIP (INCONCLUSIVE).
 
 Tester nie uruchamia się w `npm test`.
+
+## Diagnostyka A/B seek
+
+Gdy test „YouTube: seek” albo „odtwarzanie po seek” kończy się FAIL, tester automatycznie powtarza ten sam film i ten sam seek w **świeżym tymczasowym profilu bez ChromeBlock** i porównuje oba przebiegi (before, cel seek, currentTime po seek, `.ytp-error`, `video.error.code`, cofnięcie pozycji, wznowienie, końcowy URL). Tabela trafia do `latest.txt`, a pełne dane do `latest.json` (`seekAB`).
+
+| Werdykt | Znaczenie | Wynik testów seek |
+| --- | --- | --- |
+| CONTROL ALSO FAILS | ten sam błąd także bez ChromeBlock – nie obwiniać rozszerzenia | SKIP (INCONCLUSIVE) |
+| CHROMEBLOCK-SPECIFIC FAIL | bez ChromeBlock działa, z ChromeBlock nie | FAIL |
+| INCONCLUSIVE | kontrola nie mogła się wykonać albo ma inny błąd | FAIL seek zostaje, A/B = SKIP |

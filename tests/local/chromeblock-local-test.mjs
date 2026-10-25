@@ -133,6 +133,96 @@ export function classifySeek({ before, delta = SEEK_DELTA_S, samples = [], video
   };
 }
 
+/**
+ * Fakty o jednym przebiegu seek (do porównania A/B i raportu).
+ * @returns {{before, target, afterSeek, jumpedTo, lastTime, ytpErrorSeen, ytpErrorPersistent, videoErrorCode,
+ *            fellBack, jumped, resumed, seekStatus, resumeStatus, finalUrl}}
+ */
+export function seekFacts({ before, delta = SEEK_DELTA_S, samples = [], videoError = 0, finalUrl = '' }) {
+  const r = classifySeek({ before, delta, samples, videoError });
+  const times = samples.map((x) => x.currentTime).filter((t) => typeof t === 'number');
+  const tail = samples.slice(-3);
+  const need = before == null ? null : before + delta * SEEK_MIN_JUMP;
+  const jumpIdx = need == null ? -1 : samples.findIndex((x) => typeof x.currentTime === 'number' && x.currentTime >= need);
+  const r1 = (x) => (typeof x === 'number' ? Math.round(x * 10) / 10 : null);
+  return {
+    before: r1(before),
+    target: before == null ? null : r1(before + delta),
+    afterSeek: r1(times.length ? times[0] : null),
+    jumpedTo: r1(r.jumpedTo),
+    lastTime: r1(times.length ? times[times.length - 1] : null),
+    ytpErrorSeen: samples.some((x) => x.error),
+    ytpErrorPersistent: tail.length >= 3 && tail.every((x) => x.error),
+    videoErrorCode: videoError || 0,
+    fellBack: jumpIdx >= 0 && samples.slice(jumpIdx).some((x) => typeof x.currentTime === 'number' && x.currentTime < need - 10),
+    jumped: jumpIdx >= 0,
+    resumed: r.resume.status === 'PASS',
+    seekStatus: r.seek.status,
+    resumeStatus: r.resume.status,
+    finalUrl,
+  };
+}
+
+/** Rodzaje awarii seek (do porównania „ten sam błąd”). 'not-resumed' nie jest błędem samym w sobie. */
+export function seekFailureKinds(f) {
+  if (!f) return [];
+  const k = [];
+  if (!f.jumped) k.push('no-jump');
+  if (f.videoErrorCode) k.push('video-error');
+  if (f.ytpErrorPersistent) k.push('ytp-error');
+  if (f.fellBack) k.push('fell-back');
+  if (!f.resumed) k.push('not-resumed');
+  return k;
+}
+
+export const AB = Object.freeze({
+  CONTROL_ALSO_FAILS: 'CONTROL ALSO FAILS',
+  CHROMEBLOCK_SPECIFIC: 'CHROMEBLOCK-SPECIFIC FAIL',
+  INCONCLUSIVE: 'INCONCLUSIVE',
+});
+
+/**
+ * Porównanie A/B: przebieg Z ChromeBlock vs kontrola BEZ ChromeBlock (świeży profil, ten sam film).
+ * @param {object} withF    seekFacts() z ChromeBlock
+ * @param {object|{skipped:string}|null} controlF seekFacts() kontroli albo {skipped: powód}
+ */
+export function classifyAB(withF, controlF) {
+  if (!controlF || controlF.skipped) {
+    return { verdict: AB.INCONCLUSIVE, detail: `kontrola bez ChromeBlock nie wykonała się${controlF && controlF.skipped ? `: ${controlF.skipped}` : ''}` };
+  }
+  const errs = (f) => seekFailureKinds(f).filter((k) => k !== 'not-resumed');
+  const w = errs(withF);
+  const c = errs(controlF);
+  const wAll = seekFailureKinds(withF);
+  const cAll = seekFailureKinds(controlF);
+  if (!wAll.length) return { verdict: AB.INCONCLUSIVE, detail: 'przebieg z ChromeBlock nie ma awarii seek – porównanie niepotrzebne' };
+  const shared = w.length ? w.filter((k) => c.includes(k)) : wAll.filter((k) => cAll.includes(k));
+  if (shared.length) return { verdict: AB.CONTROL_ALSO_FAILS, detail: `ten sam błąd także bez ChromeBlock (${shared.join(', ')}) – nie obwiniać ChromeBlock` };
+  if (!cAll.length) return { verdict: AB.CHROMEBLOCK_SPECIFIC, detail: `bez ChromeBlock seek i odtwarzanie działają; z ChromeBlock: ${wAll.join(', ')}` };
+  if (!c.length) return { verdict: AB.INCONCLUSIVE, detail: `kontrola bez błędu playera, ale odtwarzanie się nie wznowiło; z ChromeBlock: ${wAll.join(', ')}` };
+  return { verdict: AB.INCONCLUSIVE, detail: `kontrola ma inny błąd (${cAll.join(', ')}) niż przebieg z ChromeBlock (${wAll.join(', ')})` };
+}
+
+/** Wiersze tabeli A/B do raportu. */
+export function formatSeekAB(ab) {
+  if (!ab) return [];
+  const yes = (b) => (b ? 'TAK' : 'nie');
+  const col = (f, key) => {
+    if (!f) return '—';
+    if (f.skipped) return key === 'before' ? `(nie wykonano: ${f.skipped})` : '';
+    return {
+      before: `${f.before ?? '—'} s`, target: `${f.target ?? '—'} s`, afterSeek: `${f.afterSeek ?? '—'} s`, lastTime: `${f.lastTime ?? '—'} s`,
+      ytp: f.ytpErrorPersistent ? 'TAK (trwały)' : yes(f.ytpErrorSeen), video: String(f.videoErrorCode || 0), fellBack: yes(f.fellBack),
+      resumed: yes(f.resumed), url: f.finalUrl || '—',
+    }[key];
+  };
+  const rows = [['before', 'before'], ['seek target', 'target'], ['currentTime po seek', 'afterSeek'], ['currentTime na końcu', 'lastTime'],
+    ['.ytp-error', 'ytp'], ['video.error.code', 'video'], ['pozycja się cofnęła', 'fellBack'], ['odtwarzanie wznowione', 'resumed'], ['końcowy URL', 'url']];
+  const L = [`Diagnostyka A/B seek: ${ab.verdict}`, `  ${ab.detail}`, `  ${''.padEnd(22)}  ${'Z ChromeBlock'.padEnd(26)}  BEZ ChromeBlock (kontrola)`];
+  for (const [label, key] of rows) L.push(`  ${label.padEnd(22)}  ${String(col(ab.with, key)).padEnd(26)}  ${col(ab.without, key)}`);
+  return L;
+}
+
 /** Czytelny raport tekstowy. */
 export function formatReport(r) {
   const n = counts(r.checks);
@@ -156,6 +246,7 @@ export function formatReport(r) {
     L.push(`  [${tag.padEnd(5)}] ${c.name.padEnd(w)}  ${c.detail || ''}`.trimEnd());
   }
   if (r.checks.some((c) => c.status === 'SKIP')) L.push('  * SKIP = INCONCLUSIVE: nie dało się wiarygodnie sprawdzić (to NIE jest PASS).');
+  if (r.seekAB) { L.push(''); L.push(...formatSeekAB(r.seekAB)); }
   const fails = r.checks.filter((c) => c.status === 'FAIL');
   L.push('');
   L.push('Błędy:');
@@ -191,6 +282,15 @@ function copyExtension(dest, sourceDir) {
     const src = path.join(ROOT, entry);
     if (fs.existsSync(src)) fs.cpSync(src, path.join(dest, entry), { recursive: true });
   }
+}
+
+/** Argumenty Chromium; extDir = null → kontrola BEZ rozszerzenia. */
+export function browserArgs(extDir) {
+  return [
+    ...(extDir ? [`--disable-extensions-except=${extDir}`, `--load-extension=${extDir}`] : []),
+    '--no-first-run', '--no-default-browser-check', '--disable-sync', '--disable-default-apps',
+    '--disable-component-update', '--autoplay-policy=no-user-gesture-required', '--mute-audio',
+  ];
 }
 
 const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(`${what}: przekroczono ${Math.round(ms / 1000)} s`)), ms).unref())]);
@@ -254,11 +354,7 @@ export async function runLocalTests(opts = {}) {
       headless,
       channel: 'chromium',
       viewport: { width: 1280, height: 800 },
-      args: [
-        `--disable-extensions-except=${extDir}`, `--load-extension=${extDir}`,
-        '--no-first-run', '--no-default-browser-check', '--disable-sync', '--disable-default-apps',
-        '--disable-component-update', '--autoplay-policy=no-user-gesture-required', '--mute-audio',
-      ],
+      args: browserArgs(extDir),
     });
     if (onContext) await onContext(context);
     context.on('console', (m) => {
@@ -426,7 +522,10 @@ export async function runLocalTests(opts = {}) {
       ['yt-seek', 'YouTube: seek'], ['yt-seek-resume', 'YouTube: odtwarzanie po seek'], ['yt-player-error', 'YouTube: brak błędu playera'], ['yt-ads', 'YouTube: reklamy (tylko z dowodem)'], ['yt-shorts', 'YouTube: Shorts']];
     if (!youtube) await skipRest(YT, 'pominięto (--no-youtube)');
     else if (!online) await skipRest(YT, 'INCONCLUSIVE – brak dostępu do internetu');
-    else await runYouTube({ context, add, skipRest, YT, video, shortsUrl, consent, setCurrent: (pg) => { current = pg; }, notes });
+    else {
+      const runControl = () => runControlSeek({ chromium, headless, video, consent, onContext, log });
+      result.seekAB = await runYouTube({ context, add, skipRest, YT, video, shortsUrl, consent, setCurrent: (pg) => { current = pg; }, notes, runControl, log });
+    }
 
     // 7. health po testach
     current = opt;
@@ -460,11 +559,8 @@ export async function runLocalTests(opts = {}) {
   return finish();
 }
 
-async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consent, setCurrent, notes }) {
-  const page = await context.newPage();
-  setCurrent(page);
-  const raw = watchRawResponses(page);
-  const open = async (url) => {
+/** Otwiera adres YouTube; zwraca powód pominięcia (sieć, zgoda, CAPTCHA, logowanie) albo null. */
+async function openYouTube(page, url, consent) {
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
     } catch (e) {
@@ -483,10 +579,60 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
       if (await btn.count().catch(() => 0)) await btn.click().catch(() => {});
     }
     return null;
-  };
+}
+
+const readVideoError = (page) => page.evaluate(() => { const v = document.querySelector('#movie_player video'); return v && v.error ? v.error.code : 0; }).catch(() => 0);
+
+/** Seek o SEEK_DELTA_S i próbkowanie do SEEK_RESUME_WAIT_S (wspólne dla przebiegu z ChromeBlock i kontroli). */
+async function probeSeek(page) {
+  const before = await seekForward(page, SEEK_DELTA_S);
+  const after = [];
+  for (let i = 0; i < SEEK_RESUME_WAIT_S; i++) {
+    await page.waitForTimeout(1000);
+    after.push(await page.evaluate(pageSample, 'player'));
+    const r = classifySeek({ before, samples: after });
+    if (r.seek.status === 'PASS' && r.resume.status === 'PASS') break;
+  }
+  const videoError = await readVideoError(page);
+  return { before, after, videoError, facts: seekFacts({ before, samples: after, videoError, finalUrl: page.url() }), result: classifySeek({ before, samples: after, videoError }) };
+}
+
+/**
+ * Kontrola A/B: ten sam film i ten sam seek w ŚWIEŻYM tymczasowym profilu BEZ ChromeBlock.
+ * Zwraca seekFacts() albo {skipped: powód}. Profil jest usuwany po teście.
+ */
+async function runControlSeek({ chromium, headless, video, consent, onContext, log }) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-control-'));
+  let context = null;
+  try {
+    log('  Kontrola A/B: ten sam seek w świeżym profilu BEZ ChromeBlock…');
+    context = await chromium.launchPersistentContext(path.join(tmp, 'profile'), { headless, channel: 'chromium', viewport: { width: 1280, height: 800 }, args: browserArgs(null) });
+    if (onContext) await onContext(context);
+    const page = await context.newPage();
+    const skip = await openYouTube(page, `https://www.youtube.com/watch?v=${encodeURIComponent(video)}`, consent);
+    if (skip) return { skipped: skip };
+    if (!(await page.waitForSelector('#movie_player', { timeout: 30000 }).then(() => true).catch(() => false))) return { skipped: 'brak odtwarzacza w kontroli' };
+    await ensurePlaying(page, 'player');
+    const pre = await samplePlayer(page, 'player', 10);
+    const playback = analyzePlayback(pre, { minProgress: 2 });
+    if (!playback.ok) return { skipped: `odtwarzanie w kontroli nie wystartowało (${playback.reasons.join('; ')})` };
+    return (await probeSeek(page)).facts;
+  } catch (e) {
+    return { skipped: `błąd kontroli: ${String((e && e.message) || e).split('\n')[0]}` };
+  } finally {
+    if (context) await context.close().catch(() => {});
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consent, setCurrent, notes, runControl, log = () => {} }) {
+  const page = await context.newPage();
+  setCurrent(page);
+  const raw = watchRawResponses(page);
+  const open = (url) => openYouTube(page, url, consent);
 
   const watchSkip = await open(`https://www.youtube.com/watch?v=${encodeURIComponent(video)}`);
-  if (watchSkip) { await skipRest(YT, watchSkip); await page.close(); return; }
+  if (watchSkip) { await skipRest(YT, watchSkip); await page.close(); return null; }
 
   const hasPlayer = await page.waitForSelector('#movie_player', { timeout: 30000 }).then(() => true).catch(() => false);
   if (/\/watch/.test(new URL(page.url()).pathname) && hasPlayer) await add('yt-watch', 'YouTube: strona watch', 'PASS', 'odtwarzacz obecny');
@@ -503,31 +649,44 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
   const adState = analyzeAdState(samples);
   await add('yt-play', 'YouTube: odtwarzanie startuje', playback.ok ? 'PASS' : 'FAIL', playback.ok ? `postęp ${playback.progress} s w 15 s` : playback.reasons.join('; '));
 
+  let seekAB = null;
+  let controlAlsoFails = false;
+  const preSeekError = samples.some((x) => x.error);
   if (playback.ok) {
-    const before = await seekForward(page, SEEK_DELTA_S);
-    // próbki co 1 s; kończymy wcześniej, gdy po przeskoku odtwarzanie już ruszyło
-    const after = [];
-    for (let i = 0; i < SEEK_RESUME_WAIT_S; i++) {
-      await page.waitForTimeout(1000);
-      after.push(await page.evaluate(pageSample, 'player'));
-      const r = classifySeek({ before, samples: after });
-      if (r.seek.status === 'PASS' && r.resume.status === 'PASS') break;
+    const probe = await probeSeek(page);
+    let { seek, resume } = probe.result;
+    // FAIL seek → kontrola A/B bez ChromeBlock (bez obejść, tylko diagnostyka)
+    if ((seek.status === 'FAIL' || resume.status === 'FAIL') && runControl) {
+      const control = await runControl();
+      const ab = classifyAB(probe.facts, control);
+      seekAB = { ...ab, with: probe.facts, without: control };
+      log(`  A/B seek: ${ab.verdict} – ${ab.detail}`);
+      if (ab.verdict === AB.CONTROL_ALSO_FAILS) {
+        controlAlsoFails = true;
+        const pre = 'CONTROL ALSO FAILS (ten sam błąd bez ChromeBlock) – ';
+        if (seek.status === 'FAIL') seek = { status: 'SKIP', detail: pre + seek.detail };
+        if (resume.status === 'FAIL') resume = { status: 'SKIP', detail: pre + resume.detail };
+      }
     }
-    const videoError = await page.evaluate(() => { const v = document.querySelector('#movie_player video'); return v && v.error ? v.error.code : 0; }).catch(() => 0);
-    const r = classifySeek({ before, samples: after, videoError });
-    await add('yt-seek', 'YouTube: seek', r.seek.status, r.seek.detail);
-    await add('yt-seek-resume', 'YouTube: odtwarzanie po seek', r.resume.status, r.resume.detail);
-    samples.push(...after);
+    await add('yt-seek', 'YouTube: seek', seek.status, seek.detail);
+    await add('yt-seek-resume', 'YouTube: odtwarzanie po seek', resume.status, resume.detail);
+    if (seekAB) {
+      const st = seekAB.verdict === AB.CHROMEBLOCK_SPECIFIC ? 'FAIL' : 'SKIP';
+      await add('yt-seek-ab', 'YouTube: seek A/B (kontrola bez ChromeBlock)', st, `${seekAB.verdict} – ${seekAB.detail}`);
+    }
+    samples.push(...probe.after);
   } else {
     await add('yt-seek', 'YouTube: seek', 'SKIP', 'INCONCLUSIVE – odtwarzanie nie wystartowało');
     await add('yt-seek-resume', 'YouTube: odtwarzanie po seek', 'SKIP', 'INCONCLUSIVE – odtwarzanie nie wystartowało');
   }
 
-  const videoError = await page.evaluate(() => { const v = document.querySelector('#movie_player video'); return v && v.error ? v.error.code : 0; }).catch(() => 0);
-  const playerErr = samples.some((s) => s.error) || videoError;
-  const antiAdblock = samples.some((s) => s.antiAdblock);
-  await add('yt-player-error', 'YouTube: brak błędu playera', playerErr || antiAdblock ? 'FAIL' : 'PASS',
-    [playerErr && `błąd odtwarzacza${videoError ? ` (video.error ${videoError})` : ''}`, antiAdblock && 'ostrzeżenie anti-adblock'].filter(Boolean).join('; ') || 'brak .ytp-error, brak video.error');
+  const videoError = await readVideoError(page);
+  const playerErr = samples.some((x) => x.error) || videoError;
+  const antiAdblock = samples.some((x) => x.antiAdblock);
+  const errDetail = [playerErr && `błąd odtwarzacza${videoError ? ` (video.error ${videoError})` : ''}`, antiAdblock && 'ostrzeżenie anti-adblock'].filter(Boolean).join('; ');
+  if (!playerErr && !antiAdblock) await add('yt-player-error', 'YouTube: brak błędu playera', 'PASS', 'brak .ytp-error, brak video.error');
+  else if (controlAlsoFails && !preSeekError && !antiAdblock) await add('yt-player-error', 'YouTube: brak błędu playera', 'SKIP', `CONTROL ALSO FAILS (ten sam błąd po seek bez ChromeBlock) – ${errDetail}`);
+  else await add('yt-player-error', 'YouTube: brak błędu playera', 'FAIL', errDetail);
 
   const visibleSummary = await page.evaluate(pagePlayerResponseSummary).catch(() => null);
   const ads = classifyAds(adState, { raw: mergeTriState(raw), visible: adFieldsInPlayerResponse(visibleSummary) });
@@ -550,6 +709,7 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
     }
   }
   await page.close();
+  return seekAB;
 }
 
 // ---------------------------------------------------------------------------
