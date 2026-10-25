@@ -16,6 +16,7 @@ import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js'
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
 import { PROTECTION_MODES, isPresetMode, listsForMode, modeForLists } from './shared/protection-modes.js';
 import { FOCUS_STORAGE_KEY, FOCUS_DEFAULTS, normalizeFocus, focusCss, activeFocusOptions, isFocusHost } from './shared/youtube-focus.js';
+import { buildBackup, backupFileName, parseBackup, summarizeSettings } from './shared/settings-backup.js';
 
 // Pomiar etapów startu (czas od uruchomienia service workera). Ostatni zakończony pomiar
 // trafia do chrome.storage.session i do Diagnostyki.
@@ -606,6 +607,34 @@ async function applyEnabledLists(enabledLists) {
     : { ok: false, error: 'Listy zmienione, ale scriptlety nie zarejestrowały się: ' + sl.message, protectionMode: state.protectionMode };
 }
 
+/**
+ * Rollback importu ustawień: przywraca poprzednie ustawienia i Focus Mode (zapis albo usunięcie wg
+ * snapshotu), SPRAWDZA zapis w storage i wynik każdego kroku synchronizacji poprzedniego stanu.
+ * @returns {Promise<string[]>} błędy przywracania (pusta lista = rollback kompletny)
+ */
+async function rollbackImport(previous, prevStored, syncAllSteps) {
+  const errors = [];
+  try {
+    await saveState(previous);
+    if (FOCUS_STORAGE_KEY in prevStored) await chrome.storage.local.set({ [FOCUS_STORAGE_KEY]: prevStored[FOCUS_STORAGE_KEY] });
+    else await chrome.storage.local.remove(FOCUS_STORAGE_KEY);
+  } catch (e) {
+    errors.push(`zapis poprzednich ustawień: ${(e && e.message) || e}`);
+  }
+  // weryfikacja zapisu
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const now = await chrome.storage.local.get(['enabledLists', 'disabledSites', 'userFilters', FOCUS_STORAGE_KEY]).catch(() => ({}));
+  if (!same(now.enabledLists, previous.enabledLists)) errors.push('storage: listy filtrów nie zostały przywrócone');
+  if (!same(now.disabledSites, previous.disabledSites)) errors.push('storage: wyłączone strony nie zostały przywrócone');
+  if (now.userFilters !== previous.userFilters) errors.push('storage: Moje filtry nie zostały przywrócone');
+  if (FOCUS_STORAGE_KEY in prevStored ? !same(now[FOCUS_STORAGE_KEY], prevStored[FOCUS_STORAGE_KEY]) : FOCUS_STORAGE_KEY in now) {
+    errors.push('storage: Focus Mode nie został przywrócony');
+  }
+  // synchronizacja poprzedniego stanu – każdy krok osobno
+  for (const [name, r] of await syncAllSteps()) if (!r.ok) errors.push(`synchronizacja (${name}): ${r.message}`);
+  return errors;
+}
+
 /** Wykonuje jeden krok synchronizacji i zapisuje jego wynik (np. po zmianie ustawień). */
 async function runStep(step, fn) {
   const results = await runSyncSteps({ [step]: fn }, health);
@@ -1047,6 +1076,65 @@ const handlers = {
     return { css: focusCss(focus), active: activeFocusOptions(focus) };
   },
 
+  /** Kopia ustawień: tylko ustawienia użytkownika (bez health, diagnostyki, cache, sesji, statystyk, kart, URL). */
+  async 'settings:export'() {
+    const s = await getState();
+    const backup = buildBackup({
+      enabledLists: s.enabledLists,
+      disabledSites: s.disabledSites,
+      userFilters: s.userFilters,
+      protectionMode: modeForLists(s.enabledLists),
+      youtubeFocus: await getFocus(),
+    }, { extensionVersion: chrome.runtime.getManifest().version_name || chrome.runtime.getManifest().version });
+    return { ok: true, backup, fileName: backupFileName() };
+  },
+
+  /**
+   * Import kopii: pełna walidacja → zapis → synchronizacja (rulesets, dynamicRules, scriptlets).
+   * Błąd walidacji: nic nie jest zapisywane. Błąd synchronizacji: przywrócenie poprzednich ustawień.
+   */
+  async 'settings:import'(msg) {
+    const meta = await getListsMeta();
+    const parsed = parseBackup(msg && msg.text, { knownLists: meta.map((m) => m.id) });
+    if (!parsed.ok) return { ok: false, errors: parsed.errors };
+    const next = parsed.settings;
+    const prevState = await getState();
+    const previous = {
+      enabledLists: prevState.enabledLists.slice(),
+      disabledSites: prevState.disabledSites.slice(),
+      userFilters: prevState.userFilters,
+      protectionMode: modeForLists(prevState.enabledLists),
+    };
+    const prevStored = await chrome.storage.local.get(FOCUS_STORAGE_KEY);
+    // wynik KAŻDEGO kroku synchronizacji: [nazwa, {ok, message}]
+    const syncAllSteps = async () => {
+      const step = async (name, id, fn) => {
+        try { return [name, await runStep(id, fn)]; } catch (e) { return [name, { ok: false, message: String((e && e.message) || e) }]; }
+      };
+      return [
+        await step('listy filtrów', 'rulesets', syncRulesets),
+        await step('moje filtry / wyłączone strony', 'dynamicRules', syncDynamicRules),
+        await step('scriptlety', 'scriptlets', syncScriptlets),
+      ];
+    };
+    await saveState({ enabledLists: next.enabledLists, disabledSites: next.disabledSites, userFilters: next.userFilters, protectionMode: next.protectionMode });
+    await chrome.storage.local.set({ [FOCUS_STORAGE_KEY]: next.youtubeFocus }); // otwarte karty YouTube: storage.onChanged
+    const failed = (await syncAllSteps()).filter(([, r]) => !r.ok);
+    if (failed.length) {
+      const errors = failed.map(([name, r]) => `${name}: ${r.message}`);
+      const rollbackErrors = await rollbackImport(previous, prevStored, syncAllSteps);
+      await refreshYouTubeStatus();
+      if (!rollbackErrors.length) return { ok: false, rolledBack: true, errors };
+      // niepełne przywrócenie – jawnie (bez twierdzenia, że przywrócono) + wpis w dzienniku błędów (Diagnostyka)
+      await health.error('filters', `import ustawień nie powiódł się (${errors.join('; ')}), a przywrócenie poprzedniego stanu jest niepełne: ${rollbackErrors.join('; ')}`);
+      return { ok: false, rolledBack: false, errors, rollbackErrors };
+    }
+    await checkCosmeticData();
+    await refreshYouTubeStatus();
+    const names = Object.fromEntries(meta.map((m) => [m.id, m.name]));
+    return { ok: true, summary: summarizeSettings(next, { listNames: names }), ignored: parsed.ignored, userErrors: user.errors.length };
+  },
+
   async 'options:setLists'(msg) {
     const meta = await getListsMeta();
     const enabledLists = msg.enabledLists.filter((id) => meta.some((m) => m.id === id));
@@ -1105,7 +1193,7 @@ const handlers = {
 // Wiadomości zmieniające ustawienia wykonujemy jedna po drugiej. Każda czyta stan, modyfikuje go
 // i synchronizuje z Chrome; równoległe wykonanie gubiło zmiany (np. dwa szybkie przełączenia
 // stron albo dwa „Ukryj element” – druga zapisywała stan bez pierwszej).
-const MUTATING = new Set(['site:toggle', 'options:setLists', 'options:setProtectionMode', 'options:setYouTubeFocus', 'options:setUserFilters', 'options:setDisabledSites',
+const MUTATING = new Set(['site:toggle', 'options:setLists', 'options:setProtectionMode', 'options:setYouTubeFocus', 'settings:import', 'options:setUserFilters', 'options:setDisabledSites',
   'options:setDevPerf', 'picker:add', 'health:resync']);
 let settingsQueue = Promise.resolve();
 function runHandler(h, msg, sender) {

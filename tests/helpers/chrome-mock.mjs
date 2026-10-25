@@ -11,6 +11,7 @@ let counter = 0;
  * Tworzy atrapę chrome.* i ładuje świeżą kopię background.js.
  * opts.failRegister(id) → true, aby rejestracja danego skryptu się nie powiodła
  * opts.failRulesets → true, aby updateEnabledRulesets rzucało błąd
+ * opts.failDynamic → true (albo funkcja zwracająca true), aby updateDynamicRules rzucało błąd
  * opts.files → podmiana plików rozszerzenia (ścieżka → obiekt JSON)
  * opts.registered → skrypty zarejestrowane przed startem service workera (np. utrwalone przez Chrome)
  * opts.local → początkowa zawartość chrome.storage.local
@@ -51,7 +52,7 @@ export async function loadBackground(opts = {}) {
       onInstalled: ev('installed'),
       onStartup: ev('startup'),
       onMessage: ev('message'),
-      getManifest: () => ({ version: '0.3.2', version_name: '0.3.2-dev', manifest_version: 3 }),
+      getManifest: () => ({ version: '0.3.3', version_name: '0.3.3-dev', manifest_version: 3 }),
     },
     storage: {
       session: {
@@ -68,6 +69,7 @@ export async function loadBackground(opts = {}) {
           return Object.fromEntries(list.filter((k) => k in store).map((k) => [k, structuredClone(store[k])]));
         },
         set: async (o) => { Object.assign(store, structuredClone(o)); },
+        remove: async (k) => { for (const key of [].concat(k)) delete store[key]; },
       },
     },
     declarativeNetRequest: {
@@ -82,6 +84,7 @@ export async function loadBackground(opts = {}) {
       getDynamicRules: async () => structuredClone(state.dynamic),
       // jak w Chrome: atomowo; dodanie reguły o istniejącym (nieusuwanym) id to błąd
       updateDynamicRules: async ({ removeRuleIds = [], addRules = [] }) => {
+        if (typeof opts.failDynamic === 'function' ? opts.failDynamic() : opts.failDynamic) throw new Error('Internal error: dynamic rule count exceeded');
         await new Promise((r) => setTimeout(r, 1));
         const kept = state.dynamic.filter((r) => !removeRuleIds.includes(r.id));
         const ids = new Set(kept.map((r) => r.id));
