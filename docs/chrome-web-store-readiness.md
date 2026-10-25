@@ -21,7 +21,9 @@ Manifest deklaruje:
 - `web_accessible_resources`: `web_accessible_resources/*` dla `<all_urls>`;
 - 5 statycznych zestawów reguł DNR.
 
-Żadne uprawnienie nie było zmieniane.
+Ten audyt nie zmieniał uprawnień.
+
+**Aktualizacja (branch `release-permissions-v1`, commit `00b8fea`, jeszcze niezmergowany do `main`):** `declarativeNetRequestFeedback` zastąpione przez `activeTab`. Szczegóły w punkcie o `declarativeNetRequestFeedback` niżej. Pozostałe uprawnienia bez zmian.
 
 ### `declarativeNetRequest`
 
@@ -33,15 +35,20 @@ Manifest deklaruje:
 | Ograniczenie / optional | Nie da się. Bez tego uprawnienia nie ma blokowania sieciowego |
 | Konsekwencje | Rozszerzenie przestaje być blokerem |
 
-### `declarativeNetRequestFeedback`
+### `declarativeNetRequestFeedback` → `activeTab`: **RESOLVED**
+
+Status: **RESOLVED** na branchu `release-permissions-v1` (commit `00b8fea`). Do `main` trafi po merge.
 
 | | |
 |---|---|
-| Gdzie | Tylko `chrome.declarativeNetRequest.getMatchedRules({ tabId })` w handlerze `popup:get` (l. 987) |
-| Funkcja | Dokładna liczba zablokowanych żądań w popupie. Reguły `allow` są odliczane (`data/<lista>.allow.json`), a filtry własne użytkownika liczone osobno |
-| Wymagane dla podstawowego działania | **NIE.** Kod ma już zapasową ścieżkę: przy błędzie odczytuje tekst plakietki (`chrome.action.getBadgeText`, l. 1003), a plakietkę ustawia samo `setExtensionActionOptions` bez tego uprawnienia |
-| Ograniczenie / optional | **Możliwe** do usunięcia albo zastąpienia przez `activeTab`. Według dokumentacji Chrome `getMatchedRules` działa też z `activeTab` dla bieżącej karty: `NEEDS HUMAN CONFIRMATION` w docs przed zmianą |
-| Konsekwencje | Licznik w popupie pochodziłby z plakietki. Plakietka liczy wszystkie akcje DNR (block, redirect, także `allow`), więc liczba byłaby mniej dokładna. Zysk: Chrome przestałby pokazywać ostrzeżenie o odczycie historii przeglądania wynikające z tego uprawnienia (`NEEDS HUMAN CONFIRMATION` brzmienia ostrzeżenia przy instalacji) |
+| Było | `declarativeNetRequestFeedback`, potrzebne tylko do `chrome.declarativeNetRequest.getMatchedRules({ tabId })` w handlerze `popup:get` (dokładny licznik w popupie) |
+| Jest | **`activeTab`** zamiast `declarativeNetRequestFeedback`. Według dokumentacji Chrome `getMatchedRules()` jest dostępne przy `declarativeNetRequestFeedback` **albo** przy `activeTab` przyznanym dla podanego `tabId` |
+| Jak działa `activeTab` | Chrome przyznaje tymczasowy dostęp do karty, gdy użytkownik **świadomie kliknie ikonę ChromeBlock** i otworzy popup. Popup wysyła `popup:get` z `tabId` tej karty, a service worker wywołuje `getMatchedRules({ tabId })`. Dostęp dotyczy tylko tej karty i wygasa przy nawigacji lub zamknięciu karty. Nic nie jest wysyłane poza przeglądarkę |
+| Licznik | Sposób liczenia bez zmian: reguły `allow` z list (`data/<lista>.allow.json`), wyjątki użytkownika (`@@`) i reguła „ochrona wyłączona na stronie” nie są liczone |
+| Fallback | Bez zmian: gdy Chrome odmówi dostępu (np. popup otwarty jako zwykła strona albo karta bez przyznanego `activeTab`), `popup:get` czyta tekst plakietki (`chrome.action.getBadgeText`). Plakietkę ustawia `setExtensionActionOptions({ displayActionCountAsBadgeText: true })`, które nie wymaga `declarativeNetRequestFeedback` |
+| Testy | `tests/popup/active-tab.test.mjs`: manifest bez feedback i z `activeTab`; licznik z `getMatchedRules` przy dostępie; fallback przy odmowie; zwykła strona i YouTube. `tests/popup/active-tab-live.test.mjs` (Chromium): bez przyznanego `activeTab` Chrome odrzuca `getMatchedRules`, a `popup:get` i popup działają przez fallback na zwykłej stronie i YouTube. Przyznania `activeTab` kliknięciem ikony nie da się wywołać z Playwright, więc tę ścieżkę pokrywają testy jednostkowe; warto ją sprawdzić ręcznie w Chrome |
+| Wymagane dla podstawowego działania | **NIE** (tylko dokładność licznika w popupie) |
+| Efekt dla recenzji | Mniej wrażliwe uprawnienie. `activeTab` nie dodaje ostrzeżenia przy instalacji. Brzmienie ostrzeżeń dla całego zestawu (z `<all_urls>` i `webNavigation`) warto sprawdzić przy instalacji paczki: `NEEDS HUMAN CONFIRMATION` |
 
 ### `scripting`
 
@@ -88,7 +95,7 @@ Manifest deklaruje:
 | Uprawnienie | Wymagane | Można ograniczyć |
 |---|---|---|
 | `declarativeNetRequest` | TAK | NIE |
-| `declarativeNetRequestFeedback` | NIE | **TAK** (fallback na plakietkę już istnieje; ewentualnie `activeTab`) |
+| ~~`declarativeNetRequestFeedback`~~ → `activeTab` | NIE | **RESOLVED**: zastąpione przez `activeTab` (`release-permissions-v1`) |
 | `scripting` | TAK | NIE |
 | `storage` | TAK | NIE |
 | `webNavigation` | NIE | **TAK** (`tabs.onUpdated`) |
@@ -276,7 +283,7 @@ Oznaczenia:
 |---|---|---|
 | Single purpose | „ChromeBlock blocks ads, trackers and other unwanted content on web pages, locally in the browser.” | [NEEDS HUMAN CONFIRMATION] (zakres Focus Mode, sekcja 4) |
 | `declarativeNetRequest` | Blocks ad, tracking and malicious network requests using built-in filter lists; allows the user to disable protection per site and add own filters. | [VERIFIED FROM CODE] |
-| `declarativeNetRequestFeedback` | Shows the number of blocked requests for the current tab in the popup. | [VERIFIED FROM CODE]; [NEEDS HUMAN CONFIRMATION], czy zostawić (sekcja 1) |
+| `activeTab` (zamiast `declarativeNetRequestFeedback`) | When the user clicks the ChromeBlock icon, shows the exact number of blocked requests for that tab in the popup (`declarativeNetRequest.getMatchedRules`). | [VERIFIED FROM CODE] (`release-permissions-v1`) |
 | `scripting` | Applies cosmetic filters (hides empty ad containers), registers filter-list scriptlets that neutralise anti-adblock and in-player ads, and runs the user-invoked element picker. | [VERIFIED FROM CODE] |
 | `storage` | Stores the user's settings (enabled lists, protection mode, disabled sites, own filters, Focus Mode) and local diagnostics on the device. | [VERIFIED FROM CODE] |
 | `webNavigation` | Updates the toolbar icon when protection is disabled for the visited site and resets YouTube player diagnostics on navigation. | [VERIFIED FROM CODE]; [NEEDS HUMAN CONFIRMATION], czy zostawić (sekcja 1) |
@@ -294,6 +301,6 @@ Oznaczenia:
 | 3 | Manifest oznaczony jako developerski (`description`: „Wersja developerska”, `version_name`: `-dev`) | **BLOCKER** |
 | 4 | Brak polityki prywatności i miejsca na jej publikację (repo prywatne) | **BLOCKER** `NEEDS HUMAN CONFIRMATION` (czy wymagana) |
 | 5 | Zakres single purpose wobec Focus Mode | decyzja |
-| 6 | Opcjonalne zawężenie uprawnień (`declarativeNetRequestFeedback`, `webNavigation`) | decyzja (nie blokuje) |
+| 6 | Opcjonalne zawężenie uprawnień: `declarativeNetRequestFeedback` → `activeTab` **RESOLVED** (`release-permissions-v1`); `webNavigation` do decyzji | decyzja (nie blokuje) |
 | 7 | Filtry „trusted” z wbudowanym zminifikowanym kodem: wyjaśnienie w recenzji | decyzja |
 | 8 | Elementy listingu (zrzuty ekranu, opis, kategoria, język, ewentualnie `_locales`): nie były przedmiotem audytu | do przygotowania |
