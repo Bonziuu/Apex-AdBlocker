@@ -16,11 +16,11 @@ const NO_ACCESS = new Error('The extension must have the declarativeNetRequestFe
 
 const match = (rulesetId, ruleId) => ({ rule: { rulesetId, ruleId }, tabId: 7, timeStamp: 1 });
 
-test('manifest: activeTab zamiast declarativeNetRequestFeedback; pozostałe uprawnienia bez zmian', () => {
+test('manifest: activeTab zamiast declarativeNetRequestFeedback', () => {
   const m = manifest();
   assert.ok(!m.permissions.includes('declarativeNetRequestFeedback'), 'brak declarativeNetRequestFeedback');
   assert.ok(m.permissions.includes('activeTab'), 'jest activeTab');
-  assert.deepEqual([...m.permissions].sort(), ['activeTab', 'declarativeNetRequest', 'scripting', 'storage', 'webNavigation']);
+  assert.deepEqual([...m.permissions].sort(), ['activeTab', 'declarativeNetRequest', 'scripting', 'storage']);
   assert.deepEqual(m.host_permissions, ['<all_urls>']);
   assert.equal(m.optional_permissions, undefined);
   assert.equal(m.optional_host_permissions, undefined);

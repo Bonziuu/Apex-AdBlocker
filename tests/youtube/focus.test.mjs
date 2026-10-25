@@ -167,7 +167,7 @@ test('manifest: osobny skrypt Focus Mode tylko dla www.youtube.com; youtube/heal
   assert.deepEqual(focus, { matches: ['*://www.youtube.com/*'], js: ['youtube/focus.js'], run_at: 'document_start', all_frames: false });
   const health = m.content_scripts.find((c) => c.js.includes('youtube/health.js'));
   assert.deepEqual(health.js, ['youtube/health.js']);
-  assert.deepEqual(m.permissions, ['activeTab', 'declarativeNetRequest', 'scripting', 'storage', 'webNavigation'], 'bez nowych uprawnień');
+  assert.deepEqual(m.permissions, ['activeTab', 'declarativeNetRequest', 'scripting', 'storage'], 'bez nowych uprawnień');
   const src = fs.readFileSync(path.join(ROOT, 'youtube/focus.js'), 'utf8');
   assert.match(src, /chrome\.storage\.onChanged\.addListener/);
   assert.match(src, /youtubeFocus:css/);

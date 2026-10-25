@@ -33,6 +33,7 @@ export async function loadBackground(opts = {}) {
     calls: { register: 0, unregister: 0, registeredInCalls: [] },
     fetches: [],
     matchedRulesCalls: [],
+    icons: [],
     listeners: {},
   };
   const ev = (name) => ({ addListener(fn) { state.listeners[name] = fn; } });
@@ -122,12 +123,12 @@ export async function loadBackground(opts = {}) {
       insertCSS: async (o) => { state.css.push(o); },
       executeScript: async () => {},
     },
-    action: { setBadgeBackgroundColor: async () => {}, setBadgeTextColor: async () => {}, setIcon: async () => {}, getBadgeText: async () => (opts.badgeText ?? '') },
-    webNavigation: { onCommitted: ev('committed') },
+    action: { setBadgeBackgroundColor: async () => {}, setBadgeTextColor: async () => {}, setIcon: async (o) => { state.icons.push(structuredClone(o)); }, getBadgeText: async () => (opts.badgeText ?? '') },
     tabs: {
       get: async (id) => ({ id, url: opts.tabUrl || 'https://www.example.com/' }),
       reload: (id) => state.reloads.push(id),
       onRemoved: ev('tabRemoved'),
+      onUpdated: ev('tabUpdated'),
       create: async (o) => { state.tabsCreated.push(o); return { id: 900 + state.tabsCreated.length, ...o }; },
     },
   };

@@ -92,8 +92,8 @@ test('błąd synchronizacji → onboarding nie twierdzi, że zakończono (karta 
 
 test('brak nowych uprawnień; strona w paczce; bez telemetrii i bez dodatkowego profilu użytkownika', () => {
   const m = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
-  // onboarding nie dodaje uprawnień: zestaw jest stały (jedyna późniejsza zmiana: declarativeNetRequestFeedback → activeTab)
-  assert.deepEqual(m.permissions, ['activeTab', 'declarativeNetRequest', 'scripting', 'storage', 'webNavigation']);
+  // onboarding nie dodaje uprawnień: zestaw jest stały (późniejsze zmiany: declarativeNetRequestFeedback → activeTab, bez webNavigation)
+  assert.deepEqual(m.permissions, ['activeTab', 'declarativeNetRequest', 'scripting', 'storage']);
   assert.deepEqual(m.host_permissions, ['<all_urls>']);
   assert.equal(m.optional_permissions, undefined);
   assert.ok(EXTENSION_ENTRIES.includes('welcome'), 'katalog welcome w paczce');

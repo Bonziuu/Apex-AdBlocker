@@ -845,12 +845,18 @@ async function updateIcon(tabId, url) {
   } catch { /* karta zamknięta */ }
 }
 
-chrome.webNavigation.onCommitted.addListener((d) => {
-  if (d.frameId !== 0) return;
-  // główna nawigacja karty: raporty odtwarzacza z poprzedniej strony są nieaktualne
-  playerReports.onMainFrameNavigation(d.tabId);
-  updateIcon(d.tabId, d.url);
-});
+// Zmiana adresu karty (pełna nawigacja albo SPA: history.pushState / replaceState, np. YouTube
+// watch → watch, watch → Shorts). Bez uprawnienia "tabs": changeInfo.url Chrome podaje dzięki
+// host_permissions <all_urls>. Reagujemy tylko na zmianę URL – nie na status / title / favIcon.
+export function onTabUrlChanged(tabId, changeInfo) {
+  if (!changeInfo || typeof changeInfo.url !== 'string') return false;
+  // raporty odtwarzacza z poprzedniego adresu (poprzedni film) są nieaktualne
+  playerReports.onMainFrameNavigation(tabId);
+  updateIcon(tabId, changeInfo.url);
+  return true;
+}
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => { onTabUrlChanged(tabId, changeInfo); });
 
 chrome.tabs.onRemoved.addListener((tabId) => { playerReports.clearTab(tabId); });
 
