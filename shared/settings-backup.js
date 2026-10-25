@@ -137,6 +137,26 @@ export function rulesWord(n) {
   return u >= 2 && u <= 4 && !(t >= 12 && t <= 14) ? 'reguły' : 'reguł';
 }
 
+export const IMPORT_MSG = Object.freeze({
+  invalid: 'Nie zaimportowano – plik jest niepoprawny (ustawienia bez zmian):',
+  rolledBack: 'Chrome nie przyjął zmian – przywrócono poprzednie ustawienia:',
+  incomplete: 'Import nie powiódł się i nie udało się w pełni przywrócić poprzedniego stanu. Otwórz Diagnostykę.',
+});
+
+/**
+ * Komunikat dla nieudanego importu: {title, items, diagnostics}.
+ * Twierdzi „przywrócono” TYLKO przy rolledBack === true (rollback sprawdzony w całości).
+ */
+export function importFailureMessage(r) {
+  const res = r || {};
+  const errors = Array.isArray(res.errors) ? res.errors : [];
+  if (res.rolledBack === true) return { title: IMPORT_MSG.rolledBack, items: errors, diagnostics: false };
+  if (res.rolledBack === false || Array.isArray(res.rollbackErrors)) {
+    return { title: IMPORT_MSG.incomplete, items: [...errors, ...(res.rollbackErrors || []).map((e) => `przywracanie: ${e}`)], diagnostics: true };
+  }
+  return { title: IMPORT_MSG.invalid, items: errors.length ? errors : ['nieznany błąd'], diagnostics: false };
+}
+
 const MODE_PL = { basic: 'Basic', balanced: 'Balanced', strict: 'Strict', custom: 'Własny' };
 
 /** Krótkie podsumowanie przywróconych ustawień (lista linii). */

@@ -178,7 +178,7 @@ test('nieznane pola: ignorowane, nie trafiają do storage', async () => {
   } finally { bg.restore(); }
 });
 
-test('rollback: błąd synchronizacji list → poprzednie ustawienia przywrócone (także Focus Mode)', async () => {
+test('rollback: jednorazowy błąd synchronizacji list przy imporcie → poprzednie ustawienia przywrócone (także Focus Mode)', async () => {
   const opts = { local: { youtubeFocus: { ...FOCUS_DEFAULTS } } };
   const bg = await loadBackground(opts);
   try {
@@ -187,11 +187,13 @@ test('rollback: błąd synchronizacji list → poprzednie ustawienia przywrócon
     const enabledNow = async () => sorted((await bg.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id));
     const before = { lists: await enabledNow(), sites: bg.store.disabledSites ? [...bg.store.disabledSites] : [], filters: bg.store.userFilters, focus: structuredClone(bg.store.youtubeFocus) };
     const rulesetsBefore = sorted(bg.state.enabledRulesets);
-    opts.failRulesets = true;
+    // Chrome odrzuca TYLKO pierwszą zmianę zestawów reguł (import); przywracanie przechodzi
+    let calls = 0;
+    Object.defineProperty(opts, 'failRulesets', { configurable: true, get: () => calls++ === 0 });
     const r = await bg.send({ type: 'settings:import', text: backupText({}) });
-    opts.failRulesets = false;
+    Object.defineProperty(opts, 'failRulesets', { configurable: true, value: false });
     assert.equal(r.ok, false);
-    assert.equal(r.rolledBack, true);
+    assert.equal(r.rolledBack, true, JSON.stringify(r.rollbackErrors));
     assert.ok(r.errors.some((e) => /listy filtrów/.test(e)));
     assert.deepEqual(await enabledNow(), before.lists);
     assert.deepEqual(bg.store.disabledSites || [], before.sites);
@@ -280,4 +282,102 @@ test('opcje: zakładka „Kopia ustawień” z przyciskami eksportu i importu', 
   assert.match(js, /settings:export/);
   assert.match(js, /settings:import/);
   assert.doesNotMatch(js.slice(js.indexOf('// --- Kopia ustawień')), /fetch\(|sendBeacon|XMLHttpRequest/, 'nic nie jest wysyłane');
+});
+
+// --- wiarygodność rollbacku ----------------------------------------------------------
+
+import { importFailureMessage, IMPORT_MSG } from '../../shared/settings-backup.js';
+
+/** Stan przed importem: lista „Basic”, 1 filtr, Focus Mode zapisany (OFF). */
+async function prepared(opts) {
+  const bg = await loadBackground(opts);
+  await bg.install();
+  await bg.send({ type: 'options:setUserFilters', text: '||stare.example^\n' });
+  await bg.send({ type: 'options:setYouTubeFocus', settings: { enabled: false } });
+  const lists = sorted((await bg.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id));
+  return { bg, before: { lists, filters: bg.store.userFilters, focus: structuredClone(bg.store.youtubeFocus), sites: [...(bg.store.disabledSites || [])] } };
+}
+const healthErrors = async (bg) => ((await bg.send({ type: 'health:get' })).errors || []).filter((e) => /import ustawień/.test(e.message));
+
+test('rollback kompletny: import nie powiódł się → rolledBack=true tylko gdy storage i wszystkie synchronizacje poprzedniego stanu OK', async () => {
+  const opts = { failRegister: () => false };
+  const { bg, before } = await prepared(opts);
+  try {
+    opts.failRegister = (id) => id.startsWith('sl-cookies'); // nowa lista z importu – scriptlety się nie rejestrują
+    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
+    assert.equal(r.ok, false);
+    assert.equal(r.rolledBack, true);
+    assert.equal(r.rollbackErrors, undefined);
+    assert.ok(r.errors.some((e) => /scriptlety/.test(e)));
+    assert.deepEqual(sorted((await bg.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id)), before.lists);
+    assert.equal(bg.store.userFilters, before.filters);
+    assert.deepEqual(bg.store.youtubeFocus, before.focus);
+    assert.deepEqual(await healthErrors(bg), [], 'pełny rollback – bez wpisu o niepełnym przywróceniu');
+  } finally { bg.restore(); }
+});
+
+test('rollback niepełny: synchronizacja list (rulesets) poprzedniego stanu nie powiodła się → rolledBack=false + rollbackErrors + dziennik błędów', async () => {
+  const opts = {};
+  const { bg } = await prepared(opts);
+  try {
+    opts.failRulesets = true; // Chrome odrzuca zmiany zestawów reguł – także przy przywracaniu
+    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
+    opts.failRulesets = false;
+    assert.equal(r.ok, false);
+    assert.equal(r.rolledBack, false);
+    assert.ok(r.rollbackErrors.some((e) => /synchronizacja \(listy filtrów\)/.test(e)), r.rollbackErrors.join(' | '));
+    const logged = await healthErrors(bg);
+    assert.equal(logged.length, 1);
+    assert.equal(logged[0].component, 'filters');
+    assert.match(logged[0].message, /przywrócenie poprzedniego stanu jest niepełne/);
+  } finally { bg.restore(); }
+});
+
+test('rollback niepełny: synchronizacja reguł dynamicznych poprzedniego stanu nie powiodła się', async () => {
+  const opts = { failRegister: () => false };
+  const { bg } = await prepared(opts);
+  try {
+    // import: scriptlety nowej listy się nie rejestrują; od tej chwili Chrome odrzuca reguły dynamiczne (przywracanie)
+    opts.failRegister = (id) => { if (id.startsWith('sl-cookies')) { opts.failDynamic = true; return true; } return false; };
+    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
+    opts.failDynamic = false;
+    opts.failRegister = () => false;
+    assert.equal(r.ok, false);
+    assert.equal(r.rolledBack, false);
+    assert.ok(r.rollbackErrors.some((e) => /synchronizacja \(moje filtry \/ wyłączone strony\)/.test(e)), r.rollbackErrors.join(' | '));
+    assert.ok(!r.rollbackErrors.some((e) => /listy filtrów|scriptlety/.test(e)), 'pozostałe kroki przywracania OK');
+    assert.equal((await healthErrors(bg)).length, 1);
+  } finally { bg.restore(); }
+});
+
+test('rollback niepełny: rejestracja scriptletów poprzedniego stanu nie powiodła się', async () => {
+  const opts = { failRegister: () => false };
+  const { bg } = await prepared(opts);
+  try {
+    // import: reguły dynamiczne odrzucone raz; od tej chwili Chrome odrzuca każdą rejestrację scriptletów
+    opts.failDynamic = () => { opts.failDynamic = false; opts.failRegister = () => true; return true; };
+    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
+    opts.failRegister = () => false;
+    assert.equal(r.ok, false);
+    assert.equal(r.rolledBack, false);
+    assert.ok(r.rollbackErrors.some((e) => /synchronizacja \(scriptlety\)/.test(e)), r.rollbackErrors.join(' | '));
+    assert.ok(!r.rollbackErrors.some((e) => /listy filtrów|moje filtry/.test(e)), 'pozostałe kroki przywracania OK');
+    assert.equal((await healthErrors(bg)).length, 1);
+  } finally { bg.restore(); }
+});
+
+test('komunikat UI: „przywrócono” tylko przy rolledBack=true; niepełny rollback → wyraźne ostrzeżenie + Diagnostyka', () => {
+  const ok = importFailureMessage({ ok: false, rolledBack: true, errors: ['listy filtrów: x'] });
+  assert.equal(ok.title, IMPORT_MSG.rolledBack);
+  assert.equal(ok.diagnostics, false);
+  const bad = importFailureMessage({ ok: false, rolledBack: false, errors: ['scriptlety: x'], rollbackErrors: ['synchronizacja (listy filtrów): y'] });
+  assert.equal(bad.title, 'Import nie powiódł się i nie udało się w pełni przywrócić poprzedniego stanu. Otwórz Diagnostykę.');
+  assert.doesNotMatch(bad.title, /przywrócono poprzednie/);
+  assert.ok(!bad.items.some((x) => /przywrócono poprzednie/.test(x)));
+  assert.deepEqual(bad.items, ['scriptlety: x', 'przywracanie: synchronizacja (listy filtrów): y']);
+  assert.equal(bad.diagnostics, true);
+  const invalid = importFailureMessage({ ok: false, errors: ['plik nie jest poprawnym JSON'] });
+  assert.equal(invalid.title, IMPORT_MSG.invalid);
+  // bez pola rolledBack, ale z rollbackErrors – nadal nie twierdzimy „przywrócono”
+  assert.equal(importFailureMessage({ ok: false, rollbackErrors: ['z'] }).title, IMPORT_MSG.incomplete);
 });

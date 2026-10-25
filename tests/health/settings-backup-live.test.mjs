@@ -104,3 +104,55 @@ test('UI: eksport → zmiana ustawień → import przywraca; Focus Mode na otwar
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test('UI: niepełny rollback nie twierdzi, że przywrócono ustawienia; pokazuje ostrzeżenie i prowadzi do Diagnostyki', { skip, timeout: 120_000 }, async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-backup-ui-'));
+  const ext = path.join(tmp, 'ext');
+  fs.mkdirSync(ext);
+  for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });
+  const ctx = await chromium.launchPersistentContext(path.join(tmp, 'profile'), {
+    headless: true, channel: 'chromium',
+    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update'],
+  });
+  try {
+    let [sw] = ctx.serviceWorkers();
+    if (!sw) sw = await ctx.waitForEvent('serviceworker', { timeout: 30000 });
+    const id = new URL(sw.url()).host;
+    const opt = await ctx.newPage();
+    const errors = [];
+    opt.on('pageerror', (e) => errors.push(String(e)));
+    // odpowiedź tła dla importu podstawiona (pozostałe wiadomości – prawdziwe)
+    await opt.addInitScript(() => {
+      const real = chrome.runtime.sendMessage.bind(chrome.runtime);
+      chrome.runtime.sendMessage = async (m) => (m && m.type === 'settings:import' ? window.__importResult : real(m));
+    });
+    await opt.goto(`chrome-extension://${id}/options/options.html#backup`);
+    await opt.waitForSelector('#importSettings');
+    const file = path.join(tmp, 'kopia.json');
+    fs.writeFileSync(file, '{}');
+
+    await opt.evaluate(() => { window.__importResult = { ok: false, rolledBack: false, errors: ['scriptlety: Invalid match pattern'], rollbackErrors: ['synchronizacja (listy filtrów): Internal error'] }; });
+    await opt.setInputFiles('#importFile', file);
+    await opt.waitForSelector('#importErrors:not([hidden])');
+    const text = await opt.textContent('#importErrors');
+    assert.match(text, /Import nie powiódł się i nie udało się w pełni przywrócić poprzedniego stanu\. Otwórz Diagnostykę\./);
+    assert.doesNotMatch(text, /przywrócono poprzednie ustawienia/i);
+    assert.match(text, /przywracanie: synchronizacja \(listy filtrów\)/);
+    assert.equal(await opt.isHidden('#importSummary'), true);
+    await opt.click('#openDiag');
+    assert.equal(await opt.getAttribute('.tab[data-tab="diag"]', 'aria-selected'), 'true', 'przycisk otwiera Diagnostykę');
+
+    // pełny rollback – dopiero wtedy komunikat „przywrócono”
+    await opt.click('.tab[data-tab="backup"]');
+    await opt.evaluate(() => { window.__importResult = { ok: false, rolledBack: true, errors: ['listy filtrów: Internal error'] }; });
+    // jak użytkownik: przycisk „Importuj ustawienia” → okno wyboru pliku (ten sam plik ponownie)
+    const [chooser] = await Promise.all([opt.waitForEvent('filechooser'), opt.click('#importSettings')]);
+    await chooser.setFiles(file);
+    await opt.waitForFunction(() => /przywrócono poprzednie ustawienia/.test(document.getElementById('importErrors').textContent));
+    assert.equal(await opt.locator('#openDiag').count(), 0);
+    assert.deepEqual(errors, []);
+  } finally {
+    await ctx.close();
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});

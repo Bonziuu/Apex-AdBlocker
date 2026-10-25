@@ -143,3 +143,5 @@ textarea.report { min-height: 220px; margin: 10px 0; font-size: 12px; }
 .backup-summary ul { margin: 6px 0 0; padding-left: 18px; }
 .backup-summary li { margin: 2px 0; }
 #importErrors ul { margin: 6px 0 0; padding-left: 18px; }
+#importErrors .import-title { font-weight: 600; }
+#importErrors #openDiag { margin-top: 8px; }
