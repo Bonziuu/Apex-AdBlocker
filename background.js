@@ -16,6 +16,7 @@ import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js'
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
 import { PROTECTION_MODES, isPresetMode, listsForMode, modeForLists } from './shared/protection-modes.js';
 import { FOCUS_STORAGE_KEY, FOCUS_DEFAULTS, normalizeFocus, focusCss, activeFocusOptions, isFocusHost } from './shared/youtube-focus.js';
+import { buildBackup, backupFileName, parseBackup, summarizeSettings } from './shared/settings-backup.js';
 
 // Pomiar etapów startu (czas od uruchomienia service workera). Ostatni zakończony pomiar
 // trafia do chrome.storage.session i do Diagnostyki.
@@ -1047,6 +1048,60 @@ const handlers = {
     return { css: focusCss(focus), active: activeFocusOptions(focus) };
   },
 
+  /** Kopia ustawień: tylko ustawienia użytkownika (bez health, diagnostyki, cache, sesji, statystyk, kart, URL). */
+  async 'settings:export'() {
+    const s = await getState();
+    const backup = buildBackup({
+      enabledLists: s.enabledLists,
+      disabledSites: s.disabledSites,
+      userFilters: s.userFilters,
+      protectionMode: modeForLists(s.enabledLists),
+      youtubeFocus: await getFocus(),
+    }, { extensionVersion: chrome.runtime.getManifest().version_name || chrome.runtime.getManifest().version });
+    return { ok: true, backup, fileName: backupFileName() };
+  },
+
+  /**
+   * Import kopii: pełna walidacja → zapis → synchronizacja (rulesets, dynamicRules, scriptlets).
+   * Błąd walidacji: nic nie jest zapisywane. Błąd synchronizacji: przywrócenie poprzednich ustawień.
+   */
+  async 'settings:import'(msg) {
+    const meta = await getListsMeta();
+    const parsed = parseBackup(msg && msg.text, { knownLists: meta.map((m) => m.id) });
+    if (!parsed.ok) return { ok: false, errors: parsed.errors };
+    const next = parsed.settings;
+    const prevState = await getState();
+    const previous = {
+      enabledLists: prevState.enabledLists.slice(),
+      disabledSites: prevState.disabledSites.slice(),
+      userFilters: prevState.userFilters,
+      protectionMode: modeForLists(prevState.enabledLists),
+    };
+    const prevStored = await chrome.storage.local.get(FOCUS_STORAGE_KEY);
+    const syncAllSteps = async () => {
+      const rs = await runStep('rulesets', syncRulesets);
+      const dyn = await runStep('dynamicRules', syncDynamicRules);
+      const sl = await runStep('scriptlets', syncScriptlets);
+      return [['listy filtrów', rs], ['moje filtry / wyłączone strony', dyn], ['scriptlety', sl]].filter(([, r]) => !r.ok);
+    };
+    await saveState({ enabledLists: next.enabledLists, disabledSites: next.disabledSites, userFilters: next.userFilters, protectionMode: next.protectionMode });
+    await chrome.storage.local.set({ [FOCUS_STORAGE_KEY]: next.youtubeFocus }); // otwarte karty YouTube: storage.onChanged
+    const failed = await syncAllSteps();
+    if (failed.length) {
+      // rollback: poprzednie ustawienia i ponowna synchronizacja
+      await saveState(previous);
+      if (FOCUS_STORAGE_KEY in prevStored) await chrome.storage.local.set({ [FOCUS_STORAGE_KEY]: prevStored[FOCUS_STORAGE_KEY] });
+      else await chrome.storage.local.remove(FOCUS_STORAGE_KEY);
+      await syncAllSteps();
+      await refreshYouTubeStatus();
+      return { ok: false, rolledBack: true, errors: failed.map(([name, r]) => `${name}: ${r.message}`) };
+    }
+    await checkCosmeticData();
+    await refreshYouTubeStatus();
+    const names = Object.fromEntries(meta.map((m) => [m.id, m.name]));
+    return { ok: true, summary: summarizeSettings(next, { listNames: names }), ignored: parsed.ignored, userErrors: user.errors.length };
+  },
+
   async 'options:setLists'(msg) {
     const meta = await getListsMeta();
     const enabledLists = msg.enabledLists.filter((id) => meta.some((m) => m.id === id));
@@ -1105,7 +1160,7 @@ const handlers = {
 // Wiadomości zmieniające ustawienia wykonujemy jedna po drugiej. Każda czyta stan, modyfikuje go
 // i synchronizuje z Chrome; równoległe wykonanie gubiło zmiany (np. dwa szybkie przełączenia
 // stron albo dwa „Ukryj element” – druga zapisywała stan bez pierwszej).
-const MUTATING = new Set(['site:toggle', 'options:setLists', 'options:setProtectionMode', 'options:setYouTubeFocus', 'options:setUserFilters', 'options:setDisabledSites',
+const MUTATING = new Set(['site:toggle', 'options:setLists', 'options:setProtectionMode', 'options:setYouTubeFocus', 'settings:import', 'options:setUserFilters', 'options:setDisabledSites',
   'options:setDevPerf', 'picker:add', 'health:resync']);
 let settingsQueue = Promise.resolve();
 function runHandler(h, msg, sender) {
