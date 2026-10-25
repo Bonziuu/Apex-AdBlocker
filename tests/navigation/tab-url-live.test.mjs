@@ -2,7 +2,8 @@
 // Brak Playwright/Chromium → SKIP.
 //   1. Chrome dostarcza changeInfo.url w tabs.onUpdated dla history.pushState (dzięki <all_urls>).
 //   2. YouTube (atrapa): raport odtwarzacza starego filmu znika po pushState watch → watch,
-//      watch → Shorts i Shorts → watch; nowy raport przychodzi z nowym typem strony.
+//      watch → Shorts i Shorts → watch; od razu przychodzi świeży raport nowej strony
+//      (prośba service workera do youtube/health.js), także przy identycznym stanie odtwarzacza.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -43,7 +44,7 @@ async function poll(fn, ok, timeout = 15000, step = 200) {
   return v;
 }
 
-test('Chromium: history.pushState → tabs.onUpdated z url; YouTube SPA czyści raport starego filmu', { skip, timeout: 240_000 }, async () => {
+test('Chromium: history.pushState → tabs.onUpdated z url; YouTube SPA: stary raport usunięty, świeży raport nowego filmu', { skip, timeout: 240_000 }, async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-nav-'));
   const ctx = await launch(tmp);
   const errors = [];
@@ -85,13 +86,16 @@ test('Chromium: history.pushState → tabs.onUpdated z url; YouTube SPA czyści 
     let p = await poll(player, (x) => x && x.status === 'error' && x.page === 'watch');
     assert.equal(p && p.page, 'watch', 'raport filmu A');
 
-    // watch → inny watch (bez przeładowania): raport filmu A znika i nie wraca
-    // (stan odtwarzacza się nie zmienił, więc health.js nie wysyła nowego raportu)
+    // watch → inny watch (bez przeładowania, identyczny stan odtwarzacza): raport filmu A usunięty,
+    // service worker prosi health.js o ponowny raport → świeży raport B od razu (bez czekania na tick)
+    const atA = p.at;
+    const t0 = Date.now();
     await yt.evaluate(() => history.pushState({}, '', '/watch?v=BBBBBBBBBBB'));
-    p = await poll(player, (x) => x === null, 5000);
-    assert.equal(p, null, 'raport filmu A usunięty po watch → watch');
-    await new Promise((r) => setTimeout(r, 3500));
-    assert.equal(await player(), null, 'stary raport nie wraca');
+    p = await poll(player, (x) => x && x.at > atA, 2500, 50);
+    assert.ok(p && p.at > atA, 'świeży raport B po watch → watch');
+    assert.equal(p.page, 'watch');
+    assert.equal(p.status, 'error', 'aktualny stan odtwarzacza');
+    assert.ok(Date.now() - t0 < 2500, `raport B bez czekania na 3-sekundowy tick (${Date.now() - t0} ms)`);
 
     // watch → Shorts: stary raport usunięty, nowy raport z typem strony "shorts"
     await yt.evaluate(() => history.pushState({}, '', '/shorts/CCCCCCCCCCC'));

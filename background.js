@@ -185,6 +185,9 @@ function hostOf(url) {
 }
 
 /** Czy host należy do YouTube (strony, na których działa YouTube Protection). */
+/** Prośba do youtube/health.js o ponowny raport (po zmianie adresu karty). */
+export const YOUTUBE_HEALTH_REFRESH = 'youtube:health-refresh';
+
 export function isYouTubeHost(host) {
   return /(^|\.)(youtube\.com|youtube-nocookie\.com)$/.test(String(host || ''));
 }
@@ -853,6 +856,15 @@ export function onTabUrlChanged(tabId, changeInfo) {
   // raporty odtwarzacza z poprzedniego adresu (poprzedni film) są nieaktualne
   playerReports.onMainFrameNavigation(tabId);
   updateIcon(tabId, changeInfo.url);
+  // YouTube: dopiero PO wyczyszczeniu prosimy youtube/health.js o ponowny raport nowej strony/filmu –
+  // bez tego przy identycznym stanie odtwarzacza (watch → watch) nowy raport by nie przyszedł.
+  // Karta bez skryptu treści (np. jeszcze się ładuje) → błąd sendMessage ignorowany.
+  if (isYouTubeHost(hostOf(changeInfo.url))) {
+    try {
+      const p = chrome.tabs.sendMessage(tabId, { type: YOUTUBE_HEALTH_REFRESH });
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    } catch { /* brak odbiorcy */ }
+  }
   return true;
 }
 

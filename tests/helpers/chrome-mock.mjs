@@ -18,6 +18,7 @@ let counter = 0;
  * opts.fetchDelay(path) → opóźnienie (ms) odczytu pliku rozszerzenia (wyścigi)
  * opts.matchedRules(filter) → wynik getMatchedRules (albo rzuca błąd, jak Chrome bez activeTab)
  * opts.badgeText → tekst plakietki zwracany przez chrome.action.getBadgeText
+ * opts.tabSendMessage(tabId, msg) → wynik chrome.tabs.sendMessage (może rzucić / odrzucić, jak bez odbiorcy)
  */
 export async function loadBackground(opts = {}) {
   const store = opts.local ? structuredClone(opts.local) : {};
@@ -34,6 +35,7 @@ export async function loadBackground(opts = {}) {
     fetches: [],
     matchedRulesCalls: [],
     icons: [],
+    tabMessages: [],
     listeners: {},
   };
   const ev = (name) => ({ addListener(fn) { state.listeners[name] = fn; } });
@@ -129,6 +131,11 @@ export async function loadBackground(opts = {}) {
       reload: (id) => state.reloads.push(id),
       onRemoved: ev('tabRemoved'),
       onUpdated: ev('tabUpdated'),
+      sendMessage: (tabId, msg) => {
+        // w chwili wysłania zapamiętujemy też stan raportów (kolejność: najpierw czyszczenie, potem prośba)
+        state.tabMessages.push({ tabId, msg: structuredClone(msg) });
+        return opts.tabSendMessage ? opts.tabSendMessage(tabId, msg) : Promise.resolve(undefined);
+      },
       create: async (o) => { state.tabsCreated.push(o); return { id: 900 + state.tabsCreated.length, ...o }; },
     },
   };
