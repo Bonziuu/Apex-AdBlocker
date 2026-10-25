@@ -10,12 +10,18 @@
 !
 ! Partia 1 (2026-10-25): obserwacje z `npm run test:polish-sites -- --gap-mode --evidence`.
 !   Poprawki po reteście (2026-10-25): businessinsider.com.pl (nowa struktura), gazeta.pl (salesModule).
+!   Kolejny retest (2026-10-25): businessinsider.com.pl – drugi wariant DOM (flat-ad-wrapper / ods-c-card-wrapper).
 !
 ! bankier.pl – pusty slot reklamowy z etykietą „REKLAMA”
 bankier.pl##div#n2b-ad-r2.n2b-ad-container
 !
-! businessinsider.com.pl – karty w mozaice oznaczone etykietą „MATERIAŁ PROMOCYJNY” (retest 2026-10-25)
+! businessinsider.com.pl – dwa zaobserwowane warianty DOM (reguły utrzymywane równolegle),
+!   tylko elementy z etykietą „MATERIAŁ PROMOCYJNY”
+! wariant A: karty w mozaice
 businessinsider.com.pl##div.section-list_mosaic-3elem > a.list-item.item--m.item--m--img-right *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.list-item.item--m.item--m--img-right)
+! wariant B: slot flat-natleft-2 i karta ods-c-card-wrapper
+businessinsider.com.pl##flat-ad-wrapper#flat-natleft-2 *:has-text(/^\s*materiał promocyjny\s*$/i):upward(flat-ad-wrapper)
+businessinsider.com.pl##.ods-c-card-wrapper *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.ods-c-card-wrapper)
 !
 ! gazeta.pl – kafle artykułów oznaczone etykietą „MATERIAŁ PROMOCYJNY”
 gazeta.pl##article.tile *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article.tile)

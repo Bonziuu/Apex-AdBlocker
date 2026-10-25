@@ -177,3 +177,22 @@ Test mechaniki w Chromium (lokalne strony o strukturze z retestu):
 - widoczne: mozaika, karta z tymi słowami w tytule, karta z etykietą poza mozaiką, pozycja menu w nagłówku, moduł `salesModule`, link bez etykiety, stopka.
 
 Kolejny retest na prawdziwych stronach: wymagany u użytkownika.
+
+### Business Insider: dwa warianty DOM (kolejny retest, 2026-10-25)
+
+Najnowszy retest użytkownika pokazał na businessinsider.com.pl inny DOM niż poprzedni. Strona serwuje **co najmniej dwa warianty**, więc reguły dla obu są utrzymywane równolegle. Każda ukrywa tylko element z dokładną etykietą „materiał promocyjny”; nie ma jednej szerokiej reguły na cały serwis.
+
+| Wariant | Struktura | Reguła | Dowód |
+|---|---|---|---|
+| A | `div.section-list_mosaic-3elem > a.list-item.item--m.item--m--img-right` | `div.section-list_mosaic-3elem > a.list-item.item--m.item--m--img-right *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.list-item.item--m.item--m--img-right)` | `businessinsider.com.pl#2-#3` (poprzedni retest) |
+| B | `flat-ad-wrapper#flat-natleft-2` | `flat-ad-wrapper#flat-natleft-2 *:has-text(/^\s*materiał promocyjny\s*$/i):upward(flat-ad-wrapper)` (przywrócona) | `businessinsider.com.pl#1` (najnowszy retest) |
+| B | `.ods-c-card-wrapper` | `.ods-c-card-wrapper *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.ods-c-card-wrapper)` (przywrócona) | `businessinsider.com.pl#2` (najnowszy retest) |
+
+Stan listy: **6 reguł kosmetycznych** (bankier.pl 1, businessinsider.com.pl 3, gazeta.pl 2). `provenance.json` ma 6 wpisów, po jednym na regułę.
+
+Test mechaniki w Chromium obejmuje oba warianty BI na osobnych stronach testowych. W obu wariantach:
+
+- karty i sloty z etykietą są ukryte;
+- karty bez etykiety, także te z tymi słowami w tytule, są widoczne;
+- pozycja menu w nagłówku jest widoczna;
+- kontener nadrzędny (mozaika / sekcja) jest widoczny.

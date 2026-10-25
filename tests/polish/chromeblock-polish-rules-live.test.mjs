@@ -32,6 +32,16 @@ const PAGES = {
       <a class="list-item item--m item--m--img-right" id="card-normal" href="#"><div class="item_description"><span>Finanse</span><h3>Materiał promocyjny w tytule nie jest etykietą</h3></div></a>
     </div>
     <div class="section-list_other"><a class="list-item item--m item--m--img-right" id="card-outside" href="#"><div class="item_description"><span>Materiał promocyjny</span><h3>Poza mozaiką</h3></div></a></div></body>`,
+  // Business Insider – wariant B (drugi zaobserwowany DOM): slot flat-ad-wrapper i karty ods-c-card-wrapper
+  'businessinsider.com.pl/wariant-b': `<!doctype html><meta charset="utf-8"><title>BI B</title><body>
+    <header><nav><ul class="first-level"><li id="nav-promo-b">Materiał promocyjny</li><li>Biznes</li></ul></nav></header>${filler('Biznes.')}
+    <section id="section-b">
+      <flat-ad-wrapper id="flat-natleft-2" style="display:block;height:120px"><div><span>MATERIAŁ PROMOCYJNY</span><h3>Tytuł C</h3></div></flat-ad-wrapper>
+      <flat-ad-wrapper id="flat-natleft-1" style="display:block;height:120px"><div><span>Biznes</span><h3>Slot bez etykiety</h3></div></flat-ad-wrapper>
+      <div class="ods-c-card-wrapper" id="card-b-promo"><article><span>Materiał promocyjny</span><h3>Tytuł D</h3></article></div>
+      <div class="ods-c-card-wrapper" id="card-b-normal"><article><span>Finanse</span><h3>Materiał promocyjny w tytule nie jest etykietą</h3></article></div>
+      <div class="ods-c-card-wrapper" id="card-b-normal2"><article><span>Rynki</span><h3>Zwykły artykuł</h3></article></div>
+    </section></body>`,
   'www.gazeta.pl': `<!doctype html><meta charset="utf-8"><title>G</title><body>${filler('Wiadomości.')}
     <article class="tile" id="t1"><div class="tile__meta"><span>MATERIAŁ PROMOCYJNY</span></div><h2>Promocja 1</h2></article>
     <article class="tile tile--big" id="t2"><span> Materiał promocyjny </span><h2>Promocja 2</h2></article>
@@ -58,8 +68,9 @@ test('Chromium (lokalne strony testowe): reguły partii 1 ukrywają tylko obserw
   });
   try {
     await ctx.route(/^https?:/, (r) => {
-      const h = new URL(r.request().url()).hostname;
-      return PAGES[h] ? r.fulfill({ contentType: 'text/html; charset=utf-8', body: PAGES[h] }) : r.fulfill({ status: 204, body: '' });
+      const u = new URL(r.request().url());
+      const body = PAGES[u.hostname + u.pathname] || PAGES[u.hostname];
+      return body ? r.fulfill({ contentType: 'text/html; charset=utf-8', body }) : r.fulfill({ status: 204, body: '' });
     });
     let [sw] = ctx.serviceWorkers();
     if (!sw) sw = await ctx.waitForEvent('serviceworker', { timeout: 30000 });
@@ -75,7 +86,10 @@ test('Chromium (lokalne strony testowe): reguły partii 1 ukrywają tylko obserw
       await page.close();
     };
     await check('https://www.bankier.pl/', ['#n2b-ad-r2'], ['#n2b-ad-r3', '#notowania']);
+    // wariant A (mozaika)
     await check('https://businessinsider.com.pl/', ['#slot-flat-natleft-2', '#card-promo'], ['#mosaic', '#card-normal', '#card-outside', '#nav-promo']);
+    // wariant B (flat-ad-wrapper / ods-c-card-wrapper)
+    await check('https://businessinsider.com.pl/wariant-b', ['#flat-natleft-2', '#card-b-promo'], ['#section-b', '#flat-natleft-1', '#card-b-normal', '#card-b-normal2', '#nav-promo-b']);
     await check('https://www.gazeta.pl/', ['#t1', '#t2', '#s1'], ['#t3', '#t4', '#sales', '#s2', '#stopka']);
   } finally {
     await ctx.close();

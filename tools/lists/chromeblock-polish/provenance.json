@@ -26,9 +26,27 @@
       "domain": "businessinsider.com.pl",
       "type": "cosmetic",
       "date": "2026-10-25",
-      "observation": "Retest: 2 karty w mozaice (section-list_mosaic-3elem) z etykietą MATERIAŁ PROMOCYJNY. Ukrywana tylko karta z elementem o dokładnie tej etykiecie. Wpis #1 (menu) pominięty.",
+      "observation": "Wariant A (mozaika): 2 karty z etykietą MATERIAŁ PROMOCYJNY. BI ma 2 warianty DOM – reguły utrzymywane równolegle. Tylko karta z dokładną etykietą; menu pominięte.",
       "method": "automated-browser",
       "evidence": "businessinsider.com.pl#2-#3"
+    },
+    {
+      "rule": "businessinsider.com.pl##flat-ad-wrapper#flat-natleft-2 *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(flat-ad-wrapper)",
+      "domain": "businessinsider.com.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Wariant B: slot flat-natleft-2 z etykietą MATERIAŁ PROMOCYJNY. BI ma 2 warianty DOM – reguły utrzymywane równolegle. Tylko slot z dokładną etykietą.",
+      "method": "automated-browser",
+      "evidence": "businessinsider.com.pl#1"
+    },
+    {
+      "rule": "businessinsider.com.pl##.ods-c-card-wrapper *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(.ods-c-card-wrapper)",
+      "domain": "businessinsider.com.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Wariant B: karta ods-c-card-wrapper z etykietą MATERIAŁ PROMOCYJNY. BI ma 2 warianty DOM – reguły równolegle. Tylko karta z dokładną etykietą, nie wszystkie.",
+      "method": "automated-browser",
+      "evidence": "businessinsider.com.pl#2"
     },
     {
       "rule": "gazeta.pl##article.tile *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(article.tile)",
