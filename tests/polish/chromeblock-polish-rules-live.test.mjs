@@ -123,6 +123,40 @@ const PAGES = {
       <div class="my-12 hidden lg:block" id="we-normal" style="height:120px"><div class="mx-auto px-6 pb-5"><span>Tabela ligowa</span></div></div>
     </main>
     <footer id="we-footer"><span>Reklama</span> <span>Kontakt</span></footer></body>`,
+  // partia 3B
+  'www.newsweek.pl': `<!doctype html><meta charset="utf-8"><title>NW</title><body>${filler('Newsweek.')}
+    <section id="nw-section">
+      <div class="pw-art4to6__0 pw-tile" id="nw-0"><div class="pw-art4to6__meta"><span>MATERIAŁ PROMOCYJNY</span></div><a class="pw-generic-article-title pw-art4to6__title pw-link" href="#">Oferta A</a></div>
+      <div class="pw-art4to6__3 pw-tile" id="nw-3"><div class="pw-art4to6__meta"><span>Materiał promocyjny</span></div><a class="pw-generic-article-title pw-art4to6__title pw-link" href="#">Oferta B</a></div>
+      <div class="pw-art4to6__1 pw-tile" id="nw-1"><div class="pw-art4to6__meta"><span>Polityka</span></div><a class="pw-generic-article-title pw-art4to6__title pw-link" href="#">Zwykły artykuł</a></div>
+      <div class="pw-art4to6__2 pw-tile" id="nw-2"><div class="pw-art4to6__meta"><span>Biznes</span></div><a class="pw-generic-article-title pw-art4to6__title pw-link" href="#">Materiał promocyjny – czym jest</a></div>
+    </section>
+    <footer id="nw-footer"><span>Materiał promocyjny</span> <span>Kontakt</span></footer></body>`,
+  'www.radiozet.pl': `<!doctype html><meta charset="utf-8"><title>RZ</title><body>${filler('Radio ZET.')}
+    <div class="box" id="rz-box">
+      <div class="box__item item-type--news box__item__view--standard default-image-template" id="rz-std"><a class="box__item__link" href="#"><span>MATERIAŁ PROMOCYJNY</span><h3>Oferta</h3></a></div>
+      <div class="box__item item-type--news box__item__view--full cbz-image-template" id="rz-full"><a class="box__item__link" href="#"><span>Materiał promocyjny</span><h3>Oferta pełna</h3></a></div>
+      <div class="box__item item-type--news box__item__view--standard" id="rz-normal"><a class="box__item__link" href="#"><span>Kraj</span><h3>Wiadomość</h3></a></div>
+      <div class="box__item item-type--news box__item__view--standard" id="rz-title"><a class="box__item__link" href="#"><span>Muzyka</span><h3>Materiał promocyjny w tytule</h3></a></div>
+    </div>
+    <footer id="rz-footer"><span>Materiał promocyjny</span> <span>Regulamin</span></footer></body>`,
+  'www.spidersweb.pl': `<!doctype html><meta charset="utf-8"><title>SW</title><body>
+    <main class="main" id="sw-main">${filler('Technologia.')}
+      <div class="newAd" id="SW/HS_DM_HH_XL1" style="height:300px"><span>REKLAMA</span></div>
+      <article id="sw-art">Recenzja telefonu</article>
+      <div class="newAd" id="SW/HDH3_HTH3_HMH3" style="height:300px"><div><span>Reklama</span></div></div>
+      <div class="newAd" id="sw-other" style="height:120px"><span>Newsletter</span></div>
+      <article id="sw-title"><h2>Reklama w aplikacjach – analiza rynku</h2></article>
+    </main>
+    <footer id="sw-footer"><span>Reklama</span> <span>Kontakt</span></footer></body>`,
+  'www.strefainwestorow.pl': `<!doctype html><meta charset="utf-8"><title>SI</title><body>${filler('Giełda.')}
+    <aside id="si-sidebar">
+      <div id="block-si-theme-reklamasidebars300x250prawa1" class="block block-block-content9" style="height:250px"><span>REKLAMA</span></div>
+      <div id="block-si-theme-reklamasidebars300x250prawa2" class="block block-block-content5" style="height:250px"><div><span>Reklama</span></div></div>
+      <div id="block-si-theme-notowania" class="block" style="height:120px"><span>Notowania</span></div>
+      <div id="block-si-theme-artykul" class="block"><h3>Reklama w raportach spółek</h3></div>
+    </aside>
+    <footer id="si-footer"><span>Reklama</span> <span>Kontakt</span></footer></body>`,
   'www.gazeta.pl': `<!doctype html><meta charset="utf-8"><title>G</title><body>${filler('Wiadomości.')}
     <article class="tile" id="t1"><div class="tile__meta"><span>MATERIAŁ PROMOCYJNY</span></div><h2>Promocja 1</h2></article>
     <article class="tile tile--big" id="t2"><span> Materiał promocyjny </span><h2>Promocja 2</h2></article>
@@ -135,7 +169,7 @@ const PAGES = {
     <footer id="stopka"><span>Materiał promocyjny</span> <span>Kontakt</span></footer></body>`,
 };
 
-test('Chromium (lokalne strony testowe): reguły partii 1, 2A, 2B i 3A ukrywają tylko obserwowane sloty / kafle z dokładną etykietą', { skip, timeout: 600_000 }, async () => {
+test('Chromium (lokalne strony testowe): reguły partii 1, 2A, 2B, 3A i 3B ukrywają tylko obserwowane sloty / kafle z dokładną etykietą', { skip, timeout: 600_000 }, async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-polish-rules-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
@@ -185,6 +219,11 @@ test('Chromium (lokalne strony testowe): reguły partii 1, 2A, 2B i 3A ukrywają
     await check('https://www.pb.pl/', ['#pb-p1', '#pb-p3', '#pb-p4'], ['#pb-home', '#pb-normal', '#pb-title', '#pb-footer']);
     await check('https://www.ofeminin.pl/', ['#of-large', '#of-tiny', '#of-vertical'], ['#of-grid', '#of-normal', '#of-sponsored-nolabel']);
     await check('https://www.weszlo.com/', ['#we-ad1', '#we-ad2'], ['#we-page', '#we-art', '#we-normal', '#we-footer']);
+    // partia 3B
+    await check('https://www.newsweek.pl/', ['#nw-0', '#nw-3'], ['#nw-section', '#nw-1', '#nw-2', '#nw-footer']);
+    await check('https://www.radiozet.pl/', ['#rz-std', '#rz-full'], ['#rz-box', '#rz-normal', '#rz-title', '#rz-footer']);
+    await check('https://www.spidersweb.pl/', ['[id="SW/HS_DM_HH_XL1"]', '[id="SW/HDH3_HTH3_HMH3"]'], ['#sw-main', '#sw-art', '#sw-other', '#sw-title', '#sw-footer']);
+    await check('https://www.strefainwestorow.pl/', ['#block-si-theme-reklamasidebars300x250prawa1', '#block-si-theme-reklamasidebars300x250prawa2'], ['#si-sidebar', '#block-si-theme-notowania', '#block-si-theme-artykul', '#si-footer']);
   } finally {
     await ctx.close();
     fs.rmSync(tmp, { recursive: true, force: true });

@@ -64,3 +64,17 @@ ofeminin.pl##a.itemLink.isSponsored *:has-text(/^\s*materiał promocyjny\s*$/i):
 !
 ! weszlo.com – puste boksy z etykietą „REKLAMA”
 weszlo.com##div.my-12.hidden[class~="lg:block"] *:has-text(/^\s*reklama\s*$/i):upward(div.my-12.hidden[class~="lg:block"])
+!
+! Partia 3B (2026-10-25): obserwacje z `update-and-evidence-polish-3b.cmd` (GAP + evidence).
+!
+! newsweek.pl – kafle pw-art4to6__N z etykietą „MATERIAŁ PROMOCYJNY” (prefiks klasy, bez numerów)
+newsweek.pl##div[class^="pw-art4to6__"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(div[class^="pw-art4to6__"]:has(.pw-art4to6__title))
+!
+! radiozet.pl – kafle item-type--news (standard / full) z etykietą „MATERIAŁ PROMOCYJNY”
+radiozet.pl##.box__item.item-type--news *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.box__item.item-type--news)
+!
+! spidersweb.pl – puste sloty div.newAd z etykietą „REKLAMA” (bez ID slotów)
+spidersweb.pl##div.newAd *:has-text(/^\s*reklama\s*$/i):upward(div.newAd)
+!
+! strefainwestorow.pl – puste sloty paska bocznego z etykietą „REKLAMA” (prefiks ID)
+strefainwestorow.pl##[id^="block-si-theme-reklamasidebars300x250pra"] *:has-text(/^\s*reklama\s*$/i):upward([id^="block-si-theme-reklamasidebars300x250pra"])

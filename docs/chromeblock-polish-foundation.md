@@ -315,3 +315,31 @@ Test mechaniki w Chromium:
 | pb.pl | trzy warianty kafla z etykietą | zwykły kafel, fraza w tytule, sekcja, stopka |
 | ofeminin.pl | trzy rozmiary `isSponsored` z etykietą | zwykły `itemLink`, `isSponsored` bez dokładnej etykiety, siatka |
 | weszlo.com | dwa bloki z etykietą | blok `my-12 hidden lg:block` bez etykiety, artykuł, kontener strony, stopka |
+
+## 12. Partia 3B (2026-10-25)
+
+Źródło: realne evidence z `update-and-evidence-polish-3b.cmd` (GAP + evidence). Reguł nie porównywano z Polskimi Filtrami ani z EasyList Polish.
+
+| Domena | Dowód | Reguła | Zakres |
+|---|---|---|---|
+| newsweek.pl | `newsweek.pl#1-#4` (kafle `pw-art4to6__0…3` z tytułem `pw-art4to6__title`, „MATERIAŁ PROMOCYJNY”) | `div[class^="pw-art4to6__"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(div[class^="pw-art4to6__"]:has(.pw-art4to6__title))` | pojedynczy kafel, jedna reguła zamiast osobnych dla `__0…__3`; sekcja nieukrywana |
+| radiozet.pl | `radiozet.pl#1-#5` (`box__item item-type--news`, widoki `standard` i `full`) | `.box__item.item-type--news *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.box__item.item-type--news)` | pojedynczy kafel; bez `default-image-template` / `cbz-image-template`; lista nieukrywana; `#6` (stopka) pominięty |
+| spidersweb.pl | `spidersweb.pl#1-#5` (duże puste `div.newAd` z „REKLAMA”) | `div.newAd *:has-text(/^\s*reklama\s*$/i):upward(div.newAd)` | pojedynczy slot; bez ID slotów (`SW/…`); `.main` nieukrywany |
+| strefainwestorow.pl | `strefainwestorow.pl#1-#2` (puste sloty paska bocznego z „REKLAMA”) | `[id^="block-si-theme-reklamasidebars300x250pra"] *:has-text(/^\s*reklama\s*$/i):upward([id^="block-si-theme-reklamasidebars300x250pra"])` | prefiks ID; bez `block-block-contentN`; `#3` (stopka) pominięty |
+
+**Newsweek, decyzja o selektorze:** tytuł wewnątrz kafla też ma klasę z prefiksem (`pw-art4to6__title`). Dlatego reguła używa `[class^=…]` (atrybut klasy zaczyna się od prefiksu: klasa kafla jest pierwsza, klasa tytułu nie). Dodatkowo `:upward(…:has(.pw-art4to6__title))` wybiera tylko element, który zawiera tytuł, czyli cały kafel, a nie jego wewnętrzny fragment z tym samym prefiksem.
+
+Pominięte: **epoznan.pl** (kontekst zasłonięty przez CMP), rp.pl i Onet bez zmian.
+
+Stan listy: **22 reguły kosmetyczne**. `provenance.json` ma 22 wpisy. Test listy sprawdza teraz limit „maks. 20 reguł na partię” (liczony per sekcja `! Partia …`), a nie 20 na całą listę.
+
+Test mechaniki w Chromium:
+
+| Domena | Ukryte | Widoczne |
+|---|---|---|
+| newsweek.pl | 2 kafle z etykietą | zwykły kafel, fraza w tytule, sekcja, stopka |
+| radiozet.pl | kafle `standard` i `full` z etykietą | zwykły kafel, fraza w tytule, lista, stopka |
+| spidersweb.pl | 2 sloty `newAd` z etykietą | `newAd` bez etykiety, artykuł z „Reklama” w tytule, `.main`, stopka |
+| strefainwestorow.pl | 2 sloty z prefiksem ID | inne bloki paska, blok z frazą w tytule, pasek, stopka |
+
+Retest: `update-and-retest-polish-3b.cmd` (4 domeny, bez epoznan.pl).

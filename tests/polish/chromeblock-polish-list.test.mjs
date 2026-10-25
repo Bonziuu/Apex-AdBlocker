@@ -49,7 +49,11 @@ test('nagłówek: nazwa, niezależne reguły, data aktualizacji, License: TBD', 
 test('provenance: każda reguła ma wpis, typ zgodny, brak kopii innych list (aktualny stan)', () => {
   const problems = validateList(listText(), prov(), otherBundledLines());
   assert.deepEqual(problems, []);
-  assert.ok(ruleLines(listText()).length <= 20, 'pierwsza partia: maks. 20 reguł');
+  // każda partia (sekcja od „! Partia …”) jest mała – maks. 20 reguł
+  const batches = listText().split(/^! Partia /m).slice(1).map((sec) => ({ name: sec.split('\n')[0].slice(0, 30), rules: ruleLines(sec.split('\n').slice(1).join('\n')).length }));
+  assert.ok(batches.length >= 1, 'reguły pogrupowane w partie');
+  assert.equal(batches.reduce((n, b) => n + b.rules, 0), ruleLines(listText()).length, 'każda reguła należy do partii');
+  for (const b of batches) assert.ok(b.rules <= 20, `partia ${b.name}: ${b.rules} reguł (maks. 20)`);
 });
 
 test('walidator nie jest pusty: wykrywa brak provenance, zły typ, duplikat innej listy i długi opis', () => {

@@ -173,6 +173,42 @@
       "observation": "7 dużych pustych boksów (div.my-12 hidden lg:block) z etykietą REKLAMA. Zrzuty kontekstu potwierdziły puste sloty reklamowe. #8 (stopka) pominięty.",
       "method": "automated-browser",
       "evidence": "weszlo.com#1-#7"
+    },
+    {
+      "rule": "newsweek.pl##div[class^=\"pw-art4to6__\"] *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(div[class^=\"pw-art4to6__\"]:has(.pw-art4to6__title))",
+      "domain": "newsweek.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "4 kafle pw-art4to6__0..3 (z tytułem pw-art4to6__title) z etykietą MATERIAŁ PROMOCYJNY; zrzuty potwierdziły kafle. Jedna reguła na prefiks klasy, bez numerów.",
+      "method": "automated-browser",
+      "evidence": "newsweek.pl#1-#4"
+    },
+    {
+      "rule": "radiozet.pl##.box__item.item-type--news *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(.box__item.item-type--news)",
+      "domain": "radiozet.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "5 kafli box__item item-type--news (standard i full) z etykietą MATERIAŁ PROMOCYJNY; zrzut częściowo zasłonięty CMP, DOM spójny. #6 (stopka) pominięty.",
+      "method": "automated-browser",
+      "evidence": "radiozet.pl#1-#5"
+    },
+    {
+      "rule": "spidersweb.pl##div.newAd *:has-text(/^\\s*reklama\\s*$/i):upward(div.newAd)",
+      "domain": "spidersweb.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "5 dużych pustych slotów div.newAd z etykietą REKLAMA; zrzuty pokazały puste miejsce reklamowe. Bez ID slotów; .main nieukrywany.",
+      "method": "automated-browser",
+      "evidence": "spidersweb.pl#1-#5"
+    },
+    {
+      "rule": "strefainwestorow.pl##[id^=\"block-si-theme-reklamasidebars300x250pra\"] *:has-text(/^\\s*reklama\\s*$/i):upward([id^=\"block-si-theme-reklamasidebars300x250pra\"])",
+      "domain": "strefainwestorow.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "2 puste sloty w pasku bocznym (prefiks ID block-si-theme-reklamasidebars300x250pra) z etykietą REKLAMA. Bez klas block-block-contentN. #3 (stopka) pominięty.",
+      "method": "automated-browser",
+      "evidence": "strefainwestorow.pl#1-#2"
     }
   ]
 }
