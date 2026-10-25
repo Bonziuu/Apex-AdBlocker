@@ -175,11 +175,11 @@
       "evidence": "weszlo.com#1-#7"
     },
     {
-      "rule": "newsweek.pl##div[class^=\"pw-art4to6__\"] *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(div[class^=\"pw-art4to6__\"]:has(.pw-art4to6__title))",
+      "rule": "newsweek.pl##div[class^=\"pw-art4to6__\"] *:has-text(/^\\s*materiał promocyjny\\s*\\|?\\s*$/i):upward(div[class^=\"pw-art4to6__\"]:has(.pw-art4to6__title))",
       "domain": "newsweek.pl",
       "type": "cosmetic",
       "date": "2026-10-25",
-      "observation": "4 kafle pw-art4to6__0..3 (z tytułem pw-art4to6__title) z etykietą MATERIAŁ PROMOCYJNY; zrzuty potwierdziły kafle. Jedna reguła na prefiks klasy, bez numerów.",
+      "observation": "4 kafle pw-art4to6__0..3 z etykietą Materiał promocyjny | na początku tytułu pw-art4to6__title; retest: separator | jest w etykiecie. Jedna reguła na prefiks klasy.",
       "method": "automated-browser",
       "evidence": "newsweek.pl#1-#4"
     },

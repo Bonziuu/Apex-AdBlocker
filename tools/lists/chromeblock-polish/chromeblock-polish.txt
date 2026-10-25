@@ -67,8 +67,8 @@ weszlo.com##div.my-12.hidden[class~="lg:block"] *:has-text(/^\s*reklama\s*$/i):u
 !
 ! Partia 3B (2026-10-25): obserwacje z `update-and-evidence-polish-3b.cmd` (GAP + evidence).
 !
-! newsweek.pl – kafle pw-art4to6__N z etykietą „MATERIAŁ PROMOCYJNY” (prefiks klasy, bez numerów)
-newsweek.pl##div[class^="pw-art4to6__"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(div[class^="pw-art4to6__"]:has(.pw-art4to6__title))
+! newsweek.pl – kafle pw-art4to6__N z etykietą „MATERIAŁ PROMOCYJNY” lub „Materiał promocyjny |” w tytule (prefiks klasy, bez numerów)
+newsweek.pl##div[class^="pw-art4to6__"] *:has-text(/^\s*materiał promocyjny\s*\|?\s*$/i):upward(div[class^="pw-art4to6__"]:has(.pw-art4to6__title))
 !
 ! radiozet.pl – kafle item-type--news (standard / full) z etykietą „MATERIAŁ PROMOCYJNY”
 radiozet.pl##.box__item.item-type--news *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.box__item.item-type--news)

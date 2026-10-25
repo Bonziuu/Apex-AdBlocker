@@ -322,7 +322,7 @@ Test mechaniki w Chromium:
 
 | Domena | Dowód | Reguła | Zakres |
 |---|---|---|---|
-| newsweek.pl | `newsweek.pl#1-#4` (kafle `pw-art4to6__0…3` z tytułem `pw-art4to6__title`, „MATERIAŁ PROMOCYJNY”) | `div[class^="pw-art4to6__"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(div[class^="pw-art4to6__"]:has(.pw-art4to6__title))` | pojedynczy kafel, jedna reguła zamiast osobnych dla `__0…__3`; sekcja nieukrywana |
+| newsweek.pl | `newsweek.pl#1-#4` (kafle `pw-art4to6__0…3` z tytułem `pw-art4to6__title`, „Materiał promocyjny \|”) | `div[class^="pw-art4to6__"] *:has-text(/^\s*materiał promocyjny\s*\|?\s*$/i):upward(div[class^="pw-art4to6__"]:has(.pw-art4to6__title))` | pojedynczy kafel, jedna reguła zamiast osobnych dla `__0…__3`; sekcja nieukrywana |
 | radiozet.pl | `radiozet.pl#1-#5` (`box__item item-type--news`, widoki `standard` i `full`) | `.box__item.item-type--news *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.box__item.item-type--news)` | pojedynczy kafel; bez `default-image-template` / `cbz-image-template`; lista nieukrywana; `#6` (stopka) pominięty |
 | spidersweb.pl | `spidersweb.pl#1-#5` (duże puste `div.newAd` z „REKLAMA”) | `div.newAd *:has-text(/^\s*reklama\s*$/i):upward(div.newAd)` | pojedynczy slot; bez ID slotów (`SW/…`); `.main` nieukrywany |
 | strefainwestorow.pl | `strefainwestorow.pl#1-#2` (puste sloty paska bocznego z „REKLAMA”) | `[id^="block-si-theme-reklamasidebars300x250pra"] *:has-text(/^\s*reklama\s*$/i):upward([id^="block-si-theme-reklamasidebars300x250pra"])` | prefiks ID; bez `block-block-contentN`; `#3` (stopka) pominięty |
@@ -343,3 +343,5 @@ Test mechaniki w Chromium:
 | strefainwestorow.pl | 2 sloty z prefiksem ID | inne bloki paska, blok z frazą w tytule, pasek, stopka |
 
 Retest: `update-and-retest-polish-3b.cmd` (4 domeny, bez epoznan.pl).
+
+**Poprawka Newsweek po retescie 3B:** retest pokazał 4 nieukryte kafle (`newsweek.pl#1-#4`). Na prawdziwej stronie etykieta jest na początku tytułu i zawiera separator: „Materiał promocyjny |”. Pierwsza wersja reguły wymagała dokładnie „materiał promocyjny”, więc nie pasowała (tester obcina końcowe „|” przy wykrywaniu etykiety, dlatego raport pokazywał samą etykietę). Reguła dopuszcza teraz opcjonalne `|` na końcu etykiety (`\s*\|?\s*$`), nadal z kotwicami, więc tytuł z frazą („Materiał promocyjny | czym jest…”) zostaje widoczny. Strona testowa ma teraz też ten układ; stara reguła na niej nie przechodzi, nowa przechodzi. Retest: `update-and-retest-polish-newsweek.cmd`.

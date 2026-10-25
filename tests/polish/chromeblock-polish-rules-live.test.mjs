@@ -130,6 +130,11 @@ const PAGES = {
       <div class="pw-art4to6__3 pw-tile" id="nw-3"><div class="pw-art4to6__meta"><span>Materiał promocyjny</span></div><a class="pw-generic-article-title pw-art4to6__title pw-link" href="#">Oferta B</a></div>
       <div class="pw-art4to6__1 pw-tile" id="nw-1"><div class="pw-art4to6__meta"><span>Polityka</span></div><a class="pw-generic-article-title pw-art4to6__title pw-link" href="#">Zwykły artykuł</a></div>
       <div class="pw-art4to6__2 pw-tile" id="nw-2"><div class="pw-art4to6__meta"><span>Biznes</span></div><a class="pw-generic-article-title pw-art4to6__title pw-link" href="#">Materiał promocyjny – czym jest</a></div>
+      <!-- układ z retestu: etykieta z separatorem „|” na początku tytułu -->
+      <div class="pw-art4to6__0" id="nw-pipe-0"><div><div class="pw-generic-article-title pw-art4to6__title pw-link"><span>Materiał promocyjny |</span> Auto skrojone na miarę</div></div></div>
+      <div class="pw-art4to6__1" id="nw-pipe-1"><div><div class="pw-generic-article-title pw-art4to6__title pw-link"><span>Materiał promocyjny&nbsp;| </span>Kompakt z osiągami</div></div></div>
+      <div class="pw-art4to6__2" id="nw-pipe-2"><div><div class="pw-generic-article-title pw-art4to6__title pw-link"><span>Polityka |</span> Zwykły artykuł</div></div></div>
+      <div class="pw-art4to6__3" id="nw-pipe-3"><div><div class="pw-generic-article-title pw-art4to6__title pw-link">Materiał promocyjny | czym jest i jak go oznaczać</div></div></div>
     </section>
     <footer id="nw-footer"><span>Materiał promocyjny</span> <span>Kontakt</span></footer></body>`,
   'www.radiozet.pl': `<!doctype html><meta charset="utf-8"><title>RZ</title><body>${filler('Radio ZET.')}
@@ -220,7 +225,7 @@ test('Chromium (lokalne strony testowe): reguły partii 1, 2A, 2B, 3A i 3B ukryw
     await check('https://www.ofeminin.pl/', ['#of-large', '#of-tiny', '#of-vertical'], ['#of-grid', '#of-normal', '#of-sponsored-nolabel']);
     await check('https://www.weszlo.com/', ['#we-ad1', '#we-ad2'], ['#we-page', '#we-art', '#we-normal', '#we-footer']);
     // partia 3B
-    await check('https://www.newsweek.pl/', ['#nw-0', '#nw-3'], ['#nw-section', '#nw-1', '#nw-2', '#nw-footer']);
+    await check('https://www.newsweek.pl/', ['#nw-0', '#nw-3', '#nw-pipe-0', '#nw-pipe-1'], ['#nw-section', '#nw-1', '#nw-2', '#nw-pipe-2', '#nw-pipe-3', '#nw-footer']);
     await check('https://www.radiozet.pl/', ['#rz-std', '#rz-full'], ['#rz-box', '#rz-normal', '#rz-title', '#rz-footer']);
     await check('https://www.spidersweb.pl/', ['[id="SW/HS_DM_HH_XL1"]', '[id="SW/HDH3_HTH3_HMH3"]'], ['#sw-main', '#sw-art', '#sw-other', '#sw-title', '#sw-footer']);
     await check('https://www.strefainwestorow.pl/', ['#block-si-theme-reklamasidebars300x250prawa1', '#block-si-theme-reklamasidebars300x250prawa2'], ['#si-sidebar', '#block-si-theme-notowania', '#block-si-theme-artykul', '#si-footer']);

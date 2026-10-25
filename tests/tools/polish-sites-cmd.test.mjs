@@ -488,3 +488,28 @@ test('update-and-retest-polish-3b.cmd: update-only przed testem, przy błędzie 
   assert.match(t, /^:end\r?\necho\.\r?\npause\r?\nexit \/b %RC%\r?\n?$/m);
   assertCmdBlocks(t, 'update-and-retest-polish-3b.cmd');
 });
+
+test('update-and-retest-polish-newsweek.cmd: update-only przed testem, przy błędzie bez testu; tylko newsweek.pl; kod wyjścia; jedno pause', () => {
+  const t = read('update-and-retest-polish-newsweek.cmd');
+  assert.equal(t.split('\n').length - 1, (t.match(/\r\n/g) || []).length, 'CRLF');
+  assert.match(t, /^cd \/d "%~dp0"\r?$/m);
+  const c = commandsOf(t);
+  assert.doesNotMatch(c, /reset\s+--hard|git reset|--force|stash|git clean|git push|git pull|git fetch|checkout|switch/i);
+  assert.match(c, /^call "%~dp0update-only\.cmd" --no-pause\r?$/m);
+  assert.ok(t.indexOf('call "%~dp0update-only.cmd"') < t.indexOf('call "%~dp0run-polish-test.cmd"'), 'update przed testem');
+  const failBlock = t.slice(t.indexOf('if not "%UPD%"=="0" ('), t.indexOf('set "NEWHEAD="'));
+  assert.match(failBlock, /goto :end/);
+  assert.doesNotMatch(failBlock, /run-polish-test/);
+  const m = /^call "%~dp0run-polish-test\.cmd" (.+) < nul\r?\nset "RC=%ERRORLEVEL%"\r?$/m.exec(c);
+  assert.ok(m);
+  assert.deepEqual(m[1].split(/\s+/), ['--evidence', 'newsweek.pl']);
+  assert.equal((c.match(/run-polish-test\.cmd/g) || []).length, 1);
+  assert.doesNotMatch(c, /npm |npx |where node|playwright install/i);
+  const o = parseArgs(['--gap-mode', ...m[1].split(/\s+/)]);
+  assert.deepEqual([o.gap, o.evidence, o.domains], [true, true, ['newsweek.pl']]);
+  assert.match(t, /HEAD:\s+%NEWHEAD%/);
+  assert.match(t, /Kod wyjscia testu: %RC%/);
+  assert.equal((c.match(/^\s*pause\b/gim) || []).length, 1, 'jedno pause');
+  assert.match(t, /^:end\r?\necho\.\r?\npause\r?\nexit \/b %RC%\r?\n?$/m);
+  assertCmdBlocks(t, 'update-and-retest-polish-newsweek.cmd');
+});
