@@ -222,10 +222,11 @@ test('playback health: główna nawigacja i zamknięcie karty czyszczą raporty'
     const report = () => bg.send({ type: 'youtube:health', status: 'error', reasons: ['brak postępu'], page: 'watch' }, sender('https://www.youtube.com/watch?v=A'));
     await report();
     assert.equal((await bg.send({ type: 'health:get' })).youtube.player.status, 'error');
-    // nawigacja w iframe NIE czyści raportu
-    bg.state.listeners.committed({ tabId: 7, frameId: 3, url: 'https://ads.example/' });
+    // zmiana statusu / tytułu karty (bez zmiany URL) NIE czyści raportu
+    bg.state.listeners.tabUpdated(7, { status: 'complete' });
+    bg.state.listeners.tabUpdated(7, { title: 'Film' });
     assert.equal((await bg.send({ type: 'health:get' })).youtube.player.status, 'error');
-    bg.state.listeners.committed({ tabId: 7, frameId: 0, url: 'https://www.youtube.com/watch?v=C' });
+    bg.state.listeners.tabUpdated(7, { url: 'https://www.youtube.com/watch?v=C' });
     let h = await bg.send({ type: 'health:get' });
     assert.ok(!h.youtube.player, 'raport po nawigacji usunięty');
     assert.notEqual(h.components.youtube.status, 'error');

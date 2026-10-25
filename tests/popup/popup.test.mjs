@@ -86,8 +86,8 @@ test('popup: bez zewnętrznych zasobów, z dostępnością (switch, aria), szero
 
 test('manifest: brak nowych uprawnień', () => {
   const m = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
-  // dokładnie te same uprawnienia co w v0.2.7 (main)
-  assert.deepEqual([...m.permissions].sort(), ['declarativeNetRequest', 'declarativeNetRequestFeedback', 'scripting', 'storage', 'webNavigation']);
+  // zmiany od v0.2.7: declarativeNetRequestFeedback → activeTab, usunięte webNavigation (tabs.onUpdated)
+  assert.deepEqual([...m.permissions].sort(), ['activeTab', 'declarativeNetRequest', 'scripting', 'storage']);
   assert.deepEqual(m.host_permissions, ['<all_urls>']);
   assert.equal(m.optional_permissions, undefined);
   assert.equal(m.version_name, '0.3.4-dev');

@@ -4,7 +4,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { loadBackground } from '../helpers/chrome-mock.mjs';
 import { WELCOME_DEFAULT, welcomeOptions, welcomeResult } from '../../welcome/welcome-model.js';
@@ -93,10 +92,10 @@ test('błąd synchronizacji → onboarding nie twierdzi, że zakończono (karta 
 
 test('brak nowych uprawnień; strona w paczce; bez telemetrii i bez dodatkowego profilu użytkownika', () => {
   const m = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
-  const main = JSON.parse(execFileSync('git', ['show', 'main:manifest.json'], { cwd: ROOT, encoding: 'utf8' }));
-  assert.deepEqual(m.permissions, main.permissions);
-  assert.deepEqual(m.host_permissions, main.host_permissions);
-  assert.deepEqual(m.optional_permissions, main.optional_permissions);
+  // onboarding nie dodaje uprawnień: zestaw jest stały (późniejsze zmiany: declarativeNetRequestFeedback → activeTab, bez webNavigation)
+  assert.deepEqual(m.permissions, ['activeTab', 'declarativeNetRequest', 'scripting', 'storage']);
+  assert.deepEqual(m.host_permissions, ['<all_urls>']);
+  assert.equal(m.optional_permissions, undefined);
   assert.ok(EXTENSION_ENTRIES.includes('welcome'), 'katalog welcome w paczce');
   const src = ['welcome/welcome.js', 'welcome/welcome-model.js'].map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
   assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|sendBeacon|WebSocket|chrome\.storage/);

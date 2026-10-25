@@ -185,6 +185,9 @@ function hostOf(url) {
 }
 
 /** Czy host należy do YouTube (strony, na których działa YouTube Protection). */
+/** Prośba do youtube/health.js o ponowny raport (po zmianie adresu karty). */
+export const YOUTUBE_HEALTH_REFRESH = 'youtube:health-refresh';
+
 export function isYouTubeHost(host) {
   return /(^|\.)(youtube\.com|youtube-nocookie\.com)$/.test(String(host || ''));
 }
@@ -845,12 +848,27 @@ async function updateIcon(tabId, url) {
   } catch { /* karta zamknięta */ }
 }
 
-chrome.webNavigation.onCommitted.addListener((d) => {
-  if (d.frameId !== 0) return;
-  // główna nawigacja karty: raporty odtwarzacza z poprzedniej strony są nieaktualne
-  playerReports.onMainFrameNavigation(d.tabId);
-  updateIcon(d.tabId, d.url);
-});
+// Zmiana adresu karty (pełna nawigacja albo SPA: history.pushState / replaceState, np. YouTube
+// watch → watch, watch → Shorts). Bez uprawnienia "tabs": changeInfo.url Chrome podaje dzięki
+// host_permissions <all_urls>. Reagujemy tylko na zmianę URL – nie na status / title / favIcon.
+export function onTabUrlChanged(tabId, changeInfo) {
+  if (!changeInfo || typeof changeInfo.url !== 'string') return false;
+  // raporty odtwarzacza z poprzedniego adresu (poprzedni film) są nieaktualne
+  playerReports.onMainFrameNavigation(tabId);
+  updateIcon(tabId, changeInfo.url);
+  // YouTube: dopiero PO wyczyszczeniu prosimy youtube/health.js o ponowny raport nowej strony/filmu –
+  // bez tego przy identycznym stanie odtwarzacza (watch → watch) nowy raport by nie przyszedł.
+  // Karta bez skryptu treści (np. jeszcze się ładuje) → błąd sendMessage ignorowany.
+  if (isYouTubeHost(hostOf(changeInfo.url))) {
+    try {
+      const p = chrome.tabs.sendMessage(tabId, { type: YOUTUBE_HEALTH_REFRESH });
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    } catch { /* brak odbiorcy */ }
+  }
+  return true;
+}
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => { onTabUrlChanged(tabId, changeInfo); });
 
 chrome.tabs.onRemoved.addListener((tabId) => { playerReports.clearTab(tabId); });
 
@@ -984,6 +1002,8 @@ const handlers = {
     const host = tab ? hostOf(tab.url) : '';
     let blocked = null;
     try {
+      // dostęp przez activeTab: Chrome przyznaje go dla karty, na której użytkownik otworzył popup;
+      // bez dostępu (np. popup otwarty jako zwykła strona) – fallback do plakietki poniżej
       const info = await chrome.declarativeNetRequest.getMatchedRules({ tabId: msg.tabId });
       const userAllow = new Set(user.rules.map((r, i) => (r.action.type.startsWith('allow') ? USER_RULE_BASE + i : -1)));
       let n = 0;
