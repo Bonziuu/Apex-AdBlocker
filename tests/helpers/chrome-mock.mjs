@@ -68,6 +68,7 @@ export async function loadBackground(opts = {}) {
           return Object.fromEntries(list.filter((k) => k in store).map((k) => [k, structuredClone(store[k])]));
         },
         set: async (o) => { Object.assign(store, structuredClone(o)); },
+        remove: async (k) => { for (const key of [].concat(k)) delete store[key]; },
       },
     },
     declarativeNetRequest: {

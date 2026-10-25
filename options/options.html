@@ -21,6 +21,7 @@
       <button class="tab" data-tab="filters">Moje filtry</button>
       <button class="tab" data-tab="sites">Wyłączone strony</button>
       <button class="tab" data-tab="youtube">YouTube</button>
+      <button class="tab" data-tab="backup">Kopia ustawień</button>
       <button class="tab" data-tab="diag">Diagnostyka</button>
       <button class="tab" data-tab="about">O wtyczce</button>
     </nav>
@@ -79,6 +80,23 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
         <button id="saveSites" class="primary">Zapisz</button>
         <span id="sitesMsg" class="msg-inline"></span>
       </div>
+    </section>
+
+    <section id="backup" class="panel" hidden>
+      <h2 class="mode-h">Kopia ustawień</h2>
+      <p class="muted">Zapisz ustawienia ChromeBlock do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: włączone listy filtrów, tryb ochrony, wyłączone strony (same nazwy domen), Moje filtry i ustawienia Focus Mode. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
+      <div class="bar">
+        <button id="exportSettings" class="primary">Eksportuj ustawienia</button>
+        <button id="importSettings" class="secondary">Importuj ustawienia</button>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+        <span id="backupMsg" class="msg-inline" role="status"></span>
+      </div>
+      <p class="muted backup-note">Import zastępuje obecne ustawienia. Jeśli plik jest niepoprawny albo Chrome nie przyjmie zmian, ustawienia pozostaną bez zmian.</p>
+      <div id="importSummary" class="backup-summary" hidden>
+        <strong>Przywrócono:</strong>
+        <ul id="importSummaryList"></ul>
+      </div>
+      <div id="importErrors" class="msg" role="alert" hidden></div>
     </section>
 
     <section id="diag" class="panel" hidden>

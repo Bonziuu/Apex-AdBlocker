@@ -170,6 +170,60 @@ async function setFocus(patch) {
 
 $('focusEnabled').addEventListener('change', () => setFocus({ enabled: $('focusEnabled').checked }));
 
+// --- Kopia ustawień ------------------------------------------------------------
+$('exportSettings').addEventListener('click', async () => {
+  const r = await send({ type: 'settings:export' }).catch(() => null);
+  if (!r || !r.ok) { flash($('backupMsg'), 'Nie udało się przygotować kopii', 'err'); return; }
+  const blob = new Blob([JSON.stringify(r.backup, null, 2) + '\n'], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = r.fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  flash($('backupMsg'), `Zapisano plik ${r.fileName}`, 'ok');
+});
+
+$('importSettings').addEventListener('click', () => { $('importFile').value = ''; $('importFile').click(); });
+
+$('importFile').addEventListener('change', async () => {
+  const file = $('importFile').files && $('importFile').files[0];
+  if (!file) return;
+  $('importSummary').hidden = true;
+  $('importErrors').hidden = true;
+  if (file.size > 2 * 1024 * 1024) { showImportErrors(['plik jest za duży (maks. 2 MB)']); return; }
+  $('importSettings').disabled = true;
+  $('exportSettings').disabled = true;
+  flash($('backupMsg'), 'Importowanie…', '');
+  let r;
+  try { r = await send({ type: 'settings:import', text: await file.text() }); } catch (e) { r = { ok: false, errors: [String(e)] }; }
+  $('importSettings').disabled = false;
+  $('exportSettings').disabled = false;
+  if (r && r.ok) {
+    data = await send({ type: 'options:get' });
+    renderAll();
+    const ul = $('importSummaryList');
+    ul.textContent = '';
+    for (const line of r.summary) { const li = document.createElement('li'); li.textContent = line; ul.appendChild(li); }
+    $('importSummary').hidden = false;
+    flash($('backupMsg'), 'Ustawienia przywrócone', 'ok');
+  } else {
+    showImportErrors((r && r.errors) || ['nieznany błąd'], r && r.rolledBack);
+  }
+});
+
+function showImportErrors(errors, rolledBack = false) {
+  const box = $('importErrors');
+  box.textContent = rolledBack ? 'Chrome nie przyjął zmian – przywrócono poprzednie ustawienia:' : 'Nie zaimportowano – plik jest niepoprawny (ustawienia bez zmian):';
+  const ul = document.createElement('ul');
+  for (const e of errors) { const li = document.createElement('li'); li.textContent = e; ul.appendChild(li); }
+  box.appendChild(ul);
+  box.hidden = false;
+  flash($('backupMsg'), '', '');
+}
+
 function renderAll() {
   $('version').textContent = data.version;
   renderMode();
