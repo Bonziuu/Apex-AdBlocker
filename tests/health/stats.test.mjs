@@ -234,3 +234,186 @@ test('limit wywołań getMatchedRules: po wyczerpaniu popup:get działa i zwraca
     assert.equal(last.siteBlocked, 1);
   } finally { bg.restore(); }
 });
+
+// --- źródło danych: dostępność, błędy, restart, przerwy, metadane -----------------------------------
+
+import { STATS_SOURCE, MATCH_RETENTION_MS, READ_BUDGET, classifyReadError, recordRead, budgetAllows, statsCapability } from '../../background/stats.js';
+
+const RULES_ADS = JSON.parse(fs.readFileSync(path.join(ROOT, 'rules/ads.json'), 'utf8'));
+const REDIRECT_ID = RULES_ADS.find((r) => r.action.type === 'redirect' && 'extensionPath' in r.action.redirect).id;
+const TRANSFORM_ID = RULES_ADS.find((r) => r.action.type === 'redirect' && 'transform' in r.action.redirect).id;
+
+/** Stub zegara dla tła (Date.now) na czas testu. */
+function clock(start) {
+  const real = Date.now;
+  let t = start;
+  Date.now = () => t;
+  return { set: (v) => { t = v; }, add: (ms) => { t += ms; }, restore: () => { Date.now = real; } };
+}
+
+test('capability metadata: available / source / exact (zawsze false) / reason / fresh / since / lastRead / gaps', async () => {
+  const now = Date.now();
+  const bg = await loadBackground({ tabUrl: 'https://news.example/' });
+  try {
+    await bg.install();
+    withMatches(bg, [m(1, BLOCK_ID, now - 1000)]);
+    const p = await bg.send({ type: 'popup:get', tabId: 1 });
+    assert.deepEqual(Object.keys(p.stats).sort(), ['available', 'exact', 'fresh', 'gaps', 'lastRead', 'reason', 'since', 'source']);
+    assert.equal(p.stats.available, true);
+    assert.equal(p.stats.source, 'getMatchedRules');
+    assert.equal(p.stats.exact, false, 'getMatchedRules to źródło best-effort');
+    assert.equal(p.stats.fresh, true);
+    assert.equal(p.stats.gaps, 0);
+    assert.ok(p.stats.since && p.stats.lastRead);
+  } finally { bg.restore(); }
+  const c = statsCapability({});
+  assert.equal(c.available, false);
+  assert.equal(c.source, STATS_SOURCE.NONE);
+  assert.equal(c.reason, 'not-checked');
+});
+
+test('brak getMatchedRules: available=false, source=none, liczby null, liczniki bez zmian', async () => {
+  const stored = applyMatches(emptyStats(), [m(1, BLOCK_ID, T0)], { now: T0, hostFor: host('news.example') }).stats;
+  const bg = await loadBackground({ tabUrl: 'https://news.example/', local: { [STATS_KEY]: stored } });
+  try {
+    delete globalThis.chrome.declarativeNetRequest.getMatchedRules;
+    const p = await bg.send({ type: 'popup:get', tabId: 1 });
+    assert.deepEqual([p.totalBlocked, p.todayBlocked, p.siteBlocked], [null, null, null], 'bez zmyślonych danych');
+    assert.equal(p.stats.available, false);
+    assert.equal(p.stats.source, 'none');
+    assert.equal(p.stats.reason, 'unavailable');
+    assert.deepEqual(bg.store[STATS_KEY], stored, 'zapisane statystyki nietknięte');
+  } finally { bg.restore(); }
+});
+
+test('błąd / limit Chrome: available=false z powodem, liczniki się nie zmieniają; potem udany odczyt liczy normalnie', async () => {
+  const now = Date.now();
+  const bg = await loadBackground({ tabUrl: 'https://news.example/' });
+  try {
+    await bg.install();
+    let mode = 'quota';
+    globalThis.chrome.declarativeNetRequest.getMatchedRules = async (f = {}) => {
+      if (f.tabId === undefined && mode === 'quota') throw new Error('This request exceeds the MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL quota.');
+      if (f.tabId === undefined && mode === 'perm') throw new Error("You do not have permission to call 'getMatchedRules' (declarativeNetRequestFeedback).");
+      return { rulesMatchedInfo: [m(1, BLOCK_ID, now - 1000)].filter((x) => f.tabId === undefined || x.tabId === f.tabId) };
+    };
+    let p = await bg.send({ type: 'popup:get', tabId: 1 });
+    assert.equal(p.stats.available, false);
+    assert.equal(p.stats.source, 'getMatchedRules');
+    assert.equal(p.stats.reason, 'quota');
+    assert.equal(p.totalBlocked, null);
+    assert.equal(bg.store[STATS_KEY], undefined, 'nic nie zapisano');
+    mode = 'perm';
+    p = await bg.send({ type: 'popup:get', tabId: 1 });
+    assert.equal(p.stats.reason, 'permission');
+    mode = 'ok';
+    p = await bg.send({ type: 'popup:get', tabId: 1 });
+    assert.equal(p.stats.available, true);
+    assert.equal(p.totalBlocked, 1);
+  } finally { bg.restore(); }
+  assert.equal(classifyReadError(new Error('Rule quota exceeded MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL')), 'quota');
+  assert.equal(classifyReadError(new TypeError('x.getMatchedRules is not a function')), 'unavailable');
+  assert.equal(classifyReadError(new Error('boom')), 'error');
+});
+
+test('brak metadanych reguł (data/*.block.json): available=false, nic nie jest liczone (bez zgadywania)', async () => {
+  const now = Date.now();
+  const bg = await loadBackground({ tabUrl: 'https://news.example/', files: { 'data/ads.block.json': new Error('404') } });
+  try {
+    await bg.install();
+    withMatches(bg, [m(1, BLOCK_ID, now - 1000)]);
+    const p = await bg.send({ type: 'popup:get', tabId: 1 });
+    assert.equal(p.stats.available, false);
+    assert.equal(p.stats.reason, 'metadata');
+    assert.equal(p.totalBlocked, null);
+    assert.equal(bg.store[STATS_KEY], undefined);
+  } finally { bg.restore(); }
+});
+
+test('brak fałszywego wzrostu: liczone tylko reguły „block” – bez redirect, removeparam, allow; powtórne odczyty nic nie dodają', async () => {
+  const now = Date.now();
+  const bg = await loadBackground({ tabUrl: 'https://news.example/' });
+  try {
+    await bg.install();
+    withMatches(bg, [m(1, BLOCK_ID, now - 4000), m(1, REDIRECT_ID, now - 3000), m(1, TRANSFORM_ID, now - 2000), m(1, ALLOW_ID, now - 1000)]);
+    let p;
+    for (let i = 0; i < 5; i++) p = await bg.send({ type: 'popup:get', tabId: 1 });
+    assert.equal(p.totalBlocked, 1, 'tylko 1 faktyczna blokada');
+    assert.equal(p.siteBlocked, 1);
+    assert.equal(p.todayBlocked, 1);
+    assert.equal(p.blocked, 3, 'dotychczasowy licznik karty (bez zmian) liczy też redirect i removeparam');
+  } finally { bg.restore(); }
+});
+
+test('restart service workera: budżet odczytów, status i dedup przetrwają (storage.session + storage.local); bez timerów', async () => {
+  const now = Date.now();
+  const matches = [m(1, BLOCK_ID, now - 2000)];
+  const bg1 = await loadBackground({ tabUrl: 'https://news.example/' });
+  let local; let session; let calls = 0;
+  try {
+    await bg1.install();
+    globalThis.chrome.declarativeNetRequest.getMatchedRules = async (f = {}) => { if (f.tabId === undefined) calls++; return { rulesMatchedInfo: matches }; };
+    for (let i = 0; i < 8; i++) await bg1.send({ type: 'popup:get', tabId: 1 });
+    local = structuredClone(bg1.store);
+    session = structuredClone(bg1.session);
+  } finally { bg1.restore(); }
+  assert.equal(session.statsRt.reads.length, 8);
+  // nowy service worker, ta sama sesja przeglądarki
+  const bg2 = await loadBackground({ tabUrl: 'https://news.example/', local, session });
+  try {
+    globalThis.chrome.declarativeNetRequest.getMatchedRules = async (f = {}) => { if (f.tabId === undefined) calls++; return { rulesMatchedInfo: matches }; };
+    let p;
+    for (let i = 0; i < 8; i++) p = await bg2.send({ type: 'popup:get', tabId: 1 });
+    assert.equal(calls, READ_BUDGET.maxCalls, 'łączny budżet z obu instancji, nie 2× limit');
+    assert.equal(p.totalBlocked, 1, 'bez podwójnego liczenia po restarcie');
+    assert.equal(p.stats.available, true, 'pominięty odczyt (budżet) to nie błąd źródła');
+    assert.equal(p.stats.fresh, false);
+  } finally { bg2.restore(); }
+  const src = fs.readFileSync(path.join(ROOT, 'background.js'), 'utf8');
+  const block = src.slice(src.indexOf('// Lokalne statystyki'), src.indexOf('chrome.tabs.onRemoved.addListener'));
+  assert.doesNotMatch(block, /setTimeout|setInterval/, 'poprawność nie zależy od timerów');
+});
+
+test('długa przerwa > 5 min po nawigacji: luka (gaps) zapisana, brak dopisywania „zgubionych” blokad', async () => {
+  const start = Date.now();
+  const c = clock(start);
+  const bg = await loadBackground({ tabUrl: 'https://second.example/' });
+  try {
+    await bg.install();
+    let available = [m(1, BLOCK_ID, start - 1000)];
+    globalThis.chrome.declarativeNetRequest.getMatchedRules = async () => ({ rulesMatchedInfo: available });
+    let p = await bg.send({ type: 'popup:get', tabId: 1 });
+    assert.equal(p.totalBlocked, 1);
+    assert.equal(p.stats.gaps, 0);
+    // nawigacja w karcie (dokument nieaktywny) – a potem service worker śpi > 5 min
+    bg.state.listeners.committed({ tabId: 1, frameId: 0, url: 'https://first.example/', timeStamp: start });
+    await new Promise((r) => setTimeout(r, 30));
+    bg.state.listeners.committed({ tabId: 1, frameId: 0, url: 'https://second.example/', timeStamp: start + 1000 });
+    await new Promise((r) => setTimeout(r, 30));
+    c.set(start + MATCH_RETENTION_MS + 60_000);
+    available = [m(1, BLOCK_ID, start + MATCH_RETENTION_MS + 50_000)]; // Chrome zapomniał starsze dopasowania
+    p = await bg.send({ type: 'popup:get', tabId: 1 });
+    assert.equal(p.totalBlocked, 2, 'tylko to, co Chrome faktycznie zwrócił');
+    assert.equal(p.stats.gaps, 1, 'możliwa utrata danych jest jawnie oznaczona');
+    assert.equal(p.stats.exact, false);
+  } finally { c.restore(); bg.restore(); }
+});
+
+test('czysta logika źródła: budżet (popup vs tło), luka tylko przy niepokrytej aktywności starszej niż 5 min', () => {
+  const now = T0;
+  assert.equal(budgetAllows([], 0, now).ok, true);
+  assert.equal(budgetAllows([], now - 1000, now).ok, false, 'tło: odstęp');
+  assert.equal(budgetAllows([], now - 1000, now, { popup: true }).ok, true, 'popup: bez odstępu');
+  const full = Array.from({ length: READ_BUDGET.maxCalls }, (_, i) => now - i * 1000);
+  assert.equal(budgetAllows(full, 0, now, { popup: true }).reason, 'budget');
+  assert.equal(budgetAllows(full.map((t) => t - READ_BUDGET.windowMs), 0, now, { popup: true }).ok, true, 'stare odczyty wygasają');
+  let s = recordRead(emptyStats(), now);
+  assert.equal(s.src.since, now);
+  s = recordRead(s, now + 10 * 60_000);
+  assert.equal(s.src.gaps, 0, 'długa bezczynność bez nawigacji to nie luka');
+  s = recordRead(s, now + 20 * 60_000, now + 11 * 60_000);
+  assert.equal(s.src.gaps, 1);
+  s = recordRead(s, now + 30 * 60_000, now + 29 * 60_000);
+  assert.equal(s.src.gaps, 1, 'aktywność odczytana w ciągu 5 min – bez luki');
+  assert.deepEqual(statsView(s, 'x.example', now, { available: false }), { totalBlocked: null, todayBlocked: null, siteBlocked: null });
+});

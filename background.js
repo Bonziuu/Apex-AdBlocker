@@ -16,7 +16,10 @@ import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js'
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
 import { PROTECTION_MODES, isPresetMode, listsForMode, modeForLists } from './shared/protection-modes.js';
 import { FOCUS_STORAGE_KEY, FOCUS_DEFAULTS, normalizeFocus, focusCss, activeFocusOptions, isFocusHost } from './shared/youtube-focus.js';
-import { STATS_KEY, normalizeStats, applyMatches, statsView, recordTabHost, hostAt } from './background/stats.js';
+import {
+  STATS_KEY, STATS_SOURCE, normalizeStats, applyMatches, statsView, recordTabHost, hostAt,
+  classifyReadError, recordRead, budgetAllows, statsCapability,
+} from './background/stats.js';
 
 // Pomiar etapów startu (czas od uruchomienia service workera). Ostatni zakończony pomiar
 // trafia do chrome.storage.session i do Diagnostyki.
@@ -826,79 +829,128 @@ async function isBlockingMatch(rule, userAllow) {
 
 // ---------------------------------------------------------------------------
 // Lokalne statystyki (background/stats.js): tylko liczby i hostname, bez URL, bez telemetrii.
-// Źródło: getMatchedRules() (tabId, reguła, czas). Chrome ogranicza liczbę wywołań, więc odczyty są
-// rzadkie: po nawigacji / zamknięciu karty (najwyżej co STATS_MIN_INTERVAL_MS) i przy otwarciu popupu.
+//
+// Źródło: getMatchedRules() – developerskie / best-effort (exact=false). Liczone są WYŁĄCZNIE reguły
+// typu „block” (data/<lista>.block.json; filtry użytkownika – wg typu akcji), bez redirect / removeparam / allow.
+// Brak API, odrzucenie wywołania (limit / uprawnienia) lub brak metadanych → available=false,
+// liczniki bez zmian, w popup:get null zamiast liczb.
+// Bez timerów: odczyt uruchamiają zdarzenia (nawigacja, zamknięcie karty, popup). Service worker może
+// w każdej chwili zasnąć – stan odczytów (budżet, ostatni odczyt, niepokryta aktywność, status źródła)
+// jest w chrome.storage.session, liczniki i kursor deduplikacji w chrome.storage.local.
 
-const STATS_TABS_KEY = 'statsTabs';           // chrome.storage.session: {tabId: [{host, since}]}
-const STATS_MIN_INTERVAL_MS = 45_000;
-const STATS_MAX_CALLS = 12;                    // na 10 min (limit Chrome: 20 / 10 min)
-const statsCalls = [];
-let statsLastPoll = 0;
+const STATS_TABS_KEY = 'statsTabs';  // session: {tabId: [{host, since}]}
+const STATS_RT_KEY = 'statsRt';      // session: {reads:[ts], lastRead, pendingInactive, status}
 let statsQueue = Promise.resolve();
-let statsTimer = 0;
-let statsTabsQueue = Promise.resolve(); // zmiany mapy kart → domen kolejno (bez nadpisywania)
+let statsRtQueue = Promise.resolve(); // zmiany stanu w storage.session – kolejno (bez nadpisywania)
+const blockSets = new Map();          // rulesetId → Promise<Set|null>
 
-function updateStatsTabs(fn) {
-  const run = statsTabsQueue.then(async () => setStatsTabs(fn(await getStatsTabs())));
-  statsTabsQueue = run.catch(() => {});
+function queueRt(fn) {
+  const run = statsRtQueue.then(fn);
+  statsRtQueue = run.catch(() => {});
   return run;
 }
-
-async function getStatsTabs() {
-  try { return (await chrome.storage.session.get(STATS_TABS_KEY))[STATS_TABS_KEY] || {}; } catch { return {}; }
+async function sessionGet(key, def) {
+  try { return (await chrome.storage.session.get(key))[key] || def; } catch { return def; }
 }
-async function setStatsTabs(tabs) {
-  try { await chrome.storage.session.set({ [STATS_TABS_KEY]: tabs }); } catch { /* */ }
+async function sessionSet(key, value) {
+  try { await chrome.storage.session.set({ [key]: value }); } catch { /* */ }
+}
+const getStatsTabs = () => sessionGet(STATS_TABS_KEY, {});
+function updateStatsTabs(fn) {
+  return queueRt(async () => sessionSet(STATS_TABS_KEY, fn(await getStatsTabs())));
+}
+const emptyRt = () => ({ reads: [], lastRead: 0, pendingInactive: 0, status: null });
+const getRt = async () => ({ ...emptyRt(), ...(await sessionGet(STATS_RT_KEY, {})) });
+function updateRt(fn) {
+  return queueRt(async () => { const next = fn(await getRt()); await sessionSet(STATS_RT_KEY, next); return next; });
+}
+/** Dokument przestał być aktywny (nawigacja / zamknięcie karty) – jego dopasowania trzeba odczytać w ~5 min. */
+const noteInactive = (ts) => updateRt((rt) => (rt.pendingInactive ? rt : { ...rt, pendingInactive: ts }));
+
+function exactBlockSet(rulesetId) {
+  if (!blockSets.has(rulesetId)) {
+    blockSets.set(rulesetId, fetchJSON(`data/${rulesetId}.block.json`).then((ids) => new Set(ids)).catch(() => null));
+  }
+  return blockSets.get(rulesetId);
 }
 
-/** Jeden odczyt getMatchedRules → statystyki (szeregowo; limit wywołań). */
+/** Czy dopasowanie to blokada (tylko akcja „block”); null = brak metadanych (nie zgadujemy). */
+async function isExactBlock(rule) {
+  if (rule.rulesetId === '_dynamic') {
+    const r = rule.ruleId >= USER_RULE_BASE ? user.rules[rule.ruleId - USER_RULE_BASE] : null;
+    return !!r && r.action.type === 'block';
+  }
+  const set = await exactBlockSet(rule.rulesetId);
+  return set ? set.has(rule.ruleId) : null;
+}
+
+const setStatus = (status) => updateRt((rt) => ({ ...rt, status: { ...status, at: Date.now() } }));
+
+/** Jeden odczyt getMatchedRules → statystyki (szeregowo). Zwraca {read:boolean, status}. */
 function pollStats({ popup = false } = {}) {
   const run = statsQueue.then(async () => {
     const now = Date.now();
-    while (statsCalls.length && statsCalls[0] < now - 600_000) statsCalls.shift();
-    if (statsCalls.length >= STATS_MAX_CALLS) return { skipped: 'quota' };
-    // popup (gest użytkownika) zawsze odczytuje świeże dane – obowiązuje tylko limit wywołań
-    if (!popup && now - statsLastPoll < STATS_MIN_INTERVAL_MS) {
-      scheduleStats();
-      return { skipped: 'interval' };
+    const api = chrome.declarativeNetRequest && chrome.declarativeNetRequest.getMatchedRules;
+    if (typeof api !== 'function') {
+      const status = { available: false, source: STATS_SOURCE.NONE, reason: 'unavailable' };
+      await setStatus(status);
+      return { read: false, status };
     }
-    statsCalls.push(now);
-    statsLastPoll = now;
-    const stored = await chrome.storage.local.get(STATS_KEY);
-    const stats = normalizeStats(stored[STATS_KEY]);
+    // budżet wywołań (przetrwa restart service workera)
+    let allowed = null;
+    const rt0 = await updateRt((rt) => {
+      const b = budgetAllows(rt.reads, rt.lastRead, now, { popup });
+      allowed = b;
+      return b.ok ? { ...rt, reads: b.reads } : { ...rt, reads: b.reads };
+    });
+    if (!allowed.ok) return { read: false, skipped: allowed.reason, status: rt0.status };
+    const stats = normalizeStats((await chrome.storage.local.get(STATS_KEY))[STATS_KEY]);
     let info;
     try {
       info = await chrome.declarativeNetRequest.getMatchedRules({ minTimeStamp: Math.max(0, stats.cursor.ts - 10_000) });
-    } catch { return { skipped: 'error' }; }
-    const userAllow = userAllowIds();
-    const blocking = [];
-    for (const m of (info && info.rulesMatchedInfo) || []) if (m && m.rule && await isBlockingMatch(m.rule, userAllow)) blocking.push(m);
-    await statsTabsQueue;
+    } catch (e) {
+      const status = { available: false, source: STATS_SOURCE.MATCHED_RULES, reason: classifyReadError(e) };
+      await setStatus(status);
+      return { read: false, status };
+    }
+    const blocks = [];
+    for (const m of (info && info.rulesMatchedInfo) || []) {
+      if (!m || !m.rule) continue;
+      const b = await isExactBlock(m.rule);
+      if (b === null) {
+        // brak metadanych reguł – nie liczymy niczego z tego odczytu (bez zgadywania)
+        const status = { available: false, source: STATS_SOURCE.MATCHED_RULES, reason: 'metadata' };
+        await setStatus(status);
+        return { read: false, status };
+      }
+      if (b) blocks.push(m);
+    }
+    await statsRtQueue;
     let tabs = await getStatsTabs();
-    // karty bez znanej nawigacji (np. po restarcie service workera) – bieżąca domena karty
-    for (const tabId of new Set(blocking.map((m) => m.tabId).filter((id) => id >= 0 && !tabs[id]))) {
+    for (const tabId of new Set(blocks.map((m) => m.tabId).filter((id) => id >= 0 && !tabs[id]))) {
       const t = await chrome.tabs.get(tabId).catch(() => null);
       if (t) tabs = recordTabHost(tabs, tabId, normalizeHost(hostOf(t.url)), 0);
     }
-    const { stats: next, added } = applyMatches(stats, blocking, { now, hostFor: (m) => hostAt(tabs, m.tabId, m.timeStamp) });
-    await chrome.storage.local.set({ [STATS_KEY]: next });
-    return { added };
+    const pending = rt0.pendingInactive;
+    const applied = applyMatches(stats, blocks, { now, hostFor: (m) => hostAt(tabs, m.tabId, m.timeStamp) }).stats;
+    await chrome.storage.local.set({ [STATS_KEY]: recordRead(applied, now, pending) });
+    const status = { available: true, source: STATS_SOURCE.MATCHED_RULES, reason: '' };
+    // niepokryta aktywność sprzed tego odczytu jest już odczytana; nowsza (w trakcie) zostaje
+    await updateRt((rt) => ({ ...rt, lastRead: now, pendingInactive: rt.pendingInactive && rt.pendingInactive > now ? rt.pendingInactive : 0, status: { ...status, at: now } }));
+    return { read: true, status };
   });
   statsQueue = run.catch(() => {});
-  return run.catch(() => ({ skipped: 'error' }));
+  return run.catch((e) => ({ read: false, status: { available: false, source: STATS_SOURCE.MATCHED_RULES, reason: classifyReadError(e) } }));
 }
 
-/** Statystyki dla popupu (świeży odczyt, jeśli pozwala limit wywołań). */
+/** Statystyki dla popupu: świeży odczyt (jeśli pozwala budżet) + jawne metadane źródła. */
 async function popupStats(host) {
-  await pollStats({ popup: true });
-  const stored = await chrome.storage.local.get(STATS_KEY);
-  return statsView(stored[STATS_KEY], host, Date.now());
-}
-
-function scheduleStats() {
-  if (statsTimer) return;
-  const wait = Math.max(1000, STATS_MIN_INTERVAL_MS - (Date.now() - statsLastPoll));
-  statsTimer = setTimeout(() => { statsTimer = 0; pollStats(); }, wait);
+  const r = await pollStats({ popup: true });
+  const rt = await getRt();
+  const status = r.status || rt.status;
+  const stats = (await chrome.storage.local.get(STATS_KEY))[STATS_KEY];
+  const meta = statsCapability({ status, stats, fresh: !!r.read });
+  return { ...statsView(stats, host, Date.now(), { available: meta.available }), stats: meta };
 }
 
 chrome.webNavigation.onCommitted.addListener((d) => {
@@ -907,7 +959,10 @@ chrome.webNavigation.onCommitted.addListener((d) => {
   if (d.tabId >= 0) {
     const host = normalizeHost(hostOf(d.url));
     const since = d.timeStamp || Date.now();
-    updateStatsTabs((tabs) => recordTabHost(tabs, d.tabId, host, since)).then(() => pollStats());
+    let hadDocument = false; // pierwsza nawigacja nowej karty nie dezaktywuje żadnego dokumentu
+    updateStatsTabs((tabs) => { hadDocument = !!tabs[d.tabId]; return recordTabHost(tabs, d.tabId, host, since); })
+      .then(() => (hadDocument ? noteInactive(since) : null))
+      .then(() => pollStats());
   }
   // główna nawigacja karty: raporty odtwarzacza z poprzedniej strony są nieaktualne
   playerReports.onMainFrameNavigation(d.tabId);
@@ -917,7 +972,9 @@ chrome.webNavigation.onCommitted.addListener((d) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
   playerReports.clearTab(tabId);
   // statystyki: najpierw policz dopasowania zamykanej karty, potem zapomnij jej domenę
-  pollStats().finally(() => updateStatsTabs((tabs) => { const t = { ...tabs }; delete t[tabId]; return t; }));
+  noteInactive(Date.now())
+    .then(() => pollStats())
+    .finally(() => updateStatsTabs((tabs) => { const t = { ...tabs }; delete t[tabId]; return t; }));
 });
 
 // ---------------------------------------------------------------------------

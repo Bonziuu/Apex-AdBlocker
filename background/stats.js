@@ -9,6 +9,12 @@
 //   today {day, count}    – zablokowane dzisiaj (dzień lokalny 'RRRR-MM-DD'; nowy dzień → licznik od zera)
 //   sites {host: {n, last}} – per domena (hostname), limit MAX_SITES, wpisy starsze niż SITE_TTL_DAYS usuwane
 //   cursor {ts, keys}     – deduplikacja: znacznik czasu ostatniego dopasowania + klucze z okna DEDUP_WINDOW_MS
+//   src {since, lastRead, gaps} – metadane źródła: od kiedy liczymy, ostatni udany odczyt, wykryte luki
+//
+// Źródło jest jawnie raportowane (statsCapability): available / source / exact.
+// getMatchedRules to źródło developerskie / best-effort (uprawnienie declarativeNetRequestFeedback,
+// limit wywołań Chrome, dopasowania nieaktywnych dokumentów znikają po ~5 min) – exact = false.
+// Licznik akcji DNR (badge) NIE jest źródłem: liczy też przekierowania i usuwanie parametrów.
 
 export const STATS_KEY = 'stats';
 export const STATS_VERSION = 1;
@@ -21,7 +27,62 @@ export const STATS_LIMITS = Object.freeze({
 const DAY_MS = 24 * 3600 * 1000;
 
 export function emptyStats() {
-  return { v: STATS_VERSION, total: 0, today: { day: '', count: 0 }, sites: {}, cursor: { ts: 0, keys: [] } };
+  return { v: STATS_VERSION, total: 0, today: { day: '', count: 0 }, sites: {}, cursor: { ts: 0, keys: [] }, src: { since: 0, lastRead: 0, gaps: 0 } };
+}
+
+export const STATS_SOURCE = Object.freeze({ MATCHED_RULES: 'getMatchedRules', NONE: 'none' });
+/** Chrome nie zwraca dopasowań dokumentów nieaktywnych dłużej niż ~5 min (zamknięta karta, nowa strona). */
+export const MATCH_RETENTION_MS = 5 * 60 * 1000;
+/** Budżet odczytów getMatchedRules (limit Chrome: 20 / 10 min; reszta dla licznika karty w popupie). */
+export const READ_BUDGET = Object.freeze({ maxCalls: 12, windowMs: 10 * 60 * 1000, backgroundSpacingMs: 50_000 });
+
+/** Rodzaj błędu odczytu: 'quota' | 'permission' | 'unavailable' | 'error'. */
+export function classifyReadError(err) {
+  const msg = String((err && err.message) || err || '');
+  if (/quota|MAX_GETMATCHEDRULES/i.test(msg)) return 'quota';
+  if (/permission|declarativeNetRequestFeedback|activeTab/i.test(msg)) return 'permission';
+  if (/not a function|undefined|unavailable/i.test(msg)) return 'unavailable';
+  return 'error';
+}
+
+/**
+ * Zapis udanego odczytu: since (pierwszy odczyt), lastRead, luka – gdy dokument stał się nieaktywny
+ * (nawigacja / zamknięcie karty) dawniej niż MATCH_RETENTION_MS przed tym odczytem (Chrome mógł już
+ * zapomnieć jego dopasowania; nie zgadujemy ich).
+ */
+export function recordRead(stats, now, pendingInactive = 0) {
+  const s = normalizeStats(stats);
+  if (!s.src.since) s.src.since = now;
+  if (pendingInactive && now - pendingInactive > MATCH_RETENTION_MS) s.src.gaps++;
+  s.src.lastRead = now;
+  return s;
+}
+
+/** Budżet odczytów: czy wolno teraz czytać (popup – tylko limit; tło – limit + odstęp). */
+export function budgetAllows(reads, lastRead, now, { popup = false, budget = READ_BUDGET } = {}) {
+  const recent = (reads || []).filter((t) => t > now - budget.windowMs);
+  if (recent.length >= budget.maxCalls) return { ok: false, reason: 'budget', reads: recent };
+  if (!popup && lastRead && now - lastRead < budget.backgroundSpacingMs) return { ok: false, reason: 'spacing', reads: recent };
+  return { ok: true, reads: [...recent, now] };
+}
+
+/**
+ * Jawne metadane źródła dla popupu / opcji.
+ * @param {{status?:{available:boolean, source:string, reason?:string}, stats?:object, fresh?:boolean}} o
+ */
+export function statsCapability({ status, stats, fresh = false } = {}) {
+  const s = normalizeStats(stats);
+  const st = status || { available: false, source: STATS_SOURCE.NONE, reason: 'not-checked' };
+  return {
+    available: !!st.available,
+    source: st.source || STATS_SOURCE.NONE,
+    exact: false, // getMatchedRules jest best-effort; brak źródła dokładnego
+    reason: st.reason || '',
+    fresh: !!(st.available && fresh),
+    since: s.src.since || null,
+    lastRead: s.src.lastRead || null,
+    gaps: s.src.gaps,
+  };
 }
 
 /** Dzień lokalny 'RRRR-MM-DD' dla znacznika czasu (ms). */
@@ -62,6 +123,7 @@ export function normalizeStats(x) {
     s.cursor.ts = nonNeg(x.cursor.ts);
     s.cursor.keys = Array.isArray(x.cursor.keys) ? x.cursor.keys.filter((k) => typeof k === 'string' && /^-?\d+\|[^|]+\|\d+\|\d+(\.\d+)?$/.test(k)).slice(-STATS_LIMITS.maxDedupKeys) : [];
   }
+  if (x.src && typeof x.src === 'object') s.src = { since: nonNeg(x.src.since), lastRead: nonNeg(x.src.lastRead), gaps: nonNeg(x.src.gaps) };
   return s;
 }
 
@@ -113,8 +175,12 @@ export function applyMatches(stats, matches, { now, hostFor = () => '', limits =
   return { stats: s, added };
 }
 
-/** Dane dla popupu: łącznie, dzisiaj (0 po zmianie dnia), dla domeny bieżącej karty. */
-export function statsView(stats, host, now) {
+/**
+ * Dane dla popupu: łącznie, dzisiaj (0 po zmianie dnia), dla domeny bieżącej karty.
+ * Gdy źródło jest niedostępne (available=false) – null zamiast liczb (bez zmyślonych danych).
+ */
+export function statsView(stats, host, now, { available = true } = {}) {
+  if (!available) return { totalBlocked: null, todayBlocked: null, siteBlocked: null };
   const s = normalizeStats(stats);
   const k = siteKey(host);
   return {

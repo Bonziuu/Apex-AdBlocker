@@ -373,6 +373,9 @@ export function buildAll(opts = {}) {
       fs.writeFileSync(path.join(outDir, 'rules', `${list.id}.json`), JSON.stringify(compiled.rules));
       fs.writeFileSync(path.join(outDir, 'data', `${list.id}.allow.json`),
         JSON.stringify(compiled.rules.filter((r) => r.action.type.startsWith('allow')).map((r) => r.id)));
+      // id reguł typu „block” – statystyki liczą tylko faktyczne blokady (bez redirect / removeparam / allow)
+      fs.writeFileSync(path.join(outDir, 'data', `${list.id}.block.json`),
+        JSON.stringify(compiled.rules.filter((r) => r.action.type === 'block').map((r) => r.id)));
       fs.writeFileSync(path.join(outDir, 'data', `${list.id}.json`), JSON.stringify(compiled.cosmetic));
       for (const f of files) fs.writeFileSync(path.join(outDir, f.file), f.js);
       fs.writeFileSync(path.join(outDir, 'data', `${list.id}.scriptlets.json`), JSON.stringify(files.map(({ file, matches, sessionMatches }) => ({ file, matches, sessionMatches }))));

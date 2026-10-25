@@ -18,7 +18,7 @@ let counter = 0;
  */
 export async function loadBackground(opts = {}) {
   const store = opts.local ? structuredClone(opts.local) : {};
-  const session = {};
+  const session = opts.session ? structuredClone(opts.session) : {}; // opts.session – restart service workera (sesja zostaje)
   const state = {
     enabledRulesets: new Set(),
     dynamic: [],
