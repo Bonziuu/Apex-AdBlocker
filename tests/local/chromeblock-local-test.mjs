@@ -186,21 +186,38 @@ export const AB = Object.freeze({
  * @param {object} withF    seekFacts() z ChromeBlock
  * @param {object|{skipped:string}|null} controlF seekFacts() kontroli albo {skipped: powód}
  */
+export const HARD_SEEK_FAILURES = Object.freeze(['no-jump', 'video-error', 'ytp-error', 'fell-back']);
+
+/** Twarde awarie seek ('not-resumed' samo w sobie nie jest twardą awarią). */
+export function hardSeekFailures(f) {
+  return seekFailureKinds(f).filter((k) => HARD_SEEK_FAILURES.includes(k));
+}
+
 export function classifyAB(withF, controlF) {
   if (!controlF || controlF.skipped) {
     return { verdict: AB.INCONCLUSIVE, detail: `kontrola bez ChromeBlock nie wykonała się${controlF && controlF.skipped ? `: ${controlF.skipped}` : ''}` };
   }
-  const errs = (f) => seekFailureKinds(f).filter((k) => k !== 'not-resumed');
-  const w = errs(withF);
-  const c = errs(controlF);
+  const w = hardSeekFailures(withF);
+  const c = hardSeekFailures(controlF);
   const wAll = seekFailureKinds(withF);
   const cAll = seekFailureKinds(controlF);
   if (!wAll.length) return { verdict: AB.INCONCLUSIVE, detail: 'przebieg z ChromeBlock nie ma awarii seek – porównanie niepotrzebne' };
-  const shared = w.length ? w.filter((k) => c.includes(k)) : wAll.filter((k) => cAll.includes(k));
-  if (shared.length) return { verdict: AB.CONTROL_ALSO_FAILS, detail: `ten sam błąd także bez ChromeBlock (${shared.join(', ')}) – nie obwiniać ChromeBlock` };
-  if (!cAll.length) return { verdict: AB.CHROMEBLOCK_SPECIFIC, detail: `bez ChromeBlock seek i odtwarzanie działają; z ChromeBlock: ${wAll.join(', ')}` };
-  if (!c.length) return { verdict: AB.INCONCLUSIVE, detail: `kontrola bez błędu playera, ale odtwarzanie się nie wznowiło; z ChromeBlock: ${wAll.join(', ')}` };
-  return { verdict: AB.INCONCLUSIVE, detail: `kontrola ma inny błąd (${cAll.join(', ')}) niż przebieg z ChromeBlock (${wAll.join(', ')})` };
+  // kontrola czysta: seek działa, odtwarzanie się wznawia, brak twardych awarii
+  const controlClean = !cAll.length;
+  if (w.length) {
+    const missing = w.filter((k) => !c.includes(k));
+    if (!missing.length) return { verdict: AB.CONTROL_ALSO_FAILS, detail: `kontrola bez ChromeBlock odtwarza wszystkie twarde błędy (${w.join(', ')}) – nie obwiniać ChromeBlock` };
+    if (controlClean) return { verdict: AB.CHROMEBLOCK_SPECIFIC, detail: `bez ChromeBlock seek i odtwarzanie działają; z ChromeBlock: ${w.join(', ')}` };
+    if (c.some((k) => w.includes(k))) {
+      return { verdict: AB.INCONCLUSIVE, detail: `kontrola odtwarza tylko część błędów: ${w.filter((k) => c.includes(k)).join(', ')}; brak w kontroli: ${missing.join(', ')}` };
+    }
+    if (!c.length) return { verdict: AB.INCONCLUSIVE, detail: `kontrola bez twardych błędów, ale odtwarzanie się nie wznowiło; z ChromeBlock: ${w.join(', ')}` };
+    return { verdict: AB.INCONCLUSIVE, detail: `kontrola ma inne błędy (${c.join(', ')}) niż przebieg z ChromeBlock (${w.join(', ')})` };
+  }
+  // z ChromeBlock tylko brak wznowienia (bez twardych błędów)
+  if (controlClean) return { verdict: AB.CHROMEBLOCK_SPECIFIC, detail: 'bez ChromeBlock odtwarzanie po seek się wznawia; z ChromeBlock: not-resumed' };
+  if (!c.length) return { verdict: AB.CONTROL_ALSO_FAILS, detail: 'kontrola bez ChromeBlock również nie wznawia odtwarzania po seek – nie obwiniać ChromeBlock' };
+  return { verdict: AB.INCONCLUSIVE, detail: `kontrola ma twarde błędy (${c.join(', ')}), których nie ma z ChromeBlock` };
 }
 
 /** Wiersze tabeli A/B do raportu. */

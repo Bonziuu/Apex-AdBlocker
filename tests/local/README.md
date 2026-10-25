@@ -25,6 +25,8 @@ Gdy test „YouTube: seek” albo „odtwarzanie po seek” kończy się FAIL, t
 
 | Werdykt | Znaczenie | Wynik testów seek |
 | --- | --- | --- |
-| CONTROL ALSO FAILS | ten sam błąd także bez ChromeBlock – nie obwiniać rozszerzenia | SKIP (INCONCLUSIVE) |
-| CHROMEBLOCK-SPECIFIC FAIL | bez ChromeBlock działa, z ChromeBlock nie | FAIL |
-| INCONCLUSIVE | kontrola nie mogła się wykonać albo ma inny błąd | FAIL seek zostaje, A/B = SKIP |
+| CONTROL ALSO FAILS | kontrola odtwarza **wszystkie** twarde błędy z ChromeBlock – nie obwiniać rozszerzenia | SKIP (INCONCLUSIVE) |
+| CHROMEBLOCK-SPECIFIC FAIL | kontrola czysta (seek działa, odtwarzanie się wznawia, brak twardych błędów), z ChromeBlock nie | FAIL |
+| INCONCLUSIVE | kontrola nie mogła się wykonać, odtwarza tylko część błędów albo ma inne błędy | FAIL seek zostaje, A/B = SKIP |
+
+Twarde błędy seek: `no-jump`, `video-error`, `ytp-error` (trwały), `fell-back`. Brak wznowienia odtwarzania (`not-resumed`) sam w sobie nie jest twardym błędem.

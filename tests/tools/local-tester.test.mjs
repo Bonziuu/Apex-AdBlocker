@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   overallStatus, counts, isChromeBlockError, networkErrorOf, formatReport, parseArgs, writeResults, ROOT, exitCodeFor, EXIT, classifySeek, SEEK_RESUME_WAIT_S,
-  seekFacts, seekFailureKinds, classifyAB, formatSeekAB, browserArgs, AB,
+  seekFacts, seekFailureKinds, classifyAB, formatSeekAB, browserArgs, AB, hardSeekFailures,
 } from '../local/chromeblock-local-test.mjs';
 import { packageDev, missingTesterImports, TESTER_FILES, testerPackageJson } from '../../tools/package-dev.mjs';
 import { createRequire } from 'node:module';
@@ -207,9 +207,41 @@ test('A/B: ten sam błąd także bez ChromeBlock → CONTROL ALSO FAILS (nie obw
   const r = classifyAB(brokenSeek(), brokenSeek());
   assert.equal(r.verdict, AB.CONTROL_ALSO_FAILS);
   assert.match(r.detail, /ytp-error, fell-back/);
-  // częściowa zgodność też wystarcza (np. kontrola: tylko trwały .ytp-error + video.error)
-  const control = seekFacts({ before: 15, samples: S([[75, false, true], [75, false, true], [75, false, true]]), videoError: 2, finalUrl: URL_W });
-  assert.equal(classifyAB(brokenSeek(), control).verdict, AB.CONTROL_ALSO_FAILS);
+  // kontrola z dodatkowym błędem (ponad wszystkie błędy z ChromeBlock) – nadal reprodukuje wszystkie
+  const more = seekFacts({ before: 15, samples: S([[75], [75, false, true], [0, false, true], [0, false, true], [0, false, true]]), videoError: 2, finalUrl: URL_W });
+  assert.deepEqual(hardSeekFailures(more), ['video-error', 'ytp-error', 'fell-back']);
+  assert.equal(classifyAB(brokenSeek(), more).verdict, AB.CONTROL_ALSO_FAILS);
+});
+
+// kontrola: trwały .ytp-error, ale pozycja się NIE cofa
+const ytpOnly = () => seekFacts({ before: 15, samples: S([[75], [75, false, true], [75, false, true], [75, false, true]]), finalUrl: URL_W });
+
+test('REGRESJA A/B: ChromeBlock ytp-error + fell-back, kontrola tylko ytp-error → INCONCLUSIVE (nie CONTROL ALSO FAILS)', () => {
+  assert.deepEqual(hardSeekFailures(brokenSeek()), ['ytp-error', 'fell-back']);
+  assert.deepEqual(hardSeekFailures(ytpOnly()), ['ytp-error']);
+  const r = classifyAB(brokenSeek(), ytpOnly());
+  assert.equal(r.verdict, AB.INCONCLUSIVE);
+  assert.match(r.detail, /tylko część błędów: ytp-error; brak w kontroli: fell-back/);
+  // kontrola z video.error + ytp-error (bez cofnięcia) też tylko częściowo
+  const partial = seekFacts({ before: 15, samples: S([[75, false, true], [75, false, true], [75, false, true]]), videoError: 2, finalUrl: URL_W });
+  assert.equal(classifyAB(brokenSeek(), partial).verdict, AB.INCONCLUSIVE);
+});
+
+test('REGRESJA A/B: ChromeBlock ytp-error + fell-back, kontrola ytp-error + fell-back → CONTROL ALSO FAILS', () => {
+  const r = classifyAB(brokenSeek(), brokenSeek());
+  assert.deepEqual(hardSeekFailures(brokenSeek()), ['ytp-error', 'fell-back']);
+  assert.equal(r.verdict, AB.CONTROL_ALSO_FAILS);
+  assert.match(r.detail, /wszystkie twarde błędy \(ytp-error, fell-back\)/);
+});
+
+test('A/B: CHROMEBLOCK-SPECIFIC tylko przy czystej kontroli (seek działa, wznowienie, brak twardych błędów)', () => {
+  assert.equal(classifyAB(brokenSeek(), goodSeek()).verdict, AB.CHROMEBLOCK_SPECIFIC);
+  // kontrola: seek działa, brak twardych błędów, ale odtwarzanie się nie wznowiło → nie jest czysta
+  const stalled = seekFacts({ before: 14, samples: S(Array.from({ length: 25 }, () => [74, true])), finalUrl: URL_W });
+  assert.deepEqual(hardSeekFailures(stalled), []);
+  assert.equal(classifyAB(brokenSeek(), stalled).verdict, AB.INCONCLUSIVE);
+  // not-resumed samo w sobie nie jest twardą awarią
+  assert.ok(!hardSeekFailures(stalled).includes('not-resumed'));
 });
 
 test('A/B: bez ChromeBlock działa, z ChromeBlock nie → CHROMEBLOCK-SPECIFIC FAIL', () => {
@@ -231,7 +263,7 @@ test('A/B: kontrola z innym błędem albo tylko bez wznowienia → INCONCLUSIVE'
   const stalled = seekFacts({ before: 14, samples: S(Array.from({ length: 25 }, () => [74, true])), finalUrl: URL_W }); // bez błędu, tylko buforuje
   const r = classifyAB(brokenSeek(), stalled);
   assert.equal(r.verdict, AB.INCONCLUSIVE);
-  assert.match(r.detail, /bez błędu playera, ale odtwarzanie się nie wznowiło/);
+  assert.match(r.detail, /bez twardych błędów, ale odtwarzanie się nie wznowiło/);
 });
 
 test('A/B: raport zawiera before / target / po seek / .ytp-error / video.error.code / cofnięcie / wznowienie / URL dla obu przebiegów', () => {
