@@ -264,6 +264,11 @@ export function formatReport(r) {
   }
   if (r.checks.some((c) => c.status === 'SKIP')) L.push('  * SKIP = INCONCLUSIVE: nie dało się wiarygodnie sprawdzić (to NIE jest PASS).');
   if (r.seekAB) { L.push(''); L.push(...formatSeekAB(r.seekAB)); }
+  if (r.consentDiagnostics) {
+    const d = r.consentDiagnostics;
+    L.push('', 'Diagnostyka okna zgody YouTube:', `  nagłówek: „${d.heading || '—'}”`, '  widoczne przyciski w oknie i okolicy:');
+    for (const b of d.buttons.length ? d.buttons : ['(brak)']) L.push(`    - ${b}`);
+  }
   const fails = r.checks.filter((c) => c.status === 'FAIL');
   L.push('');
   L.push('Błędy:');
@@ -541,7 +546,7 @@ export async function runLocalTests(opts = {}) {
     else if (!online) await skipRest(YT, 'INCONCLUSIVE – brak dostępu do internetu');
     else {
       const runControl = () => runControlSeek({ chromium, headless, video, consent, onContext, log });
-      result.seekAB = await runYouTube({ context, add, skipRest, YT, video, shortsUrl, consent, setCurrent: (pg) => { current = pg; }, notes, runControl, log });
+      result.seekAB = await runYouTube({ context, add, skipRest, YT, video, shortsUrl, consent, setCurrent: (pg) => { current = pg; }, notes, runControl, log, onConsentDiagnostics: (d) => { result.consentDiagnostics = d; } });
     }
 
     // 7. health po testach
@@ -581,7 +586,9 @@ export async function runLocalTests(opts = {}) {
 // CAPTCHA i logowanie nie są obchodzone (→ SKIP).
 export const CONSENT_HEADING_RE = /zanim przejdziesz do youtube|before you continue to youtube|bevor sie zu youtube weitergehen|avant d['’]accéder à youtube|antes de (?:ir|continuar) a youtube/i;
 export const CONSENT_REJECT_RE = /^\s*(?:odrzuć wszystko|reject all|alle ablehnen|tout refuser|rechazar todo)\s*$/i;
-export const CONSENT_REJECT_LOOSE_RE = /odrzuć|reject|ablehnen|refuser|rechazar/i;
+// nigdy nie klikamy niczego, co akceptuje (PL/EN/DE/FR/ES)
+export const CONSENT_ACCEPT_RE = /zaakceptuj|akceptuj|accept|akzeptier|annehmen|accepter|aceptar/i;
+export const CONSENT_CLICKABLE_SEL = 'button, [role="button"], a[href], tp-yt-paper-button, yt-button-shape, ytd-button-renderer, [tabindex]';
 export const CONSENT_DIALOG_SEL = 'ytd-consent-bump-v2-lightbox, tp-yt-paper-dialog, [role="dialog"], [role="alertdialog"], dialog[open]';
 
 const visible = (loc) => loc.isVisible().catch(() => false);
@@ -603,6 +610,78 @@ export async function findConsentModal(page) {
 }
 
 /**
+ * Zakresy wyszukiwania przycisku: okno → kolejne większe kontenery (do 4 poziomów, nigdy powyżej
+ * elementu bezpośrednio pod <body>) → cała strona.
+ */
+export async function consentSearchScopes(page, root) {
+  const scopes = [{ name: 'okno zgody', loc: root }];
+  const depth = await root.evaluate((el) => {
+    let d = 0;
+    while (el.parentElement && el.parentElement !== document.body && el.parentElement !== document.documentElement) { el = el.parentElement; d++; }
+    return d;
+  }).catch(() => 0);
+  let cur = root;
+  for (let i = 1; i <= Math.min(4, depth); i++) { cur = cur.locator('xpath=..'); scopes.push({ name: `kontener okna (+${i})`, loc: cur }); }
+  scopes.push({ name: 'cała strona', loc: page.locator('body') });
+  return scopes;
+}
+
+/** Czy element (lub jego przycisk-przodek) wygląda na akceptację – wtedy NIE klikamy. */
+const looksLikeAccept = (loc) => loc.evaluate((el, src) => {
+  const re = new RegExp(src, 'i');
+  const host = el.closest('button, [role="button"], a, tp-yt-paper-button, yt-button-shape, ytd-button-renderer') || el;
+  const texts = [el.innerText, el.getAttribute('aria-label'), host.innerText, host.getAttribute('aria-label')];
+  return texts.some((t) => t && re.test(t));
+}, CONSENT_ACCEPT_RE.source).catch(() => true);
+
+/**
+ * Szuka przycisku „Odrzuć wszystko” (i odpowiedników): kolejno w oknie zgody, w większych kontenerach,
+ * na całej stronie; button / [role=button] / element klikalny z DOKŁADNYM tekstem. Pomija akceptację.
+ * @returns {Promise<{loc, scope:string, how:string}|null>}
+ */
+export async function findRejectButton(page, root) {
+  for (const sc of await consentSearchScopes(page, root)) {
+    const kinds = [
+      ['rola button', sc.loc.getByRole('button', { name: CONSENT_REJECT_RE })],
+      ['element klikalny', sc.loc.locator(CONSENT_CLICKABLE_SEL).filter({ hasText: CONSENT_REJECT_RE })],
+      ['dokładny tekst', sc.loc.getByText(CONSENT_REJECT_RE)],
+    ];
+    for (const [how, list] of kinds) {
+      const n = Math.min(await list.count().catch(() => 0), 10);
+      for (let i = 0; i < n; i++) {
+        const c = list.nth(i);
+        if (!(await visible(c))) continue;
+        if (await looksLikeAccept(c)) continue;
+        return { loc: c, scope: sc.name, how };
+      }
+    }
+  }
+  return null;
+}
+
+/** Diagnostyka (bez danych użytkownika): tekst nagłówka zgody i widoczne nazwy przycisków w oknie i okolicy. */
+export async function consentDiagnostics(page, root) {
+  const heading = await page.getByText(CONSENT_HEADING_RE).first().innerText({ timeout: 2000 }).catch(() => '');
+  const scopes = await consentSearchScopes(page, root);
+  const area = scopes[Math.max(0, scopes.length - 2)].loc; // największy kontener okna (bez całej strony)
+  const buttons = await area.evaluate((el, sel) => {
+    const vis = (e) => { const r = e.getBoundingClientRect(); const st = getComputedStyle(e); return r.width > 0 && r.height > 0 && st.visibility !== 'hidden' && st.display !== 'none'; };
+    const out = [];
+    for (const e of el.querySelectorAll(sel)) {
+      if (!vis(e)) continue;
+      const name = (e.getAttribute('aria-label') || e.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+      if (!name) continue;
+      const kind = `${e.tagName.toLowerCase()}${e.getAttribute('role') ? `[role=${e.getAttribute('role')}]` : ''}`;
+      const item = `${kind}: „${name}”`;
+      if (!out.includes(item)) out.push(item);
+      if (out.length >= 25) break;
+    }
+    return out;
+  }, CONSENT_CLICKABLE_SEL).catch(() => []);
+  return { heading: heading.replace(/\s+/g, ' ').trim().slice(0, 120), buttons };
+}
+
+/**
  * Zamyka okno zgody YouTube przyciskiem „Odrzuć wszystko” (przewija okno, jeśli przycisk jest niżej)
  * i POTWIERDZA, że okno zniknęło.
  * @returns {Promise<{state:'none'|'dismissed'|'failed'|'present', reason?:string}>}
@@ -621,11 +700,13 @@ export async function dismissConsentModal(page, { click = true, appearMs = 8000,
   }
   if (!modal) return { state: 'none' };
   if (!click) return { state: 'present', reason: 'okno zgody YouTube (uruchom bez --no-consent)' };
-  let btn = modal.root.getByRole('button', { name: CONSENT_REJECT_RE }).first();
-  if (!(await btn.count().catch(() => 0))) btn = modal.root.getByRole('button', { name: CONSENT_REJECT_LOOSE_RE }).first();
-  if (!(await btn.count().catch(() => 0))) return { state: 'failed', reason: 'w oknie zgody nie ma przycisku „Odrzuć wszystko”' };
+  const found = await findRejectButton(page, modal.root);
+  if (!found) {
+    return { state: 'failed', reason: 'nie znaleziono przycisku „Odrzuć wszystko” (okno, okolica, cała strona)', diagnostics: await consentDiagnostics(page, modal.root) };
+  }
+  const btn = found.loc;
   try {
-    await btn.scrollIntoViewIfNeeded({ timeout: 5000 }); // przycisk może być niżej w przewijanym oknie
+    await btn.scrollIntoViewIfNeeded({ timeout: 5000 }); // przycisk może być niżej / poza viewportem
     await btn.click({ timeout: 10000 });
   } catch (e) {
     return { state: 'failed', reason: `nie udało się kliknąć „Odrzuć wszystko” (${String((e && e.message) || e).split('\n')[0]})` };
@@ -634,13 +715,13 @@ export async function dismissConsentModal(page, { click = true, appearMs = 8000,
   while (Date.now() - t1 < closeMs) {
     await page.waitForTimeout(500);
     await page.waitForLoadState('domcontentloaded').catch(() => {});
-    if (!(await findConsentModal(page))) return { state: 'dismissed' };
+    if (!(await findConsentModal(page))) return { state: 'dismissed', found: { scope: found.scope, how: found.how } };
   }
-  return { state: 'failed', reason: 'okno zgody nie zniknęło po kliknięciu „Odrzuć wszystko”' };
+  return { state: 'failed', reason: 'okno zgody nie zniknęło po kliknięciu „Odrzuć wszystko”', diagnostics: await consentDiagnostics(page, modal.root) };
 }
 
 /** Otwiera adres YouTube; zwraca powód pominięcia (sieć, zgoda, CAPTCHA, logowanie) albo null. */
-export async function openYouTube(page, url, consent) {
+export async function openYouTube(page, url, consent, { onConsentDiagnostics = null } = {}) {
   try {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
   } catch (e) {
@@ -655,6 +736,7 @@ export async function openYouTube(page, url, consent) {
   if (/accounts\.google\.com|ServiceLogin|signin/.test(page.url())) return 'INCONCLUSIVE – YouTube wymaga logowania';
   // okno zgody bezpośrednio na youtube.com (pojawia się po chwili – czekamy, zamykamy i potwierdzamy)
   const c = await dismissConsentModal(page, { click: consent });
+  if (c.diagnostics && onConsentDiagnostics) onConsentDiagnostics(c.diagnostics);
   if (c.state === 'present' || c.state === 'failed') return `INCONCLUSIVE – ${c.reason}; nie da się wiarygodnie sprawdzić odtwarzania (to nie jest błąd ChromeBlock)`;
   if (/\/sorry\//.test(page.url())) return 'INCONCLUSIVE – Google wymaga weryfikacji (CAPTCHA) – bez obchodzenia';
   return null;
@@ -704,11 +786,11 @@ async function runControlSeek({ chromium, headless, video, consent, onContext, l
   }
 }
 
-async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consent, setCurrent, notes, runControl, log = () => {} }) {
+async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consent, setCurrent, notes, runControl, log = () => {}, onConsentDiagnostics = null }) {
   const page = await context.newPage();
   setCurrent(page);
   const raw = watchRawResponses(page);
-  const open = (url) => openYouTube(page, url, consent);
+  const open = (url) => openYouTube(page, url, consent, { onConsentDiagnostics });
 
   const watchSkip = await open(`https://www.youtube.com/watch?v=${encodeURIComponent(video)}`);
   if (watchSkip) { await skipRest(YT, watchSkip); await page.close(); return null; }
