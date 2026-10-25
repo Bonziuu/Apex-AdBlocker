@@ -136,3 +136,12 @@ textarea.report { min-height: 220px; margin: 10px 0; font-size: 12px; }
 /* YouTube Focus Mode */
 .focus-master { margin-bottom: 10px; }
 .focus-options.focus-off .card { opacity: .6; }
+
+/* Kopia ustawień */
+.backup-note { font-size: 13px; margin-top: 10px; }
+.backup-summary { margin-top: 12px; padding: 10px 14px; border-radius: 8px; background: var(--surface); border: 1px solid var(--ok); }
+.backup-summary ul { margin: 6px 0 0; padding-left: 18px; }
+.backup-summary li { margin: 2px 0; }
+#importErrors ul { margin: 6px 0 0; padding-left: 18px; }
+#importErrors .import-title { font-weight: 600; }
+#importErrors #openDiag { margin-top: 8px; }

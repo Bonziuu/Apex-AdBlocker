@@ -375,6 +375,7 @@ export async function runLocalTests(opts = {}) {
     log(`Uruchamiam Chromium z ChromeBlock ${result.version || ''}…`);
     context = await chromium.launchPersistentContext(path.join(tmp, 'profile'), {
       headless,
+      acceptDownloads: true, // eksport kopii ustawień (plik trafia do katalogu tymczasowego)
       channel: 'chromium',
       viewport: { width: 1280, height: 800 },
       args: browserArgs(extDir),
@@ -552,7 +553,10 @@ export async function runLocalTests(opts = {}) {
       await runFocus({ context, add, skipRest, FOCUS, video, consent, extId, opt, setCurrent: (pg) => { current = pg; } });
     }
 
-    // 7. health po testach
+    // 7. kopia ustawień (eksport / import przez UI Opcji) – zawsze z przywróceniem stanu początkowego
+    await runBackup({ context, add, extId, opt, dir: path.join(tmp, 'backup'), setCurrent: (pg) => { current = pg; } });
+
+    // 8. health po testach
     current = opt;
     h = await call({ type: 'health:get' }).catch(() => null);
     const errs = [];
@@ -721,6 +725,187 @@ export async function dismissConsentModal(page, { click = true, appearMs = 8000,
     if (!(await findConsentModal(page))) return { state: 'dismissed', found: { scope: found.scope, how: found.how } };
   }
   return { state: 'failed', reason: 'okno zgody nie zniknęło po kliknięciu „Odrzuć wszystko”', diagnostics: await consentDiagnostics(page, modal.root) };
+}
+
+// --- Kopia ustawień (Backup / Restore) przez prawdziwy UI Opcji ------------------------------------
+export const BACKUP_CHECKS = Object.freeze([
+  ['backup-export', 'Backup: eksport'],
+  ['backup-privacy', 'Backup: prywatność'],
+  ['backup-import', 'Backup: import'],
+  ['backup-match', 'Backup: zgodność ustawień'],
+  ['backup-badfile', 'Backup: błędny plik'],
+  ['backup-final', 'Backup: stan po teście'],
+]);
+const BACKUP_KEYS = ['enabledLists', 'disabledSites', 'userFilters', 'protectionMode', 'youtubeFocus'];
+const BACKUP_TEST_HOST = 'chromeblock-backup-test.example';
+// w kopii nie może być: health, diagnostyki, danych sesji, statystyk, kart, adresów
+const BACKUP_FORBIDDEN = ['"health"', 'startupProfile', 'devPerf', 'scriptletPerf', 'statsTabs', 'statsRt', 'sessionScriptletsOk', 'tabId', '"errors"', 'http://', 'https://'];
+
+/** Ustawienia w postaci porównywalnej (z options:get). */
+export function settingsView(o) {
+  if (!o) return null;
+  return {
+    enabledLists: (o.lists || []).filter((l) => l.enabled).map((l) => l.id).sort(),
+    protectionMode: o.protectionMode,
+    disabledSites: [...(o.disabledSites || [])].sort(),
+    userFilters: o.userFilters || '',
+    youtubeFocus: o.youtubeFocus || null,
+  };
+}
+
+/** Różnice między dwoma widokami ustawień (lista nazw pól). */
+export function settingsDiff(a, b) {
+  if (!a || !b) return ['brak danych'];
+  return BACKUP_KEYS.filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]));
+}
+
+/** Kontrola kopii (czysta logika): format, dokładnie 5 pól, zgodność ze snapshotem, prywatność. */
+export function checkBackupFile(text, snapshot) {
+  const out = { export: [], privacy: [], data: null };
+  let b;
+  try { b = JSON.parse(text); } catch { out.export.push('pobrany plik nie jest poprawnym JSON'); return out; }
+  out.data = b;
+  if (b.format !== 'chromeblock-settings') out.export.push(`format: ${JSON.stringify(b.format)}`);
+  if (b.version !== 1) out.export.push(`version: ${JSON.stringify(b.version)}`);
+  const keys = b.settings && typeof b.settings === 'object' ? Object.keys(b.settings).sort() : [];
+  if (JSON.stringify(keys) !== JSON.stringify([...BACKUP_KEYS].sort())) out.export.push(`pola ustawień: ${keys.join(', ') || 'brak'} (oczekiwano dokładnie 5)`);
+  if (snapshot && b.settings) {
+    const v = { ...b.settings, enabledLists: [...(b.settings.enabledLists || [])].sort(), disabledSites: [...(b.settings.disabledSites || [])].sort() };
+    const diff = settingsDiff(v, snapshot);
+    if (diff.length) out.export.push(`kopia różni się od bieżących ustawień: ${diff.join(', ')}`);
+  }
+  const extraTop = Object.keys(b).filter((k) => !['format', 'version', 'exportedAt', 'extensionVersion', 'settings'].includes(k));
+  if (extraTop.length) out.privacy.push(`dodatkowe pola: ${extraTop.join(', ')}`);
+  // treść własnych filtrów użytkownika pomijamy (to jego ustawienie, może zawierać adresy)
+  const scan = JSON.stringify({ ...b, settings: { ...(b.settings || {}), userFilters: '' } });
+  const found = BACKUP_FORBIDDEN.filter((w) => scan.includes(w));
+  if (found.length) out.privacy.push(`w kopii: ${found.join(', ')}`);
+  return out;
+}
+
+async function runBackup({ context, add, extId, opt, dir, setCurrent }) {
+  fs.mkdirSync(dir, { recursive: true });
+  const call = (msg) => opt.evaluate((m) => chrome.runtime.sendMessage(m), msg);
+  const view = async () => settingsView(await call({ type: 'options:get' }).catch(() => null));
+  const done = new Set();
+  const report = async (id, status, detail) => {
+    done.add(id);
+    await add(id, BACKUP_CHECKS.find(([k]) => k === id)[1], status, detail);
+  };
+  const snapshot = await view();
+  let page = null;
+  try {
+    if (!snapshot) throw new Error('nie można odczytać ustawień (options:get)');
+    page = await context.newPage();
+    setCurrent(page);
+    await page.goto(`chrome-extension://${extId}/options/options.html#backup`);
+    await page.waitForSelector('#exportSettings', { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelectorAll('#listContainer input').length > 0, null, { timeout: 30000 });
+
+    // 1. eksport przez UI
+    const [download] = await Promise.all([page.waitForEvent('download', { timeout: 20000 }), page.click('#exportSettings')]);
+    const file = path.join(dir, 'kopia.json');
+    await download.saveAs(file);
+    const name = download.suggestedFilename();
+    const chk = checkBackupFile(fs.readFileSync(file, 'utf8'), snapshot);
+    if (!/^chromeblock-ustawienia-\d{4}-\d{2}-\d{2}\.json$/.test(name)) chk.export.push(`nazwa pliku: ${name}`);
+    await report('backup-export', chk.export.length ? 'FAIL' : 'PASS', chk.export.join('; ') || `${name}: format chromeblock-settings v1, 5 pól zgodnych z ustawieniami`);
+    await report('backup-privacy', chk.privacy.length ? 'FAIL' : 'PASS', chk.privacy.join('; ') || 'bez health, diagnostyki, sesji, statystyk, kart i adresów');
+    if (chk.export.length) throw new Error('eksport niepoprawny – import pominięty');
+
+    // 2. zmiana wszystkich ustawień (istniejące API Opcji)
+    await call({ type: 'options:setProtectionMode', mode: snapshot.protectionMode === 'strict' ? 'basic' : 'strict' });
+    await call({ type: 'options:setDisabledSites', sites: [...snapshot.disabledSites, BACKUP_TEST_HOST] });
+    await call({ type: 'options:setUserFilters', text: `${snapshot.userFilters}${snapshot.userFilters && !snapshot.userFilters.endsWith('\n') ? '\n' : ''}||${BACKUP_TEST_HOST}^\n` });
+    const f = snapshot.youtubeFocus || {};
+    await call({ type: 'options:setYouTubeFocus', settings: { enabled: !f.enabled, comments: !f.comments } });
+    const changed = settingsDiff(await view(), snapshot);
+    const dynBefore = await opt.evaluate(() => chrome.declarativeNetRequest.getDynamicRules()).catch(() => []);
+    const testRulesBefore = JSON.stringify(dynBefore).includes(BACKUP_TEST_HOST);
+    if (changed.length < 5) throw new Error(`nie udało się zmienić ustawień przed importem (zmienione: ${changed.join(', ')})`);
+
+    // 3. import wcześniej wyeksportowanego pliku przez UI
+    const importStart = await opt.evaluate(() => Date.now());
+    await page.reload();
+    await page.waitForSelector('#importSettings');
+    const [chooser] = await Promise.all([page.waitForEvent('filechooser', { timeout: 15000 }), page.click('#importSettings')]);
+    await chooser.setFiles(file);
+    await page.waitForSelector('#importSummary:not([hidden]), #importErrors:not([hidden])', { timeout: 120000 });
+    const okUi = await page.isVisible('#importSummary');
+    const uiText = ((await page.textContent(okUi ? '#importSummary' : '#importErrors')) || '').replace(/\s+/g, ' ').trim();
+
+    // stan silnika po imporcie
+    const after = await view();
+    const h = await call({ type: 'health:get' }).catch(() => null);
+    const eng = await opt.evaluate(async () => {
+      const rulesets = (await chrome.declarativeNetRequest.getEnabledRulesets()).sort();
+      const dyn = await chrome.declarativeNetRequest.getDynamicRules();
+      const reg = await chrome.scripting.getRegisteredContentScripts();
+      return { rulesets, dyn, regLists: [...new Set(reg.filter((r) => r.id.startsWith('sl-')).map((r) => r.id.split('-')[1]))].sort() };
+    }).catch((e) => ({ error: String(e) }));
+    const withScriptlets = [];
+    for (const id of after ? after.enabledLists : []) {
+      const files = await opt.evaluate((x) => fetch(chrome.runtime.getURL(`data/${x}.scriptlets.json`)).then((r) => r.json()).catch(() => []), id);
+      if (files.length) withScriptlets.push(id);
+    }
+    const problems = [];
+    if (!okUi) problems.push(`UI: ${uiText.slice(0, 200)}`);
+    for (const c of COMPONENTS) if (h && h.components && h.components[c] && h.components[c].status === 'error') problems.push(`health ${COMPONENT_LABEL[c]}: ERROR`);
+    for (const step of ['rulesets', 'dynamicRules', 'scriptlets']) {
+      const r = h && h.sync && h.sync[step];
+      if (!r || r.status !== 'ok' || !(r.at >= importStart)) problems.push(`synchronizacja ${step}: ${r ? `${r.status}${r.at >= importStart ? '' : ' (sprzed importu)'}` : 'brak'}`);
+    }
+    if (eng.error) problems.push(`odczyt stanu Chrome: ${eng.error}`);
+    else if (after) {
+      if (JSON.stringify(eng.rulesets) !== JSON.stringify(after.enabledLists)) problems.push(`zestawy reguł Chrome (${eng.rulesets.join(',')}) ≠ listy (${after.enabledLists.join(',')})`);
+      const site = eng.dyn.find((r) => r.id === 1);
+      const siteDomains = site ? [...(site.condition.requestDomains || [])].sort() : [];
+      if (JSON.stringify(siteDomains) !== JSON.stringify(after.disabledSites)) problems.push('reguła wyłączonych stron ≠ ustawienia');
+      if (!testRulesBefore) problems.push('przed importem brak testowych reguł dynamicznych (zmiana nie dotarła do Chrome)');
+      if (JSON.stringify(eng.dyn).includes(BACKUP_TEST_HOST)) problems.push('po imporcie zostały testowe reguły dynamiczne');
+      if (JSON.stringify(eng.regLists) !== JSON.stringify(withScriptlets.sort())) problems.push(`scriptlety zarejestrowane dla: ${eng.regLists.join(',') || '—'}; oczekiwano: ${withScriptlets.join(',') || '—'}`);
+    }
+    await report('backup-import', problems.length ? 'FAIL' : 'PASS', problems.join('; ') || `przez UI; podsumowanie widoczne; health bez ERROR; listy, reguły dynamiczne i scriptlety zsynchronizowane`);
+    const diff = settingsDiff(after, snapshot);
+    await report('backup-match', diff.length ? 'FAIL' : 'PASS', diff.length ? `nie wróciły: ${diff.join(', ')}` : 'enabledLists, protectionMode, disabledSites, userFilters, youtubeFocus = snapshot');
+
+    // 4. błędny plik → odrzucony, bez zmian
+    const bad = path.join(dir, 'uszkodzony.json');
+    fs.writeFileSync(bad, '{"format": "chromeblock-settings", "version": 1, "settings": {');
+    const beforeBad = await view();
+    const [chooser2] = await Promise.all([page.waitForEvent('filechooser', { timeout: 15000 }), page.click('#importSettings')]);
+    await chooser2.setFiles(bad);
+    const rejected = await page.waitForSelector('#importErrors:not([hidden])', { timeout: 30000 }).then(() => true).catch(() => false);
+    const errText = rejected ? ((await page.textContent('#importErrors')) || '') : '';
+    const badDiff = settingsDiff(await view(), beforeBad);
+    const okBad = rejected && /niepoprawny/.test(errText) && !badDiff.length;
+    await report('backup-badfile', okBad ? 'PASS' : 'FAIL', okBad ? 'odrzucony („plik jest niepoprawny”), żadne ustawienie się nie zmieniło'
+      : [!rejected && 'brak komunikatu o odrzuceniu', rejected && !/niepoprawny/.test(errText) && `komunikat: ${errText.slice(0, 120)}`, badDiff.length && `zmieniono: ${badDiff.join(', ')}`].filter(Boolean).join('; '));
+  } catch (e) {
+    const why = `przerwano: ${String((e && e.message) || e).split('\n')[0]}`;
+    for (const [id] of BACKUP_CHECKS) if (id !== 'backup-final' && !done.has(id)) await report(id, 'FAIL', why);
+  } finally {
+    // 5. zawsze przywróć stan początkowy (także po FAIL)
+    let detail = '';
+    let ok = false;
+    try {
+      if (!snapshot) throw new Error('brak snapshotu');
+      let diff = settingsDiff(await view(), snapshot);
+      if (diff.length) {
+        await call({ type: 'options:setLists', enabledLists: snapshot.enabledLists });
+        await call({ type: 'options:setDisabledSites', sites: snapshot.disabledSites });
+        await call({ type: 'options:setUserFilters', text: snapshot.userFilters });
+        if (snapshot.youtubeFocus) await call({ type: 'options:setYouTubeFocus', settings: snapshot.youtubeFocus });
+        diff = settingsDiff(await view(), snapshot);
+        detail = diff.length ? `nie udało się przywrócić: ${diff.join(', ')}` : 'przywrócono stan początkowy po teście';
+      } else detail = 'ustawienia jak przed testem';
+      ok = !diff.length;
+    } catch (e) {
+      detail = `błąd przywracania: ${String((e && e.message) || e).split('\n')[0]}`;
+    }
+    await report('backup-final', ok ? 'PASS' : 'FAIL', detail);
+    if (page) await page.close().catch(() => {});
+  }
 }
 
 // --- YouTube Focus Mode na prawdziwym YouTube -----------------------------------------------------

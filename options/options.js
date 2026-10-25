@@ -1,5 +1,6 @@
 import { PRESETS, MODE_LABEL, MODE_CONTENTS, MODE_ERROR, modeDisplay } from '../shared/protection-mode-ui.js';
 import { FOCUS_OPTIONS, FOCUS_LABELS, FOCUS_DESCRIPTIONS, normalizeFocus } from '../shared/youtube-focus.js';
+import { importFailureMessage } from '../shared/settings-backup.js';
 
 const $ = (id) => document.getElementById(id);
 const send = (msg) => chrome.runtime.sendMessage(msg);
@@ -169,6 +170,73 @@ async function setFocus(patch) {
 }
 
 $('focusEnabled').addEventListener('change', () => setFocus({ enabled: $('focusEnabled').checked }));
+
+// --- Kopia ustawień ------------------------------------------------------------
+$('exportSettings').addEventListener('click', async () => {
+  const r = await send({ type: 'settings:export' }).catch(() => null);
+  if (!r || !r.ok) { flash($('backupMsg'), 'Nie udało się przygotować kopii', 'err'); return; }
+  const blob = new Blob([JSON.stringify(r.backup, null, 2) + '\n'], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = r.fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  flash($('backupMsg'), `Zapisano plik ${r.fileName}`, 'ok');
+});
+
+$('importSettings').addEventListener('click', () => { $('importFile').value = ''; $('importFile').click(); });
+
+$('importFile').addEventListener('change', async () => {
+  const file = $('importFile').files && $('importFile').files[0];
+  if (!file) return;
+  $('importSummary').hidden = true;
+  $('importErrors').hidden = true;
+  if (file.size > 2 * 1024 * 1024) { showImportErrors({ ok: false, errors: ['plik jest za duży (maks. 2 MB)'] }); return; }
+  $('importSettings').disabled = true;
+  $('exportSettings').disabled = true;
+  flash($('backupMsg'), 'Importowanie…', '');
+  let r;
+  try { r = await send({ type: 'settings:import', text: await file.text() }); } catch (e) { r = { ok: false, errors: [String(e)] }; }
+  $('importSettings').disabled = false;
+  $('exportSettings').disabled = false;
+  if (r && r.ok) {
+    data = await send({ type: 'options:get' });
+    renderAll();
+    const ul = $('importSummaryList');
+    ul.textContent = '';
+    for (const line of r.summary) { const li = document.createElement('li'); li.textContent = line; ul.appendChild(li); }
+    $('importSummary').hidden = false;
+    flash($('backupMsg'), 'Ustawienia przywrócone', 'ok');
+  } else {
+    showImportErrors(r);
+  }
+});
+
+function showImportErrors(result) {
+  const m = importFailureMessage(result);
+  const box = $('importErrors');
+  box.textContent = '';
+  const title = document.createElement('div');
+  title.className = 'import-title';
+  title.textContent = m.title;
+  box.appendChild(title);
+  const ul = document.createElement('ul');
+  for (const e of m.items) { const li = document.createElement('li'); li.textContent = e; ul.appendChild(li); }
+  box.appendChild(ul);
+  if (m.diagnostics) {
+    const b = document.createElement('button');
+    b.className = 'secondary';
+    b.id = 'openDiag';
+    b.textContent = 'Otwórz Diagnostykę';
+    b.addEventListener('click', () => document.querySelector('.tab[data-tab="diag"]').click());
+    box.appendChild(b);
+  }
+  box.hidden = false;
+  flash($('backupMsg'), '', '');
+}
 
 function renderAll() {
   $('version').textContent = data.version;
