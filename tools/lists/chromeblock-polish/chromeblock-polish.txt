@@ -1,0 +1,11 @@
+[Adblock Plus 2.0]
+! Title: ChromeBlock Polish Supplement
+! Description: Uzupełniające reguły dla polskich stron, tworzone niezależnie przez projekt ChromeBlock
+!   wyłącznie na podstawie własnej obserwacji stron (DOM, ruch sieciowy, elementy oznaczone jako
+!   reklama / sponsorowane) i własnych testów ChromeBlock. Reguły NIE są kopiowane ani przekształcane
+!   z innych list filtrów (m.in. Polskie Filtry Reklamowe, EasyList Polish).
+! Pochodzenie każdej reguły: tools/lists/chromeblock-polish/provenance.json
+! Last modified: 2026-10-25
+! License: TBD
+!
+! (brak reguł – pierwsza partia wymaga obserwacji z `npm run test:polish-sites`)

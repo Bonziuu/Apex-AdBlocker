@@ -16,7 +16,7 @@ export const LISTS = [
   {
     id: 'ads',
     name: 'Reklamy',
-    desc: 'EasyList, uBlock filters i Polskie Filtry Reklamowe',
+    desc: 'EasyList, uBlock filters, Polskie Filtry Reklamowe i ChromeBlock Polish Supplement',
     enabled: true,
     sources: [
       { file: 'easylist/easylist.txt' },
@@ -24,6 +24,8 @@ export const LISTS = [
       { file: 'ubo/quick-fixes.txt', trusted: true },
       { file: 'ubo/unbreak.txt', trusted: true },
       { file: 'pl/adblock.txt' },
+      // własna lista projektu (clean room) – nie jest pobierana przez update-lists
+      { file: 'chromeblock-polish/chromeblock-polish.txt' },
     ],
   },
   {

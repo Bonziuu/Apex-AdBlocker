@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "list": "chromeblock-polish.txt",
+  "description": "Pochodzenie reguł ChromeBlock Polish Supplement. Każda reguła z listy ma dokładnie jeden wpis. Opis obserwacji jest krótki i własny – bez kodu strony i bez fragmentów treści.",
+  "fields": {
+    "rule": "reguła dokładnie tak, jak w chromeblock-polish.txt",
+    "domain": "domena strony, na której zaobserwowano problem",
+    "type": "network | cosmetic | scriptlet",
+    "date": "data obserwacji (RRRR-MM-DD)",
+    "observation": "krótki własny opis obserwacji (maks. 200 znaków)",
+    "method": "manual | automated-browser",
+    "evidence": "opcjonalnie: odniesienie do raportu test:polish-sites (plik / identyfikator obserwacji)"
+  },
+  "rules": []
+}

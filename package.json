@@ -15,7 +15,8 @@
     "check": "node tools/check.mjs",
     "test:e2e": "node tools/run-tests.mjs --e2e",
     "package:dev": "node tools/package-dev.mjs",
-    "test:local": "node tests/local/chromeblock-local-test.mjs"
+    "test:local": "node tests/local/chromeblock-local-test.mjs",
+    "test:polish-sites": "node tools/polish-sites/test-polish-sites.mjs"
   },
   "devDependencies": {
     "playwright": "^1.49.0"

@@ -1,0 +1,9 @@
+{
+  "description": "Domyślna próbka popularnych polskich stron dla `npm run test:polish-sites` (maks. 20). Tylko domeny – bez reguł.",
+  "sites": [
+    "onet.pl", "wp.pl", "interia.pl", "o2.pl", "gazeta.pl",
+    "tvn24.pl", "money.pl", "pudelek.pl", "rmf24.pl", "polsatnews.pl",
+    "sport.pl", "wykop.pl", "filmweb.pl", "natemat.pl", "gry-online.pl",
+    "businessinsider.com.pl", "plotek.pl", "fakt.pl", "se.pl", "bankier.pl"
+  ]
+}

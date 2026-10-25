@@ -32,6 +32,8 @@ for (const name of [
   'badware', 'quick-fixes', 'unbreak', 'annoyances-cookies', 'annoyances-others',
 ]) FILES[`ubo/${name}.txt`] = UBO + name + '.txt';
 
+// Uwaga: tools/lists/chromeblock-polish/ to własna lista ChromeBlock – NIE jest pobierana ani nadpisywana.
+
 function youtubeSnapshot() {
   const entries = collectScriptletFilters().filter((e) => e.youtube.length && YOUTUBE_STRICT_LISTS.includes(e.list));
   const unique = new Map();

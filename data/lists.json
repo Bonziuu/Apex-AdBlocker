@@ -2,7 +2,7 @@
  {
   "id": "ads",
   "name": "Reklamy",
-  "desc": "EasyList, uBlock filters i Polskie Filtry Reklamowe",
+  "desc": "EasyList, uBlock filters, Polskie Filtry Reklamowe i ChromeBlock Polish Supplement",
   "enabledByDefault": true,
   "networkRules": 10302,
   "networkFilters": 64429,

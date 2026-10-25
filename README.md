@@ -89,6 +89,7 @@ npm run check        # walidacja buildu + zgodność YouTube (strict) + audyt + 
 | `npm run check` | Wszystkie kontrole; kod ≠ 0 przy błędzie. Jeśli dostępny jest Playwright + Chromium, dodatkowo ładuje rozszerzenie w Chromium (tymczasowy profil, bez stron zewnętrznych); inaczej `SKIP: Chromium smoke test unavailable`. `CHROMEBLOCK_SMOKE=0` pomija ten krok |
 | `npm run package:dev` | Paczka dla osób bez Gita: `dist/ChromeBlock/` (tylko pliki rozszerzenia) + `dist/ChromeBlock-dev.zip` z instalatorem Windows (`install-chromeblock.cmd`, `update-chromeblock.cmd`) i [INSTALL.md](INSTALL.md). Test paczki: `node tools/chromium-smoke.mjs --dir dist/ChromeBlock` |
 | `npm run test:e2e` | Testy E2E YouTube w prawdziwym Chromium (wymagają `npx playwright install chromium`) |
+| `npm run test:polish-sites` | Test polskich stron z załadowanym ChromeBlock (maks. 20 domen; domyślnie `tools/polish-sites/sites.json`): żądania zablokowane, widoczne etykiety reklam / treści sponsorowanej, puste kontenery, błędy JS, czy strona działa. Raport: `tests/polish-sites/results/latest.txt`. Nie generuje reguł. `--fixture` = tryb offline |
 
 Aktualizacja list:
 
@@ -152,4 +153,8 @@ ChromeBlock jest w 100% darmowy – bez wersji Pro, płatnych funkcji, paywalla,
 
 ## Źródła list i licencje
 
-EasyList, EasyPrivacy, Fanboy Annoyances © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3) · Polskie Filtry Reklamowe © MajkiIT (CC BY-NC-SA 4.0). Listy są wbudowane w repozytorium (`tools/lists/`). Pełny audyt licencyjny zostanie wykonany przed ewentualnym publicznym wydaniem.
+EasyList, EasyPrivacy, Fanboy Annoyances © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3) · Polskie Filtry Reklamowe © MajkiIT (CC BY-NC-SA 4.0). Listy są wbudowane w repozytorium (`tools/lists/`).
+
+**ChromeBlock Polish Supplement** (`tools/lists/chromeblock-polish/`) – własna lista projektu, tworzona niezależnie (clean room: tylko własna obserwacja stron i testy ChromeBlock, bez kopiowania innych list), z pochodzeniem każdej reguły w `provenance.json`. Licencja: do ustalenia (TBD). Zob. [docs/chromeblock-polish-foundation.md](docs/chromeblock-polish-foundation.md).
+
+Pełny audyt licencyjny zostanie wykonany przed ewentualnym publicznym wydaniem.
