@@ -105,6 +105,16 @@
     } catch { /* rozszerzenie przeładowane */ }
   };
 
+  // Po zmianie adresu karty (np. SPA watch → watch) service worker usuwa stary raport i prosi
+  // o ponowny – wysyłamy aktualny stan nawet, gdy jest taki sam jak poprzednio wysłany.
+  try {
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (!msg || msg.type !== 'youtube:health-refresh') return;
+      lastSent = '';
+      tick();
+    });
+  } catch { /* rozszerzenie przeładowane */ }
+
   setInterval(tick, 3000);
   tick();
 })();
