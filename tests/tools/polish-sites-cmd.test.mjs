@@ -74,3 +74,71 @@ test('sprawdzenie Playwright/Chromium z CMD: poprawny JS, kod 0 gdy dostępne, 4
     assert.equal(noChromium.status, 4, 'brak Chromium → komunikat "Brak przegladarki Chromium"');
   }
 });
+
+// --- run-polish-test.cmd: pierwsze uruchomienie (przygotowanie + test) ------------------------------
+
+const RUN = 'run-polish-test.cmd';
+/** Polecenia (bez rem/echo/title i pustych linii) – do sprawdzeń, które nie mogą łapać komunikatów. */
+const commandsOf = (t) => t.split(/\r?\n/).filter((l) => !/^\s*(rem\b|echo\b|echo\.|title\b|$)/i.test(l)).join('\n');
+
+test('run-polish-test.cmd: CRLF, własny katalog, Node/npm bez instalacji Node', () => {
+  const raw = read(RUN);
+  assert.ok(raw.startsWith('@echo off'));
+  assert.equal(raw.split('\n').length - 1, (raw.match(/\r\n/g) || []).length, 'wszystkie końce linii CRLF');
+  assert.match(raw, /^cd \/d "%~dp0"\r?$/m);
+  assert.match(raw, /where node/);
+  assert.match(raw, /where npm/);
+  assert.match(raw, /Brak Node\.js\. Zainstaluj Node\.js 20/);
+  assert.doesNotMatch(commandsOf(raw), /winget|choco|msiexec|nodejs\.org|Invoke-WebRequest|curl|bitsadmin/i, 'nie instaluje Node.js');
+});
+
+test('run-polish-test.cmd: npm install gdy brak Playwright, npx playwright install chromium gdy brak Chromium, potem test-polish-sites.cmd', () => {
+  const t = read(RUN);
+  const c = commandsOf(t);
+  // npm install tylko gdy brak node_modules\playwright
+  assert.match(t, /^if exist "node_modules\\playwright\\package\.json" goto :chromium\r?$/m);
+  assert.match(c, /^call npm install --no-audit --no-fund\r?$/m);
+  assert.ok(t.indexOf('goto :chromium') < t.indexOf('call npm install'), 'npm install pomijane, gdy Playwright jest');
+  // Chromium: ta sama detekcja co w test-polish-sites.cmd, instalacja tylko przy kodzie 4
+  const detect = /^node -e "(.+)"\r?$/m.exec(read(MAIN))[1];
+  assert.ok(t.includes(`node -e "${detect}"`), 'ta sama detekcja Playwright/Chromium');
+  assert.match(t, /^if "%DEP%"=="0" goto :run\r?$/m);
+  assert.match(c, /^call npx playwright install chromium\r?$/m);
+  assert.ok(t.indexOf('if "%DEP%"=="0" goto :run') < t.indexOf('call npx playwright install chromium'), 'instalacja Chromium pomijana, gdy jest');
+  // start testu: istniejący wrapper (sam robi pause i raport), kod wyjścia testera zachowany
+  assert.match(t, /^:run\r?$/m);
+  assert.match(t, /^call "%~dp0test-polish-sites\.cmd" %\*\r?\nexit \/b %ERRORLEVEL%\r?$/m);
+  // npm install i npx w kolejności: zależności → Chromium → test
+  assert.ok(t.indexOf('call npm install') < t.indexOf('call npx playwright install chromium'));
+  assert.ok(t.indexOf('call npx playwright install chromium') < t.indexOf('call "%~dp0test-polish-sites.cmd"'));
+});
+
+test('run-polish-test.cmd: błąd instalacji → komunikat, kod błędu zachowany, pause', () => {
+  const t = read(RUN);
+  // kod npm / npx zapisany zaraz po wywołaniu i zwracany przez :end
+  assert.match(t, /^call npm install --no-audit --no-fund\r?\nset "RC=%ERRORLEVEL%"\r?$/m);
+  assert.match(t, /^call npx playwright install chromium\r?\nset "RC=%ERRORLEVEL%"\r?$/m);
+  assert.match(t, /Nie udalo sie zainstalowac zaleznosci \^\(npm install, kod %RC%\^\)/);
+  assert.match(t, /Nie udalo sie pobrac Chromium \^\(npx playwright install chromium, kod %RC%\^\)/);
+  assert.match(t, /^:end\r?\necho\.\r?\npause\r?\nexit \/b %RC%\r?\n?$/m);
+  // każdy błąd przygotowania kończy się na :end (pause); jedyne inne wyjście to po teście
+  const exits = [...t.matchAll(/^\s*exit \/b (.+?)\r?$/gm)].map((m) => m[1]);
+  assert.deepEqual(exits, ['%ERRORLEVEL%', '%RC%']);
+  // w blokach if ( … ) nawiasy w komunikatach są escapowane (inaczej CMD zamknąłby blok)
+  let depth = 0;
+  for (const line of t.split(/\r?\n/)) {
+    const code = line.replace(/\^[()]/g, '').replace(/"[^"]*"/g, '');
+    if (/^\s*rem\b/i.test(line)) continue;
+    if (depth > 0 && /^\s*echo\b/i.test(line)) assert.doesNotMatch(code.replace(/^\s*echo/i, ''), /[()]/, `nieescapowany nawias w bloku: ${line}`);
+    depth += (code.match(/\(/g) || []).length - (code.match(/\)/g) || []).length;
+    assert.ok(depth >= 0 && depth <= 1, `zagnieżdżenie bloków: ${line}`);
+  }
+  assert.equal(depth, 0, 'bloki domknięte');
+});
+
+test('istniejące wrappery bez zmian w zachowaniu; README wspomina pierwsze uruchomienie', () => {
+  assert.match(read(MAIN), /^call npm run test:polish-sites -- --gap-mode %\*\r?$/m);
+  assert.doesNotMatch(commandsOf(read(MAIN)), /npm install|npx playwright install/, 'test-polish-sites.cmd nadal niczego nie instaluje');
+  assert.match(read(HEADED), /^call "%~dp0test-polish-sites\.cmd" --headed %\*\r?$/m);
+  assert.match(read('README.md'), /Pierwsze uruchomienie Windows: `?run-polish-test\.cmd`?/);
+});

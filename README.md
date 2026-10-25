@@ -91,6 +91,8 @@ npm run check        # walidacja buildu + zgodność YouTube (strict) + audyt + 
 | `npm run test:e2e` | Testy E2E YouTube w prawdziwym Chromium (wymagają `npx playwright install chromium`) |
 | `npm run test:polish-sites` | Test polskich stron z załadowanym ChromeBlock (maks. 20 domen; domyślnie `tools/polish-sites/sites.json`): żądania zablokowane, widoczne etykiety reklam / treści sponsorowanej, puste kontenery, błędy JS, czy strona działa. Raport: `tests/polish-sites/results/latest.txt`. Nie generuje reguł. `--fixture` = tryb offline; `--gap-mode` = tymczasowy build testowy bez Polskich Filtrów (repozytorium bez zmian). Windows: dwuklik `test-polish-sites.cmd` (GAP) lub `test-polish-sites-headed.cmd` (GAP z widocznym oknem) |
 
+Pierwsze uruchomienie Windows: `run-polish-test.cmd` – po rozpakowaniu ZIP-a repozytorium wystarczy dwuklik. Wymaga zainstalowanego Node.js 20+; brakujące zależności (`npm install`) i Chromium dla Playwright (`npx playwright install chromium`) pobiera sam, potem uruchamia `test-polish-sites.cmd` (GAP mode).
+
 Aktualizacja list:
 
 ```bash
