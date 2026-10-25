@@ -16,6 +16,7 @@ import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js'
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
 import { PROTECTION_MODES, isPresetMode, listsForMode, modeForLists } from './shared/protection-modes.js';
 import { FOCUS_STORAGE_KEY, FOCUS_DEFAULTS, normalizeFocus, focusCss, activeFocusOptions, isFocusHost } from './shared/youtube-focus.js';
+import { STATS_KEY, normalizeStats, applyMatches, statsView, recordTabHost, hostAt } from './background/stats.js';
 
 // Pomiar etapów startu (czas od uruchomienia service workera). Ostatni zakończony pomiar
 // trafia do chrome.storage.session i do Diagnostyki.
@@ -807,14 +808,117 @@ async function updateIcon(tabId, url) {
   } catch { /* karta zamknięta */ }
 }
 
+// ---------------------------------------------------------------------------
+// Dopasowania reguł, które BLOKUJĄ (bez reguł allow) – wspólne dla licznika karty i statystyk
+
+function userAllowIds() {
+  return new Set(user.rules.map((r, i) => (r.action.type.startsWith('allow') ? USER_RULE_BASE + i : -1)));
+}
+
+async function isBlockingMatch(rule, userAllow) {
+  const { rulesetId, ruleId } = rule;
+  if (rulesetId === '_dynamic') return ruleId >= USER_RULE_BASE && !userAllow.has(ruleId);
+  if (!allowIds.has(rulesetId)) {
+    allowIds.set(rulesetId, fetchJSON(`data/${rulesetId}.allow.json`).then((ids) => new Set(ids)).catch(() => new Set()));
+  }
+  return !(await allowIds.get(rulesetId)).has(ruleId);
+}
+
+// ---------------------------------------------------------------------------
+// Lokalne statystyki (background/stats.js): tylko liczby i hostname, bez URL, bez telemetrii.
+// Źródło: getMatchedRules() (tabId, reguła, czas). Chrome ogranicza liczbę wywołań, więc odczyty są
+// rzadkie: po nawigacji / zamknięciu karty (najwyżej co STATS_MIN_INTERVAL_MS) i przy otwarciu popupu.
+
+const STATS_TABS_KEY = 'statsTabs';           // chrome.storage.session: {tabId: [{host, since}]}
+const STATS_MIN_INTERVAL_MS = 45_000;
+const STATS_MAX_CALLS = 12;                    // na 10 min (limit Chrome: 20 / 10 min)
+const statsCalls = [];
+let statsLastPoll = 0;
+let statsQueue = Promise.resolve();
+let statsTimer = 0;
+let statsTabsQueue = Promise.resolve(); // zmiany mapy kart → domen kolejno (bez nadpisywania)
+
+function updateStatsTabs(fn) {
+  const run = statsTabsQueue.then(async () => setStatsTabs(fn(await getStatsTabs())));
+  statsTabsQueue = run.catch(() => {});
+  return run;
+}
+
+async function getStatsTabs() {
+  try { return (await chrome.storage.session.get(STATS_TABS_KEY))[STATS_TABS_KEY] || {}; } catch { return {}; }
+}
+async function setStatsTabs(tabs) {
+  try { await chrome.storage.session.set({ [STATS_TABS_KEY]: tabs }); } catch { /* */ }
+}
+
+/** Jeden odczyt getMatchedRules → statystyki (szeregowo; limit wywołań). */
+function pollStats({ popup = false } = {}) {
+  const run = statsQueue.then(async () => {
+    const now = Date.now();
+    while (statsCalls.length && statsCalls[0] < now - 600_000) statsCalls.shift();
+    if (statsCalls.length >= STATS_MAX_CALLS) return { skipped: 'quota' };
+    // popup (gest użytkownika) zawsze odczytuje świeże dane – obowiązuje tylko limit wywołań
+    if (!popup && now - statsLastPoll < STATS_MIN_INTERVAL_MS) {
+      scheduleStats();
+      return { skipped: 'interval' };
+    }
+    statsCalls.push(now);
+    statsLastPoll = now;
+    const stored = await chrome.storage.local.get(STATS_KEY);
+    const stats = normalizeStats(stored[STATS_KEY]);
+    let info;
+    try {
+      info = await chrome.declarativeNetRequest.getMatchedRules({ minTimeStamp: Math.max(0, stats.cursor.ts - 10_000) });
+    } catch { return { skipped: 'error' }; }
+    const userAllow = userAllowIds();
+    const blocking = [];
+    for (const m of (info && info.rulesMatchedInfo) || []) if (m && m.rule && await isBlockingMatch(m.rule, userAllow)) blocking.push(m);
+    await statsTabsQueue;
+    let tabs = await getStatsTabs();
+    // karty bez znanej nawigacji (np. po restarcie service workera) – bieżąca domena karty
+    for (const tabId of new Set(blocking.map((m) => m.tabId).filter((id) => id >= 0 && !tabs[id]))) {
+      const t = await chrome.tabs.get(tabId).catch(() => null);
+      if (t) tabs = recordTabHost(tabs, tabId, normalizeHost(hostOf(t.url)), 0);
+    }
+    const { stats: next, added } = applyMatches(stats, blocking, { now, hostFor: (m) => hostAt(tabs, m.tabId, m.timeStamp) });
+    await chrome.storage.local.set({ [STATS_KEY]: next });
+    return { added };
+  });
+  statsQueue = run.catch(() => {});
+  return run.catch(() => ({ skipped: 'error' }));
+}
+
+/** Statystyki dla popupu (świeży odczyt, jeśli pozwala limit wywołań). */
+async function popupStats(host) {
+  await pollStats({ popup: true });
+  const stored = await chrome.storage.local.get(STATS_KEY);
+  return statsView(stored[STATS_KEY], host, Date.now());
+}
+
+function scheduleStats() {
+  if (statsTimer) return;
+  const wait = Math.max(1000, STATS_MIN_INTERVAL_MS - (Date.now() - statsLastPoll));
+  statsTimer = setTimeout(() => { statsTimer = 0; pollStats(); }, wait);
+}
+
 chrome.webNavigation.onCommitted.addListener((d) => {
   if (d.frameId !== 0) return;
+  // statystyki: domena karty od tej chwili (sam hostname), odczyt dopasowań poprzedniej strony
+  if (d.tabId >= 0) {
+    const host = normalizeHost(hostOf(d.url));
+    const since = d.timeStamp || Date.now();
+    updateStatsTabs((tabs) => recordTabHost(tabs, d.tabId, host, since)).then(() => pollStats());
+  }
   // główna nawigacja karty: raporty odtwarzacza z poprzedniej strony są nieaktualne
   playerReports.onMainFrameNavigation(d.tabId);
   updateIcon(d.tabId, d.url);
 });
 
-chrome.tabs.onRemoved.addListener((tabId) => { playerReports.clearTab(tabId); });
+chrome.tabs.onRemoved.addListener((tabId) => {
+  playerReports.clearTab(tabId);
+  // statystyki: najpierw policz dopasowania zamykanej karty, potem zapomnij jej domenę
+  pollStats().finally(() => updateStatsTabs((tabs) => { const t = { ...tabs }; delete t[tabId]; return t; }));
+});
 
 // ---------------------------------------------------------------------------
 // Wiadomości
@@ -947,19 +1051,9 @@ const handlers = {
     let blocked = null;
     try {
       const info = await chrome.declarativeNetRequest.getMatchedRules({ tabId: msg.tabId });
-      const userAllow = new Set(user.rules.map((r, i) => (r.action.type.startsWith('allow') ? USER_RULE_BASE + i : -1)));
+      const userAllow = userAllowIds();
       let n = 0;
-      for (const m of info.rulesMatchedInfo) {
-        const { rulesetId, ruleId } = m.rule;
-        if (rulesetId === '_dynamic') {
-          if (ruleId >= USER_RULE_BASE && !userAllow.has(ruleId)) n++;
-          continue;
-        }
-        if (!allowIds.has(rulesetId)) {
-          allowIds.set(rulesetId, fetchJSON(`data/${rulesetId}.allow.json`).then((ids) => new Set(ids)).catch(() => new Set()));
-        }
-        if (!(await allowIds.get(rulesetId)).has(ruleId)) n++;
-      }
+      for (const m of info.rulesMatchedInfo) if (await isBlockingMatch(m.rule, userAllow)) n++;
       blocked = n;
     } catch {
       try { blocked = parseInt(await chrome.action.getBadgeText({ tabId: msg.tabId }), 10) || 0; } catch { /* */ }
@@ -980,6 +1074,7 @@ const handlers = {
       // Focus Mode: tylko na youtube.com (osobno od YouTube Protection)
       youtubeFocus: isFocusHost(host) ? { enabled: (await getFocus()).enabled } : null,
       protectionMode: s.protectionMode,
+      ...(await popupStats(host)),
     };
   },
 
