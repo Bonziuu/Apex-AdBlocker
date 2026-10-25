@@ -1,18 +1,18 @@
 // ChromeBlock – kopia ustawień (eksport / import). Czysta logika: format, pełna walidacja, podsumowanie.
 //
 // Kopia zawiera WYŁĄCZNIE ustawienia użytkownika: enabledLists, disabledSites, userFilters,
-// protectionMode, youtubeFocus. Bez health, diagnostyki, cache, danych sesji, statystyk,
+// protectionMode. Bez health, diagnostyki, cache, danych sesji, statystyk,
 // identyfikatorów kart i adresów odwiedzanych stron (disabledSites to same nazwy hostów).
 //
 // Import: najpierw walidacja CAŁEGO pliku – jeśli cokolwiek jest niepoprawne, nic nie jest zapisywane.
 // Nieznane pola są ignorowane (nie trafiają do storage). protectionMode jest przeliczany z list.
+// Starsze kopie z polem settings.youtubeFocus (usunięty Focus Mode) importują się – pole jest ignorowane.
 
-import { FOCUS_DEFAULTS } from './youtube-focus.js';
 import { MODE_IDS, modeForLists } from './protection-modes.js';
 
 export const BACKUP_FORMAT = 'chromeblock-settings';
 export const BACKUP_VERSION = 1;
-export const BACKUP_SETTINGS_KEYS = Object.freeze(['enabledLists', 'disabledSites', 'userFilters', 'protectionMode', 'youtubeFocus']);
+export const BACKUP_SETTINGS_KEYS = Object.freeze(['enabledLists', 'disabledSites', 'userFilters', 'protectionMode']);
 export const BACKUP_LIMITS = Object.freeze({
   maxFileBytes: 2 * 1024 * 1024,   // cały plik
   maxUserFiltersChars: 1_000_000,
@@ -23,8 +23,6 @@ const HOST_RE = /^[a-z0-9.-]+\.[a-z0-9-]+$/; // jak w options:setDisabledSites (
 
 /** Obiekt kopii z bieżących ustawień (tylko dozwolone pola). */
 export function buildBackup(settings, { extensionVersion = '', exportedAt = new Date().toISOString() } = {}) {
-  const focus = {};
-  for (const k of Object.keys(FOCUS_DEFAULTS)) focus[k] = !!(settings.youtubeFocus || {})[k];
   return {
     format: BACKUP_FORMAT,
     version: BACKUP_VERSION,
@@ -35,7 +33,6 @@ export function buildBackup(settings, { extensionVersion = '', exportedAt = new 
       disabledSites: [...settings.disabledSites],
       userFilters: String(settings.userFilters || ''),
       protectionMode: settings.protectionMode,
-      youtubeFocus: focus,
     },
   };
 }
@@ -110,20 +107,6 @@ export function validateBackup(data, { knownLists }) {
   }
   // protectionMode (sprawdzany, ale przy imporcie i tak przeliczany z list)
   if ('protectionMode' in s && !MODE_IDS.includes(s.protectionMode)) errors.push(`nieznany tryb ochrony: ${JSON.stringify(s.protectionMode)}`);
-  // youtubeFocus (znane klucze muszą być boolean; brak klucza → domyślna; nieznane ignorowane)
-  if ('youtubeFocus' in s) {
-    const f = s.youtubeFocus;
-    if (!isPlainObject(f)) errors.push('settings.youtubeFocus musi być obiektem');
-    else {
-      out.youtubeFocus = {};
-      for (const k of Object.keys(FOCUS_DEFAULTS)) {
-        if (!(k in f)) out.youtubeFocus[k] = FOCUS_DEFAULTS[k];
-        else if (typeof f[k] !== 'boolean') errors.push(`settings.youtubeFocus.${k} musi być true/false`);
-        else out.youtubeFocus[k] = f[k];
-      }
-      for (const k of Object.keys(f)) if (!(k in FOCUS_DEFAULTS)) ignored.push(`settings.youtubeFocus.${k}`);
-    }
-  }
   if (errors.length) return { ok: false, errors };
   out.protectionMode = modeForLists(out.enabledLists);
   return { ok: true, settings: out, ignored };
@@ -162,13 +145,10 @@ const MODE_PL = { basic: 'Basic', balanced: 'Balanced', strict: 'Strict', custom
 /** Krótkie podsumowanie przywróconych ustawień (lista linii). */
 export function summarizeSettings(settings, { listNames = {} } = {}) {
   const lines = (settings.userFilters || '').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('!')).length;
-  const f = settings.youtubeFocus || {};
-  const on = ['shorts', 'recommendations', 'comments', 'endscreen'].filter((k) => f[k]).length;
   return [
     `Tryb ochrony: ${MODE_PL[settings.protectionMode] || settings.protectionMode}`,
     `Listy filtrów (${settings.enabledLists.length}): ${settings.enabledLists.map((id) => listNames[id] || id).join(', ') || 'brak'}`,
     `Wyłączone strony: ${settings.disabledSites.length}`,
     `Moje filtry: ${lines} ${rulesWord(lines)}`,
-    `Focus Mode: ${f.enabled ? 'włączony' : 'wyłączony'} (opcje włączone: ${on}/4)`,
   ];
 }

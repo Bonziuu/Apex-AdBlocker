@@ -67,11 +67,10 @@ test('Chromium: bez activeTab getMatchedRules odmawia, popup:get działa przez f
       assert.deepEqual(r.problems, [], `${host}: bez problemów zdrowia`);
       if (host === 'www.youtube.com') {
         assert.ok(r.youtube, 'wiersz YouTube Protection');
-        assert.deepEqual(r.youtubeFocus, { enabled: false }, 'wiersz Focus Mode');
       } else {
         assert.equal(r.youtube, null);
-        assert.equal(r.youtubeFocus, null);
       }
+      assert.ok(!('youtubeFocus' in r), `${host}: bez Focus Mode`);
       await page.close();
     }
 

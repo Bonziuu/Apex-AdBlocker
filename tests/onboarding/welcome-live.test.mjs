@@ -81,10 +81,10 @@ test('onboarding w Chromium: instalacja → wybór Strict → potwierdzenie i za
     const page = await ctx.newPage();
     await page.goto(`chrome-extension://${id}/welcome/welcome.html`);
     await page.waitForSelector('#modes input');
-    const before = await page.evaluate(() => chrome.storage.local.get(null).then((s) => JSON.stringify({ l: s.enabledLists, m: s.protectionMode, d: s.disabledSites, u: s.userFilters, f: s.youtubeFocus })));
+    const before = await page.evaluate(() => chrome.storage.local.get(null).then((s) => JSON.stringify({ l: s.enabledLists, m: s.protectionMode, d: s.disabledSites, u: s.userFilters })));
     const [options] = await Promise.all([ctx.waitForEvent('page', { predicate: (p) => /options\/options\.html/.test(p.url()), timeout: 15000 }), page.click('#openOptions')]);
     assert.match(options.url(), /options\/options\.html/);
-    const after = await page.evaluate(() => chrome.storage.local.get(null).then((s) => JSON.stringify({ l: s.enabledLists, m: s.protectionMode, d: s.disabledSites, u: s.userFilters, f: s.youtubeFocus })));
+    const after = await page.evaluate(() => chrome.storage.local.get(null).then((s) => JSON.stringify({ l: s.enabledLists, m: s.protectionMode, d: s.disabledSites, u: s.userFilters })));
     assert.equal(after, before, 'otwarcie ustawień nic nie zmienia');
     await page.close();
 

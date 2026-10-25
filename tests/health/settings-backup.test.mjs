@@ -8,14 +8,14 @@ import { fileURLToPath } from 'node:url';
 import {
   BACKUP_FORMAT, BACKUP_VERSION, BACKUP_SETTINGS_KEYS, buildBackup, backupFileName, parseBackup, validateBackup, summarizeSettings, rulesWord,
 } from '../../shared/settings-backup.js';
-import { FOCUS_DEFAULTS, focusCss } from '../../shared/youtube-focus.js';
-import { loadBackground, sender } from '../helpers/chrome-mock.mjs';
+import { loadBackground } from '../helpers/chrome-mock.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const LISTS = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/lists.json'), 'utf8'));
 const KNOWN = (Array.isArray(LISTS) ? LISTS : LISTS.lists).map((l) => l.id);
 const sorted = (a) => [...a].sort();
-const FOCUS_ON = { enabled: true, shorts: true, recommendations: false, comments: true, endscreen: true };
+// pole z kopii starszych wersji (Focus Mode usunięty z produktu, kod na gałęzi experiment/focus-mode)
+const LEGACY_FOCUS = { enabled: true, shorts: true, recommendations: false, comments: true, endscreen: true };
 
 function backupText(settings, extra = {}) {
   return JSON.stringify({
@@ -25,7 +25,6 @@ function backupText(settings, extra = {}) {
       disabledSites: ['bank.example', 'www.shop.example'],
       userFilters: '! moje\n||ads.example^\nexample.com##.reklama\n',
       protectionMode: 'balanced',
-      youtubeFocus: FOCUS_ON,
       ...settings,
     },
     ...extra,
@@ -44,8 +43,8 @@ const TECH = {
 
 // --- eksport ---------------------------------------------------------------------
 
-test('eksport: format wersjonowany, tylko 5 ustawień użytkownika, wartości z bieżącego stanu', async () => {
-  const bg = await loadBackground({ local: { ...TECH, youtubeFocus: FOCUS_ON } });
+test('eksport: format wersjonowany, tylko 4 ustawienia użytkownika, wartości z bieżącego stanu', async () => {
+  const bg = await loadBackground({ local: { ...TECH, youtubeFocus: LEGACY_FOCUS } });
   try {
     await bg.install();
     await bg.send({ type: 'options:setDisabledSites', sites: ['bank.example', 'www.Shop.example'] });
@@ -62,7 +61,8 @@ test('eksport: format wersjonowany, tylko 5 ustawień użytkownika, wartości z 
     assert.equal(b.settings.protectionMode, 'basic');
     assert.deepEqual(b.settings.disabledSites, ['bank.example', 'shop.example']);
     assert.equal(b.settings.userFilters, '||ads.example^\n');
-    assert.deepEqual(b.settings.youtubeFocus, FOCUS_ON);
+    assert.deepEqual(BACKUP_SETTINGS_KEYS, ['enabledLists', 'disabledSites', 'userFilters', 'protectionMode']);
+    assert.ok(!('youtubeFocus' in b.settings), 'stary klucz Focus Mode nie trafia do kopii');
     // eksport → import tego samego pliku przechodzi walidację
     assert.equal(parseBackup(JSON.stringify(b), { knownLists: KNOWN }).ok, true);
   } finally { bg.restore(); }
@@ -72,7 +72,6 @@ test('eksport: brak danych technicznych i prywatnych (health, diagnostyka, cache
   const bg = await loadBackground({ local: { ...TECH } });
   try {
     await bg.install();
-    await bg.send({ type: 'youtubeFocus:css' }, sender('https://www.youtube.com/watch?v=SECRETVID01'));
     bg.session.statsTabs = { 7: [{ host: 'news.example', since: 1 }] };
     const text = JSON.stringify((await bg.send({ type: 'settings:export' })).backup);
     for (const bad of ['health', 'startupProfile', 'devPerf', 'scriptletPerf', 'stats', 'hostCache', 'statsTabs', 'sessionScriptletsOk', 'tabId', 'SECRETVID01', 'token', 'https://', 'http://', 'news.example']) {
@@ -80,14 +79,13 @@ test('eksport: brak danych technicznych i prywatnych (health, diagnostyka, cache
     }
   } finally { bg.restore(); }
   // tylko dozwolone pola nawet z „brudnych” danych wejściowych
-  const b = buildBackup({ enabledLists: ['ads'], disabledSites: [], userFilters: '', protectionMode: 'custom', youtubeFocus: { ...FOCUS_DEFAULTS, evil: 'x' }, stats: 1, health: 2 });
+  const b = buildBackup({ enabledLists: ['ads'], disabledSites: [], userFilters: '', protectionMode: 'custom', youtubeFocus: LEGACY_FOCUS, stats: 1, health: 2 });
   assert.deepEqual(Object.keys(b.settings).sort(), [...BACKUP_SETTINGS_KEYS].sort());
-  assert.deepEqual(Object.keys(b.settings.youtubeFocus).sort(), Object.keys(FOCUS_DEFAULTS).sort());
 });
 
 // --- import ------------------------------------------------------------------------
 
-test('import poprawny: zapis, synchronizacja list / filtrów / scriptletów, Focus Mode, podsumowanie', async () => {
+test('import poprawny: zapis, synchronizacja list / filtrów / scriptletów, podsumowanie', async () => {
   const bg = await loadBackground();
   try {
     await bg.install();
@@ -99,14 +97,15 @@ test('import poprawny: zapis, synchronizacja list / filtrów / scriptletów, Foc
     assert.equal(bg.store.userFilters, '! moje\n||ads.example^\nexample.com##.reklama\n');
     assert.ok(bg.state.dynamic.length > 0, 'reguły dynamiczne (moje filtry / wyłączone strony) zsynchronizowane');
     assert.ok(bg.state.registered.some((x) => x.id.startsWith('sl-cookies')), 'scriptlety nowej listy zarejestrowane');
-    assert.deepEqual(bg.store.youtubeFocus, FOCUS_ON);
+    assert.ok(!('youtubeFocus' in bg.store));
     const o = await bg.send({ type: 'options:get' });
     assert.equal(o.protectionMode, 'balanced');
-    assert.deepEqual(o.youtubeFocus, FOCUS_ON);
+    assert.ok(!('youtubeFocus' in o));
     assert.ok(r.summary.some((l) => /Tryb ochrony: Balanced/.test(l)));
     assert.ok(r.summary.some((l) => /Wyłączone strony: 2/.test(l)));
     assert.ok(r.summary.some((l) => /Moje filtry: 2 reguły/.test(l)));
-    assert.ok(r.summary.some((l) => /Focus Mode: włączony \(opcje włączone: 3\/4\)/.test(l)));
+    assert.equal(r.summary.length, 4);
+    assert.ok(!r.summary.some((l) => /Focus/.test(l)));
   } finally { bg.restore(); }
 });
 
@@ -141,8 +140,6 @@ test('zły format / wersja / brak pól / złe typy: odrzucone w całości, z lis
       [backupText({ disabledSites: ['https://bank.example/konto?id=1'] }), /niepoprawne domeny/],
       [backupText({ userFilters: 42 }), /userFilters musi być tekstem/],
       [backupText({ protectionMode: 'turbo' }), /nieznany tryb ochrony/],
-      [backupText({ youtubeFocus: { enabled: 'tak' } }), /youtubeFocus\.enabled musi być true\/false/],
-      [backupText({ youtubeFocus: [] }), /youtubeFocus musi być obiektem/],
     ];
     for (const [text, re] of cases) {
       const r = await bg.send({ type: 'settings:import', text });
@@ -150,7 +147,7 @@ test('zły format / wersja / brak pól / złe typy: odrzucone w całości, z lis
       assert.ok(r.errors.some((e) => re.test(e)), `${re}: ${r.errors.join(' | ')}`);
     }
     // błąd w jednym polu blokuje całość, mimo poprawnych pozostałych
-    const mixed = await bg.send({ type: 'settings:import', text: backupText({ disabledSites: ['ok.example', 'zła domena'], youtubeFocus: { enabled: 1 } }) });
+    const mixed = await bg.send({ type: 'settings:import', text: backupText({ disabledSites: ['ok.example', 'zła domena'], userFilters: 1 }) });
     assert.equal(mixed.ok, false);
     assert.equal(mixed.errors.length, 2, 'wszystkie błędy naraz');
     assert.deepEqual(bg.store, before, 'nic nie zapisano');
@@ -163,29 +160,28 @@ test('nieznane pola: ignorowane, nie trafiają do storage', async () => {
     await bg.install();
     const keysBefore = Object.keys(bg.store);
     const text = backupText(
-      { stats: { total: 999 }, health: { x: 1 }, devPerf: true, youtubeFocus: { ...FOCUS_ON, autoplay: false } },
+      { stats: { total: 999 }, health: { x: 1 }, devPerf: true },
       { comment: 'z innego komputera', storage: { evil: 1 } },
     );
     const r = await bg.send({ type: 'settings:import', text });
     assert.equal(r.ok, true, JSON.stringify(r.errors));
-    assert.deepEqual(sorted(r.ignored), sorted(['comment', 'storage', 'settings.stats', 'settings.health', 'settings.devPerf', 'settings.youtubeFocus.autoplay']));
+    assert.deepEqual(sorted(r.ignored), sorted(['comment', 'storage', 'settings.stats', 'settings.health', 'settings.devPerf']));
     const added = Object.keys(bg.store).filter((k) => !keysBefore.includes(k));
-    for (const k of added) assert.ok(['enabledLists', 'disabledSites', 'userFilters', 'protectionMode', 'youtubeFocus'].includes(k), `nowy klucz w storage: ${k}`);
+    for (const k of added) assert.ok(['enabledLists', 'disabledSites', 'userFilters', 'protectionMode'].includes(k), `nowy klucz w storage: ${k}`);
     for (const k of ['stats', 'comment', 'storage', 'evil']) assert.ok(!(k in bg.store), `z pliku do storage trafiło: ${k}`);
     assert.notDeepEqual(bg.store.health, { x: 1 }, 'health z pliku nie nadpisał stanu rozszerzenia');
     assert.notEqual(bg.store.devPerf, true, 'devPerf z pliku zignorowany');
-    assert.ok(!('autoplay' in bg.store.youtubeFocus));
   } finally { bg.restore(); }
 });
 
-test('rollback: jednorazowy błąd synchronizacji list przy imporcie → poprzednie ustawienia przywrócone (także Focus Mode)', async () => {
-  const opts = { local: { youtubeFocus: { ...FOCUS_DEFAULTS } } };
+test('rollback: jednorazowy błąd synchronizacji list przy imporcie → poprzednie ustawienia przywrócone', async () => {
+  const opts = {};
   const bg = await loadBackground(opts);
   try {
     await bg.install();
     await bg.send({ type: 'options:setUserFilters', text: '||stare.example^\n' });
     const enabledNow = async () => sorted((await bg.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id));
-    const before = { lists: await enabledNow(), sites: bg.store.disabledSites ? [...bg.store.disabledSites] : [], filters: bg.store.userFilters, focus: structuredClone(bg.store.youtubeFocus) };
+    const before = { lists: await enabledNow(), sites: bg.store.disabledSites ? [...bg.store.disabledSites] : [], filters: bg.store.userFilters };
     const rulesetsBefore = sorted(bg.state.enabledRulesets);
     // Chrome odrzuca TYLKO pierwszą zmianę zestawów reguł (import); przywracanie przechodzi
     let calls = 0;
@@ -198,18 +194,16 @@ test('rollback: jednorazowy błąd synchronizacji list przy imporcie → poprzed
     assert.deepEqual(await enabledNow(), before.lists);
     assert.deepEqual(bg.store.disabledSites || [], before.sites);
     assert.equal(bg.store.userFilters, before.filters);
-    assert.deepEqual(bg.store.youtubeFocus, before.focus);
     assert.deepEqual(sorted(bg.state.enabledRulesets), rulesetsBefore);
     assert.equal((await bg.send({ type: 'options:get' })).protectionMode, 'basic');
   } finally { bg.restore(); }
 });
 
-test('rollback: błąd rejestracji scriptletów → poprzednie ustawienia; brak Focus Mode w storage przed importem → usunięty', async () => {
+test('rollback: błąd rejestracji scriptletów → poprzednie ustawienia', async () => {
   const opts = { failRegister: () => false };
   const bg = await loadBackground(opts);
   try {
     await bg.install();
-    assert.ok(!('youtubeFocus' in bg.store));
     const listsBefore = sorted(bg.store.enabledLists || ['ads', 'privacy', 'security']);
     opts.failRegister = (id) => id.startsWith('sl-cookies');
     const r = await bg.send({ type: 'settings:import', text: backupText({}) });
@@ -218,7 +212,6 @@ test('rollback: błąd rejestracji scriptletów → poprzednie ustawienia; brak 
     assert.equal(r.rolledBack, true);
     assert.ok(r.errors.some((e) => /scriptlety/.test(e)));
     assert.deepEqual(sorted(bg.store.enabledLists), listsBefore);
-    assert.ok(!('youtubeFocus' in bg.store), 'Focus Mode jak przed importem (brak zapisu)');
     assert.equal(bg.store.userFilters || '', '');
   } finally { bg.restore(); }
 });
@@ -240,22 +233,38 @@ test('protectionMode przeliczany z faktycznie włączonych list (wartość z pli
   } finally { bg.restore(); }
 });
 
-test('Focus Mode przywrócony: zapis + CSS dla kart YouTube (otwarte karty odświeżają się przez storage.onChanged)', async () => {
+test('kopia ze starszej wersji (z polem youtubeFocus): import działa, pole ignorowane i nie trafia do storage', async () => {
   const bg = await loadBackground();
   try {
     await bg.install();
-    assert.equal((await bg.send({ type: 'youtubeFocus:css' }, sender('https://www.youtube.com/'))).css, '');
-    const r = await bg.send({ type: 'settings:import', text: backupText({ youtubeFocus: FOCUS_ON }) });
-    assert.equal(r.ok, true);
-    assert.deepEqual(bg.store.youtubeFocus, FOCUS_ON);
-    assert.equal((await bg.send({ type: 'youtubeFocus:css' }, sender('https://www.youtube.com/'))).css, focusCss(FOCUS_ON));
-    // brak klucza w pliku → wartość domyślna
-    const r2 = await bg.send({ type: 'settings:import', text: backupText({ youtubeFocus: { enabled: true } }) });
-    assert.equal(r2.ok, true);
-    assert.deepEqual(bg.store.youtubeFocus, { ...FOCUS_DEFAULTS, enabled: true });
-    const src = fs.readFileSync(path.join(ROOT, 'youtube/focus.js'), 'utf8');
-    assert.match(src, /changes\.youtubeFocus/);
+    const r = await bg.send({ type: 'settings:import', text: backupText({ youtubeFocus: LEGACY_FOCUS }) });
+    assert.equal(r.ok, true, JSON.stringify(r.errors));
+    assert.deepEqual(r.ignored, ['settings.youtubeFocus']);
+    assert.ok(!('youtubeFocus' in bg.store));
+    // także uszkodzona wartość starego pola nie blokuje importu (pole nie jest już walidowane)
+    const r2 = await bg.send({ type: 'settings:import', text: backupText({ youtubeFocus: [] }) });
+    assert.equal(r2.ok, true, JSON.stringify(r2.errors));
   } finally { bg.restore(); }
+});
+
+test('aktualizacja rozszerzenia usuwa martwy klucz Focus Mode; świeża instalacja i zwykła praca go nie tworzą', async () => {
+  const bg = await loadBackground({ local: { youtubeFocus: LEGACY_FOCUS, userFilters: '||zostaje.example^\n' } });
+  try {
+    await bg.install(); // mock: onInstalled bez szczegółów (nie „update”) – nic nie usuwa
+    assert.ok('youtubeFocus' in bg.store);
+    await bg.state.listeners.installed({ reason: 'update' });
+    assert.ok(!('youtubeFocus' in bg.store), 'stary klucz usunięty przy aktualizacji');
+    assert.equal(bg.store.userFilters, '||zostaje.example^\n', 'pozostałe ustawienia bez zmian');
+    assert.deepEqual([...bg.mod.LEGACY_STORAGE_KEYS], ['youtubeFocus']);
+  } finally { bg.restore(); }
+  const fresh = await loadBackground();
+  try {
+    await fresh.install();
+    await fresh.send({ type: 'options:get' });
+    await fresh.send({ type: 'settings:export' });
+    await fresh.send({ type: 'settings:import', text: backupText({ youtubeFocus: LEGACY_FOCUS }) });
+    assert.ok(!('youtubeFocus' in fresh.store));
+  } finally { fresh.restore(); }
 });
 
 // --- czysta logika i UI ------------------------------------------------------------
@@ -263,8 +272,8 @@ test('Focus Mode przywrócony: zapis + CSS dla kart YouTube (otwarte karty odśw
 test('czysta logika: nazwa pliku, podsumowanie, odmiana, limit rozmiaru', () => {
   assert.equal(backupFileName(new Date(2026, 0, 5)), 'chromeblock-ustawienia-2026-01-05.json');
   assert.deepEqual([1, 2, 4, 5, 12, 22, 25].map(rulesWord), ['reguła', 'reguły', 'reguły', 'reguł', 'reguł', 'reguły', 'reguł']);
-  const sum = summarizeSettings({ enabledLists: ['ads'], disabledSites: [], userFilters: '', protectionMode: 'custom', youtubeFocus: FOCUS_DEFAULTS }, { listNames: { ads: 'Reklamy' } });
-  assert.deepEqual(sum, ['Tryb ochrony: Własny', 'Listy filtrów (1): Reklamy', 'Wyłączone strony: 0', 'Moje filtry: 0 reguł', 'Focus Mode: wyłączony (opcje włączone: 4/4)']);
+  const sum = summarizeSettings({ enabledLists: ['ads'], disabledSites: [], userFilters: '', protectionMode: 'custom' }, { listNames: { ads: 'Reklamy' } });
+  assert.deepEqual(sum, ['Tryb ochrony: Własny', 'Listy filtrów (1): Reklamy', 'Wyłączone strony: 0', 'Moje filtry: 0 reguł']);
   assert.match(parseBackup('x'.repeat(2 * 1024 * 1024 + 1), { knownLists: KNOWN }).errors[0], /za duży/);
   assert.equal(validateBackup(JSON.parse(backupText({})), { knownLists: KNOWN }).settings.protectionMode, 'balanced');
 });
@@ -288,14 +297,13 @@ test('opcje: zakładka „Kopia ustawień” z przyciskami eksportu i importu', 
 
 import { importFailureMessage, IMPORT_MSG } from '../../shared/settings-backup.js';
 
-/** Stan przed importem: lista „Basic”, 1 filtr, Focus Mode zapisany (OFF). */
+/** Stan przed importem: lista „Basic”, 1 filtr. */
 async function prepared(opts) {
   const bg = await loadBackground(opts);
   await bg.install();
   await bg.send({ type: 'options:setUserFilters', text: '||stare.example^\n' });
-  await bg.send({ type: 'options:setYouTubeFocus', settings: { enabled: false } });
   const lists = sorted((await bg.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id));
-  return { bg, before: { lists, filters: bg.store.userFilters, focus: structuredClone(bg.store.youtubeFocus), sites: [...(bg.store.disabledSites || [])] } };
+  return { bg, before: { lists, filters: bg.store.userFilters, sites: [...(bg.store.disabledSites || [])] } };
 }
 const healthErrors = async (bg) => ((await bg.send({ type: 'health:get' })).errors || []).filter((e) => /import ustawień/.test(e.message));
 
@@ -311,7 +319,6 @@ test('rollback kompletny: import nie powiódł się → rolledBack=true tylko gd
     assert.ok(r.errors.some((e) => /scriptlety/.test(e)));
     assert.deepEqual(sorted((await bg.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id)), before.lists);
     assert.equal(bg.store.userFilters, before.filters);
-    assert.deepEqual(bg.store.youtubeFocus, before.focus);
     assert.deepEqual(await healthErrors(bg), [], 'pełny rollback – bez wpisu o niepełnym przywróceniu');
   } finally { bg.restore(); }
 });
