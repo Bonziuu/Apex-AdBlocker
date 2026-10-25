@@ -1,5 +1,4 @@
 import { PRESETS, MODE_LABEL, MODE_CONTENTS, MODE_ERROR, modeDisplay } from '../shared/protection-mode-ui.js';
-import { FOCUS_OPTIONS, FOCUS_LABELS, FOCUS_DESCRIPTIONS, normalizeFocus } from '../shared/youtube-focus.js';
 import { importFailureMessage } from '../shared/settings-backup.js';
 
 const $ = (id) => document.getElementById(id);
@@ -124,53 +123,6 @@ function flash(el, text, cls) {
   el.className = 'msg-inline ' + (cls || '');
 }
 
-// --- YouTube Focus Mode -----------------------------------------------------
-let focusBusy = false;
-
-function renderFocus() {
-  const f = normalizeFocus(data.youtubeFocus);
-  $('focusEnabled').checked = f.enabled;
-  $('focusEnabled').disabled = focusBusy;
-  const box = $('focusOptions');
-  box.classList.toggle('focus-off', !f.enabled);
-  box.textContent = '';
-  for (const key of FOCUS_OPTIONS) {
-    const card = document.createElement('label');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="text">
-        <div class="name"></div>
-        <div class="desc"></div>
-      </div>
-      <span class="switch"><input type="checkbox"><span></span></span>`;
-    card.querySelector('.name').textContent = FOCUS_LABELS[key];
-    card.querySelector('.desc').textContent = FOCUS_DESCRIPTIONS[key] + (f.enabled ? '' : ' Zadziała po włączeniu Focus Mode.');
-    const input = card.querySelector('input');
-    input.dataset.key = key;
-    input.checked = f[key];
-    input.disabled = focusBusy;
-    input.addEventListener('change', () => setFocus({ [key]: input.checked }));
-    box.appendChild(card);
-  }
-}
-
-async function setFocus(patch) {
-  if (focusBusy) return;
-  const previous = normalizeFocus(data.youtubeFocus);
-  focusBusy = true;
-  data.youtubeFocus = { ...previous, ...patch };
-  renderFocus();
-  let res;
-  try { res = await send({ type: 'options:setYouTubeFocus', settings: patch }); } catch (e) { res = { ok: false, error: String(e) }; }
-  focusBusy = false;
-  const msg = $('focusMsg');
-  if (res && res.ok) { data.youtubeFocus = res.youtubeFocus; msg.hidden = true; }
-  else { data.youtubeFocus = previous; msg.textContent = `Nie udało się zapisać ustawień Focus Mode${res && res.error ? ` (${res.error})` : ''}.`; msg.hidden = false; }
-  renderFocus();
-}
-
-$('focusEnabled').addEventListener('change', () => setFocus({ enabled: $('focusEnabled').checked }));
-
 // --- Kopia ustawień ------------------------------------------------------------
 $('exportSettings').addEventListener('click', async () => {
   const r = await send({ type: 'settings:export' }).catch(() => null);
@@ -242,7 +194,6 @@ function renderAll() {
   $('version').textContent = data.version;
   renderMode();
   renderLists();
-  renderFocus();
   $('userFilters').value = data.userFilters;
   renderErrors(data.userErrors);
   $('disabledSites').value = data.disabledSites.join('\n');

@@ -71,7 +71,7 @@ test('popup:get bez dostępu (brak activeTab dla karty): fallback do tekstu plak
   }
 });
 
-test('popup:get na YouTube z activeTab: licznik + wiersz YouTube Protection + Focus Mode', async () => {
+test('popup:get na YouTube z activeTab: licznik + wiersz YouTube Protection', async () => {
   const bg = await loadBackground({
     tabUrl: 'https://www.youtube.com/watch?v=abc',
     files: { 'data/ads.allow.json': [] },
@@ -83,7 +83,7 @@ test('popup:get na YouTube z activeTab: licznik + wiersz YouTube Protection + Fo
     assert.equal(r.blocked, 2);
     assert.equal(r.host, 'www.youtube.com');
     assert.equal(r.youtube.status, 'ok');
-    assert.deepEqual(r.youtubeFocus, { enabled: false });
+    assert.ok(!('youtubeFocus' in r), 'bez Focus Mode');
   } finally { bg.restore(); }
 });
 
@@ -98,6 +98,6 @@ test('popup:get na YouTube bez dostępu: fallback, wiersze YouTube bez zmian', a
     const r = await bg.send({ type: 'popup:get', tabId: 7 });
     assert.equal(r.blocked, 5);
     assert.equal(r.youtube.status, 'ok');
-    assert.deepEqual(r.youtubeFocus, { enabled: false });
+    assert.ok(!('youtubeFocus' in r));
   } finally { bg.restore(); }
 });
