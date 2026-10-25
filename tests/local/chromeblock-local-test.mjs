@@ -449,7 +449,10 @@ export async function runLocalTests(opts = {}) {
     if (reg && registered > 0) await add('register', 'registerContentScripts', 'PASS', `${reg.totalMs} ms, ${reg.count}× wywołanie, ${registered} zarejestrowanych skryptów`);
     else await add('register', 'registerContentScripts', 'FAIL', `pomiar: ${reg ? `${reg.totalMs} ms` : 'brak'}; zarejestrowanych: ${registered}`);
 
-    // 4. zwykła strona (lokalna) + popup + tryby
+    // 4. onboarding (świeży profil = świeża instalacja) – przed popupem i trybami, kończy w trybie Basic
+    await runOnboarding({ context, add, call, setCurrent: (pg) => { current = pg; } });
+
+    // 5. zwykła strona (lokalna) + popup + tryby
     const local = await context.newPage();
     current = local;
     await local.goto(site.url);
@@ -725,6 +728,69 @@ export async function dismissConsentModal(page, { click = true, appearMs = 8000,
     if (!(await findConsentModal(page))) return { state: 'dismissed', found: { scope: found.scope, how: found.how } };
   }
   return { state: 'failed', reason: 'okno zgody nie zniknęło po kliknięciu „Odrzuć wszystko”', diagnostics: await consentDiagnostics(page, modal.root) };
+}
+
+// --- Onboarding (strona powitalna po świeżej instalacji) -------------------------------------------
+export const ONBOARDING_CHECKS = Object.freeze([
+  ['onb-open', 'Onboarding: otwarcie'],
+  ['onb-default', 'Onboarding: domyślny tryb'],
+  ['onb-start', 'Onboarding: start'],
+  ['onb-errors', 'Onboarding: bez błędów'],
+]);
+const isWelcomePage = (pg) => /^chrome-extension:\/\/[^/]+\/welcome\/welcome\.html/.test(pg.url());
+
+async function runOnboarding({ context, add, call, setCurrent }) {
+  const name = (id) => ONBOARDING_CHECKS.find(([k]) => k === id)[1];
+  const done = new Set();
+  const report = async (id, status, detail) => { done.add(id); await add(id, name(id), status, detail); };
+  const errors = [];
+  let seen = false;
+  const watch = (pg) => {
+    seen = true;
+    pg.on('pageerror', (e) => errors.push(String((e && e.message) || e).split('\n')[0]));
+    pg.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().split('\n')[0]); });
+  };
+  try {
+    // 1. dokładnie jedna karta powitalna po świeżej instalacji
+    let welcome = context.pages().find(isWelcomePage);
+    if (!welcome) welcome = await context.waitForEvent('page', { predicate: isWelcomePage, timeout: 15000 }).catch(() => null);
+    const count = context.pages().filter(isWelcomePage).length;
+    if (!welcome) throw new Error('strona powitalna nie otworzyła się po instalacji');
+    watch(welcome);
+    setCurrent(welcome);
+    await report('onb-open', count === 1 ? 'PASS' : 'FAIL', count === 1 ? 'jedna karta welcome/welcome.html po świeżej instalacji' : `kart powitalnych: ${count}`);
+
+    // 2. Basic zaznaczony; widoczne Basic / Balanced / Strict
+    await welcome.waitForSelector('#modes input', { timeout: 15000 });
+    const names = await welcome.$$eval('#modes .name', (n) => n.filter((x) => x.offsetParent !== null).map((x) => x.textContent.trim()));
+    const checked = await welcome.$eval('#modes input:checked', (i) => i.value).catch(() => null);
+    const okDefault = checked === 'basic' && JSON.stringify(names) === JSON.stringify(['Basic', 'Balanced', 'Strict']);
+    await report('onb-default', okDefault ? 'PASS' : 'FAIL', okDefault ? 'Basic zaznaczony; widoczne Basic, Balanced, Strict' : `zaznaczony: ${checked}; widoczne: ${names.join(', ')}`);
+
+    // 3. „Zacznij korzystać” bez zmiany Basic → sukces, karta się zamyka, Basic = istniejący preset
+    await welcome.bringToFront();
+    const closed = welcome.waitForEvent('close', { timeout: 30000 }).then(() => true).catch(() => false);
+    await welcome.click('#start');
+    const success = await welcome.waitForSelector('#status.ok', { timeout: 60000 }).then(() => true).catch(() => false);
+    const msg = welcome.isClosed() ? '' : ((await welcome.textContent('#status').catch(() => '')) || '');
+    const wasClosed = await closed;
+    const o = await call({ type: 'options:get' }).catch(() => null);
+    const lists = o ? o.lists.filter((l) => l.enabled).map((l) => l.id).sort() : [];
+    const preset = o && o.protectionModes && o.protectionModes.basic ? [...o.protectionModes.basic].sort() : null;
+    const problems = [];
+    if (!success) problems.push(`brak komunikatu sukcesu${msg ? ` (${msg.trim().slice(0, 120)})` : ''}`);
+    if (!wasClosed) problems.push('karta powitalna się nie zamknęła');
+    if (!o || o.protectionMode !== 'basic') problems.push(`protectionMode: ${o && o.protectionMode}`);
+    if (!preset || JSON.stringify(lists) !== JSON.stringify(preset)) problems.push(`listy ${lists.join(',')} ≠ preset Basic ${preset ? preset.join(',') : '—'}`);
+    await report('onb-start', problems.length ? 'FAIL' : 'PASS', problems.join('; ') || `„Gotowe” → karta zamknięta; protectionMode = basic; listy = preset Basic (${lists.join(', ')})`);
+  } catch (e) {
+    const why = `przerwano: ${String((e && e.message) || e).split('\n')[0]}`;
+    for (const [id] of ONBOARDING_CHECKS) if (id !== 'onb-errors' && !done.has(id)) await report(id, 'FAIL', why);
+  } finally {
+    // 4. błędy JS strony powitalnej
+    if (!seen) await report('onb-errors', 'SKIP', 'INCONCLUSIVE – strona powitalna się nie otworzyła');
+    else await report('onb-errors', errors.length ? 'FAIL' : 'PASS', errors.length ? `błędy JS: ${errors.slice(0, 3).join(' | ')}` : '0 błędów JS na stronie powitalnej');
+  }
 }
 
 // --- Kopia ustawień (Backup / Restore) przez prawdziwy UI Opcji ------------------------------------
