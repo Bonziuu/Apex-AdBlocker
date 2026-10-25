@@ -142,3 +142,25 @@ test('istniejące wrappery bez zmian w zachowaniu; README wspomina pierwsze uruc
   assert.match(read(HEADED), /^call "%~dp0test-polish-sites\.cmd" --headed %\*\r?$/m);
   assert.match(read('README.md'), /Pierwsze uruchomienie Windows: `?run-polish-test\.cmd`?/);
 });
+
+// --- run-polish-evidence.cmd: GAP + evidence dla 9 stron ---------------------------------------------
+
+const EVIDENCE_SITES = ['onet.pl', 'wp.pl', 'interia.pl', 'o2.pl', 'gazeta.pl', 'wykop.pl', 'businessinsider.com.pl', 'se.pl', 'bankier.pl'];
+
+test('run-polish-evidence.cmd: przez run-polish-test.cmd, --evidence, dokładnie 9 stron, kod wyjścia przekazany', () => {
+  const raw = read('run-polish-evidence.cmd');
+  assert.ok(raw.startsWith('@echo off'));
+  assert.equal(raw.split('\n').length - 1, (raw.match(/\r\n/g) || []).length, 'CRLF');
+  const m = /^call "%~dp0run-polish-test\.cmd" (.+) %\*\r?$/m.exec(raw);
+  assert.ok(m, 'wywołuje run-polish-test.cmd (przygotowanie + GAP)');
+  const args = m[1].split(/\s+/);
+  assert.equal(args[0], '--evidence');
+  assert.deepEqual(args.slice(1), EVIDENCE_SITES);
+  assert.match(raw, /^exit \/b %ERRORLEVEL%\r?$/m);
+  // run-polish-test.cmd → test-polish-sites.cmd dodaje --gap-mode; argumenty trafiają do testera
+  const o = parseArgs(['--gap-mode', ...args]);
+  assert.equal(o.gap, true);
+  assert.equal(o.evidence, true);
+  assert.deepEqual(o.domains, EVIDENCE_SITES);
+  assert.doesNotMatch(commandsOf(raw), /npm install|npx playwright install|chromeblock-polish\.txt|provenance/i, 'bez instalacji i bez zmian list');
+});

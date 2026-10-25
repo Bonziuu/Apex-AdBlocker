@@ -6,6 +6,8 @@
 //   npm run test:polish-sites -- --headed           z widocznym oknem przeglądarki
 //   npm run test:polish-sites -- --fixture          tryb offline na stronach testowych (samosprawdzenie narzędzia)
 //   npm run test:polish-sites -- --gap-mode         GAP: tymczasowy build BEZ Polskich Filtrów (MajkiIT / Certyficate IT)
+//   npm run test:polish-sites -- --evidence         zrzuty ekranu obserwacji: tests/polish-sites/results/evidence/<domena>-<nr>.png
+//                                                   (+ <domena>-<nr>-context.png z otoczeniem); bez HTML strony i cookies
 //
 // --gap-mode buduje rozszerzenie testowe w katalogu tymczasowym z konfiguracji list, z której
 // usunięte są wyłącznie źródła pl/ (pliki Polskich Filtrów nie są nawet wczytywane). EasyList,
@@ -90,7 +92,17 @@ export function collectInPage(labels) {
     if (!c || c === document.body || c === document.documentElement) c = el;
     const r = c.getBoundingClientRect();
     const otherText = Math.max(0, norm(c.innerText).length - n.length);
-    out.labels.push({ label: n, el: path3(el), container: { desc: path3(c), w: r.width, h: r.height, media: mediaIn(c), otherText } });
+    // znaczniki tylko do zrzutu ekranu dowodu (tryb --evidence); nic nie jest zapisywane ze strony
+    const idx = out.labels.length;
+    el.setAttribute('data-cb-evidence-label', String(idx));
+    c.setAttribute('data-cb-evidence-c', `${c.getAttribute('data-cb-evidence-c') || ''} ${idx}`.trim());
+    out.labels.push({
+      label: n, el: path3(el),
+      container: { desc: path3(c), w: r.width, h: r.height, media: mediaIn(c), otherText },
+      inFooter: !!el.closest('footer, [role="contentinfo"]'),
+      viewport: { w: window.innerWidth, h: window.innerHeight },
+      page: { w: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight },
+    });
   }
   for (const f of document.querySelectorAll('iframe')) {
     const r = f.getBoundingClientRect();
@@ -104,7 +116,7 @@ export function collectInPage(labels) {
   return out;
 }
 
-async function testSite(context, domain, { timeout, log }) {
+async function testSite(context, domain, { timeout, log, evidenceDir = null }) {
   const url = siteUrl(domain);
   const page = await context.newPage();
   const requests = [];
@@ -143,13 +155,52 @@ async function testSite(context, domain, { timeout, log }) {
     consentDialog: !!snap.consentDialog,
     observations: gotoError ? [] : observationsFor(domain, snap, blocked),
   };
+  if (evidenceDir && !gotoError) await captureEvidence(page, result.observations, evidenceDir);
   log(`  ${verdict.status.padEnd(11)} ${domain}: zablokowane ${blocked.size}/${requests.length}, obserwacje ${result.observations.length}, błędy JS ${jsErrors.length}`);
   await page.close().catch(() => {});
   return result;
 }
 
+// --- tryb --evidence: zrzuty ekranu obserwacji ----------------------------------------------------
+export const EVIDENCE_KINDS = ['ad-label', 'empty-ad-container'];
+const CONTEXT_MARGIN = 120;
+
+/** Zrzut elementu + zrzut z niewielkim otoczeniem dla obserwacji ad-label / empty-ad-container. */
+export async function captureEvidence(page, observations, evidenceDir) {
+  fs.mkdirSync(evidenceDir, { recursive: true });
+  for (const o of observations) {
+    if (!EVIDENCE_KINDS.includes(o.kind) || o.labelIndex === undefined) continue;
+    const n = o.id.split('#').pop();
+    const base = `${o.domain}-${n}`;
+    // dla podejrzanych (ogromnych) kontenerów zrzut samej etykiety – nie całej strony
+    const huge = (o.false_positive_reasons || []).some((r) => /stron|duży/.test(r));
+    const target = page.locator(huge ? `[data-cb-evidence-label="${o.labelIndex}"]` : `[data-cb-evidence-c~="${o.labelIndex}"]`).first();
+    const ev = { element: null, context: null };
+    try {
+      await target.scrollIntoViewIfNeeded({ timeout: 5000 });
+      await target.screenshot({ path: path.join(evidenceDir, `${base}.png`), timeout: 10000 });
+      ev.element = `evidence/${base}.png`;
+    } catch (e) { ev.error = `zrzut elementu: ${String((e && e.message) || e).split('\n')[0].slice(0, 120)}`; }
+    try {
+      const box = await target.boundingBox();
+      const vp = page.viewportSize() || { width: 1366, height: 900 };
+      if (box) {
+        const x = Math.max(0, box.x - CONTEXT_MARGIN);
+        const y = Math.max(0, box.y - CONTEXT_MARGIN);
+        const w = Math.min(vp.width - x, box.width + 2 * CONTEXT_MARGIN);
+        const h = Math.min(vp.height - y, box.height + 2 * CONTEXT_MARGIN);
+        if (w > 0 && h > 0) {
+          await page.screenshot({ path: path.join(evidenceDir, `${base}-context.png`), clip: { x, y, width: w, height: h }, timeout: 10000 });
+          ev.context = `evidence/${base}-context.png`;
+        }
+      }
+    } catch (e) { ev.error = `${ev.error ? `${ev.error}; ` : ''}zrzut otoczenia: ${String((e && e.message) || e).split('\n')[0].slice(0, 120)}`; }
+    o.evidence = ev;
+  }
+}
+
 // --- tryb fixture: strony testowe bez sieci ------------------------------------------------------
-export const FIXTURE_SITES = ['fixture-a.example', 'fixture-b.example'];
+export const FIXTURE_SITES = ['fixture-a.example', 'fixture-b.example', 'fixture-c.example'];
 const FIXTURE_HTML = {
   'www.fixture-a.example': `<!doctype html><title>Fixture A</title><body>
     <p>${'Treść artykułu testowego. '.repeat(20)}</p>
@@ -160,9 +211,15 @@ const FIXTURE_HTML = {
   </body>`,
   'www.fixture-b.example': `<!doctype html><title>Fixture B</title><body><p>${'Druga strona testowa. '.repeat(20)}</p>
     <script>throw new Error('fixture-js-error')</script></body>`,
+  // typowe false positive: link „Reklama” w stopce i etykieta w ogromnym kontenerze
+  'www.fixture-c.example': `<!doctype html><title>Fixture C</title><body>
+    <p>${'Trzecia strona testowa. '.repeat(20)}</p>
+    <div id="huge" style="width:100%;height:4000px"><span>Reklama</span></div>
+    <footer style="height:80px"><span>Reklama</span> | <span>Kontakt</span> | <span>Regulamin</span></footer>
+  </body>`,
 };
 
-export async function run({ domains, headed = false, fixture = false, gap = false, timeout = 45000, log = console.log, outDir = path.join(ROOT, 'tests', 'polish-sites', 'results'), write = true } = {}) {
+export async function run({ domains, headed = false, fixture = false, gap = false, evidence = false, timeout = 45000, log = console.log, outDir = path.join(ROOT, 'tests', 'polish-sites', 'results'), write = true } = {}) {
   const chromium = await loadPlaywright({ root: ROOT });
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-polish-'));
   const ext = path.join(tmp, 'ext');
@@ -191,8 +248,14 @@ export async function run({ domains, headed = false, fixture = false, gap = fals
     await new Promise((r) => setTimeout(r, 1500));
     for (const p of context.pages()) if (/welcome\/welcome\.html/.test(p.url())) await p.close().catch(() => {});
     const sites = [];
-    for (const d of domains) sites.push(await testSite(context, d, { timeout, log }));
-    const result = { date: new Date().toISOString(), version: manifest.version_name || manifest.version, fixture, mode: gap ? 'gap' : 'normal', modeLabel: gap ? GAP_MODE_LABEL : 'NORMAL — all lists (with MajkiIT Polish Filters)', adsSources, extDir: ext, sites };
+    const evidenceDir = evidence ? path.join(outDir, 'evidence') : null;
+    if (evidenceDir) {
+      // poprzednie zrzuty (te same nazwy plików) – tylko *.png w folderze evidence
+      fs.mkdirSync(evidenceDir, { recursive: true });
+      for (const f of fs.readdirSync(evidenceDir)) if (f.endsWith('.png')) fs.rmSync(path.join(evidenceDir, f));
+    }
+    for (const d of domains) sites.push(await testSite(context, d, { timeout, log, evidenceDir }));
+    const result = { date: new Date().toISOString(), version: manifest.version_name || manifest.version, fixture, mode: gap ? 'gap' : 'normal', modeLabel: gap ? GAP_MODE_LABEL : 'NORMAL — all lists (with MajkiIT Polish Filters)', adsSources, evidence: !!evidence, evidenceDir, extDir: ext, sites };
     if (write) {
       fs.mkdirSync(outDir, { recursive: true });
       const stamp = result.date.replace(/[:.]/g, '-');
@@ -208,11 +271,12 @@ export async function run({ domains, headed = false, fixture = false, gap = fals
 }
 
 export function parseArgs(argv) {
-  const o = { domains: [], headed: false, fixture: false, gap: false };
+  const o = { domains: [], headed: false, fixture: false, gap: false, evidence: false };
   for (const a of argv) {
     if (a === '--headed') o.headed = true;
     else if (a === '--fixture') o.fixture = true;
     else if (a === '--gap-mode') o.gap = true;
+    else if (a === '--evidence') o.evidence = true;
     else if (!a.startsWith('--')) o.domains.push(a.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, ''));
   }
   if (o.fixture) o.domains = FIXTURE_SITES.slice();

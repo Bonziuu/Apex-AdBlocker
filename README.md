@@ -93,6 +93,8 @@ npm run check        # walidacja buildu + zgodność YouTube (strict) + audyt + 
 
 Pierwsze uruchomienie Windows: `run-polish-test.cmd` – po rozpakowaniu ZIP-a repozytorium wystarczy dwuklik. Wymaga zainstalowanego Node.js 20+; brakujące zależności (`npm install`) i Chromium dla Playwright (`npx playwright install chromium`) pobiera sam, potem uruchamia `test-polish-sites.cmd` (GAP mode).
 
+Dowody (zrzuty ekranu obserwacji) dla 9 stron: dwuklik `run-polish-evidence.cmd` (GAP + `--evidence`: onet.pl, wp.pl, interia.pl, o2.pl, gazeta.pl, wykop.pl, businessinsider.com.pl, se.pl, bankier.pl). Zrzuty: `tests/polish-sites/results/evidence/<domena>-<nr>.png` i `<domena>-<nr>-context.png`.
+
 Aktualizacja list:
 
 ```bash

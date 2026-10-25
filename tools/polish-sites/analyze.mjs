@@ -45,16 +45,34 @@ const short = (s, n = 120) => String(s || '').replace(/\s+/g, ' ').trim().slice(
  * snapshot (z przeglądarki): { labels:[{label, el, container:{desc,w,h,media,otherText}}], frames:[{desc,w,h,src}], ... }
  * blockedUrls: Set adresów zablokowanych przez ChromeBlock (ERR_BLOCKED_BY_CLIENT)
  */
+/**
+ * Ewidentne false positive etykiety (np. link „Reklama” w stopce = informacja o reklamie w serwisie).
+ * Wpis NIE jest usuwany – dostaje likely_false_positive: true i powody.
+ */
+export function falsePositiveReasons(l) {
+  const reasons = [];
+  const c = l.container || {};
+  const vp = l.viewport || {};
+  const pg = l.page || {};
+  if (l.inFooter) reasons.push('w stopce (footer)');
+  if (pg.w > 0 && pg.h > 0 && c.w * c.h >= 0.5 * pg.w * pg.h) reasons.push('obejmuje prawie całą stronę');
+  if (vp.w > 0 && vp.h > 0 && (c.h > 2 * vp.h || c.w > 1.2 * vp.w || c.w * c.h > 1.5 * vp.w * vp.h)) reasons.push('nienaturalnie duży względem okna');
+  return reasons;
+}
+
 export function observationsFor(domain, snapshot, blockedUrls = new Set()) {
   const out = [];
   let n = 0;
   const id = () => `${domain}#${++n}`;
-  for (const l of snapshot.labels || []) {
+  for (const [labelIndex, l] of (snapshot.labels || []).entries()) {
     if (!isAdLabel(l.label)) continue; // tylko prawdziwe etykiety
     const c = l.container || {};
     const empty = !c.media && (c.otherText || 0) < 5;
+    const fp = falsePositiveReasons(l);
     out.push({
-      id: id(), domain,
+      id: id(), domain, labelIndex,
+      likely_false_positive: fp.length > 0,
+      ...(fp.length ? { false_positive_reasons: fp } : {}),
       kind: empty ? 'empty-ad-container' : 'ad-label',
       label: norm(l.label),
       element: short(l.el, 160),
@@ -66,7 +84,7 @@ export function observationsFor(domain, snapshot, blockedUrls = new Set()) {
   for (const f of snapshot.frames || []) {
     if (!f.src || !blockedUrls.has(f.src)) continue;
     out.push({
-      id: id(), domain, kind: 'blocked-frame-space',
+      id: id(), domain, kind: 'blocked-frame-space', likely_false_positive: false,
       element: short(f.desc, 160), frameHost: hostOf(f.src),
       size: `${Math.round(f.w)}x${Math.round(f.h)}`,
       note: 'widoczna ramka, której żądanie zablokował ChromeBlock (puste miejsce)',
@@ -99,7 +117,7 @@ export function formatReport(run) {
   L.push(`Wersja:        ${run.version}`);
   L.push(`MODE: ${run.modeLabel || 'NORMAL — all lists (with MajkiIT Polish Filters)'}`);
   if (run.adsSources) L.push(`Źródła ads:    ${run.adsSources.join(', ')}`);
-  L.push(`Tryb:          ${run.fixture ? 'fixture (offline, strony testowe)' : 'prawdziwe strony'}`);
+  L.push(`Tryb:          ${run.fixture ? 'fixture (offline, strony testowe)' : 'prawdziwe strony'}${run.evidence ? ' + evidence (zrzuty: tests/polish-sites/results/evidence/)' : ''}`);
   L.push(`Strony:        ${run.sites.length} (OK ${run.sites.filter((s) => s.verdict.status === 'OK').length}, BROKEN ${run.sites.filter((s) => s.verdict.status === 'BROKEN').length}, UNREACHABLE ${run.sites.filter((s) => s.verdict.status === 'UNREACHABLE').length})`);
   L.push(`Obserwacje:    ${run.sites.reduce((n, s) => n + s.observations.length, 0)}`);
   L.push('');
@@ -109,11 +127,14 @@ export function formatReport(run) {
     L.push(`    żądania: ${s.requests.total} (3rd-party ${s.requests.thirdParty}), zablokowane przez ChromeBlock: ${s.requests.blocked}`);
     L.push(`    błędy JS: ${s.jsErrors.count}${s.jsErrors.samples.length ? ` – ${s.jsErrors.samples.join(' | ')}` : ''}; błędy konsoli: ${s.consoleErrors}`);
     if (s.consentDialog) L.push('    okno zgody (CMP) widoczne – niczego nie klikano; część reklam może się nie załadować');
-    const labels = s.observations.filter((o) => o.kind === 'ad-label' || o.kind === 'empty-ad-container').length;
-    const empty = s.observations.filter((o) => o.kind === 'empty-ad-container' || o.kind === 'blocked-frame-space').length;
-    L.push(`    etykiety reklam/sponsorowanych: ${labels}; puste kontenery reklamowe: ${empty}`);
+    const real = s.observations.filter((o) => !o.likely_false_positive);
+    const labels = real.filter((o) => o.kind === 'ad-label' || o.kind === 'empty-ad-container').length;
+    const empty = real.filter((o) => o.kind === 'empty-ad-container' || o.kind === 'blocked-frame-space').length;
+    const fpCount = s.observations.length - real.length;
+    L.push(`    etykiety reklam/sponsorowanych: ${labels}; puste kontenery reklamowe: ${empty}${fpCount ? `; prawdopodobne false positive: ${fpCount}` : ''}`);
     for (const o of s.observations) {
-      L.push(`    • ${o.id} ${o.kind}${o.label ? ` „${o.label}”` : ''}${o.frameHost ? ` ramka ${o.frameHost}` : ''} ${o.size} – ${o.container || o.element}`);
+      L.push(`    • ${o.id} ${o.kind}${o.label ? ` „${o.label}”` : ''}${o.frameHost ? ` ramka ${o.frameHost}` : ''} ${o.size} – ${o.container || o.element}${o.likely_false_positive ? ` [likely_false_positive: ${o.false_positive_reasons.join(', ')}]` : ''}`);
+      if (o.evidence) L.push(`      dowód: ${[o.evidence.element, o.evidence.context].filter(Boolean).join(' + ') || '—'}${o.evidence.error ? ` (${o.evidence.error})` : ''}`);
     }
     L.push(`    niezablokowane hosty 3rd-party (do ręcznego przeglądu): ${s.unblockedThirdPartyHosts.length ? s.unblockedThirdPartyHosts.map((h) => `${h.host}×${h.count}`).join(', ') : 'brak'}`);
   }

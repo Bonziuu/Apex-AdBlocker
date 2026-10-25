@@ -3,7 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { isAdLabel, observationsFor, pageVerdict, siteUrl, isThirdParty, topHosts, formatReport } from '../../tools/polish-sites/analyze.mjs';
+import { isAdLabel, observationsFor, pageVerdict, siteUrl, isThirdParty, topHosts, formatReport, falsePositiveReasons } from '../../tools/polish-sites/analyze.mjs';
+import os from 'node:os';
+import path from 'node:path';
 import { parseArgs, run, MAX_SITES } from '../../tools/polish-sites/test-polish-sites.mjs';
 import { loadPlaywright } from '../../tools/chromium-smoke.mjs';
 
@@ -68,4 +70,59 @@ test('Chromium (fixture, bez sieci): blokady, etykiety, pusty kontener, błąd J
   assert.equal(b.verdict.status, 'OK');
   assert.equal(b.jsErrors.count, 1);
   assert.deepEqual(b.observations, []);
+});
+
+test('false positive: stopka, kontener na całą stronę, nienaturalny rozmiar – oznaczone, nie usunięte', () => {
+  const vp = { w: 1366, h: 900 };
+  const page = { w: 1366, h: 6000 };
+  const base = { label: 'reklama', el: 'span', viewport: vp, page };
+  assert.deepEqual(falsePositiveReasons({ ...base, container: { w: 300, h: 250 } }), []);
+  assert.deepEqual(falsePositiveReasons({ ...base, inFooter: true, container: { w: 1366, h: 80 } }), ['w stopce (footer)']);
+  assert.ok(falsePositiveReasons({ ...base, container: { w: 1366, h: 5800 } }).includes('obejmuje prawie całą stronę'));
+  assert.ok(falsePositiveReasons({ ...base, container: { w: 1366, h: 2000 } }).includes('nienaturalnie duży względem okna'));
+  assert.deepEqual(falsePositiveReasons({ ...base, container: { w: 1200, h: 600 } }), [], 'duży, ale typowy boks');
+  const snap = { labels: [
+    { ...base, container: { desc: 'div#a', w: 300, h: 250, media: false, otherText: 0 } },
+    { ...base, inFooter: true, container: { desc: 'footer', w: 1366, h: 80, media: false, otherText: 30 } },
+  ], frames: [] };
+  const o = observationsFor('strona.pl', snap);
+  assert.equal(o.length, 2, 'wpis false positive zostaje');
+  assert.deepEqual(o.map((x) => [x.labelIndex, x.likely_false_positive]), [[0, false], [1, true]]);
+  assert.deepEqual(o[1].false_positive_reasons, ['w stopce (footer)']);
+  const txt = formatReport({ date: 'd', version: 'v', sites: [{ domain: 'strona.pl', verdict: { status: 'OK', reason: '' }, requests: { total: 1, thirdParty: 0, blocked: 0 }, jsErrors: { count: 0, samples: [] }, consoleErrors: 0, unblockedThirdPartyHosts: [], observations: o.map((x, i) => ({ ...x, evidence: i ? undefined : { element: 'evidence/strona.pl-1.png', context: 'evidence/strona.pl-1-context.png' } })) }] });
+  assert.match(txt, /etykiety reklam\/sponsorowanych: 1; puste kontenery reklamowe: 1; prawdopodobne false positive: 1/);
+  assert.match(txt, /\[likely_false_positive: w stopce \(footer\)\]/);
+  assert.match(txt, /dowód: evidence\/strona\.pl-1\.png \+ evidence\/strona\.pl-1-context\.png/);
+  assert.equal(parseArgs(['--evidence', 'onet.pl']).evidence, true);
+  assert.equal(parseArgs([]).evidence, false);
+});
+
+test('Chromium (fixture) --evidence: zrzuty elementu i otoczenia, ścieżki w latest.json, false positive oznaczone, bez HTML', { skip, timeout: 300_000 }, async () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-evidence-'));
+  try {
+    const r = await run({ fixture: true, evidence: true, log: () => {}, outDir, domains: ['fixture-a.example', 'fixture-c.example'] });
+    assert.equal(r.evidence, true);
+    const [a, c] = r.sites;
+    for (const o of a.observations) {
+      assert.equal(o.likely_false_positive, false);
+      const n = o.id.split('#').pop();
+      assert.deepEqual(o.evidence, { element: `evidence/fixture-a.example-${n}.png`, context: `evidence/fixture-a.example-${n}-context.png` });
+      for (const f of [o.evidence.element, o.evidence.context]) {
+        const buf = fs.readFileSync(path.join(outDir, f));
+        assert.equal(buf.subarray(1, 4).toString(), 'PNG', `${f} to PNG`);
+      }
+    }
+    assert.deepEqual(c.observations.map((o) => [o.kind, o.likely_false_positive]), [['empty-ad-container', true], ['ad-label', true]]);
+    assert.ok(c.observations[0].false_positive_reasons.includes('obejmuje prawie całą stronę'));
+    assert.deepEqual(c.observations[1].false_positive_reasons, ['w stopce (footer)']);
+    assert.ok(c.observations.every((o) => o.evidence && o.evidence.element), 'dowód także dla oznaczonych (do oceny przez człowieka)');
+    // latest.json zawiera ścieżki; w folderze evidence tylko PNG (bez HTML, cookies, profilu)
+    const latest = JSON.parse(fs.readFileSync(path.join(outDir, 'latest.json'), 'utf8'));
+    assert.equal(latest.sites[0].observations[0].evidence.element, 'evidence/fixture-a.example-1.png');
+    assert.ok(fs.readdirSync(path.join(outDir, 'evidence')).every((f) => f.endsWith('.png')));
+    assert.ok(!fs.readdirSync(outDir).some((f) => /\.html?$|cookie|profile/i.test(f)));
+    assert.equal(fs.existsSync(r.extDir), false, 'tymczasowe rozszerzenie i profil usunięte');
+  } finally {
+    fs.rmSync(outDir, { recursive: true, force: true });
+  }
 });

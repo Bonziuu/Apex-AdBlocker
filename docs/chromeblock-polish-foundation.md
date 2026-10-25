@@ -106,6 +106,21 @@ npm run test:polish-sites -- --gap-mode
 
 Na Windows wystarczy dwuklik na `test-polish-sites.cmd` w katalogu repozytorium (to samo polecenie). Wersja z widocznym oknem przeglądarki to `test-polish-sites-headed.cmd`. Wrappery niczego nie instalują: przy braku Node.js, npm, Playwright (`npm install`) albo Chromium (`npx playwright install chromium`) pokazują komunikat i czekają na klawisz.
 
+**`--evidence`** zapisuje zrzut ekranu dla każdej obserwacji `ad-label` i `empty-ad-container`:
+
+- `tests/polish-sites/results/evidence/<domena>-<nr>.png`: sam element (kontener etykiety);
+- `<domena>-<nr>-context.png`: element z otoczeniem ok. 120 px.
+
+Ścieżki trafiają do `latest.json` (pole `evidence` obserwacji). Pełny HTML strony, cookies i dane profilu nie są zapisywane, a profil pozostaje tymczasowy. Na Windows dla 9 stron (onet.pl, wp.pl, interia.pl, o2.pl, gazeta.pl, wykop.pl, businessinsider.com.pl, se.pl, bankier.pl): dwuklik `run-polish-evidence.cmd` (GAP + evidence, z przygotowaniem jak `run-polish-test.cmd`).
+
+**Filtr ewidentnych false positive.** Samo słowo „reklama” nie wystarcza. Obserwacja dostaje `likely_false_positive: true` i powody (`false_positive_reasons`), gdy:
+
+- etykieta jest w `footer` / `[role=contentinfo]` (np. link „Reklama” do cennika reklam serwisu);
+- kontener obejmuje co najmniej połowę powierzchni strony;
+- kontener jest nienaturalnie duży względem okna: wyższy niż 2× okno, szerszy niż 1,2× okno albo o powierzchni większej niż 1,5× okno.
+
+Takie wpisy **nie są usuwane**. Raport liczy je osobno, a dla dużych kontenerów zrzut obejmuje samą etykietę.
+
 Następnie przejrzeć `tests/polish-sites/results/latest.txt` i, przy stronach z obserwacjami, otworzyć je ręcznie (`--headed`).
 
 ## 5. Jak dodać regułę (następne partie)
