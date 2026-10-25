@@ -9,13 +9,14 @@
 ! License: TBD
 !
 ! Partia 1 (2026-10-25): obserwacje z `npm run test:polish-sites -- --gap-mode --evidence`.
+!   Poprawki po reteście (2026-10-25): businessinsider.com.pl (nowa struktura), gazeta.pl (salesModule).
 !
 ! bankier.pl – pusty slot reklamowy z etykietą „REKLAMA”
 bankier.pl##div#n2b-ad-r2.n2b-ad-container
 !
-! businessinsider.com.pl – kafle oznaczone etykietą „MATERIAŁ PROMOCYJNY”
-businessinsider.com.pl##flat-ad-wrapper#flat-natleft-2 *:has-text(/^\s*materiał promocyjny\s*$/i):upward(flat-ad-wrapper)
-businessinsider.com.pl##.ods-c-card-wrapper *:has-text(/^\s*materiał promocyjny\s*$/i):upward(.ods-c-card-wrapper)
+! businessinsider.com.pl – karty w mozaice oznaczone etykietą „MATERIAŁ PROMOCYJNY” (retest 2026-10-25)
+businessinsider.com.pl##div.section-list_mosaic-3elem > a.list-item.item--m.item--m--img-right *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.list-item.item--m.item--m--img-right)
 !
 ! gazeta.pl – kafle artykułów oznaczone etykietą „MATERIAŁ PROMOCYJNY”
 gazeta.pl##article.tile *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article.tile)
+gazeta.pl##div.salesModule.salesModule--fourColumn > a.salesModule__article *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.salesModule__article)

@@ -160,3 +160,20 @@ Razem: **4 reguły kosmetyczne** (1 zwykła, 3 proceduralne), 0 sieciowych, 0 sc
 - Widoczne: `#n2b-ad-r3`, inne sloty i karty, kafel z tymi słowami w tytule, stopka.
 
 **Retest na prawdziwych stronach: WYMAGANY u użytkownika.** W środowisku budowania wszystkie 3 domeny mają status UNREACHABLE (`net::ERR_TUNNEL_CONNECTION_FAILED`), więc retestu stąd nie ma.
+
+### Poprawki po reteście użytkownika (2026-10-25, `retest-polish-batch1.cmd`)
+
+| Domena | Wynik retestu | Zmiana |
+|---|---|---|
+| bankier.pl | reguła działa; pozostałe 2 obserwacje to false positive | bez zmian |
+| businessinsider.com.pl | dwie stare reguły nie trafiały w aktualny DOM; nowe obserwacje `#2`, `#3`: karty `div.section-list_mosaic-3elem > a.list-item.item--m.item--m--img-right` z dokładną etykietą (jedna z `#slot-flat-natleft-2`); `#1` (menu w `header > nav`) = false positive | 2 stare reguły usunięte. Jedna nowa: `div.section-list_mosaic-3elem > a.list-item.item--m.item--m--img-right *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.list-item.item--m.item--m--img-right)`. Ukrywa tylko kartę z dokładną etykietą, nie całą mozaikę ani karty poza nią |
+| gazeta.pl | reguła `article.tile` usunęła wcześniejsze kafle; nowa obserwacja `#1`: `div.salesModule.salesModule--fourColumn > a.salesModule__article` z dokładną etykietą; `#2` (stopka) = false positive | reguła `article.tile` zostaje. Druga reguła: `div.salesModule.salesModule--fourColumn > a.salesModule__article *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.salesModule__article)` |
+
+Stan listy: **4 reguły kosmetyczne** (bankier.pl 1, businessinsider.com.pl 1, gazeta.pl 2). `provenance.json` odpowiada dokładnie tym regułom: dowody `bankier.pl#1`, `businessinsider.com.pl#2-#3`, `gazeta.pl#1-#19` (pierwszy test) i `gazeta.pl#1` (retest).
+
+Test mechaniki w Chromium (lokalne strony o strukturze z retestu):
+
+- ukryte: karty z etykietą w mozaice, w tym `#slot-flat-natleft-2`, oraz `a.salesModule__article` z etykietą;
+- widoczne: mozaika, karta z tymi słowami w tytule, karta z etykietą poza mozaiką, pozycja menu w nagłówku, moduł `salesModule`, link bez etykiety, stopka.
+
+Kolejny retest na prawdziwych stronach: wymagany u użytkownika.

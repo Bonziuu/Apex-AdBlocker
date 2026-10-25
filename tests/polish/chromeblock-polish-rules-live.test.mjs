@@ -1,4 +1,4 @@
-// Reguły ChromeBlock Polish Supplement (partia 1) w prawdziwym Chromium – na LOKALNYCH stronach
+// Reguły ChromeBlock Polish Supplement (partia 1 po reteście) w prawdziwym Chromium – na LOKALNYCH stronach
 // testowych o opisanej w obserwacjach strukturze (bez sieci). Rozszerzenie testowe ma w liście „ads”
 // WYŁĄCZNIE ChromeBlock Polish Supplement, więc wynik zależy tylko od naszych reguł.
 // To test mechaniki reguł, a nie retest prawdziwych stron (ten wymaga internetu: test:polish-sites).
@@ -24,17 +24,23 @@ const PAGES = {
     <div id="n2b-ad-r2" class="n2b-ad-container -r2" style="width:940px;height:200px"><span>REKLAMA</span></div>
     <div id="n2b-ad-r3" class="n2b-ad-container -r3" style="width:940px;height:200px"><span>REKLAMA</span></div>
     <div id="notowania" style="height:100px">Kursy walut</div></body>`,
-  'businessinsider.com.pl': `<!doctype html><meta charset="utf-8"><title>BI</title><body>${filler('Gospodarka.')}
-    <flat-ad-wrapper id="flat-natleft-2" style="display:block;height:120px"><div><span>Materiał promocyjny</span><h3>Tytuł A</h3></div></flat-ad-wrapper>
-    <flat-ad-wrapper id="flat-natleft-1" style="display:block;height:120px"><div><h3>Kafel bez etykiety</h3></div></flat-ad-wrapper>
-    <div class="ods-c-card-wrapper" id="card-promo"><article><span>MATERIAŁ PROMOCYJNY</span><h3>Tytuł B</h3></article></div>
-    <div class="ods-c-card-wrapper" id="card-normal"><article><span>Gospodarka</span><h3>Materiał promocyjny w tytule nie jest etykietą</h3></article></div>
-    <div class="ods-c-card-wrapper" id="card-normal2"><article><span>Finanse</span><h3>Zwykły artykuł</h3></article></div></body>`,
+  'businessinsider.com.pl': `<!doctype html><meta charset="utf-8"><title>BI</title><body>
+    <header><nav><ul class="first-level"><li id="nav-promo">Materiał promocyjny</li><li>Gospodarka</li></ul></nav></header>${filler('Gospodarka.')}
+    <div class="section-list_mosaic-3elem" id="mosaic">
+      <a class="list-item item--m item--m--img-right" id="slot-flat-natleft-2" href="#"><div class="item_description"><span>MATERIAŁ PROMOCYJNY</span><h3>Tytuł A</h3></div></a>
+      <a class="list-item item--m item--m--img-right" id="card-promo" href="#"><div class="item_description"><span>Materiał promocyjny</span><h3>Tytuł B</h3></div></a>
+      <a class="list-item item--m item--m--img-right" id="card-normal" href="#"><div class="item_description"><span>Finanse</span><h3>Materiał promocyjny w tytule nie jest etykietą</h3></div></a>
+    </div>
+    <div class="section-list_other"><a class="list-item item--m item--m--img-right" id="card-outside" href="#"><div class="item_description"><span>Materiał promocyjny</span><h3>Poza mozaiką</h3></div></a></div></body>`,
   'www.gazeta.pl': `<!doctype html><meta charset="utf-8"><title>G</title><body>${filler('Wiadomości.')}
     <article class="tile" id="t1"><div class="tile__meta"><span>MATERIAŁ PROMOCYJNY</span></div><h2>Promocja 1</h2></article>
     <article class="tile tile--big" id="t2"><span> Materiał promocyjny </span><h2>Promocja 2</h2></article>
     <article class="tile" id="t3"><span>Sport</span><h2>Zwykły kafel</h2></article>
     <article class="tile" id="t4"><span>Kultura</span><h2>Materiał promocyjny – recenzja kampanii</h2></article>
+    <div class="salesModule salesModule--fourColumn" id="sales">
+      <a class="salesModule__article" id="s1" href="#"><div><span>MATERIAŁ PROMOCYJNY</span></div><h3>Oferta</h3></a>
+      <a class="salesModule__article" id="s2" href="#"><div><span>Zakupy</span></div><h3>Zwykły link</h3></a>
+    </div>
     <footer id="stopka"><span>Materiał promocyjny</span> <span>Kontakt</span></footer></body>`,
 };
 
@@ -69,8 +75,8 @@ test('Chromium (lokalne strony testowe): reguły partii 1 ukrywają tylko obserw
       await page.close();
     };
     await check('https://www.bankier.pl/', ['#n2b-ad-r2'], ['#n2b-ad-r3', '#notowania']);
-    await check('https://businessinsider.com.pl/', ['#flat-natleft-2', '#card-promo'], ['#flat-natleft-1', '#card-normal', '#card-normal2']);
-    await check('https://www.gazeta.pl/', ['#t1', '#t2'], ['#t3', '#t4', '#stopka']);
+    await check('https://businessinsider.com.pl/', ['#slot-flat-natleft-2', '#card-promo'], ['#mosaic', '#card-normal', '#card-outside', '#nav-promo']);
+    await check('https://www.gazeta.pl/', ['#t1', '#t2', '#s1'], ['#t3', '#t4', '#sales', '#s2', '#stopka']);
   } finally {
     await ctx.close();
     fs.rmSync(tmp, { recursive: true, force: true });

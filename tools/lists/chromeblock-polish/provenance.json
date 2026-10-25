@@ -22,22 +22,13 @@
       "evidence": "bankier.pl#1"
     },
     {
-      "rule": "businessinsider.com.pl##flat-ad-wrapper#flat-natleft-2 *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(flat-ad-wrapper)",
+      "rule": "businessinsider.com.pl##div.section-list_mosaic-3elem > a.list-item.item--m.item--m--img-right *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(a.list-item.item--m.item--m--img-right)",
       "domain": "businessinsider.com.pl",
       "type": "cosmetic",
       "date": "2026-10-25",
-      "observation": "Kafel w slocie flat-natleft-2 oznaczony etykietą MATERIAŁ PROMOCYJNY. Reguła ukrywa slot tylko, gdy zawiera element z dokładnie tą etykietą.",
+      "observation": "Retest: 2 karty w mozaice (section-list_mosaic-3elem) z etykietą MATERIAŁ PROMOCYJNY. Ukrywana tylko karta z elementem o dokładnie tej etykiecie. Wpis #1 (menu) pominięty.",
       "method": "automated-browser",
-      "evidence": "businessinsider.com.pl#1"
-    },
-    {
-      "rule": "businessinsider.com.pl##.ods-c-card-wrapper *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(.ods-c-card-wrapper)",
-      "domain": "businessinsider.com.pl",
-      "type": "cosmetic",
-      "date": "2026-10-25",
-      "observation": "Karta (ods-c-card-wrapper) oznaczona etykietą MATERIAŁ PROMOCYJNY. Ukrywana tylko karta z elementem o dokładnie tej etykiecie, nie wszystkie karty.",
-      "method": "automated-browser",
-      "evidence": "businessinsider.com.pl#2"
+      "evidence": "businessinsider.com.pl#2-#3"
     },
     {
       "rule": "gazeta.pl##article.tile *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(article.tile)",
@@ -47,6 +38,15 @@
       "observation": "19 kafli artykułów (głównie article.tile) z etykietą MATERIAŁ PROMOCYJNY. Jedna reguła: tylko kafel z elementem o dokładnie tej etykiecie. Wpis #20 (footer) pominięty.",
       "method": "automated-browser",
       "evidence": "gazeta.pl#1-#19"
+    },
+    {
+      "rule": "gazeta.pl##div.salesModule.salesModule--fourColumn > a.salesModule__article *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(a.salesModule__article)",
+      "domain": "gazeta.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Retest: artykuł w module salesModule (fourColumn) z etykietą MATERIAŁ PROMOCYJNY. Ukrywany tylko link-kafel z elementem o dokładnie tej etykiecie. Stopka (#2) pominięta.",
+      "method": "automated-browser",
+      "evidence": "gazeta.pl#1"
     }
   ]
 }
