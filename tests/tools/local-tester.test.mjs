@@ -9,7 +9,7 @@ import path from 'node:path';
 import {
   overallStatus, counts, isChromeBlockError, networkErrorOf, formatReport, parseArgs, writeResults, ROOT, exitCodeFor, EXIT, classifySeek, SEEK_RESUME_WAIT_S,
   seekFacts, seekFailureKinds, classifyAB, formatSeekAB, browserArgs, AB, hardSeekFailures,
-  classifyFocusGroup, FOCUS_CHECKS,
+  classifyFocusGroup, FOCUS_CHECKS, BACKUP_CHECKS, checkBackupFile, settingsView, settingsDiff,
 } from '../local/chromeblock-local-test.mjs';
 import { packageDev, missingTesterImports, TESTER_FILES, testerPackageJson } from '../../tools/package-dev.mjs';
 import { createRequire } from 'node:module';
@@ -309,4 +309,39 @@ test('Focus Mode w testerze: komplet kroków (domyślnie OFF, popup, zapis, bez 
     'yt-focus-shorts', 'yt-focus-recommendations', 'yt-focus-comments', 'yt-focus-endscreen', 'yt-focus-player', 'yt-focus-off']);
   const src = fs.readFileSync(path.join(ROOT, 'tests/local/chromeblock-local-test.mjs'), 'utf8');
   assert.match(src, /skipRest\(\[\.\.\.YT, \.\.\.FOCUS\], 'INCONCLUSIVE – brak dostępu do internetu'\)/, 'bez sieci Focus = SKIP');
+});
+
+// --- Kopia ustawień w testerze ---------------------------------------------------------------------
+const SNAP = { enabledLists: ['ads', 'privacy', 'security'], protectionMode: 'basic', disabledSites: ['bank.example'], userFilters: '||x.example^\n', youtubeFocus: { enabled: false, shorts: true, recommendations: true, comments: true, endscreen: true } };
+const fileOf = (settings = SNAP, extra = {}) => JSON.stringify({ format: 'chromeblock-settings', version: 1, exportedAt: 'x', extensionVersion: '0.3.2-dev', settings, ...extra });
+
+test('Backup w testerze: pozycje raportu', () => {
+  assert.deepEqual(BACKUP_CHECKS.map(([, n]) => n), ['Backup: eksport', 'Backup: prywatność', 'Backup: import', 'Backup: zgodność ustawień', 'Backup: błędny plik', 'Backup: stan po teście']);
+});
+
+test('Backup w testerze: kontrola pliku – format, wersja, dokładnie 5 pól, zgodność ze snapshotem', () => {
+  assert.deepEqual(checkBackupFile(fileOf(), SNAP).export, []);
+  assert.deepEqual(checkBackupFile(fileOf(), SNAP).privacy, []);
+  assert.match(checkBackupFile('{', SNAP).export[0], /nie jest poprawnym JSON/);
+  assert.ok(checkBackupFile(fileOf(SNAP, { format: 'x' }), SNAP).export.some((e) => /format/.test(e)));
+  assert.ok(checkBackupFile(fileOf(SNAP, { version: 2 }), SNAP).export.some((e) => /version/.test(e)));
+  assert.ok(checkBackupFile(fileOf({ ...SNAP, stats: 1 }), SNAP).export.some((e) => /dokładnie 5/.test(e)));
+  const { youtubeFocus, ...four } = SNAP;
+  assert.ok(checkBackupFile(fileOf(four), SNAP).export.some((e) => /dokładnie 5/.test(e)));
+  assert.ok(checkBackupFile(fileOf({ ...SNAP, protectionMode: 'strict' }), SNAP).export.some((e) => /różni się.*protectionMode/.test(e)));
+});
+
+test('Backup w testerze: prywatność – brak health / diagnostyki / sesji / adresów (treść Moich filtrów pomijana)', () => {
+  assert.ok(checkBackupFile(fileOf(SNAP, { health: {} }), SNAP).privacy.some((e) => /dodatkowe pola: health/.test(e)));
+  assert.ok(checkBackupFile(fileOf(SNAP, { meta: { statsTabs: 1 } }), SNAP).privacy.some((e) => /statsTabs/.test(e)));
+  assert.ok(checkBackupFile(fileOf({ ...SNAP, disabledSites: ['https://bank.example/konto'] })).privacy.some((e) => /https:\/\//.test(e)));
+  assert.deepEqual(checkBackupFile(fileOf({ ...SNAP, userFilters: '||https://moje.example^\n' })).privacy, [], 'własne filtry to ustawienie użytkownika');
+});
+
+test('Backup w testerze: porównanie ustawień (kolejność list i domen bez znaczenia)', () => {
+  const o = { lists: [{ id: 'security', enabled: true }, { id: 'ads', enabled: true }, { id: 'cookies', enabled: false }, { id: 'privacy', enabled: true }], protectionMode: 'basic', disabledSites: ['bank.example'], userFilters: '||x.example^\n', youtubeFocus: SNAP.youtubeFocus };
+  assert.deepEqual(settingsView(o), SNAP);
+  assert.deepEqual(settingsDiff(settingsView(o), SNAP), []);
+  assert.deepEqual(settingsDiff({ ...SNAP, userFilters: '', youtubeFocus: { ...SNAP.youtubeFocus, enabled: true } }, SNAP), ['userFilters', 'youtubeFocus']);
+  assert.deepEqual(settingsDiff(null, SNAP), ['brak danych']);
 });
