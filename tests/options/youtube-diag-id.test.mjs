@@ -1,10 +1,10 @@
-// Regresja: w Opcjach panel YouTube i blok diagnostyki YouTube miały to samo id="youtube".
-// Otwarcie Diagnostyki wpisywało raport do pierwszego elementu z tym id, czyli do panelu
-// YouTube, i niszczyło jego zawartość. Diagnostyka ma teraz id="youtubeDiag".
+// Regresja: w Opcjach panel YouTube (Focus Mode) i blok diagnostyki YouTube miały to samo
+// id="youtube". Otwarcie Diagnostyki wpisywało raport do panelu i niszczyło jego zawartość.
+// Diagnostyka ma id="youtubeDiag". Focus Mode (i jego zakładka) został usunięty z produktu.
 //
 // 1) statycznie: brak powtórzonych id w stronach rozszerzenia,
-// 2) w prawdziwym Chromium: po otwarciu Diagnostyki panel YouTube istnieje, ma swoje kontrolki
-//    i działa, a raport trafia do #youtubeDiag. Brak Playwright/Chromium → SKIP.
+// 2) w prawdziwym Chromium: raport YouTube Protection trafia do #youtubeDiag w Diagnostyce;
+//    każda zakładka ma swój niepusty panel; brak martwych kontrolek Focus Mode. Brak Playwright/Chromium → SKIP.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,7 +34,8 @@ test('strony rozszerzenia nie mają powtórzonych id', () => {
 test('Opcje: diagnostyka YouTube ma własne id, JS pisze do #youtubeDiag', () => {
   const html = fs.readFileSync(path.join(ROOT, 'options/options.html'), 'utf8');
   const js = fs.readFileSync(path.join(ROOT, 'options/options.js'), 'utf8');
-  assert.match(html, /<section id="youtube" class="panel"/);
+  assert.doesNotMatch(html, /id="youtube"/, 'brak panelu Focus Mode');
+  assert.doesNotMatch(html, /data-tab="youtube"|focus(Enabled|Options|Msg|Heading)/, 'brak zakładki i kontrolek Focus Mode');
   assert.match(html, /<div id="youtubeDiag" class="diag-block">/);
   assert.match(js, /\$\('youtubeDiag'\)\.innerHTML/);
   assert.doesNotMatch(js, /\$\('youtube'\)\.innerHTML/);
@@ -46,7 +47,7 @@ let exe = '';
 try { exe = chromium ? chromium.executablePath() : ''; } catch { /* */ }
 const skip = !chromium || !exe || !fs.existsSync(exe) ? 'Playwright/Chromium niedostępne' : false;
 
-test('Opcje w Chromium: po otwarciu Diagnostyki panel YouTube nadal istnieje i działa', { skip, timeout: 180_000 }, async () => {
+test('Opcje w Chromium: diagnostyka YouTube w #youtubeDiag; każda zakładka ma niepusty panel; brak martwych kontrolek', { skip, timeout: 180_000 }, async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-ytdiag-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
@@ -61,32 +62,30 @@ test('Opcje w Chromium: po otwarciu Diagnostyki panel YouTube nadal istnieje i d
     if (!sw) sw = await ctx.waitForEvent('serviceworker', { timeout: 30000 });
     const id = new URL(sw.url()).host;
     const opt = await ctx.newPage();
+    const errors = [];
+    opt.on('pageerror', (e) => errors.push(String(e)));
     await opt.goto(`chrome-extension://${id}/options/options.html`);
-    // options.js podpina listener Diagnostyki po `await options:get` – czekamy na wyrenderowane Opcje
-    await opt.waitForFunction(() => document.getElementById('modeCards').children.length > 0
-      && document.getElementById('focusOptions').children.length > 0, null, { timeout: 15000 });
-    const panelBefore = await opt.locator('#youtube').innerHTML();
+    // options.js podpina listenery zakładek po `await options:get` – czekamy na wyrenderowane Opcje
+    await opt.waitForFunction(() => document.getElementById('modeCards').children.length > 0, null, { timeout: 15000 });
 
-    // otwarcie Diagnostyki renderuje raport (w tym blok YouTube)
+    // każda zakładka otwiera dokładnie swój panel, a panel nie jest pusty
+    const tabs = await opt.$$eval('.tab', (els) => els.map((e) => e.dataset.tab));
+    assert.ok(!tabs.includes('youtube'), 'brak zakładki Focus Mode');
+    for (const tab of tabs) {
+      await opt.click(`.tab[data-tab="${tab}"]`);
+      const visible = await opt.$$eval('.panel', (ps) => ps.filter((p) => !p.hidden).map((p) => p.id));
+      assert.deepEqual(visible, [tab], `zakładka ${tab}`);
+      assert.ok((await opt.locator(`#${tab}`).innerText()).trim().length > 0, `panel ${tab} niepusty`);
+    }
+    assert.equal(await opt.locator('[id^="focus"], .focus-master, .focus-options').count(), 0, 'brak kontrolek Focus Mode');
+
+    // Diagnostyka: raport YouTube Protection w #youtubeDiag
     await opt.click('.tab[data-tab="diag"]');
     await opt.waitForFunction(() => document.getElementById('youtubeDiag').textContent.trim().length > 0, null, { timeout: 15000 });
-
-    assert.equal(await opt.locator('[id="youtube"]').count(), 1, 'jeden element #youtube');
-    assert.equal(await opt.evaluate(() => document.getElementById('youtube').tagName), 'SECTION', '#youtube to panel');
-    assert.equal(await opt.locator('#youtube').innerHTML(), panelBefore, 'panel YouTube nienadpisany przez diagnostykę');
     assert.match(await opt.locator('#youtubeDiag').innerText(), /Status:/, 'raport YouTube w bloku diagnostyki');
     assert.equal(await opt.locator('#youtubeDiag').evaluate((e) => !!e.closest('#diag')), true, 'blok w panelu Diagnostyka');
-
-    // panel YouTube działa: otwiera się z zakładki, kontrolki są widoczne i reagują
-    await opt.click('.tab[data-tab="youtube"]');
-    assert.equal(await opt.locator('#youtube').isVisible(), true);
-    assert.equal(await opt.locator('#diag').isVisible(), false);
-    const box = opt.locator('#focusEnabled');
-    const before = await box.isChecked();
-    await opt.locator('label.focus-master').click();
-    await opt.waitForFunction((b) => document.getElementById('focusEnabled').checked !== b, before, { timeout: 10000 });
-    const stored = await opt.evaluate(() => chrome.runtime.sendMessage({ type: 'options:get' }));
-    assert.equal(!!(stored.youtubeFocus || stored.focus || {}).enabled, !before, 'zmiana zapisana w ustawieniach');
+    assert.equal(await opt.locator('[id="youtubeDiag"]').count(), 1);
+    assert.deepEqual(errors, []);
   } finally {
     await ctx.close();
     fs.rmSync(tmp, { recursive: true, force: true });

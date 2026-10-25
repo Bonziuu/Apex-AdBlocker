@@ -1,6 +1,5 @@
 // Kopia ustawień w prawdziwym Chromium z ChromeBlock: eksport do pliku przez UI, import przez UI,
-// podsumowanie, Focus Mode na otwartej karcie YouTube bez przeładowania, uszkodzony plik bez zmian.
-// Strona-atrapa pod https://www.youtube.com/ (bez sieci). Brak Playwright/Chromium → SKIP.
+// podsumowanie, odświeżenie UI Opcji, uszkodzony plik bez zmian. Bez sieci. Brak Playwright/Chromium → SKIP.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,9 +14,7 @@ let exe = '';
 try { exe = chromium ? chromium.executablePath() : ''; } catch { /* */ }
 const skip = !chromium || !exe || !fs.existsSync(exe) ? 'Playwright/Chromium niedostępne' : false;
 
-const YT = '<!doctype html><title>YouTube</title><ytd-watch-flexy><div id="secondary"><div id="related">proponowane</div></div></ytd-watch-flexy><script>window.__loadId=Math.random()</script>';
-
-test('UI: eksport → zmiana ustawień → import przywraca; Focus Mode na otwartej karcie; uszkodzony plik bez zmian', { skip, timeout: 240_000 }, async () => {
+test('UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez zmian', { skip, timeout: 240_000 }, async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-backup-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
@@ -27,8 +24,7 @@ test('UI: eksport → zmiana ustawień → import przywraca; Focus Mode na otwar
     args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update'],
   });
   try {
-    await ctx.route(/^https?:/, (r) => (new URL(r.request().url()).hostname === 'www.youtube.com'
-      ? r.fulfill({ contentType: 'text/html', body: YT }) : r.fulfill({ status: 204, body: '' })));
+    await ctx.route(/^https?:/, (r) => r.fulfill({ status: 204, body: '' }));
     let [sw] = ctx.serviceWorkers();
     if (!sw) sw = await ctx.waitForEvent('serviceworker', { timeout: 30000 });
     const id = new URL(sw.url()).host;
@@ -39,11 +35,10 @@ test('UI: eksport → zmiana ustawień → import przywraca; Focus Mode na otwar
     const call = (msg) => opt.evaluate((m) => chrome.runtime.sendMessage(m), msg);
     await opt.waitForFunction(() => document.querySelectorAll('#listContainer input').length > 0, null, { timeout: 30000 });
 
-    // stan do zapisania: Balanced, 1 wyłączona strona, własny filtr, Focus Mode ON
+    // stan do zapisania: Balanced, 1 wyłączona strona, własny filtr
     await call({ type: 'options:setProtectionMode', mode: 'balanced' });
     await call({ type: 'options:setDisabledSites', sites: ['bank.example'] });
     await call({ type: 'options:setUserFilters', text: '||ads.example^\n' });
-    await call({ type: 'options:setYouTubeFocus', settings: { enabled: true } });
     await opt.reload();
     await opt.waitForSelector('#exportSettings');
 
@@ -56,20 +51,12 @@ test('UI: eksport → zmiana ustawień → import przywraca; Focus Mode na otwar
     assert.equal(backup.format, 'chromeblock-settings');
     assert.equal(backup.settings.protectionMode, 'balanced');
     assert.deepEqual(backup.settings.disabledSites, ['bank.example']);
-    assert.equal(backup.settings.youtubeFocus.enabled, true);
+    assert.deepEqual(Object.keys(backup.settings).sort(), ['disabledSites', 'enabledLists', 'protectionMode', 'userFilters']);
 
     // zmiana wszystkiego na inne wartości
     await call({ type: 'options:setProtectionMode', mode: 'basic' });
     await call({ type: 'options:setDisabledSites', sites: [] });
     await call({ type: 'options:setUserFilters', text: '' });
-    await call({ type: 'options:setYouTubeFocus', settings: { enabled: false } });
-
-    // otwarta karta YouTube – Focus Mode OFF
-    const yt = await ctx.newPage();
-    await yt.goto('https://www.youtube.com/watch?v=backupTest1');
-    const loadId = await yt.evaluate(() => window.__loadId);
-    await yt.waitForTimeout(800);
-    assert.equal(await yt.evaluate(() => getComputedStyle(document.querySelector('#related')).display), 'block');
 
     // uszkodzony plik → błąd, bez zmian
     const broken = path.join(tmp, 'zly.json');
@@ -86,18 +73,14 @@ test('UI: eksport → zmiana ustawień → import przywraca; Focus Mode na otwar
     const summary = await opt.textContent('#importSummary');
     assert.match(summary, /Tryb ochrony: Balanced/);
     assert.match(summary, /Wyłączone strony: 1/);
-    assert.match(summary, /Focus Mode: włączony/);
+    assert.doesNotMatch(summary, /Focus/);
     assert.equal(await opt.isHidden('#importErrors'), true);
     const o = await call({ type: 'options:get' });
     assert.equal(o.protectionMode, 'balanced');
     assert.deepEqual(o.disabledSites, ['bank.example']);
     assert.equal(o.userFilters, '||ads.example^\n');
-    assert.equal(o.youtubeFocus.enabled, true);
-    assert.equal(await opt.isChecked('#focusEnabled'), true, 'UI opcji odświeżone po imporcie');
-
-    // Focus Mode na otwartej karcie – bez przeładowania
-    await yt.waitForFunction(() => getComputedStyle(document.querySelector('#related')).display === 'none', null, { timeout: 10000 });
-    assert.equal(await yt.evaluate(() => window.__loadId), loadId);
+    assert.equal(await opt.inputValue('#userFilters'), '||ads.example^\n', 'UI opcji odświeżone po imporcie');
+    assert.ok(!('youtubeFocus' in await opt.evaluate(() => chrome.storage.local.get(null))), 'brak klucza Focus Mode w storage');
     assert.deepEqual(errors, []);
   } finally {
     await ctx.close();
