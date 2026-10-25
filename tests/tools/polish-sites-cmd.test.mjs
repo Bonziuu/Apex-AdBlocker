@@ -318,3 +318,35 @@ test('wyniki testu i npm install nie brudzą repozytorium (inaczej update-only o
   const ignored = (f) => spawnSync('git', ['check-ignore', '-q', f], { cwd: ROOT }).status === 0;
   for (const f of ['tests/polish-sites/results/latest.txt', 'tests/polish-sites/results/evidence/x.png', 'node_modules/playwright/package.json', 'package-lock.json']) assert.ok(ignored(f), `${f} ignorowany przez git`);
 });
+
+test('update-and-test-onet.cmd: najpierw update-only, przy błędzie bez testu; potem run-polish-test.cmd --evidence onet.pl; kod wyjścia i ścieżki', () => {
+  const t = read('update-and-test-onet.cmd');
+  assert.equal(t.split('\n').length - 1, (t.match(/\r\n/g) || []).length, 'CRLF');
+  assert.match(t, /^cd \/d "%~dp0"\r?$/m);
+  const c = commandsOf(t);
+  assert.doesNotMatch(c, /reset\s+--hard|git reset|--force|stash|git clean|git push|git pull|git fetch|checkout|switch/i, 'aktualizacja tylko przez update-only.cmd');
+  // aktualizacja zawsze przed testem; błąd aktualizacji → kod update-only, bez testu
+  assert.match(c, /^call "%~dp0update-only\.cmd" --no-pause\r?$/m);
+  assert.ok(t.indexOf('call "%~dp0update-only.cmd"') < t.indexOf('call "%~dp0run-polish-test.cmd"'), 'test po aktualizacji');
+  assert.match(t, /^set "UPD=%ERRORLEVEL%"\r?\nif not "%UPD%"=="0" \(\r?\n\s+set "RC=%UPD%"/m);
+  const failBlock = t.slice(t.indexOf('if not "%UPD%"=="0" ('), t.indexOf('set "NEWHEAD="'));
+  assert.match(failBlock, /goto :end/);
+  assert.doesNotMatch(failBlock, /run-polish-test/);
+  // dokładne argumenty testu, wejście z nul, kod wyjścia testu
+  const m = /^call "%~dp0run-polish-test\.cmd" (.+) < nul\r?\nset "RC=%ERRORLEVEL%"\r?$/m.exec(c);
+  assert.ok(m, 'wywołanie testu z wejściem z nul i zapisem kodu wyjścia');
+  assert.deepEqual(m[1].split(/\s+/), ['--evidence', 'onet.pl']);
+  assert.equal((c.match(/run-polish-test\.cmd/g) || []).length, 1);
+  assert.doesNotMatch(c, /npm |npx |where node|playwright install/i);
+  const o = parseArgs(['--gap-mode', ...m[1].split(/\s+/)]);
+  assert.deepEqual([o.gap, o.evidence, o.domains], [true, true, ['onet.pl']]);
+  // podsumowanie i jedno końcowe pause
+  assert.match(t, /HEAD:\s+%NEWHEAD%/);
+  assert.match(t, /Zaktualizowano: %UPDATED%/);
+  assert.match(t, /Kod wyjscia testu: %RC%/);
+  assert.match(t, /tests\\polish-sites\\results\\latest\.txt/);
+  assert.match(t, /tests\\polish-sites\\results\\evidence\\/);
+  assert.equal((c.match(/^\s*pause\b/gim) || []).length, 1, 'jedno pause');
+  assert.match(t, /^:end\r?\necho\.\r?\npause\r?\nexit \/b %RC%\r?\n?$/m);
+  assertCmdBlocks(t, 'update-and-test-onet.cmd');
+});
