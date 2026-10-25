@@ -30,6 +30,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadPlaywright, EXTENSION_ENTRIES, COMPONENTS, syncFinished } from '../../tools/chromium-smoke.mjs';
 import { analyzeAdState, analyzePlayback, adFieldsInPlayerResponse, mergeTriState, classifyAds, progressOf, OUTCOME } from '../e2e/lib/classify.mjs';
 import { pageSample, pagePlayerResponseSummary, watchRawResponses, detectGate, handleConsent, ensurePlaying, samplePlayer, seekForward } from '../e2e/lib/youtube-page.mjs';
+import { FOCUS_OPTIONS, FOCUS_SELECTORS } from '../../shared/youtube-focus.js';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const RESULTS_DIR = path.join(ROOT, 'tests', 'local', 'results');
@@ -542,11 +543,13 @@ export async function runLocalTests(opts = {}) {
     // 6. YouTube
     const YT = [['yt-watch', 'YouTube: strona watch'], ['yt-video', 'YouTube: element video'], ['yt-play', 'YouTube: odtwarzanie startuje'],
       ['yt-seek', 'YouTube: seek'], ['yt-seek-resume', 'YouTube: odtwarzanie po seek'], ['yt-player-error', 'YouTube: brak błędu playera'], ['yt-ads', 'YouTube: reklamy (tylko z dowodem)'], ['yt-shorts', 'YouTube: Shorts']];
-    if (!youtube) await skipRest(YT, 'pominięto (--no-youtube)');
-    else if (!online) await skipRest(YT, 'INCONCLUSIVE – brak dostępu do internetu');
+    const FOCUS = FOCUS_CHECKS;
+    if (!youtube) await skipRest([...YT, ...FOCUS], 'pominięto (--no-youtube)');
+    else if (!online) await skipRest([...YT, ...FOCUS], 'INCONCLUSIVE – brak dostępu do internetu');
     else {
       const runControl = () => runControlSeek({ chromium, headless, video, consent, onContext, log });
       result.seekAB = await runYouTube({ context, add, skipRest, YT, video, shortsUrl, consent, setCurrent: (pg) => { current = pg; }, notes, runControl, log, onConsentDiagnostics: (d) => { result.consentDiagnostics = d; } });
+      await runFocus({ context, add, skipRest, FOCUS, video, consent, extId, opt, setCurrent: (pg) => { current = pg; } });
     }
 
     // 7. health po testach
@@ -718,6 +721,161 @@ export async function dismissConsentModal(page, { click = true, appearMs = 8000,
     if (!(await findConsentModal(page))) return { state: 'dismissed', found: { scope: found.scope, how: found.how } };
   }
   return { state: 'failed', reason: 'okno zgody nie zniknęło po kliknięciu „Odrzuć wszystko”', diagnostics: await consentDiagnostics(page, modal.root) };
+}
+
+// --- YouTube Focus Mode na prawdziwym YouTube -----------------------------------------------------
+const FOCUS_GROUP_PL = { shorts: 'Shorts', recommendations: 'rekomendacje', comments: 'komentarze', endscreen: 'sugestie na końcu filmu' };
+export const FOCUS_CHECKS = Object.freeze([
+  ['yt-focus-default', 'YouTube Focus: domyślnie OFF'],
+  ['yt-focus-popup', 'YouTube Focus: włączenie z popupu'],
+  ['yt-focus-saved', 'YouTube Focus: zapis stanu'],
+  ['yt-focus-noreload', 'YouTube Focus: bez przeładowania karty'],
+  ...FOCUS_OPTIONS.map((k) => [`yt-focus-${k}`, `YouTube Focus: ukrywa ${FOCUS_GROUP_PL[k]}`]),
+  ['yt-focus-player', 'YouTube Focus: odtwarzacz widoczny, odtwarzanie startuje'],
+  ['yt-focus-off', 'YouTube Focus: wyłączenie usuwa CSS bez przeładowania'],
+]);
+const FOCUS_STYLE_ID = 'chromeblock-youtube-focus';
+
+/**
+ * Wynik grupy Focus Mode (czysta logika): elementy grupy obecne w DOM → muszą być ukryte;
+ * brak elementów na stronach tej sesji → SKIP (to nie błąd selektorów ani ChromeBlock).
+ * @param {{matched:number, visible:number, visibleSelectors:string[], pages:string[]}} r
+ */
+export function classifyFocusGroup(r) {
+  if (!r || !r.matched) return { status: 'SKIP', detail: `INCONCLUSIVE – YouTube nie pokazał tej grupy w tej sesji${r && r.pages && r.pages.length ? ` (sprawdzono: ${r.pages.join(', ')})` : ''}` };
+  if (r.visible) return { status: 'FAIL', detail: `${r.visible} z ${r.matched} elementów nadal widocznych mimo Focus Mode (${[...new Set(r.visibleSelectors)].slice(0, 3).join(' | ')})` };
+  return { status: 'PASS', detail: `ukryte ${r.matched} elementów (${r.pages.join(', ')})` };
+}
+
+/** Na stronie: elementy pasujące do selektorów grupy i ile z nich jest nadal widocznych (display ≠ none). */
+function pageFocusGroup(sels) {
+  const out = { matched: 0, visible: 0, visibleSelectors: [] };
+  for (const s of sels) {
+    let list;
+    try { list = document.querySelectorAll(s); } catch { continue; }
+    for (const el of list) {
+      out.matched++;
+      if (getComputedStyle(el).display !== 'none') { out.visible++; out.visibleSelectors.push(s); }
+    }
+  }
+  return out;
+}
+
+async function runFocus({ context, add, skipRest, FOCUS, video, consent, extId, opt, setCurrent }) {
+  const call = (msg) => opt.evaluate((m) => chrome.runtime.sendMessage(m), msg);
+  const stored = () => opt.evaluate(() => chrome.storage.local.get('youtubeFocus').then((x) => x.youtubeFocus || null)).catch(() => null);
+  const page = await context.newPage();
+  setCurrent(page);
+  const skip = await openYouTube(page, `https://www.youtube.com/watch?v=${encodeURIComponent(video)}`, consent);
+  if (skip) { await skipRest(FOCUS, skip); await page.close(); return; }
+  await page.waitForSelector('#movie_player', { timeout: 30000 }).catch(() => {});
+  // komentarze i kolumna obok ładują się leniwie – zwykłe przewinięcie strony
+  await page.waitForTimeout(4000);
+  await page.mouse.wheel(0, 1600).catch(() => {});
+  await page.waitForTimeout(3000);
+  await page.mouse.wheel(0, -1600).catch(() => {});
+  const hasStyle = () => page.evaluate((id) => !!document.getElementById(id), FOCUS_STYLE_ID).catch(() => false);
+  const setMarker = () => page.evaluate(() => { window.__cbFocusMarker = String(Math.random()); return window.__cbFocusMarker; });
+  const getMarker = () => page.evaluate(() => window.__cbFocusMarker).catch(() => null);
+
+  // 1. domyślnie OFF
+  const st0 = await call({ type: 'options:get' }).catch(() => null);
+  const defOff = st0 && st0.youtubeFocus && st0.youtubeFocus.enabled === false;
+  const style0 = await hasStyle();
+  await add('yt-focus-default', 'YouTube Focus: domyślnie OFF', defOff && !style0 ? 'PASS' : 'FAIL',
+    defOff && !style0 ? 'OFF, brak CSS Focus Mode na stronie' : `stan: ${JSON.stringify(st0 && st0.youtubeFocus)}; CSS na stronie: ${style0}`);
+  if (!defOff) await call({ type: 'options:setYouTubeFocus', settings: { enabled: false } });
+
+  // 2. włączenie z popupu (karta YouTube bez przeładowania)
+  const marker = await setMarker();
+  const tabId = await opt.evaluate(() => chrome.tabs.query({}).then((t) => (t.find((x) => /^https:\/\/www\.youtube\.com\/watch/.test(x.url || '')) || {}).id));
+  const openPopup = async () => {
+    const pp = await context.newPage();
+    await pp.setViewportSize({ width: 340, height: 600 });
+    await pp.addInitScript((tid) => { chrome.tabs.query = async () => [{ id: tid, active: true }]; }, tabId);
+    await pp.goto(`chrome-extension://${extId}/popup/popup.html`);
+    await pp.waitForFunction(() => document.getElementById('main').getAttribute('aria-busy') === 'false', null, { timeout: 15000 });
+    return pp;
+  };
+  const toggleIn = async (pp, want) => {
+    await pp.click('#focusToggle');
+    return pp.waitForFunction((w) => { const t = document.getElementById('focusToggle'); return t.getAttribute('aria-checked') === String(w) && !t.disabled; }, want, { timeout: 15000 }).then(() => true).catch(() => false);
+  };
+  let pp = await openPopup();
+  const rowShown = await pp.locator('#focus').isVisible().catch(() => false);
+  const on = rowShown && await toggleIn(pp, true);
+  await pp.close();
+  await page.bringToFront().catch(() => {});
+  await add('yt-focus-popup', 'YouTube Focus: włączenie z popupu', on ? 'PASS' : 'FAIL', on ? 'wiersz Focus Mode w popupie, przełącznik → ON' : (rowShown ? 'przełącznik nie przeszedł na ON' : 'brak wiersza Focus Mode w popupie na YouTube'));
+
+  // 3. zapis stanu
+  const s1 = await stored();
+  const g1 = await call({ type: 'options:get' }).catch(() => null);
+  const saved = !!(s1 && s1.enabled === true && g1 && g1.youtubeFocus && g1.youtubeFocus.enabled === true);
+  await add('yt-focus-saved', 'YouTube Focus: zapis stanu', saved ? 'PASS' : 'FAIL', saved ? 'chrome.storage.local: enabled = true' : `zapisano: ${JSON.stringify(s1)}`);
+
+  // 4. bez przeładowania: CSS pojawia się na otwartej karcie, znacznik strony bez zmian
+  const styled = await page.waitForFunction((id) => !!document.getElementById(id), FOCUS_STYLE_ID, { timeout: 10000 }).then(() => true).catch(() => false);
+  const same = (await getMarker()) === marker;
+  await add('yt-focus-noreload', 'YouTube Focus: bez przeładowania karty', styled && same ? 'PASS' : 'FAIL',
+    styled && same ? 'CSS Focus Mode dodany na żywo, karta nieprzeładowana' : [!styled && 'CSS Focus Mode nie pojawił się w 10 s', !same && 'karta została przeładowana'].filter(Boolean).join('; '));
+
+  // 5. grupy (strona filmu, potem strona główna)
+  const groups = Object.fromEntries(FOCUS_OPTIONS.map((k) => [k, { matched: 0, visible: 0, visibleSelectors: [], pages: [] }]));
+  const collect = async (label) => {
+    await page.waitForTimeout(1500);
+    for (const k of FOCUS_OPTIONS) {
+      const r = await page.evaluate(pageFocusGroup, FOCUS_SELECTORS[k]).catch(() => ({ matched: 0, visible: 0, visibleSelectors: [] }));
+      groups[k].matched += r.matched;
+      groups[k].visible += r.visible;
+      groups[k].visibleSelectors.push(...r.visibleSelectors);
+      if (r.matched) groups[k].pages.push(label);
+    }
+  };
+  await collect('strona filmu');
+
+  // 6. odtwarzacz z włączonym Focus Mode
+  const ps = await page.evaluate(() => {
+    const mp = document.getElementById('movie_player');
+    const v = mp && mp.querySelector('video');
+    const shown = (e) => !!e && getComputedStyle(e).display !== 'none' && (typeof e.checkVisibility !== 'function' || e.checkVisibility());
+    return { hasVideo: !!v, player: shown(mp), video: shown(v) };
+  }).catch(() => ({ hasVideo: false, player: false, video: false }));
+  await ensurePlaying(page, 'player');
+  const samples = await samplePlayer(page, 'player', 10);
+  const progress = progressOf(samples);
+  const playerOk = ps.hasVideo && ps.player && ps.video && progress >= 1;
+  let playerStatus = playerOk ? 'PASS' : 'FAIL';
+  let playerDetail = playerOk ? `<video> obecny, odtwarzacz widoczny, postęp ${progress} s` :
+    [!ps.hasVideo && 'brak <video>', !ps.player && 'odtwarzacz ukryty', ps.hasVideo && !ps.video && '<video> ukryty', progress < 1 && `brak postępu odtwarzania (${progress} s w 10 s)`].filter(Boolean).join('; ');
+  if (!playerOk && ps.hasVideo && ps.player && ps.video && await findConsentModal(page)) { playerStatus = 'SKIP'; playerDetail = 'INCONCLUSIVE – okno zgody YouTube zasłania odtwarzacz'; }
+  await add('yt-focus-player', 'YouTube Focus: odtwarzacz widoczny, odtwarzanie startuje', playerStatus, playerDetail);
+
+  // strona główna: zwykle Shorts i kanał rekomendacji
+  const homeSkip = await openYouTube(page, 'https://www.youtube.com/', consent);
+  if (!homeSkip) {
+    await page.waitForSelector('ytd-browse', { timeout: 20000 }).catch(() => {});
+    await page.waitForTimeout(3000);
+    await page.mouse.wheel(0, 2000).catch(() => {});
+    await collect('strona główna');
+  }
+  for (const k of FOCUS_OPTIONS) {
+    const r = classifyFocusGroup(groups[k]);
+    await add(`yt-focus-${k}`, `YouTube Focus: ukrywa ${FOCUS_GROUP_PL[k]}`, r.status, r.detail);
+  }
+
+  // 7. wyłączenie z popupu → CSS usunięty bez przeładowania
+  const marker2 = await setMarker().catch(() => null);
+  pp = await openPopup();
+  const off = await toggleIn(pp, false);
+  await pp.close();
+  const removed = await page.waitForFunction((id) => !document.getElementById(id), FOCUS_STYLE_ID, { timeout: 10000 }).then(() => true).catch(() => false);
+  const same2 = marker2 !== null && (await getMarker()) === marker2;
+  const s2 = await stored();
+  const ok2 = off && removed && same2 && s2 && s2.enabled === false;
+  await add('yt-focus-off', 'YouTube Focus: wyłączenie usuwa CSS bez przeładowania', ok2 ? 'PASS' : 'FAIL',
+    ok2 ? 'popup → OFF, CSS usunięty, karta nieprzeładowana, zapisano OFF' : [!off && 'przełącznik w popupie nie przeszedł na OFF', !removed && 'CSS Focus Mode nadal na stronie', !same2 && 'karta została przeładowana', !(s2 && s2.enabled === false) && 'stan OFF nie zapisany'].filter(Boolean).join('; '));
+  await page.close();
 }
 
 /** Otwiera adres YouTube; zwraca powód pominięcia (sieć, zgoda, CAPTCHA, logowanie) albo null. */

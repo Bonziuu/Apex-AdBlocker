@@ -15,7 +15,7 @@ import { buildDiagnosticsReport } from './background/diagnostics-report.js';
 import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js';
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
 import { PROTECTION_MODES, isPresetMode, listsForMode, modeForLists } from './shared/protection-modes.js';
-import { FOCUS_STORAGE_KEY, FOCUS_DEFAULTS, normalizeFocus, focusCss, activeFocusOptions } from './shared/youtube-focus.js';
+import { FOCUS_STORAGE_KEY, FOCUS_DEFAULTS, normalizeFocus, focusCss, activeFocusOptions, isFocusHost } from './shared/youtube-focus.js';
 
 // Pomiar etapów startu (czas od uruchomienia service workera). Ostatni zakończony pomiar
 // trafia do chrome.storage.session i do Diagnostyki.
@@ -977,6 +977,8 @@ const handlers = {
       canRun: !!host,
       problems,
       youtube: yt,
+      // Focus Mode: tylko na youtube.com (osobno od YouTube Protection)
+      youtubeFocus: isFocusHost(host) ? { enabled: (await getFocus()).enabled } : null,
       protectionMode: s.protectionMode,
     };
   },

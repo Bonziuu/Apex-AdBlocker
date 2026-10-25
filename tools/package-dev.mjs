@@ -37,6 +37,7 @@ export const TESTER_FILES = [
   'tools/chromium-smoke.mjs',
   'tests/e2e/lib/classify.mjs',
   'tests/e2e/lib/youtube-page.mjs',
+  'shared/youtube-focus.js',
 ];
 
 /** package.json testera: tylko Playwright (wersja jak w repozytorium). */

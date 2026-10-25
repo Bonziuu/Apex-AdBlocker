@@ -116,3 +116,79 @@ test('Focus Mode: zmiana w opcjach działa od razu na otwartej karcie YouTube (b
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test('popup: wiersz Focus Mode tylko na YouTube, przełącznik działa od razu bez przeładowania, „Dostosuj” → Opcje/YouTube', { skip, timeout: 180_000 }, async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-focus-popup-'));
+  const ext = path.join(tmp, 'ext');
+  fs.mkdirSync(ext);
+  for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });
+  const ctx = await chromium.launchPersistentContext(path.join(tmp, 'profile'), {
+    headless: true, channel: 'chromium',
+    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update'],
+  });
+  try {
+    await ctx.route(/^https?:/, (r) => {
+      const host = new URL(r.request().url()).hostname;
+      if (host === 'www.youtube.com') return r.fulfill({ contentType: 'text/html; charset=utf-8', body: FIXTURE });
+      if (host === 'news.example') return r.fulfill({ contentType: 'text/html', body: '<title>news</title><p>x</p>' });
+      return r.fulfill({ status: 204, body: '' });
+    });
+    let [sw] = ctx.serviceWorkers();
+    if (!sw) sw = await ctx.waitForEvent('serviceworker', { timeout: 30000 });
+    const id = new URL(sw.url()).host;
+    const opt = await ctx.newPage();
+    await opt.goto(`chrome-extension://${id}/options/options.html`);
+    const tabIdOf = (u) => opt.evaluate((x) => chrome.tabs.query({}).then((t) => (t.find((y) => (y.url || '').startsWith(x)) || {}).id), u);
+    const errors = [];
+    const openPopup = async (tabId) => {
+      const p = await ctx.newPage();
+      p.on('pageerror', (e) => errors.push(String(e)));
+      await p.addInitScript((tid) => { chrome.tabs.query = async () => [{ id: tid, active: true }]; }, tabId);
+      await p.goto(`chrome-extension://${id}/popup/popup.html`);
+      await p.waitForFunction(() => document.getElementById('main').getAttribute('aria-busy') === 'false');
+      return p;
+    };
+
+    // poza YouTube: brak wiersza Focus Mode
+    const news = await ctx.newPage();
+    await news.goto('https://news.example/');
+    let pp = await openPopup(await tabIdOf('https://news.example/'));
+    assert.equal(await pp.locator('#focus').isVisible(), false, 'poza YouTube popup bez Focus Mode');
+    await pp.close();
+
+    // na YouTube: wiersz widoczny, OFF; YouTube Protection osobno
+    const yt = await ctx.newPage();
+    await yt.goto('https://www.youtube.com/watch?v=focusTest02');
+    const loadId = await yt.evaluate(() => window.__loadId);
+    const ytTab = await tabIdOf('https://www.youtube.com/');
+    pp = await openPopup(ytTab);
+    assert.equal(await pp.locator('#focus').isVisible(), true);
+    assert.equal(await pp.locator('#youtube').isVisible(), true, 'YouTube Protection nadal osobnym wierszem');
+    assert.equal(await pp.getAttribute('#focusToggle', 'aria-checked'), 'false');
+    assert.equal(await pp.locator('#focus input, #focus [data-key]').count(), 0, 'bez szczegółowych opcji');
+
+    // klik → ON: zapis + natychmiastowe ukrycie na otwartej karcie
+    await pp.click('#focusToggle');
+    await pp.waitForFunction(() => document.getElementById('focusToggle').getAttribute('aria-checked') === 'true' && !document.getElementById('focusToggle').disabled);
+    assert.equal((await opt.evaluate(() => chrome.storage.local.get('youtubeFocus'))).youtubeFocus.enabled, true);
+    await yt.waitForFunction(() => getComputedStyle(document.querySelector('#related')).display === 'none', null, { timeout: 10000 });
+    assert.equal(await yt.evaluate(() => getComputedStyle(document.querySelector('#movie_player')).display !== 'none'), true);
+
+    // ponowne otwarcie popupu pokazuje ON; klik → OFF usuwa CSS
+    await pp.close();
+    pp = await openPopup(ytTab);
+    assert.equal(await pp.getAttribute('#focusToggle', 'aria-checked'), 'true');
+    await pp.click('#focusToggle');
+    await yt.waitForFunction(() => !document.getElementById('chromeblock-youtube-focus'), null, { timeout: 10000 });
+    assert.equal(await yt.evaluate(() => window.__loadId), loadId, 'karta YouTube nie została przeładowana');
+
+    // „Dostosuj” → Opcje / zakładka YouTube
+    const [opened] = await Promise.all([ctx.waitForEvent('page'), pp.click('#focusCustomize')]);
+    await opened.waitForLoadState();
+    assert.match(opened.url(), /options\/options\.html#youtube$/);
+    assert.deepEqual(errors, []);
+  } finally {
+    await ctx.close();
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
