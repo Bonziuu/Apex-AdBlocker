@@ -984,6 +984,8 @@ const handlers = {
     const host = tab ? hostOf(tab.url) : '';
     let blocked = null;
     try {
+      // dostęp przez activeTab: Chrome przyznaje go dla karty, na której użytkownik otworzył popup;
+      // bez dostępu (np. popup otwarty jako zwykła strona) – fallback do plakietki poniżej
       const info = await chrome.declarativeNetRequest.getMatchedRules({ tabId: msg.tabId });
       const userAllow = new Set(user.rules.map((r, i) => (r.action.type.startsWith('allow') ? USER_RULE_BASE + i : -1)));
       let n = 0;

@@ -16,6 +16,8 @@ let counter = 0;
  * opts.registered → skrypty zarejestrowane przed startem service workera (np. utrwalone przez Chrome)
  * opts.local → początkowa zawartość chrome.storage.local
  * opts.fetchDelay(path) → opóźnienie (ms) odczytu pliku rozszerzenia (wyścigi)
+ * opts.matchedRules(filter) → wynik getMatchedRules (albo rzuca błąd, jak Chrome bez activeTab)
+ * opts.badgeText → tekst plakietki zwracany przez chrome.action.getBadgeText
  */
 export async function loadBackground(opts = {}) {
   const store = opts.local ? structuredClone(opts.local) : {};
@@ -30,6 +32,7 @@ export async function loadBackground(opts = {}) {
     tabsCreated: [],
     calls: { register: 0, unregister: 0, registeredInCalls: [] },
     fetches: [],
+    matchedRulesCalls: [],
     listeners: {},
   };
   const ev = (name) => ({ addListener(fn) { state.listeners[name] = fn; } });
@@ -95,7 +98,10 @@ export async function loadBackground(opts = {}) {
         }
         state.dynamic = kept.concat(addRules);
       },
-      getMatchedRules: async () => ({ rulesMatchedInfo: [] }),
+      getMatchedRules: async (filter) => {
+        state.matchedRulesCalls.push(structuredClone(filter));
+        return opts.matchedRules ? opts.matchedRules(filter) : { rulesMatchedInfo: [] };
+      },
       getAvailableStaticRuleCount: async () => 300000,
     },
     scripting: {
@@ -116,7 +122,7 @@ export async function loadBackground(opts = {}) {
       insertCSS: async (o) => { state.css.push(o); },
       executeScript: async () => {},
     },
-    action: { setBadgeBackgroundColor: async () => {}, setBadgeTextColor: async () => {}, setIcon: async () => {}, getBadgeText: async () => '' },
+    action: { setBadgeBackgroundColor: async () => {}, setBadgeTextColor: async () => {}, setIcon: async () => {}, getBadgeText: async () => (opts.badgeText ?? '') },
     webNavigation: { onCommitted: ev('committed') },
     tabs: {
       get: async (id) => ({ id, url: opts.tabUrl || 'https://www.example.com/' }),
