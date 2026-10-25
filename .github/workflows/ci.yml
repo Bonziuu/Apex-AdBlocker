@@ -1,0 +1,53 @@
+# ChromeBlock – CI: każdy push i Pull Request.
+# Instalacja zależności, Chromium dla Playwright, `npm test` i `npm run check`.
+# Testy w Chromium same się pomijają, gdy brakuje przeglądarki – w CI to byłby fałszywy
+# zielony wynik, dlatego job kończy się błędem, gdy jakikolwiek test jest SKIP
+# albo smoke test w Chromium nie uruchomił się.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: npm test + npm run check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node 20 = minimalna wersja z package.json (engines >=20)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalacja zależności
+        run: npm install --no-audit --no-fund
+
+      - name: Instalacja Chromium (Playwright)
+        run: npx playwright install --with-deps chromium
+
+      - name: npm test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test -- --test-reporter=tap | tee test.log
+          grep -Eq '^# skipped 0$' test.log || { echo '::error::Część testów została pominięta (SKIP) – w CI wszystkie testy muszą się wykonać.'; exit 1; }
+
+      - name: npm run check
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run check | tee check.log
+          if grep -q 'SKIP: Chromium smoke test unavailable' check.log; then
+            echo '::error::Smoke test w Chromium nie został uruchomiony.'; exit 1
+          fi
