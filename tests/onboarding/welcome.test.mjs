@@ -103,4 +103,7 @@ test('brak nowych uprawnień; strona w paczce; bez telemetrii i bez dodatkowego 
   const html = fs.readFileSync(path.join(ROOT, 'welcome/welcome.html'), 'utf8');
   assert.doesNotMatch(html, /<script[^>]+src="https?:|<link[^>]+href="https?:/, 'bez zasobów z sieci');
   for (const t of ['ChromeBlock', 'lokalnie', 'Zacznij korzystać', 'Otwórz ustawienia', 'później zmienić']) assert.match(html, new RegExp(t), t);
+  assert.match(html, /ChromeBlock nie wysyła Twoich danych ani telemetrii\./, 'precyzyjne sformułowanie o danych');
+  assert.doesNotMatch(html, /niczego nie wysyła|żadnych danych/, 'bez zbyt absolutnych sformułowań');
+  assert.doesNotMatch(html, /\b(Pro|Premium|subskrypcj|licencj|zaloguj|konto)\b/i, 'bez płatnych funkcji i kont');
 });
