@@ -318,7 +318,7 @@ async function renderDiag() {
     }
     if (y.player) lines.push(`<p>Ostatni stan odtwarzacza (${esc(y.player.page || '?')}): ${badge(y.player.status)} ${esc((y.player.reasons || []).join(', '))} · ${time(y.player.at)}</p>`);
     else lines.push('<p class="muted">Brak raportu odtwarzacza – otwórz film na YouTube.</p>');
-    $('youtube').innerHTML = lines.join('');
+    $('youtubeDiag').innerHTML = lines.join('');
   }
 
   const sc = h.scriptletCompat;
