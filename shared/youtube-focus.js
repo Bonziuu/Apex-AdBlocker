@@ -73,6 +73,11 @@ export const FOCUS_SELECTORS = Object.freeze({
   ]),
 });
 
+/** Strony, na których działa Focus Mode (skrypt youtube/focus.js: www.youtube.com; youtube.com przekierowuje na www). */
+export function isFocusHost(host) {
+  return host === 'www.youtube.com' || host === 'youtube.com';
+}
+
 /** Ustawienia z dowolnej wartości: brak / zły typ → wartość domyślna; nieznane klucze są pomijane. */
 export function normalizeFocus(value) {
   const v = value && typeof value === 'object' && !Array.isArray(value) ? value : {};

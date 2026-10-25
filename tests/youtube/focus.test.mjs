@@ -185,3 +185,43 @@ test('opcje: zakładka YouTube z sekcją Focus Mode i przełącznikiem głównym
   const js = fs.readFileSync(path.join(ROOT, 'options/options.js'), 'utf8');
   assert.match(js, /options:setYouTubeFocus/);
 });
+
+// --- popup ---------------------------------------------------------------------
+
+test('popup:get: stan Focus Mode tylko na youtube.com (poza YouTube – null)', async () => {
+  for (const [url, expected] of [
+    ['https://www.youtube.com/watch?v=abc', { enabled: false }],
+    ['https://youtube.com/', { enabled: false }],
+    ['https://news.example/', null],
+    ['https://music.youtube.com/', null],
+  ]) {
+    const bg = await loadBackground({ tabUrl: url });
+    try {
+      await bg.install();
+      assert.deepEqual((await bg.send({ type: 'popup:get', tabId: 1 })).youtubeFocus, expected, url);
+    } finally { bg.restore(); }
+  }
+  const bg = await loadBackground({ tabUrl: 'https://www.youtube.com/', local: { [FOCUS_STORAGE_KEY]: { ...ALL_ON } } });
+  try {
+    await bg.install();
+    const p = await bg.send({ type: 'popup:get', tabId: 1 });
+    assert.deepEqual(p.youtubeFocus, { enabled: true }, 'popup pokazuje tylko główny przełącznik, nie cztery opcje');
+    assert.ok(p.youtube, 'YouTube Protection nadal osobno');
+  } finally { bg.restore(); }
+});
+
+test('popup.html: wiersz Focus Mode (ukryty domyślnie), przełącznik i „Dostosuj”; YouTube Protection osobno', () => {
+  const html = fs.readFileSync(path.join(ROOT, 'popup/popup.html'), 'utf8');
+  const row = html.slice(html.indexOf('id="focus"'), html.indexOf('id="focusErr"'));
+  assert.match(html, /<div class="row focus-row" id="focus" hidden>/);
+  assert.match(row, /Focus Mode/);
+  assert.match(row, /id="focusToggle"[^>]*role="switch"/);
+  assert.match(row, />Dostosuj</);
+  assert.equal((row.match(/role="switch"/g) || []).length, 1, 'tylko główny przełącznik – bez szczegółowych opcji');
+  assert.doesNotMatch(row, /type="checkbox"|data-key=|Ukryj (Shorts|rekomendacje|komentarze)/, 'bez czterech szczegółowych opcji');
+  assert.ok(html.indexOf('id="youtube"') < html.indexOf('id="focus"'), 'YouTube Protection to osobny wiersz');
+  const js = fs.readFileSync(path.join(ROOT, 'popup/popup.js'), 'utf8');
+  assert.match(js, /options:setYouTubeFocus/);
+  assert.match(js, /options\/options\.html#youtube/);
+  assert.doesNotMatch(js.slice(js.indexOf('// --- YouTube Focus Mode')), /tabs\.reload/, 'bez przeładowania karty');
+});
