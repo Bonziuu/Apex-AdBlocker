@@ -104,6 +104,8 @@ Testy narzędzia (`tests/polish/polish-sites.test.mjs`):
 npm run test:polish-sites -- --gap-mode
 ```
 
+Na Windows wystarczy dwuklik na `test-polish-sites.cmd` w katalogu repozytorium (to samo polecenie). Wersja z widocznym oknem przeglądarki to `test-polish-sites-headed.cmd`. Wrappery niczego nie instalują: przy braku Node.js, npm, Playwright (`npm install`) albo Chromium (`npx playwright install chromium`) pokazują komunikat i czekają na klawisz.
+
 Następnie przejrzeć `tests/polish-sites/results/latest.txt` i, przy stronach z obserwacjami, otworzyć je ręcznie (`--headed`).
 
 ## 5. Jak dodać regułę (następne partie)
