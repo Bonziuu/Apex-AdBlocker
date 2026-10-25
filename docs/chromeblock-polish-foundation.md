@@ -264,3 +264,29 @@ Test mechaniki w Chromium:
 
 - ukryta: `SmallCard` z etykietą w `StandardRightFeed`;
 - widoczne: zwykła `SmallCard`, `SmallCard` z frazą tylko w tytule, cały `StandardRightFeed`, `SmallCard` z etykietą poza prawym feedem.
+
+## 10. Audyt pokrycia 50 stron (przygotowanie, 2026-10-25)
+
+Pytanie audytu: ile reklam i treści sponsorowanych zostaje na popularnych polskich stronach po wyłączeniu Polskich Filtrów (MajkiIT), przy EasyList + uBlock filters + ChromeBlock Polish Supplement (13 reguł)?
+
+- **Zestaw:** `tools/polish-sites/sites-audit-50.json`, 50 unikalnych domen (bez subdomen tego samego serwisu), w tym cała domyślna próbka 20 stron i jbzd.com.pl. Domyślna próbka (`sites.json`) bez zmian.
+- **Kategorie:**
+
+  | Kategoria | Liczba domen |
+  |---|---:|
+  | portale/news | 16 |
+  | finanse/biznes | 6 |
+  | sport | 4 |
+  | technologia | 4 |
+  | rozrywka | 6 |
+  | gry | 3 |
+  | fora/społeczności | 3 |
+  | motoryzacja | 3 |
+  | lifestyle | 2 |
+  | media lokalne/regionalne | 3 |
+
+- **Wykluczenia:** strony wymagające logowania, sklepy jako główna kategoria, pornografia, hazard. Dobór nie korzysta z innych list filtrów.
+- **Uruchomienie:** `npm run test:polish-sites -- --gap-mode --evidence --audit-50`, czyli `audit-polish-50.cmd` albo `update-and-audit-polish-50.cmd`. Wyłącznie w tymczasowym buildzie GAP; normalny build (z Polskimi Filtrami) bez zmian. Domeny podane ręcznie nadal mają limit 20.
+- **Podsumowanie na końcu raportu** (także pole `summary` w `latest.json`): liczba stron OK / BROKEN / UNREACHABLE / ERROR, liczba obserwacji, liczba `likely_false_positive`, domeny z co najmniej jedną obserwacją do przeglądu (lista).
+- Tester nie generuje reguł: nie czyta ani nie zapisuje listy ChromeBlock Polish ani `provenance.json`, zapisuje tylko do katalogu wyników.
+- Realny audyt: do uruchomienia u użytkownika (środowisko budowania nie ma internetu).

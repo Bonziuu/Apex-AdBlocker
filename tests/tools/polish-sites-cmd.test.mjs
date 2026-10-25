@@ -350,3 +350,45 @@ test('update-and-test-onet.cmd: najpierw update-only, przy błędzie bez testu; 
   assert.match(t, /^:end\r?\necho\.\r?\npause\r?\nexit \/b %RC%\r?\n?$/m);
   assertCmdBlocks(t, 'update-and-test-onet.cmd');
 });
+
+// --- audyt 50 stron -------------------------------------------------------------------------------------
+
+test('audit-polish-50.cmd: run-polish-test.cmd --evidence --audit-50 → dokładnie zestaw sites-audit-50.json', () => {
+  const raw = read('audit-polish-50.cmd');
+  assert.equal(raw.split('\n').length - 1, (raw.match(/\r\n/g) || []).length, 'CRLF');
+  const m = /^call "%~dp0run-polish-test\.cmd" (.+) %\*\r?$/m.exec(raw);
+  assert.ok(m);
+  assert.deepEqual(m[1].split(/\s+/), ['--evidence', '--audit-50']);
+  assert.match(raw, /^exit \/b %ERRORLEVEL%\r?$/m);
+  const cmds = commandsOf(raw);
+  assert.doesNotMatch(cmds, /npm |npx |where node|playwright install|git /i);
+  const o = parseArgs(['--gap-mode', ...m[1].split(/\s+/)]);
+  const audit = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/polish-sites/sites-audit-50.json'), 'utf8')).sites;
+  assert.deepEqual([o.gap, o.evidence, o.domains], [true, true, audit]);
+  assert.equal(o.domains.length, 50);
+});
+
+test('update-and-audit-polish-50.cmd: najpierw update-only, przy błędzie bez audytu; potem audyt 50; HEAD, kod wyjścia, ścieżki, jedno pause', () => {
+  const t = read('update-and-audit-polish-50.cmd');
+  assert.equal(t.split('\n').length - 1, (t.match(/\r\n/g) || []).length, 'CRLF');
+  assert.match(t, /^cd \/d "%~dp0"\r?$/m);
+  const c = commandsOf(t);
+  assert.doesNotMatch(c, /reset\s+--hard|git reset|--force|stash|git clean|git push|git pull|git fetch|checkout|switch/i);
+  assert.match(c, /^call "%~dp0update-only\.cmd" --no-pause\r?$/m);
+  assert.ok(t.indexOf('call "%~dp0update-only.cmd"') < t.indexOf('call "%~dp0run-polish-test.cmd"'), 'audyt po aktualizacji');
+  assert.match(t, /^set "UPD=%ERRORLEVEL%"\r?\nif not "%UPD%"=="0" \(\r?\n\s+set "RC=%UPD%"/m);
+  const failBlock = t.slice(t.indexOf('if not "%UPD%"=="0" ('), t.indexOf('set "NEWHEAD="'));
+  assert.match(failBlock, /goto :end/);
+  assert.doesNotMatch(failBlock, /run-polish-test/);
+  const m = /^call "%~dp0run-polish-test\.cmd" (.+) < nul\r?\nset "RC=%ERRORLEVEL%"\r?$/m.exec(c);
+  assert.ok(m);
+  assert.deepEqual(m[1].split(/\s+/), ['--evidence', '--audit-50']);
+  assert.doesNotMatch(c, /npm |npx |where node|playwright install/i);
+  assert.match(t, /HEAD:\s+%NEWHEAD%/);
+  assert.match(t, /Kod wyjscia testu: %RC%/);
+  assert.match(t, /tests\\polish-sites\\results\\latest\.txt/);
+  assert.match(t, /tests\\polish-sites\\results\\evidence\\/);
+  assert.equal((c.match(/^\s*pause\b/gim) || []).length, 1, 'jedno pause');
+  assert.match(t, /^:end\r?\necho\.\r?\npause\r?\nexit \/b %RC%\r?\n?$/m);
+  assertCmdBlocks(t, 'update-and-audit-polish-50.cmd');
+});

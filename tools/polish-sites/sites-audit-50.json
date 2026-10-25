@@ -1,0 +1,127 @@
+{
+  "description": "Audyt pokrycia 50 polskich stron (npm run test:polish-sites -- --gap-mode --evidence --audit-50). Tylko domeny – bez reguł. Zawiera domyślną próbkę 20 stron (sites.json) i jbzd.com.pl. Bez stron wymagających logowania, sklepów jako głównej kategorii, pornografii i hazardu. Dobór nie korzysta z innych list filtrów.",
+  "sites": [
+    "onet.pl",
+    "wp.pl",
+    "interia.pl",
+    "o2.pl",
+    "gazeta.pl",
+    "tvn24.pl",
+    "rmf24.pl",
+    "polsatnews.pl",
+    "natemat.pl",
+    "fakt.pl",
+    "se.pl",
+    "rp.pl",
+    "wprost.pl",
+    "newsweek.pl",
+    "tvp.info",
+    "radiozet.pl",
+    "money.pl",
+    "bankier.pl",
+    "businessinsider.com.pl",
+    "pb.pl",
+    "parkiet.com",
+    "strefainwestorow.pl",
+    "sport.pl",
+    "meczyki.pl",
+    "weszlo.com",
+    "polsatsport.pl",
+    "benchmark.pl",
+    "antyweb.pl",
+    "komputerswiat.pl",
+    "spidersweb.pl",
+    "pudelek.pl",
+    "plotek.pl",
+    "filmweb.pl",
+    "kozaczek.pl",
+    "kwejk.pl",
+    "jbzd.com.pl",
+    "gry-online.pl",
+    "ppe.pl",
+    "cdaction.pl",
+    "wykop.pl",
+    "elektroda.pl",
+    "kafeteria.pl",
+    "autocentrum.pl",
+    "autokult.pl",
+    "auto-swiat.pl",
+    "ofeminin.pl",
+    "polki.pl",
+    "trojmiasto.pl",
+    "gazetakrakowska.pl",
+    "epoznan.pl"
+  ],
+  "categories": {
+    "portale/news": [
+      "onet.pl",
+      "wp.pl",
+      "interia.pl",
+      "o2.pl",
+      "gazeta.pl",
+      "tvn24.pl",
+      "rmf24.pl",
+      "polsatnews.pl",
+      "natemat.pl",
+      "fakt.pl",
+      "se.pl",
+      "rp.pl",
+      "wprost.pl",
+      "newsweek.pl",
+      "tvp.info",
+      "radiozet.pl"
+    ],
+    "finanse/biznes": [
+      "money.pl",
+      "bankier.pl",
+      "businessinsider.com.pl",
+      "pb.pl",
+      "parkiet.com",
+      "strefainwestorow.pl"
+    ],
+    "sport": [
+      "sport.pl",
+      "meczyki.pl",
+      "weszlo.com",
+      "polsatsport.pl"
+    ],
+    "technologia": [
+      "benchmark.pl",
+      "antyweb.pl",
+      "komputerswiat.pl",
+      "spidersweb.pl"
+    ],
+    "rozrywka": [
+      "pudelek.pl",
+      "plotek.pl",
+      "filmweb.pl",
+      "kozaczek.pl",
+      "kwejk.pl",
+      "jbzd.com.pl"
+    ],
+    "gry": [
+      "gry-online.pl",
+      "ppe.pl",
+      "cdaction.pl"
+    ],
+    "fora/społeczności": [
+      "wykop.pl",
+      "elektroda.pl",
+      "kafeteria.pl"
+    ],
+    "motoryzacja": [
+      "autocentrum.pl",
+      "autokult.pl",
+      "auto-swiat.pl"
+    ],
+    "lifestyle": [
+      "ofeminin.pl",
+      "polki.pl"
+    ],
+    "media lokalne/regionalne": [
+      "trojmiasto.pl",
+      "gazetakrakowska.pl",
+      "epoznan.pl"
+    ]
+  }
+}

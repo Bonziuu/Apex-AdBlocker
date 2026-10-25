@@ -99,6 +99,8 @@ Retest partii 1 ChromeBlock Polish (bankier.pl, businessinsider.com.pl, gazeta.p
 
 Praca z repozytorium Git (bez pobierania ZIP-a po każdym commicie): jednorazowo `git clone -b chromeblock-polish-foundation https://github.com/Bonziuu/Chromeblock.git`, potem dwuklik `update-and-test-polish.cmd`. Plik bezpiecznie aktualizuje repozytorium (`git fetch` + `git pull --ff-only`; odmawia przy innym branchu albo lokalnych zmianach; bez force, `reset --hard` i `stash`) i uruchamia `run-polish-test.cmd --evidence` (domyślna próbka, GAP + evidence). Aktualizacja + test tylko onet.pl: `update-and-test-onet.cmd`. Sama aktualizacja bez testu: `update-only.cmd`.
 
+Audyt pokrycia 50 polskich stron bez Polskich Filtrów (GAP + evidence, `tools/polish-sites/sites-audit-50.json`, flaga `--audit-50`): dwuklik `audit-polish-50.cmd` albo `update-and-audit-polish-50.cmd` (najpierw bezpieczna aktualizacja repozytorium). Trwa zwykle kilkadziesiąt minut; na końcu raportu jest podsumowanie (statusy stron, obserwacje, likely_false_positive, domeny do przeglądu). Narzędzie nie generuje reguł.
+
 Aktualizacja list:
 
 ```bash

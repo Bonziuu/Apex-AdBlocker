@@ -134,6 +134,19 @@ export function topHosts(urls, limit = 10) {
   return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit).map(([host, count]) => ({ host, count }));
 }
 
+/**
+ * Podsumowanie przebiegu (np. audytu 50 stron). Tylko liczby i lista domen do przeglądu –
+ * BEZ decyzji o regułach.
+ */
+export function summarize(sites) {
+  const byStatus = { OK: 0, BROKEN: 0, UNREACHABLE: 0, ERROR: 0 };
+  for (const s of sites) byStatus[s.verdict.status] = (byStatus[s.verdict.status] || 0) + 1;
+  const all = sites.flatMap((s) => s.observations || []);
+  const fp = all.filter((o) => o.likely_false_positive).length;
+  const review = sites.filter((s) => (s.observations || []).some((o) => !o.likely_false_positive)).map((s) => s.domain);
+  return { sites: sites.length, byStatus, observations: all.length, likelyFalsePositive: fp, domainsToReview: review };
+}
+
 /** Raport tekstowy. */
 export function formatReport(run) {
   const L = [];
@@ -164,6 +177,13 @@ export function formatReport(run) {
     }
     L.push(`    niezablokowane hosty 3rd-party (do ręcznego przeglądu): ${s.unblockedThirdPartyHosts.length ? s.unblockedThirdPartyHosts.map((h) => `${h.host}×${h.count}`).join(', ') : 'brak'}`);
   }
+  L.push('');
+  const sum = run.summary || summarize(run.sites);
+  L.push('Podsumowanie');
+  L.push('-'.repeat(64));
+  L.push(`Strony: ${sum.sites} – OK ${sum.byStatus.OK || 0}, BROKEN ${sum.byStatus.BROKEN || 0}, UNREACHABLE ${sum.byStatus.UNREACHABLE || 0}, ERROR ${sum.byStatus.ERROR || 0}`);
+  L.push(`Obserwacje: ${sum.observations} (likely_false_positive: ${sum.likelyFalsePositive})`);
+  L.push(`Domeny z co najmniej jedną obserwacją do przeglądu: ${sum.domainsToReview.length}${sum.domainsToReview.length ? ` – ${sum.domainsToReview.join(', ')}` : ''}`);
   L.push('');
   L.push('Obserwacja NIE jest regułą. Regułę dodaje człowiek po sprawdzeniu dowodu, z wpisem w provenance.json.');
   return L.join('\n');

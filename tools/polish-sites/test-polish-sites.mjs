@@ -6,6 +6,7 @@
 //   npm run test:polish-sites -- --headed           z widocznym oknem przeglądarki
 //   npm run test:polish-sites -- --fixture          tryb offline na stronach testowych (samosprawdzenie narzędzia)
 //   npm run test:polish-sites -- --gap-mode         GAP: tymczasowy build BEZ Polskich Filtrów (MajkiIT / Certyficate IT)
+//   npm run test:polish-sites -- --audit-50         audyt pokrycia: 50 domen z tools/polish-sites/sites-audit-50.json
 //   npm run test:polish-sites -- --evidence         zrzuty ekranu obserwacji: tests/polish-sites/results/evidence/<domena>-<nr>.png
 //                                                   (+ <domena>-<nr>-context.png z otoczeniem); bez HTML strony i cookies
 //
@@ -27,12 +28,15 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadPlaywright, EXTENSION_ENTRIES } from '../chromium-smoke.mjs';
-import { observationsFor, pageVerdict, topHosts, formatReport, isThirdParty, hostOf, siteUrl, AD_LABELS, clipFromRect, isDetachedError } from './analyze.mjs';
+import { observationsFor, pageVerdict, topHosts, formatReport, isThirdParty, hostOf, siteUrl, AD_LABELS, clipFromRect, isDetachedError, summarize } from './analyze.mjs';
 import { LISTS } from '../lists-config.mjs';
 import { buildAll } from '../build.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const MAX_SITES = 20;
+/** Audyt pokrycia: zestaw 50 domen z tools/polish-sites/sites-audit-50.json (--audit-50). */
+export const MAX_AUDIT_SITES = 50;
+export const AUDIT_50_FILE = path.join(ROOT, 'tools', 'polish-sites', 'sites-audit-50.json');
 
 /** Źródła Polskich Filtrów (MajkiIT / Certyficate IT) – wyłączane w trybie GAP. */
 export const UPSTREAM_POLISH_SOURCE = /^pl\//;
@@ -354,6 +358,7 @@ export async function run({ domains, headed = false, fixture = false, gap = fals
     }
     for (const d of domains) sites.push(await testSite(context, d, { timeout, log, evidenceDir }));
     const result = { date: new Date().toISOString(), version: manifest.version_name || manifest.version, fixture, mode: gap ? 'gap' : 'normal', modeLabel: gap ? GAP_MODE_LABEL : 'NORMAL — all lists (with MajkiIT Polish Filters)', adsSources, evidence: !!evidence, evidenceDir, extDir: ext, sites };
+    result.summary = summarize(sites);
     if (write) {
       fs.mkdirSync(outDir, { recursive: true });
       const stamp = result.date.replace(/[:.]/g, '-');
@@ -375,11 +380,18 @@ export function parseArgs(argv) {
     else if (a === '--fixture') o.fixture = true;
     else if (a === '--gap-mode') o.gap = true;
     else if (a === '--evidence') o.evidence = true;
+    else if (a === '--audit-50') o.audit50 = true;
     else if (!a.startsWith('--')) o.domains.push(a.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, ''));
   }
   if (o.fixture) o.domains = FIXTURE_SITES.slice();
+  let limit = MAX_SITES;
+  if (o.audit50 && !o.fixture) {
+    // audyt pokrycia: dokładnie zestaw z pliku (domeny podane obok są ignorowane)
+    o.domains = JSON.parse(fs.readFileSync(AUDIT_50_FILE, 'utf8')).sites;
+    limit = MAX_AUDIT_SITES;
+  }
   if (!o.domains.length) o.domains = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools', 'polish-sites', 'sites.json'), 'utf8')).sites;
-  o.domains = [...new Set(o.domains)].filter((d) => siteUrl(d)).slice(0, MAX_SITES);
+  o.domains = [...new Set(o.domains)].filter((d) => siteUrl(d)).slice(0, limit);
   return o;
 }
 
