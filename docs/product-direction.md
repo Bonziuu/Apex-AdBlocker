@@ -8,12 +8,18 @@ Nie planujemy:
 - paywalla,
 - kont użytkowników,
 - subskrypcji,
-- licencji.
+- systemu płatnych licencji,
+- kluczy aktywacyjnych,
+- ograniczania funkcji na podstawie licencji.
 
-W przyszłości mogą pojawić się wyłącznie **opcjonalne linki**, otwierane dopiero po świadomym kliknięciu użytkownika:
+Nie dotyczy to warunków licencyjnych samego kodu ChromeBlock ani komponentów i list filtrów stron trzecich – obowiązują one bez zmian (zob. sekcję „Źródła list i licencje” w README).
+
+W przyszłości mogą pojawić się wyłącznie **opcjonalne linki**:
 
 - Strona autora
 - Wesprzyj rozwój
 - GitHub
 
-Te linki nie są jeszcze dodane (brak docelowych adresów). Żaden z nich nie może wpływać na działanie ochrony ani wysyłać danych.
+Linki będą otwierane wyłącznie po świadomym kliknięciu. ChromeBlock nie będzie przekazywał do stron autora, wsparcia ani GitHuba danych z rozszerzenia.
+
+Te linki nie są jeszcze dodane (brak docelowych adresów).

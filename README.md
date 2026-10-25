@@ -148,7 +148,7 @@ docs/                      ręczny test YouTube
 
 ## Kierunek produktu
 
-ChromeBlock jest w 100% darmowy – bez wersji Pro, paywalla, kont, subskrypcji i licencji. Szczegóły: [docs/product-direction.md](docs/product-direction.md).
+ChromeBlock jest w 100% darmowy – bez wersji Pro, płatnych funkcji, paywalla, kont, subskrypcji, systemu płatnych licencji i kluczy aktywacyjnych; żadna funkcja nie jest ograniczana licencją. Warunki licencyjne kodu i list filtrów stron trzecich obowiązują bez zmian (zob. „Źródła list i licencje”). Szczegóły: [docs/product-direction.md](docs/product-direction.md).
 
 ## Źródła list i licencje
 
