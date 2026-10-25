@@ -559,26 +559,88 @@ export async function runLocalTests(opts = {}) {
   return finish();
 }
 
+// --- zgoda YouTube (okno na youtube.com, np. „Zanim przejdziesz do YouTube”) --------------------
+// W JEDNORAZOWYM profilu testowym tester wybiera „Odrzuć wszystko” – zwykłe kliknięcie przez Playwright.
+// CAPTCHA i logowanie nie są obchodzone (→ SKIP).
+export const CONSENT_HEADING_RE = /zanim przejdziesz do youtube|before you continue to youtube|bevor sie zu youtube weitergehen|avant d['’]accéder à youtube|antes de (?:ir|continuar) a youtube/i;
+export const CONSENT_REJECT_RE = /^\s*(?:odrzuć wszystko|reject all|alle ablehnen|tout refuser|rechazar todo)\s*$/i;
+export const CONSENT_REJECT_LOOSE_RE = /odrzuć|reject|ablehnen|refuser|rechazar/i;
+export const CONSENT_DIALOG_SEL = 'ytd-consent-bump-v2-lightbox, tp-yt-paper-dialog, [role="dialog"], [role="alertdialog"], dialog[open]';
+
+const visible = (loc) => loc.isVisible().catch(() => false);
+
+/** Widoczne okno zgody YouTube na stronie: {root} albo null. */
+export async function findConsentModal(page) {
+  try {
+    const dialogs = page.locator(CONSENT_DIALOG_SEL);
+    const byHeading = dialogs.filter({ hasText: CONSENT_HEADING_RE });
+    const n = await byHeading.count();
+    for (let i = n - 1; i >= 0; i--) if (await visible(byHeading.nth(i))) return { root: byHeading.nth(i) };
+    const byButton = dialogs.filter({ has: page.getByRole('button', { name: CONSENT_REJECT_RE }) });
+    const m = await byButton.count();
+    for (let i = m - 1; i >= 0; i--) if (await visible(byButton.nth(i))) return { root: byButton.nth(i) };
+    // nagłówek widoczny poza znanym kontenerem okna → szukamy przycisku na całej stronie
+    if (await visible(page.getByText(CONSENT_HEADING_RE).first())) return { root: page.locator('body') };
+  } catch { /* nawigacja w trakcie sprawdzania */ }
+  return null;
+}
+
+/**
+ * Zamyka okno zgody YouTube przyciskiem „Odrzuć wszystko” (przewija okno, jeśli przycisk jest niżej)
+ * i POTWIERDZA, że okno zniknęło.
+ * @returns {Promise<{state:'none'|'dismissed'|'failed'|'present', reason?:string}>}
+ *   present – okno jest, ale klikanie wyłączone (--no-consent)
+ */
+export async function dismissConsentModal(page, { click = true, appearMs = 8000, closeMs = 10000 } = {}) {
+  let modal = null;
+  const t0 = Date.now();
+  while (Date.now() - t0 < appearMs) {
+    modal = await findConsentModal(page);
+    if (modal) break;
+    // film już się odtwarza → okna nie ma (nie czekamy dłużej)
+    const playing = await page.evaluate(() => { const v = document.querySelector('#movie_player video') || document.querySelector('video'); return !!v && !v.paused && v.currentTime > 0.5; }).catch(() => false);
+    if (playing) return { state: 'none' };
+    await page.waitForTimeout(500);
+  }
+  if (!modal) return { state: 'none' };
+  if (!click) return { state: 'present', reason: 'okno zgody YouTube (uruchom bez --no-consent)' };
+  let btn = modal.root.getByRole('button', { name: CONSENT_REJECT_RE }).first();
+  if (!(await btn.count().catch(() => 0))) btn = modal.root.getByRole('button', { name: CONSENT_REJECT_LOOSE_RE }).first();
+  if (!(await btn.count().catch(() => 0))) return { state: 'failed', reason: 'w oknie zgody nie ma przycisku „Odrzuć wszystko”' };
+  try {
+    await btn.scrollIntoViewIfNeeded({ timeout: 5000 }); // przycisk może być niżej w przewijanym oknie
+    await btn.click({ timeout: 10000 });
+  } catch (e) {
+    return { state: 'failed', reason: `nie udało się kliknąć „Odrzuć wszystko” (${String((e && e.message) || e).split('\n')[0]})` };
+  }
+  const t1 = Date.now();
+  while (Date.now() - t1 < closeMs) {
+    await page.waitForTimeout(500);
+    await page.waitForLoadState('domcontentloaded').catch(() => {});
+    if (!(await findConsentModal(page))) return { state: 'dismissed' };
+  }
+  return { state: 'failed', reason: 'okno zgody nie zniknęło po kliknięciu „Odrzuć wszystko”' };
+}
+
 /** Otwiera adres YouTube; zwraca powód pominięcia (sieć, zgoda, CAPTCHA, logowanie) albo null. */
-async function openYouTube(page, url, consent) {
-    try {
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
-    } catch (e) {
-      const net = networkErrorOf(e);
-      if (net) return `INCONCLUSIVE – YouTube niedostępny (${net})`;
-      throw e;
-    }
-    let gate = await detectGate(page);
-    if (gate === 'consent' && consent) { if (await handleConsent(page)) gate = await detectGate(page); }
-    if (gate === 'consent') return 'INCONCLUSIVE – ekran zgody na cookies (uruchom bez --no-consent)';
-    if (gate === 'captcha') return 'INCONCLUSIVE – Google wymaga weryfikacji (CAPTCHA) – bez obchodzenia';
-    if (/accounts\.google\.com|ServiceLogin|signin/.test(page.url())) return 'INCONCLUSIVE – YouTube wymaga logowania';
-    // zgoda jako okno na stronie (w jednorazowym profilu: „Odrzuć wszystko”)
-    if (consent) {
-      const btn = page.locator('ytd-consent-bump-v2-lightbox button').filter({ hasText: /odrzuć|reject|ablehnen|refuser|rechazar/i }).first();
-      if (await btn.count().catch(() => 0)) await btn.click().catch(() => {});
-    }
-    return null;
+export async function openYouTube(page, url, consent) {
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  } catch (e) {
+    const net = networkErrorOf(e);
+    if (net) return `INCONCLUSIVE – YouTube niedostępny (${net})`;
+    throw e;
+  }
+  let gate = await detectGate(page);
+  if (gate === 'consent' && consent) { if (await handleConsent(page)) gate = await detectGate(page); }
+  if (gate === 'consent') return 'INCONCLUSIVE – ekran zgody na cookies (uruchom bez --no-consent)';
+  if (gate === 'captcha') return 'INCONCLUSIVE – Google wymaga weryfikacji (CAPTCHA) – bez obchodzenia';
+  if (/accounts\.google\.com|ServiceLogin|signin/.test(page.url())) return 'INCONCLUSIVE – YouTube wymaga logowania';
+  // okno zgody bezpośrednio na youtube.com (pojawia się po chwili – czekamy, zamykamy i potwierdzamy)
+  const c = await dismissConsentModal(page, { click: consent });
+  if (c.state === 'present' || c.state === 'failed') return `INCONCLUSIVE – ${c.reason}; nie da się wiarygodnie sprawdzić odtwarzania (to nie jest błąd ChromeBlock)`;
+  if (/\/sorry\//.test(page.url())) return 'INCONCLUSIVE – Google wymaga weryfikacji (CAPTCHA) – bez obchodzenia';
+  return null;
 }
 
 const readVideoError = (page) => page.evaluate(() => { const v = document.querySelector('#movie_player video'); return v && v.error ? v.error.code : 0; }).catch(() => 0);
@@ -647,6 +709,12 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
 
   const playback = analyzePlayback(samples);
   const adState = analyzeAdState(samples);
+  if (!playback.ok && await findConsentModal(page)) {
+    const why = 'INCONCLUSIVE – okno zgody YouTube zasłania odtwarzacz i nie zostało zamknięte (to nie jest błąd ChromeBlock)';
+    await skipRest(YT.filter(([id]) => !['yt-watch', 'yt-video'].includes(id)), why);
+    await page.close();
+    return null;
+  }
   await add('yt-play', 'YouTube: odtwarzanie startuje', playback.ok ? 'PASS' : 'FAIL', playback.ok ? `postęp ${playback.progress} s w 15 s` : playback.reasons.join('; '));
 
   let seekAB = null;
