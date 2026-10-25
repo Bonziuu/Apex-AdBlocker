@@ -225,3 +225,23 @@ Test mechaniki w Chromium:
 | onet.pl | karta z etykietą | zwykła karta, karta z „materiał promocyjny” tylko w tytule, cały feed |
 
 Retest na prawdziwych stronach: wymagany u użytkownika (`test-polish-batch2.cmd`, obejmuje też jbzd.com.pl).
+
+## 8. Partia 2B (2026-10-25)
+
+Źródło: obserwacje DOM z własnego realnego testu GAP/evidence ChromeBlock (`test-polish-batch2.cmd`), przekazane przez użytkownika. Zrzuty elementów były częściowo zasłonięte przez okno zgody (CMP). Reguł nie porównywano z Polskimi Filtrami ani z EasyList Polish.
+
+| Domena | Dowód | Reguła | Zakres |
+|---|---|---|---|
+| interia.pl | `interia.pl#1-#6` (`div.content-main > div.item.tile… > a.tile-a`, część `a.tile-a.pinned`, etykieta „MATERIAŁ PROMOCYJNY”) | `interia.pl##div.content-main a.tile-a *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.tile-a)` | pojedynczy `a.tile-a` (także `.pinned`) z dokładną etykietą; bez `item4`/`item5`/`area-item-*`; `content-main` nieukrywany; `#7` (stopka) pominięty |
+| se.pl | `se.pl#1-#2` (`div.section__slots > a.slot.slot_4/slot_6.slot__small`, etykieta „MATERIAŁ SPONSOROWANY”) | `se.pl##.section__slots > a.slot.slot__small *:has-text(/^\s*materiał sponsorowany\s*$/i):upward(a.slot.slot__small)` | pojedynczy slot z dokładną etykietą; bez `slot_4`/`slot_6`; sekcja i inne sloty widoczne; `#3` (stopka) pominięty |
+
+jbzd.com.pl: realny retest po naprawie testera zakończony OK, 0 obserwacji, **bez reguły**.
+
+Stan listy: **12 reguł kosmetycznych**: partia 1 (6), 2A (4), 2B (2). `provenance.json` ma 12 wpisów.
+
+Test mechaniki w Chromium:
+
+| Domena | Ukryte | Widoczne |
+|---|---|---|
+| interia.pl | `a.tile-a` i `a.tile-a.pinned` z etykietą | zwykły kafel, kafel z frazą tylko w tytule, `content-main`, stopka |
+| se.pl | dwa różne sloty `a.slot.slot__small` z etykietą | zwykły slot, slot z frazą tylko w tytule, `.section__slots`, stopka |

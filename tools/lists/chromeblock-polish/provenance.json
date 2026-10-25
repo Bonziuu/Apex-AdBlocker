@@ -101,6 +101,24 @@
       "observation": "6 kart StandardCard w lewym feedzie z etykietą MATERIAŁ PROMOCYJNY. Ukrywana pojedyncza karta z dokładną etykietą; stabilny fragment nazwy klasy. #7 i #8 bez zrzutu – pominięte.",
       "method": "automated-browser",
       "evidence": "onet.pl#1-#6"
+    },
+    {
+      "rule": "interia.pl##div.content-main a.tile-a *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(a.tile-a)",
+      "domain": "interia.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Własny realny GAP/evidence: 6 kafli a.tile-a (też .pinned) z etykietą MATERIAŁ PROMOCYJNY; zrzuty częściowo zasłonięte przez CMP. Tylko kafel z dokładną etykietą; #7 (stopka) pominięty.",
+      "method": "automated-browser",
+      "evidence": "interia.pl#1-#6"
+    },
+    {
+      "rule": "se.pl##.section__slots > a.slot.slot__small *:has-text(/^\\s*materiał sponsorowany\\s*$/i):upward(a.slot.slot__small)",
+      "domain": "se.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Własny realny GAP/evidence: 2 sloty a.slot.slot__small z etykietą MATERIAŁ SPONSOROWANY; zrzuty częściowo zasłonięte przez CMP. Tylko slot z dokładną etykietą; #3 (stopka) pominięty.",
+      "method": "automated-browser",
+      "evidence": "se.pl#1-#2"
     }
   ]
 }

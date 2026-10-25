@@ -66,6 +66,23 @@ const PAGES = {
       <article class="StandardCard_card__x1y2" id="on-normal"><div><span>Kraj</span></div><h2>Wiadomość</h2></article>
       <article class="StandardCard_card__x1y2" id="on-title"><div><span>Biznes</span></div><h2>Materiał promocyjny – czym jest i jak go oznaczać</h2></article>
     </div></body>`,
+  // partia 2B
+  'www.interia.pl': `<!doctype html><meta charset="utf-8"><title>I</title><body>${filler('Interia.')}
+    <div class="content-main" id="in-main">
+      <div class="item tile item4 area-item-3"><a class="tile-a" id="in-promo" href="#"><span>MATERIAŁ PROMOCYJNY</span><h3>Oferta</h3></a></div>
+      <div class="item tile item5 area-item-4"><a class="tile-a pinned" id="in-pinned" href="#"><span>Materiał promocyjny</span><h3>Przypięta oferta</h3></a></div>
+      <div class="item tile item6"><a class="tile-a" id="in-normal" href="#"><span>Fakty</span><h3>Wiadomość</h3></a></div>
+      <div class="item tile item7"><a class="tile-a" id="in-title" href="#"><span>Biznes</span><h3>Materiał promocyjny – jak go oznaczać</h3></a></div>
+    </div>
+    <footer id="in-footer"><span>Materiał promocyjny</span> <span>Kontakt</span></footer></body>`,
+  'www.se.pl': `<!doctype html><meta charset="utf-8"><title>S</title><body>${filler('Super Express.')}
+    <div class="section__slots" id="se-slots">
+      <a class="slot slot_4 slot__small" id="se-promo4" href="#"><span>MATERIAŁ SPONSOROWANY</span><h3>Oferta A</h3></a>
+      <a class="slot slot_6 slot__small" id="se-promo6" href="#"><span>Materiał sponsorowany</span><h3>Oferta B</h3></a>
+      <a class="slot slot_5 slot__small" id="se-normal" href="#"><span>Sport</span><h3>Wynik meczu</h3></a>
+      <a class="slot slot_7 slot__small" id="se-title" href="#"><span>Rozrywka</span><h3>Materiał sponsorowany w tytule to nie etykieta</h3></a>
+    </div>
+    <footer id="se-footer"><span>Materiał sponsorowany</span> <span>Regulamin</span></footer></body>`,
   'www.gazeta.pl': `<!doctype html><meta charset="utf-8"><title>G</title><body>${filler('Wiadomości.')}
     <article class="tile" id="t1"><div class="tile__meta"><span>MATERIAŁ PROMOCYJNY</span></div><h2>Promocja 1</h2></article>
     <article class="tile tile--big" id="t2"><span> Materiał promocyjny </span><h2>Promocja 2</h2></article>
@@ -78,7 +95,7 @@ const PAGES = {
     <footer id="stopka"><span>Materiał promocyjny</span> <span>Kontakt</span></footer></body>`,
 };
 
-test('Chromium (lokalne strony testowe): reguły partii 1 i 2A ukrywają tylko obserwowane sloty / kafle z dokładną etykietą', { skip, timeout: 600_000 }, async () => {
+test('Chromium (lokalne strony testowe): reguły partii 1, 2A i 2B ukrywają tylko obserwowane sloty / kafle z dokładną etykietą', { skip, timeout: 600_000 }, async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-polish-rules-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
@@ -120,6 +137,9 @@ test('Chromium (lokalne strony testowe): reguły partii 1 i 2A ukrywają tylko o
     await check('https://www.wp.pl/', ['#\\39 081726354'], ['#wp-row', '#wp-2', '#wp-3', '#wp-footer']);
     await check('https://www.o2.pl/', ['#\\35 647382910'], ['#o2-row', '#o2-2', '#o2-3', '#o2-footer']);
     await check('https://www.onet.pl/', ['#on-promo'], ['#on-feed', '#on-normal', '#on-title']);
+    // partia 2B
+    await check('https://www.interia.pl/', ['#in-promo', '#in-pinned'], ['#in-main', '#in-normal', '#in-title', '#in-footer']);
+    await check('https://www.se.pl/', ['#se-promo4', '#se-promo6'], ['#se-slots', '#se-normal', '#se-title', '#se-footer']);
   } finally {
     await ctx.close();
     fs.rmSync(tmp, { recursive: true, force: true });

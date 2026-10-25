@@ -38,3 +38,11 @@ o2.pl##a.wp-teaser-regular *:has-text(/^\s*sponsorowane\s*$/i):upward(a.wp-tease
 !
 ! onet.pl – karty w lewym feedzie z etykietą „MATERIAŁ PROMOCYJNY” (bez hasha klasy)
 onet.pl##[class*="StandardLeftFeed"] article[class*="StandardCard"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article[class*="StandardCard"])
+!
+! Partia 2B (2026-10-25): obserwacje z `test-polish-batch2.cmd` (GAP + evidence).
+!
+! interia.pl – kafle a.tile-a (także .pinned) z etykietą „MATERIAŁ PROMOCYJNY” (bez numerów item/area)
+interia.pl##div.content-main a.tile-a *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.tile-a)
+!
+! se.pl – sloty a.slot.slot__small z etykietą „MATERIAŁ SPONSOROWANY” (bez numerów slot_N)
+se.pl##.section__slots > a.slot.slot__small *:has-text(/^\s*materiał sponsorowany\s*$/i):upward(a.slot.slot__small)
