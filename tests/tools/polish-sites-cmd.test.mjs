@@ -424,3 +424,37 @@ test('update-and-retest-polish-3a.cmd: update-only przed testem, przy błędzie 
   assert.match(t, /^:end\r?\necho\.\r?\npause\r?\nexit \/b %RC%\r?\n?$/m);
   assertCmdBlocks(t, 'update-and-retest-polish-3a.cmd');
 });
+
+test('update-and-evidence-polish-3b.cmd: update-only przed testem, przy błędzie bez testu; 5 domen partii 3B; kod wyjścia; jedno pause', () => {
+  const t = read('update-and-evidence-polish-3b.cmd');
+  assert.equal(t.split('\n').length - 1, (t.match(/\r\n/g) || []).length, 'CRLF');
+  assert.match(t, /^cd \/d "%~dp0"\r?$/m);
+  const c = commandsOf(t);
+  assert.doesNotMatch(c, /reset\s+--hard|git reset|--force|stash|git clean|git push|git pull|git fetch|checkout|switch/i);
+  assert.match(c, /^call "%~dp0update-only\.cmd" --no-pause\r?$/m);
+  assert.ok(t.indexOf('call "%~dp0update-only.cmd"') < t.indexOf('call "%~dp0run-polish-test.cmd"'), 'update przed testem');
+  assert.match(t, /^set "UPD=%ERRORLEVEL%"\r?\nif not "%UPD%"=="0" \(\r?\n\s+set "RC=%UPD%"/m);
+  const failBlock = t.slice(t.indexOf('if not "%UPD%"=="0" ('), t.indexOf('set "NEWHEAD="'));
+  assert.match(failBlock, /goto :end/);
+  assert.doesNotMatch(failBlock, /run-polish-test/);
+  const m = /^call "%~dp0run-polish-test\.cmd" (.+) < nul\r?\nset "RC=%ERRORLEVEL%"\r?$/m.exec(c);
+  assert.ok(m, 'istniejący run-polish-test.cmd z wejściem z nul');
+  const args = m[1].split(/\s+/);
+  const domains = ['newsweek.pl', 'radiozet.pl', 'spidersweb.pl', 'epoznan.pl', 'strefainwestorow.pl'];
+  assert.deepEqual(args, ['--evidence', ...domains]);
+  assert.equal((c.match(/run-polish-test\.cmd/g) || []).length, 1);
+  assert.doesNotMatch(c, /npm |npx |where node|playwright install/i);
+  const o = parseArgs(['--gap-mode', ...args]);
+  assert.deepEqual([o.gap, o.evidence, o.domains], [true, true, domains]);
+  // tylko evidence: brak reguł dla tych domen
+  const list = fs.readFileSync(path.join(ROOT, 'tools/lists/chromeblock-polish/chromeblock-polish.txt'), 'utf8');
+  for (const d of domains) assert.doesNotMatch(list, new RegExp(`^${d.replace('.', '\\.')}##`, 'm'), `brak reguły dla ${d}`);
+  assert.match(t, /HEAD:\s+%NEWHEAD%/);
+  assert.match(t, /Zaktualizowano: %UPDATED%/);
+  assert.match(t, /Kod wyjscia testu: %RC%/);
+  assert.match(t, /tests\\polish-sites\\results\\latest\.txt/);
+  assert.match(t, /tests\\polish-sites\\results\\evidence\\/);
+  assert.equal((c.match(/^\s*pause\b/gim) || []).length, 1, 'jedno pause');
+  assert.match(t, /^:end\r?\necho\.\r?\npause\r?\nexit \/b %RC%\r?\n?$/m);
+  assertCmdBlocks(t, 'update-and-evidence-polish-3b.cmd');
+});
