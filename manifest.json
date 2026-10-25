@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "ChromeBlock",
   "short_name": "ChromeBlock",
-  "version": "0.3.1",
-  "version_name": "0.3.1-dev",
+  "version": "0.3.2",
+  "version_name": "0.3.2-dev",
   "description": "Bloker reklam i śledzenia dla Chrome (Manifest V3) z własnym silnikiem filtrów i kontrolą zgodności filtrów YouTube. Wersja developerska.",
   "minimum_chrome_version": "121",
   "permissions": [
