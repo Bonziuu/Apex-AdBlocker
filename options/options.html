@@ -20,7 +20,6 @@
       <button class="tab" data-tab="lists" aria-selected="true">Listy filtrów</button>
       <button class="tab" data-tab="filters">Moje filtry</button>
       <button class="tab" data-tab="sites">Wyłączone strony</button>
-      <button class="tab" data-tab="youtube">YouTube</button>
       <button class="tab" data-tab="backup">Kopia ustawień</button>
       <button class="tab" data-tab="diag">Diagnostyka</button>
       <button class="tab" data-tab="about">O wtyczce</button>
@@ -59,20 +58,6 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       <ul id="filterErrors" class="errors"></ul>
     </section>
 
-    <section id="youtube" class="panel" hidden>
-      <h2 class="mode-h" id="focusHeading">Focus Mode</h2>
-      <p class="muted">Ukrywa rozpraszające elementy YouTube własnym CSS ChromeBlock. Nie zmienia blokowania reklam (YouTube Protection działa niezależnie) ani odtwarzacza. Zmiany działają od razu na otwartych kartach YouTube.</p>
-      <label class="card focus-master">
-        <div class="text">
-          <div class="name">Włącz Focus Mode</div>
-          <div class="desc">Domyślnie wyłączony. Gdy jest wyłączony, nic nie jest ukrywane – także przy zaznaczonych opcjach poniżej.</div>
-        </div>
-        <span class="switch"><input type="checkbox" id="focusEnabled" aria-describedby="focusHeading"><span></span></span>
-      </label>
-      <div id="focusOptions" class="cards focus-options" role="group" aria-label="Co ukrywa Focus Mode"></div>
-      <div id="focusMsg" class="msg" role="alert" hidden></div>
-    </section>
-
     <section id="sites" class="panel" hidden>
       <p class="muted">Na tych stronach (i ich subdomenach) ChromeBlock nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki.</p>
       <textarea id="disabledSites" spellcheck="false" placeholder="np. example.com"></textarea>
@@ -84,7 +69,7 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
 
     <section id="backup" class="panel" hidden>
       <h2 class="mode-h">Kopia ustawień</h2>
-      <p class="muted">Zapisz ustawienia ChromeBlock do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: włączone listy filtrów, tryb ochrony, wyłączone strony (same nazwy domen), Moje filtry i ustawienia Focus Mode. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
+      <p class="muted">Zapisz ustawienia ChromeBlock do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: włączone listy filtrów, tryb ochrony, wyłączone strony (same nazwy domen) i Moje filtry. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
       <div class="bar">
         <button id="exportSettings" class="primary">Eksportuj ustawienia</button>
         <button id="importSettings" class="secondary">Importuj ustawienia</button>

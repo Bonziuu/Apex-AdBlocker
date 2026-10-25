@@ -133,10 +133,6 @@ textarea.report { min-height: 220px; margin: 10px 0; font-size: 12px; }
 .mode-custom { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 10px 14px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
 .mode-custom strong { color: var(--fg); }
 
-/* YouTube Focus Mode */
-.focus-master { margin-bottom: 10px; }
-.focus-options.focus-off .card { opacity: .6; }
-
 /* Kopia ustawień */
 .backup-note { font-size: 13px; margin-top: 10px; }
 .backup-summary { margin-top: 12px; padding: 10px 14px; border-radius: 8px; background: var(--surface); border: 1px solid var(--ok); }
