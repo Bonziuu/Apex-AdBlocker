@@ -65,6 +65,42 @@
       "observation": "Retest: artykuł w module salesModule (fourColumn) z etykietą MATERIAŁ PROMOCYJNY. Ukrywany tylko link-kafel z elementem o dokładnie tej etykiecie. Stopka (#2) pominięta.",
       "method": "automated-browser",
       "evidence": "gazeta.pl#1"
+    },
+    {
+      "rule": "wykop.pl##div.content > ul > li.ad",
+      "domain": "wykop.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Pusty element listy li.ad (ok. 250x36) z etykietą reklama w sekcji treści. Wpis #2 (stopka) to false positive – pominięty.",
+      "method": "automated-browser",
+      "evidence": "wykop.pl#1"
+    },
+    {
+      "rule": "wp.pl##a.wp-teaser-regular *:has-text(/^\\s*sponsorowane\\s*$/i):upward(a.wp-teaser-regular)",
+      "domain": "wp.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Teaser wp-teaser-regular (kolumna 300 px) z osobną etykietą SPONSOROWANE. Tylko teaser z elementem o dokładnie tej etykiecie; bez dynamicznego ID. #2 (stopka) pominięty.",
+      "method": "automated-browser",
+      "evidence": "wp.pl#1"
+    },
+    {
+      "rule": "o2.pl##a.wp-teaser-regular *:has-text(/^\\s*sponsorowane\\s*$/i):upward(a.wp-teaser-regular)",
+      "domain": "o2.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "Teaser wp-teaser-regular (kolumna 300 px) z osobną etykietą SPONSOROWANE. Tylko teaser z elementem o dokładnie tej etykiecie; bez dynamicznego ID. #2 (stopka) pominięty.",
+      "method": "automated-browser",
+      "evidence": "o2.pl#1"
+    },
+    {
+      "rule": "onet.pl##[class*=\"StandardLeftFeed\"] article[class*=\"StandardCard\"] *:has-text(/^\\s*materiał promocyjny\\s*$/i):upward(article[class*=\"StandardCard\"])",
+      "domain": "onet.pl",
+      "type": "cosmetic",
+      "date": "2026-10-25",
+      "observation": "6 kart StandardCard w lewym feedzie z etykietą MATERIAŁ PROMOCYJNY. Ukrywana pojedyncza karta z dokładną etykietą; stabilny fragment nazwy klasy. #7 i #8 bez zrzutu – pominięte.",
+      "method": "automated-browser",
+      "evidence": "onet.pl#1-#6"
     }
   ]
 }

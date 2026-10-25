@@ -196,3 +196,32 @@ Test mechaniki w Chromium obejmuje oba warianty BI na osobnych stronach testowyc
 - karty bez etykiety, także te z tymi słowami w tytule, są widoczne;
 - pozycja menu w nagłówku jest widoczna;
 - kontener nadrzędny (mozaika / sekcja) jest widoczny.
+
+## 7. Partia 2A (2026-10-25)
+
+Źródło: obserwacje z realnego testu `test-polish-batch2.cmd` (GAP + evidence) przekazane przez użytkownika. Reguł nie porównywano z Polskimi Filtrami ani z EasyList Polish.
+
+| Domena | Dowód | Reguła | Zakres |
+|---|---|---|---|
+| wykop.pl | `wykop.pl#1` (pusty `li.ad` ok. 250×36, etykieta „reklama”) | `wykop.pl##div.content > ul > li.ad` (zwykła) | tylko element `li.ad` listy w `div.content`; `#2` (stopka) pominięty |
+| wp.pl | `wp.pl#1` (`div.mt-5.flex.w-full > div.w-[300px] > a.wp-teaser-regular`, etykieta „SPONSOROWANE”) | `wp.pl##a.wp-teaser-regular *:has-text(/^\s*sponsorowane\s*$/i):upward(a.wp-teaser-regular)` | tylko teaser z elementem o dokładnej etykiecie; bez dynamicznego ID; `#2` (stopka) pominięty |
+| o2.pl | `o2.pl#1` (ta sama struktura co wp.pl) | `o2.pl##a.wp-teaser-regular *:has-text(/^\s*sponsorowane\s*$/i):upward(a.wp-teaser-regular)` | jw. dla o2.pl |
+| onet.pl | `onet.pl#1-#6` (karty `article.StandardCard…` w `StandardLeftFeed`, etykieta „MATERIAŁ PROMOCYJNY”) | `onet.pl##[class*="StandardLeftFeed"] article[class*="StandardCard"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article[class*="StandardCard"])` | pojedyncza karta z dokładną etykietą; stabilny fragment nazwy klasy zamiast hasha; feed nieukrywany |
+
+Decyzje:
+
+- **WP/O2:** w selektorze nie ma klasy `w-[300px]` (nawiasy kwadratowe wymagałyby escapowania w CSS). Zakres zawęża sama etykieta. Reguła działa na domenie i jej subdomenach (np. `*.wp.pl`).
+- **Onet:** `[class*="StandardCard"]` i `[class*="StandardLeftFeed"]` zamiast pełnych nazw klas z hashem, które mogą się zmieniać przy wdrożeniach.
+- **Pominięte:** `onet.pl#7`, `#8` (brak zrzutu evidence), interia.pl i se.pl (partia 2B), jbzd.com.pl (tylko zbieranie evidence w `test-polish-batch2.cmd`, bez reguły).
+
+Stan listy: **10 reguł kosmetycznych**: partia 1 (6) bez zmian, partia 2A (4). `provenance.json` ma 10 wpisów.
+
+Test mechaniki w Chromium:
+
+| Domena | Ukryte | Widoczne |
+|---|---|---|
+| wykop.pl | `li.ad` | zwykłe `li`, kontener, stopka |
+| wp.pl / o2.pl | teaser z osobną etykietą (z liczbowym ID, którego reguła nie używa) | zwykły teaser, teaser ze słowem „sponsorowane” tylko w tytule, wiersz, stopka |
+| onet.pl | karta z etykietą | zwykła karta, karta z „materiał promocyjny” tylko w tytule, cały feed |
+
+Retest na prawdziwych stronach: wymagany u użytkownika (`test-polish-batch2.cmd`, obejmuje też jbzd.com.pl).

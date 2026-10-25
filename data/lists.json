@@ -6,7 +6,7 @@
   "enabledByDefault": true,
   "networkRules": 10302,
   "networkFilters": 64429,
-  "cosmeticFilters": 46329,
+  "cosmeticFilters": 46333,
   "scriptletFilters": 4550,
   "scriptletRejected": 513,
   "scriptletFiles": 24,

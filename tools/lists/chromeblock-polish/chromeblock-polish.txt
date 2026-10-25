@@ -26,3 +26,15 @@ businessinsider.com.pl##.ods-c-card-wrapper *:has-text(/^\s*materiał promocyjny
 ! gazeta.pl – kafle artykułów oznaczone etykietą „MATERIAŁ PROMOCYJNY”
 gazeta.pl##article.tile *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article.tile)
 gazeta.pl##div.salesModule.salesModule--fourColumn > a.salesModule__article *:has-text(/^\s*materiał promocyjny\s*$/i):upward(a.salesModule__article)
+!
+! Partia 2A (2026-10-25): obserwacje z `test-polish-batch2.cmd` (GAP + evidence).
+!
+! wykop.pl – pusty element listy z etykietą „reklama”
+wykop.pl##div.content > ul > li.ad
+!
+! wp.pl / o2.pl – teasery z osobną etykietą „SPONSOROWANE” (bez dynamicznego ID)
+wp.pl##a.wp-teaser-regular *:has-text(/^\s*sponsorowane\s*$/i):upward(a.wp-teaser-regular)
+o2.pl##a.wp-teaser-regular *:has-text(/^\s*sponsorowane\s*$/i):upward(a.wp-teaser-regular)
+!
+! onet.pl – karty w lewym feedzie z etykietą „MATERIAŁ PROMOCYJNY” (bez hasha klasy)
+onet.pl##[class*="StandardLeftFeed"] article[class*="StandardCard"] *:has-text(/^\s*materiał promocyjny\s*$/i):upward(article[class*="StandardCard"])

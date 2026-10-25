@@ -1,4 +1,4 @@
-// Reguły ChromeBlock Polish Supplement (partia 1 po reteście) w prawdziwym Chromium – na LOKALNYCH stronach
+// Reguły ChromeBlock Polish Supplement (partia 1 po retestach + partia 2A) w prawdziwym Chromium – na LOKALNYCH stronach
 // testowych o opisanej w obserwacjach strukturze (bez sieci). Rozszerzenie testowe ma w liście „ads”
 // WYŁĄCZNIE ChromeBlock Polish Supplement, więc wynik zależy tylko od naszych reguł.
 // To test mechaniki reguł, a nie retest prawdziwych stron (ten wymaga internetu: test:polish-sites).
@@ -42,6 +42,30 @@ const PAGES = {
       <div class="ods-c-card-wrapper" id="card-b-normal"><article><span>Finanse</span><h3>Materiał promocyjny w tytule nie jest etykietą</h3></article></div>
       <div class="ods-c-card-wrapper" id="card-b-normal2"><article><span>Rynki</span><h3>Zwykły artykuł</h3></article></div>
     </section></body>`,
+  // partia 2A
+  'www.wykop.pl': `<!doctype html><meta charset="utf-8"><title>W</title><body>${filler('Znaleziska.')}
+    <div class="content" id="wy-content"><ul><li id="wy-1">Znalezisko 1</li><li class="ad" id="wy-ad" style="width:250px;height:36px"><span>reklama</span></li><li id="wy-2">Znalezisko 2</li></ul></div>
+    <footer id="wy-footer"><span>Reklama</span> <span>Regulamin</span></footer></body>`,
+  'www.wp.pl': `<!doctype html><meta charset="utf-8"><title>wp</title><body>${filler('Wiadomości.')}
+    <div class="mt-5 flex w-full" id="wp-row">
+      <div class="w-[300px]"><a class="wp-teaser-regular group flex" id="9081726354" href="#"><div><span>SPONSOROWANE</span></div><h3>Oferta</h3></a></div>
+      <div class="w-[300px]"><a class="wp-teaser-regular group flex" id="wp-2" href="#"><div><span>Sport</span></div><h3>Zwykły teaser</h3></a></div>
+      <div class="w-[300px]"><a class="wp-teaser-regular group flex" id="wp-3" href="#"><div><span>Lifestyle</span></div><h3>Sponsorowane wakacje – jak je rozpoznać</h3></a></div>
+    </div>
+    <footer id="wp-footer"><span>Sponsorowane</span> <span>Kontakt</span></footer></body>`,
+  'www.o2.pl': `<!doctype html><meta charset="utf-8"><title>o2</title><body>${filler('Wiadomości.')}
+    <div class="mt-5 flex w-full" id="o2-row">
+      <div class="w-[300px]"><a class="wp-teaser-regular group flex" id="5647382910" href="#"><div><span>SPONSOROWANE</span></div><h3>Oferta</h3></a></div>
+      <div class="w-[300px]"><a class="wp-teaser-regular group flex" id="o2-2" href="#"><div><span>Sport</span></div><h3>Zwykły teaser</h3></a></div>
+      <div class="w-[300px]"><a class="wp-teaser-regular group flex" id="o2-3" href="#"><div><span>Lifestyle</span></div><h3>Sponsorowane wakacje – jak je rozpoznać</h3></a></div>
+    </div>
+    <footer id="o2-footer"><span>Sponsorowane</span> <span>Kontakt</span></footer></body>`,
+  'www.onet.pl': `<!doctype html><meta charset="utf-8"><title>O</title><body>${filler('Onet.')}
+    <div class="StandardLeftFeed_feed__a9f3" id="on-feed">
+      <article class="StandardCard_card__x1y2 StandardCard_withImage__z3" id="on-promo"><div><span>MATERIAŁ PROMOCYJNY</span></div><h2>Oferta</h2></article>
+      <article class="StandardCard_card__x1y2" id="on-normal"><div><span>Kraj</span></div><h2>Wiadomość</h2></article>
+      <article class="StandardCard_card__x1y2" id="on-title"><div><span>Biznes</span></div><h2>Materiał promocyjny – czym jest i jak go oznaczać</h2></article>
+    </div></body>`,
   'www.gazeta.pl': `<!doctype html><meta charset="utf-8"><title>G</title><body>${filler('Wiadomości.')}
     <article class="tile" id="t1"><div class="tile__meta"><span>MATERIAŁ PROMOCYJNY</span></div><h2>Promocja 1</h2></article>
     <article class="tile tile--big" id="t2"><span> Materiał promocyjny </span><h2>Promocja 2</h2></article>
@@ -54,7 +78,7 @@ const PAGES = {
     <footer id="stopka"><span>Materiał promocyjny</span> <span>Kontakt</span></footer></body>`,
 };
 
-test('Chromium (lokalne strony testowe): reguły partii 1 ukrywają tylko obserwowane sloty / kafle z dokładną etykietą', { skip, timeout: 600_000 }, async () => {
+test('Chromium (lokalne strony testowe): reguły partii 1 i 2A ukrywają tylko obserwowane sloty / kafle z dokładną etykietą', { skip, timeout: 600_000 }, async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-polish-rules-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
@@ -91,6 +115,11 @@ test('Chromium (lokalne strony testowe): reguły partii 1 ukrywają tylko obserw
     // wariant B (flat-ad-wrapper / ods-c-card-wrapper)
     await check('https://businessinsider.com.pl/wariant-b', ['#flat-natleft-2', '#card-b-promo'], ['#section-b', '#flat-natleft-1', '#card-b-normal', '#card-b-normal2', '#nav-promo-b']);
     await check('https://www.gazeta.pl/', ['#t1', '#t2', '#s1'], ['#t3', '#t4', '#sales', '#s2', '#stopka']);
+    // partia 2A
+    await check('https://www.wykop.pl/', ['#wy-ad'], ['#wy-content', '#wy-1', '#wy-2', '#wy-footer']);
+    await check('https://www.wp.pl/', ['#\\39 081726354'], ['#wp-row', '#wp-2', '#wp-3', '#wp-footer']);
+    await check('https://www.o2.pl/', ['#\\35 647382910'], ['#o2-row', '#o2-2', '#o2-3', '#o2-footer']);
+    await check('https://www.onet.pl/', ['#on-promo'], ['#on-feed', '#on-normal', '#on-title']);
   } finally {
     await ctx.close();
     fs.rmSync(tmp, { recursive: true, force: true });
