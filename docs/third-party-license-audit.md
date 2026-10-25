@@ -13,7 +13,7 @@ ChromeBlock jest rozpowszechniany na dwa sposoby. Każdy zawiera inną postać d
 
 | Kanał | Co zawiera | Postać list filtrów |
 |---|---|---|
-| **Repozytorium GitHub** (`Bonziuu/Chromeblock`, publiczne) | `tools/lists/**` – 25 plików tekstowych list | **Kopie surowe**, pobrane przez `tools/update-lists.mjs` i zapisane bez zmian (od pierwszego commita `a2091e2` nie było żadnych ręcznych edycji). Zgodności bajtowej z bieżącym upstream nie dało się sprawdzić w tej sesji, bo sieć była ograniczona. |
+| **Repozytorium GitHub** (`Bonziuu/Chromeblock`, obecnie **prywatne**) | `tools/lists/**` – 25 plików tekstowych list | **Kopie surowe**, pobrane przez `tools/update-lists.mjs` i zapisane bez zmian (od pierwszego commita `a2091e2` nie było żadnych ręcznych edycji). Zgodności bajtowej z bieżącym upstream nie dało się sprawdzić w tej sesji, bo sieć była ograniczona. |
 | | `rules/*.json`, `data/*.json`, `scriptlets/*.js` | **Postać przetworzona** (wynik `npm run build`) |
 | **Paczka rozszerzenia** (`download/ChromeBlock-dev.zip`, w przyszłości paczka w Chrome Web Store) | `rules/`, `data/`, `scriptlets/`, `web_accessible_resources/` | **Tylko postać przetworzona.** Surowych list (`tools/lists/`) w paczce nie ma |
 
@@ -28,6 +28,8 @@ Przetwarzanie w `tools/build.mjs` polega na tym, że:
 - **Filtry z różnych źródeł są łączone w jednym pliku wyjściowym.** Na przykład lista „Reklamy” (`ads`) łączy EasyList, uBlock filters i Polskie Filtry w `rules/ads.json`, `data/ads.json` i `scriptlets/ads-*.js`.
 
 W paczce rozszerzenia **nie ma** tekstów licencji, plików NOTICE ani nagłówków list. Repozytorium **nie ma pliku `LICENSE`** dla samego kodu ChromeBlock.
+
+**Widoczność repozytorium.** Stan na 2026-10-25 według GitHub API: `private`. Surowe listy, narzędzia buildu i informacje o licencjach są więc dziś dostępne tylko dla właściciela repozytorium. Nie można na nich polegać jako na publicznym źródle ani publicznej nocie dla użytkowników paczki. Przed publiczną dystrybucją trzeba ustalić, jak udostępnić wymagane źródła i noty, jeśli wynika to z wybranych licencji. Możliwe sposoby to m.in. upublicznienie repozytorium, osobne publiczne repozytorium lub archiwum źródeł, albo dołączenie not i tekstów licencji do paczki. To `REQUIRES LEGAL/UPSTREAM CONFIRMATION`, bo zakres obowiązku zależy od rozstrzygnięć z sekcji 3.
 
 ## 2. Źródła – zestawienie
 
@@ -207,7 +209,7 @@ Filtry są wymieszane z EasyList i uBlock filters w plikach listy „Reklamy” 
 | `README.md` → „Źródła list i licencje” | nazwy list, „©” i skrót licencji; zdanie „Pełny audyt licencyjny zostanie wykonany przed ewentualnym publicznym wydaniem” | linki do licencji, teksty licencji, oznaczenie modyfikacji, poprawny posiadacz praw dla Polskich Filtrów („Certyficate IT” w nagłówkach), „or later” dla EasyList |
 | `options/options.html` → „Jak to działa” → „Listy filtrów” (jest w paczce) | ta sama treść | jak wyżej |
 | `docs/product-direction.md` | odesłanie do README | – |
-| Paczka rozszerzenia (ZIP) | brak plików licencji i NOTICE; nagłówki list są usuwane przez build | teksty / URI licencji, noty o prawach autorskich, informacja o modyfikacjach, wskazanie źródła (repozytorium) dla przetworzonych danych |
+| Paczka rozszerzenia (ZIP) | brak plików licencji i NOTICE; nagłówki list są usuwane przez build | teksty / URI licencji, noty o prawach autorskich, informacja o modyfikacjach, wskazanie źródła dla przetworzonych danych (repozytorium jest obecnie prywatne, więc nie spełnia tej roli) |
 | Kod ChromeBlock | brak pliku `LICENSE` | deklaracja licencji projektu |
 
 ## 5. Podsumowanie
@@ -224,15 +226,13 @@ Filtry są wymieszane z EasyList i uBlock filters w plikach listy „Reklamy” 
 
 Lista do decyzji. Żadna z tych zmian nie została wykonana w ramach audytu.
 
-1. **Polskie Filtry Reklamowe:**
-   - przed wydaniem w Chrome Web Store uzyskać pisemne stanowisko upstream (GitHub Issues / e-mail z nagłówka) albo opinię prawną w sprawie NC, ShareAlike i łączenia z GPL;
-   - do czasu wyjaśnienia rozważyć wydanie publiczne **bez** tych list. Repo i paczka deweloperska bez zmian. Decyzja należy do właściciela projektu.
+1. **Polskie Filtry Reklamowe:** przed wydaniem w Chrome Web Store uzyskać pisemne stanowisko upstream albo opinię prawną w sprawie NC, ShareAlike i łączenia z GPL. Gotowa wiadomość do autorów: [docs/polish-filters-upstream-question.md](polish-filters-upstream-question.md), jeszcze niewysłana. Warianty wydania są w sekcji 7.
 2. **Wybrać i dodać licencję ChromeBlock** (`LICENSE`), sprawdzając jej zgodność z GPLv3 dla plików, w których kod łączy się z danymi i kodem z list GPL. `?`
 3. **Dodać do paczki plik `THIRD-PARTY-NOTICES`** (lub `licenses/`) z:
    - nazwą każdego źródła, upstream URL, wersją, posiadaczem praw zgodnym z nagłówkiem upstream;
    - licencją i jej tekstem lub URI;
    - informacją, że dane zostały przetworzone (konwersja do DNR, usunięte komentarze, odrzucone filtry);
-   - wskazaniem publicznego repozytorium z surowymi listami i narzędziem buildu jako źródła.
+   - wskazaniem, gdzie dostępne są surowe listy i narzędzie buildu. Repozytorium jest dziś **prywatne**, więc najpierw trzeba ustalić sposób publicznego udostępnienia źródeł i not, jeśli wymagają tego wybrane licencje (zob. sekcja 1).
 4. **Poprawić attribution w README i Opcjach:**
    - „Certyficate IT” zamiast lub obok „MajkiIT” (do potwierdzenia, zob. 3.3);
    - linki do licencji;
@@ -242,8 +242,37 @@ Lista do decyzji. Żadna z tych zmian nie została wykonana w ramach audytu.
 6. **Ustalić skład paczki do Chrome Web Store** (bez `tester/` i instalatorów `.cmd`?).
 7. Po zmianach ponowić ten audyt na nowym `main` i zaktualizować zdanie w README o „pełnym audycie”.
 
-## 7. Źródła informacji (odczyt 2026-10-25)
+## 7. Release recommendation
 
+Dwa warianty do decyzji właściciela projektu. Audyt **nie wybiera** żadnego z nich i nie rozstrzyga kwestii prawnych z sekcji 3. Obie ścieżki wymagają też kroków 2–6 z sekcji 6 (licencja ChromeBlock, `THIRD-PARTY-NOTICES`, poprawione attribution, sposób udostępnienia źródeł przy prywatnym repozytorium).
+
+### A. `SAFE DEFAULT`
+
+Publiczny build 1.0 (Chrome Web Store) **bez Polskich Filtrów Reklamowych** do czasu pisemnego potwierdzenia od upstream.
+
+- Do publicznej paczki nie trafiają `pl/adblock.txt`, `pl/adblock_suplement.txt`, `pl/adblock_ublock.txt` ani wynikające z nich reguły, filtry kosmetyczne i scriptlety.
+- Listy zostają w repozytorium i w buildzie deweloperskim. Wariant A nie wymaga ich usuwania z repo.
+- Po uzyskaniu jasnej zgody lub wyjaśnienia można przejść do wariantu B w kolejnym wydaniu.
+- Skutki do oceny przed wyborem:
+  - słabsze blokowanie na polskich stronach;
+  - potrzebny osobny wariant buildu lub konfiguracji list dla wydania publicznego (zmiana do zaplanowania osobno, nie w ramach audytu);
+  - ponowny test regresyjny.
+- Nadal obowiązują noty i licencje pozostałych źródeł (EasyList, EasyPrivacy, Fanboy, uBlock filters) oraz otwarte punkty dotyczące GPLv3 i CC BY-SA 3.0 z sekcji 3.1–3.2.
+
+### B. `WITH UPSTREAM CONFIRMATION`
+
+Polskie Filtry Reklamowe **pozostają** w publicznym buildzie, ale tylko gdy łącznie spełnione są warunki:
+
+1. jest jasna, pisemna odpowiedź autorów (np. w GitHub Issues lub e-mailu) na pytania z [docs/polish-filters-upstream-question.md](polish-filters-upstream-question.md): zgoda na taką dystrybucję, stanowisko w sprawie NonCommercial i opcjonalnego wsparcia, wymagane attribution, dopuszczalność postaci przetworzonej, obowiązująca licencja;
+2. ewentualne pozostałe wątpliwości (np. ShareAlike i łączenie z GPL w jednym pliku wyjściowym) są wyjaśnione przez upstream lub w opinii prawnej;
+3. wymagane noty są wdrożone dokładnie w formie wskazanej przez autorów: `THIRD-PARTY-NOTICES`, attribution w Opcjach i README, informacja o modyfikacji;
+4. odpowiedź upstream jest zarchiwizowana, np. link lub kopia w `docs/`.
+
+Do czasu spełnienia warunków 1–4 wariant B nie jest gotowy do wydania.
+
+## 8. Źródła informacji (odczyt 2026-10-25)
+
+- Widoczność repozytorium `Bonziuu/Chromeblock`: GitHub API (`private: true`).
 - Nagłówki plików w `tools/lists/**` (stan repozytorium jak wyżej).
 - EasyList Repository Licences: https://easylist.to/pages/licence.html
 - CC BY-NC-SA 4.0 Legal Code (SPDX): https://spdx.org/licenses/CC-BY-NC-SA-4.0
