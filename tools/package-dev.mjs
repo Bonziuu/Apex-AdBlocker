@@ -29,6 +29,7 @@ export const EXTRA_FILES = [
   ['installer/update-chromeblock.cmd', 'update-chromeblock.cmd'],
   ['INSTALL.md', 'INSTALL.md'],
   ['test-chromeblock.cmd', 'test-chromeblock.cmd'],
+  ['test-protection-modes.cmd', 'test-protection-modes.cmd'],
 ];
 export const TESTER_DIR = 'tester';
 // minimalny zestaw plików testera – ten sam układ katalogów co w repozytorium (importy względne bez zmian)
@@ -37,6 +38,8 @@ export const TESTER_FILES = [
   'tools/chromium-smoke.mjs',
   'tests/e2e/lib/classify.mjs',
   'tests/e2e/lib/youtube-page.mjs',
+  'tests/local/protection-modes-sites.mjs',
+  'tests/local/sites-protection-modes.json',
 ];
 
 /** package.json testera: tylko Playwright (wersja jak w repozytorium). */
