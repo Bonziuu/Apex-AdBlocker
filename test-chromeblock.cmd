@@ -5,6 +5,7 @@ rem albo z repozytorium. Wymaga tylko Node.js 20+ (bez Gita).
 rem Startuje Playwright Chromium z ChromeBlock w TYMCZASOWYM profilu
 rem (nie uzywa Twojego profilu Chrome, nie zapisuje historii, loginow ani cookies).
 rem Opcje (z wiersza polecen): --headless  --no-youtube
+rem Test stron (bez / z ChromeBlock, ok. 30-45 min): test-chromeblock.cmd --sites  (albo test-sites.cmd)
 rem Kod wyjscia: 0 PASS, 1 FAIL, 2 blad uruchomienia, 3 INCONCLUSIVE.
 setlocal
 chcp 65001 >nul
@@ -59,12 +60,15 @@ if errorlevel 1 (
 )
 
 echo.
+set "SCRIPT=tests\local\chromeblock-local-test.mjs"
+if /i "%~1"=="--sites" set "SCRIPT=tests\local\single-blocker-sites.mjs"
 if "%PKG%"=="1" (
-  node tests\local\chromeblock-local-test.mjs --dir "%BASE%ChromeBlock" --results "%RES%" %*
+  node %SCRIPT% --dir "%BASE%ChromeBlock" --results "%RES%" %*
 ) else (
-  node tests\local\chromeblock-local-test.mjs --results "%RES%" %*
+  node %SCRIPT% --results "%RES%" %*
 )
 set "RC=%ERRORLEVEL%"
+if /i "%~1"=="--sites" goto :sites
 
 echo.
 echo ============================================================
@@ -76,6 +80,18 @@ echo ============================================================
 echo.
 echo Raport:  %RES%\latest.txt
 echo JSON:    %RES%\latest.json
+goto :end
+
+:sites
+echo.
+echo ============================================================
+if "%RC%"=="0" echo   Test stron zakonczony. Wynik automatyczny to tylko WSKAZOWKA.
+if "%RC%"=="0" echo   Otworz raport i ocen strony recznie ^(zrzuty BEZ / Z ChromeBlock obok siebie^).
+if not "%RC%"=="0" echo   WYNIK: BLAD URUCHOMIENIA - test stron nie mogl sie wykonac.
+echo ============================================================
+echo.
+echo Raport:  %RES%\sites\latest.html
+echo Tekst:   %RES%\sites\latest.txt
 
 :end
 echo.

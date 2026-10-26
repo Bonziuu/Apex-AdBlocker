@@ -76,7 +76,8 @@ test('opcje, npm run test:local, .cmd i izolacja od npm test', () => {
   assert.doesNotMatch(pkg.scripts.test, /local/);
   const cmd = fs.readFileSync(path.join(ROOT, 'test-chromeblock.cmd'), 'utf8');
   assert.match(cmd, /\r\n/, 'CRLF');
-  assert.match(cmd, /node tests\\local\\chromeblock-local-test\.mjs/);
+  assert.match(cmd, /set "SCRIPT=tests\\local\\chromeblock-local-test\.mjs"/, 'domyślnie test regresyjny');
+  assert.match(cmd, /node %SCRIPT% /);
   assert.match(cmd, /latest\.txt/);
   assert.match(cmd, /\r\npause\r\n/, 'okno zostaje otwarte');
   assert.doesNotMatch(cmd, /--user-data-dir|reg |HKLM|HKCU|Policies/i, 'bez prywatnego profilu i rejestru');

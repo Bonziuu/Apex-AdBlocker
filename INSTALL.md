@@ -36,6 +36,13 @@ W rozpakowanym folderze kliknij dwukrotnie **test-chromeblock.cmd**. Wymaga [Nod
 - Wynik pojawi się w oknie (**PASS**, **FAIL** albo **INCONCLUSIVE**), a raport w `wyniki-testu\latest.txt`.
 - **INCONCLUSIVE** oznacza, że części testów nie dało się sprawdzić (np. brak internetu albo YouTube niedostępny). To nie jest PASS.
 
+### Test na prawdziwych stronach (opcjonalnie)
+
+Kliknij dwukrotnie **test-sites.cmd**. Tester otwiera około 50 popularnych stron dwa razy: **bez ChromeBlock** i **z ChromeBlock** (obie w tymczasowych przeglądarkach), a potem tworzy raport `wyniki-testu\sites\latest.html` ze zrzutami ekranu obok siebie. Trwa to około 30–45 minut.
+
+- Banery cookies tester próbuje tylko **odrzucić** („Odrzuć wszystko”, „Tylko niezbędne”). Nigdy nie akceptuje zgód, nie loguje się i niczego nie kupuje.
+- Wynik automatyczny to tylko wskazówka. Ostateczną ocenę wybierasz w raporcie i zapisujesz przyciskiem **Eksportuj oceny**.
+
 ## Odinstalowanie
 
 1. W `chrome://extensions` kliknij **Usuń** na karcie ChromeBlock.
