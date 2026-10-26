@@ -351,6 +351,10 @@ export function collectInPage(arg) {
     if (!c || c === document.body || c === document.documentElement) { labelOnly.push({ el, t }); continue; }
     const s = size(c);
     if (s.w < 120 || s.h < 50) { labelOnly.push({ el, t }); continue; }
+    // sama etykieta nie może awansować kontenera strony do slotu reklamowego (fałszywe REAL_AD od zdjęć w treści):
+    // html/body/main/[role=main], kontener zawierający main, albo lokalny kontener wyższy niż 3 ekrany
+    // (billboard ~250–300 px, halfpage ~600 px – daleko poniżej). Wtedy zostaje LABEL_ONLY.
+    if (c.matches('html, body, main, [role="main"]') || c.querySelector('main, [role="main"]') || s.h > 3 * vh) { labelOnly.push({ el, t }); continue; }
     if (![...slots.keys()].some((k) => k.contains(c) || c.contains(k))) slots.set(c, { label: t });
     else for (const [k, v] of slots) if (k.contains(c) || c.contains(k)) v.label = v.label || t;
   }
