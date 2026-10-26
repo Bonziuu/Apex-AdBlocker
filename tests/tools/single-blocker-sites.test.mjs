@@ -270,12 +270,22 @@ const multiSuffix = (foreign, own) => `<!doctype html><html lang="pl"><head><met
 <header><nav><a href="/kraj">Kraj</a> <a href="/swiat">Świat</a> <a href="${foreign}/a">Partner A</a> <a href="${foreign}/b">Partner B</a> <a href="${foreign}/c">Partner C</a></nav></header>
 <main>${ARTICLE}${tile(`${own}/promocja`)}${tile(`${foreign}/oferta`)}</main></body></html>`;
 
+const PHOTOS = Array.from({ length: 4 }, (_, i) => `<figure><img src="/img/foto-${i}.png" width="600" height="340" alt=""><figcaption>Zdjęcie ${i + 1} z wydarzenia</figcaption></figure>`).join('');
+
 const FIXTURES = {
   // reklama: obrazek z hosta reklamowego w kontenerze z etykietą, w żadnym znanym selektorze kosmetycznym
   'ad.cb-fixture.pl': page(`${ARTICLE}<div class="box-x7" style="width:300px;margin:20px"><span>Reklama</span><a href="https://advertiser.example/"><img src="${AD_IMG}" width="300" height="250" alt=""></a></div>`),
   // reklama w iframe (zablokowana przez ChromeBlock → slot pusty albo ukryty)
   'frame.cb-fixture.pl': page(`${ARTICLE}<div id="div-gpt-ad-1" style="width:300px;height:250px"><iframe src="${AD_FRAME}" width="300" height="250" style="border:0"></iframe></div>`),
   // pusty slot z etykietą w obu konfiguracjach
+  // etykieta „REKLAMA” luzem w <main> z dużą ilością zwykłych zdjęć (Fakt.pl) – main nie jest slotem
+  'mainlabel.cb-fixture.pl': page(`${ARTICLE}${PHOTOS}<small>REKLAMA</small>${PHOTOS}${ARTICLE}`),
+  // to samo w wysokim wrapperze treści (nie main) – strażnik wysokości
+  'wraplabel.cb-fixture.pl': page(`<div class="content-wrap">${ARTICLE}${PHOTOS}<small>REKLAMA</small>${PHOTOS}</div>`),
+  // kontrola: prawdziwe sloty nadal REAL_AD (selektor .ad-container; etykieta + billboard 970×250 i halfpage 300×600)
+  'adcontainer.cb-fixture.pl': page(`${ARTICLE}<div class="ad-container" style="width:300px"><span>REKLAMA</span><img src="/img/ad-local.png" width="300" height="250" alt=""></div>`),
+  'bigslots.cb-fixture.pl': page(`${ARTICLE}<div class="box-bb" style="width:970px"><small>REKLAMA</small><img src="/img/bb.png" width="970" height="250" alt=""></div>
+<div class="box-hp" style="width:300px"><small>REKLAMA</small><img src="/img/hp.png" width="300" height="600" alt=""></div>`),
   'empty.cb-fixture.pl': page(`${ARTICLE}<div class="box-q2" style="width:320px;height:260px;border:1px solid #ccc"><small>REKLAMA</small></div>`),
   // materiał promocyjny strony (link do tej samej domeny)
   'promo.cb-fixture.pl': page(`${ARTICLE}<div class="tile-k" style="width:320px"><span>Materiał partnera</span><a href="/promocja/abc"><img src="/img/promo.png" width="300" height="160" alt=""></a><p>Nowa oferta w naszym serwisie</p></div>`),
@@ -359,6 +369,20 @@ test('atrapy stron w Chromium (bez internetu): none vs ChromeBlock, consent, sta
     assert.equal(st('empty'), STATUS.EMPTY_AD_SLOT, dump('empty'));
     assert.equal(res('empty', 'none').ads.counts.EMPTY_AD_SLOT, 1);
     assert.equal(res('promo', 'chromeblock').ads.counts.SITE_PROMO, 1, dump('promo'));
+    // etykieta w <main>/wysokim wrapperze: nie REAL_AD, najwyżej LABEL_ONLY; zwykłe zdjęcia nie zmieniają wyniku
+    for (const k of ['mainlabel', 'wraplabel']) {
+      for (const c of CONFIGS) {
+        const a = res(k, c).ads.counts;
+        assert.deepEqual([a.REAL_AD, a.EMPTY_AD_SLOT, a.UNKNOWN, a.LABEL_ONLY], [0, 0, 0, 1], `${k} ${c}: ${dump(k)}`);
+        assert.ok(!res(k, c).ads.samples.REAL_AD.some((x) => /^main\b/.test(x)));
+      }
+      assert.equal(st(k), STATUS.PASS, dump(k));
+    }
+    // kontrola: prawdziwy .ad-container z etykietą i obrazem = REAL_AD (bez rozszerzenia; ChromeBlock ukrywa .ad-container)
+    assert.equal(res('adcontainer', 'none').ads.counts.REAL_AD, 1, dump('adcontainer'));
+    assert.match(res('adcontainer', 'none').ads.samples.REAL_AD[0], /^div\.ad-container 300x\d+ „REKLAMA”/);
+    // billboard i halfpage z etykietą (bez selektora, lokalne obrazy) nadal REAL_AD w obu konfiguracjach
+    for (const c of CONFIGS) assert.equal(res('bigslots', c).ads.counts.REAL_AD, 2, `${c}: ${dump('bigslots')}`);
     assert.equal(st('promo'), STATUS.PASS, dump('promo'));
     // com.pl / co.uk: obca domena z tym samym sufiksem nie jest własna (menu i SITE_PROMO)
     for (const [host, own] of [['www.businessinsider.com.pl', 'businessinsider.com.pl'], ['www.dailymail.co.uk', 'dailymail.co.uk']]) {
