@@ -59,6 +59,23 @@ test('wzorce consent: odrzucenie tak, akceptacja/login/subskrypcja nie', () => {
   assert.match('Ta strona używa plików cookie', new RegExp(PATTERNS.cmpText, 'i'));
 });
 
+test('consent: realne warianty odrzucenia (WP, o2) i whitelista kroku ustawień CMP; zgody nigdy', () => {
+  const reject = new RegExp(PATTERNS.reject, 'i');
+  const settings = new RegExp(PATTERNS.settings, 'i');
+  // regresja z live testu (WP, o2)
+  assert.match('Odrzucam i chcę dowiedzieć się więcej', reject);
+  assert.match('ODRZUCAM I CHCĘ DOWIEDZIEĆ SIĘ WIĘCEJ', reject, 'CSS text-transform: uppercase');
+  for (const t of ['Odrzucam', 'Odrzuć', 'Odrzuć wszystko', 'Nie zgadzam się', 'Tylko niezbędne', 'Reject all', 'Decline', 'Only necessary']) assert.match(t, reject, t);
+  // bez fuzzy: samo słowo „odrzuć” w dłuższym tekście nie wystarcza
+  for (const t of ['Dowiedz się, jak odrzucić', 'Odrzuć i zaakceptuj resztę', 'Nie chcesz? Odrzuć w ustawieniach']) assert.doesNotMatch(t, reject, t);
+  for (const t of ['Ustawienia zaawansowane', 'USTAWIENIA ZAAWANSOWANE', 'Ustawienia prywatności', 'USTAWIENIA PRYWATNOŚCI', 'Ustawienia preferencji', 'Zarządzaj ustawieniami', 'Pokaż cele', 'Manage options', 'Manage preferences', 'Privacy settings', 'Cookie settings']) assert.match(t, settings, t);
+  // zgoda / niejednoznaczne zamknięcie: ani odrzucenie, ani ustawienia
+  for (const t of ['Akceptuję', 'Akceptuję wszystko', 'Akceptuję i przechodzę do serwisu', 'Przejdź do serwisu', 'PRZEJDŹ DO SERWISU', 'Kontynuuj', 'Zaloguj się', 'Zarejestruj się', 'Subskrybuj', 'Zapłać', 'Ustawienia', 'Zapisz wybór']) {
+    assert.doesNotMatch(t, reject, t);
+    assert.doesNotMatch(t, settings, t);
+  }
+});
+
 test('ocena strony: priorytety, challenge vs kontrola, consent, błędy JS nie są breakage', () => {
   const ctrl = m({ ads: ads({ REAL_AD: 4 }) });
   // PASS – wskazówka, nie gwarancja
@@ -244,6 +261,9 @@ const CMP = (buttons) => `<div id="cookie-consent" style="position:fixed;inset:a
 <script>window.__accept = () => { fetch('/__accepted'); document.getElementById('cookie-consent').remove(); };
 window.__reject = () => document.getElementById('cookie-consent').remove();</script>`;
 
+// dwuetapowy CMP: ekran 1 → (ustawienia) → ekran 2 w tym samym kontenerze
+const CMP2 = (first, second) => `${CMP(first)}<script>window.__settings = () => { document.getElementById('cookie-consent').innerHTML = ${JSON.stringify(`<p>Ustawienia prywatności i plików cookie. Wybierz cele przetwarzania danych.</p>${second}`)}; };</script>`;
+
 // 2 linki menu do własnej strony + 3 do obcej domeny; kafelek promo do własnej subdomeny i do obcej domeny (krótki tekst → klasa zależy tylko od „tej samej strony”)
 const tile = (href) => `<div class="tile-k" style="width:320px;margin:10px"><span>Materiał partnera</span><a href="${href}"><img src="/img/promo.png" width="300" height="160" alt=""></a></div>`;
 const multiSuffix = (foreign, own) => `<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Atrapa</title></head><body style="margin:0;font:16px sans-serif">
@@ -263,6 +283,16 @@ const FIXTURES = {
   'cmp.cb-fixture.pl': page(`${ARTICLE}${CMP('<button onclick="__accept()">Akceptuj wszystko</button> <button onclick="__reject()">Odrzuć wszystko</button>')}`),
   // CMP tylko z akceptacją → CONSENT_INCONCLUSIVE
   'cmpaccept.cb-fixture.pl': page(`${ARTICLE}${CMP('<button onclick="__accept()">Akceptuj i przejdź do serwisu</button>')}`),
+  // A: własny tekst odrzucenia (WP, o2)
+  'cmpcustom.cb-fixture.pl': page(`${ARTICLE}${CMP('<button onclick="__accept()">Akceptuję i przechodzę do serwisu</button> <button onclick="__reject()">Odrzucam i chcę dowiedzieć się więcej</button>')}`),
+  // B: ustawienia → odrzuć wszystko (Onet, Gazeta, RMF24)
+  'cmptwostep.cb-fixture.pl': page(`${ARTICLE}${CMP2('<button onclick="__accept()">Akceptuję</button> <button onclick="__settings()">Ustawienia zaawansowane</button>',
+    '<button onclick="__accept()">Akceptuję wszystko</button> <button onclick="__reject()">Odrzuć wszystko</button>')}`),
+  // C: ustawienia bez bezpiecznego odrzucenia (tylko suwaki + akceptacja)
+  'cmpnoreject.cb-fixture.pl': page(`${ARTICLE}${CMP2('<button onclick="__accept()">Akceptuję</button> <button onclick="__settings()">Ustawienia prywatności</button>',
+    '<label><input type="checkbox"> Personalizacja</label> <label><input type="checkbox"> Pomiar</label> <button onclick="__accept()">Akceptuję</button>')}`),
+  // D: przycisk „Ustawienia prywatności” strony POZA banerem zgody
+  'cmpoutside.cb-fixture.pl': page(`${ARTICLE}<section><button onclick="fetch('/__outside')">Ustawienia prywatności</button></section>${CMP('<button onclick="__accept()">Akceptuję</button>')}`),
   // anti-adblock: komunikat, gdy skrypt reklamowy się nie wczyta
   'anti.cb-fixture.pl': page(`${ARTICLE}<div id="msg"></div><script>const s = document.createElement('script'); s.src = '${AD_JS}';
 s.onerror = () => { document.getElementById('msg').innerHTML = '<div style="padding:20px;border:2px solid red">Wykryliśmy AdBlock. Wyłącz blokadę reklam, aby czytać dalej.</div>'; };
@@ -288,6 +318,7 @@ async function installFixtures(ctx, hits) {
   await ctx.route(/^https?:\/\//, async (route) => {
     const u = new URL(route.request().url());
     if (u.pathname === '/__accepted') { hits.accepted.push(u.hostname); return route.fulfill({ status: 204, body: '' }); }
+    if (u.pathname === '/__outside') { hits.outside.push(u.hostname); return route.fulfill({ status: 204, body: '' }); }
     if (u.hostname === 'error.cb-fixture.pl') return route.fulfill({ status: 503, contentType: 'text/html', body: '<h1>503 Service Unavailable</h1>' });
     if (/\.png$/.test(u.pathname)) return route.fulfill({ status: 200, contentType: 'image/png', body: PNG });
     if (u.hostname === 'static.criteo.net') return route.fulfill({ status: 200, contentType: 'text/javascript', body: 'window.__adsLoaded = true;' });
@@ -305,7 +336,7 @@ test('atrapy stron w Chromium (bez internetu): none vs ChromeBlock, consent, sta
     const hosts = [...Object.keys(FIXTURES), 'error.cb-fixture.pl'];
     const sitesFile = path.join(tmp, 'sites.json');
     fs.writeFileSync(sitesFile, JSON.stringify({ categories: { atrapy: hosts.map((h) => `https://${h}/`) }, knownCases: { 'cbchallenge.cb-fixture.pl': 'challenge tylko z ChromeBlock – sprawdź powtarzalność' } }));
-    const hits = { accepted: [] };
+    const hits = { accepted: [], outside: [] };
     const { report, outDir } = await runSitesTest({
       sitesFile, resultsDir: path.join(tmp, 'results'), headless: true, screenshots: true, youtube: false, settleMs: 300, limit: 0, only: [],
       onContext: (ctx) => installFixtures(ctx, hits), log: () => {},
@@ -351,7 +382,26 @@ test('atrapy stron w Chromium (bez internetu): none vs ChromeBlock, consent, sta
     }
     assert.equal(st('cmp'), STATUS.PASS, dump('cmp'));
     assert.equal(st('cmpaccept'), STATUS.CONSENT_INCONCLUSIVE);
+    // A/B/C/D – ta sama sekwencja w obu konfiguracjach
+    for (const c of CONFIGS) {
+      const a = res('cmpcustom', c).consent;
+      assert.deepEqual([a.state, a.clicked], [CONSENT_STATES.REJECTED, ['Odrzucam i chcę dowiedzieć się więcej']], `A ${c}: ${JSON.stringify(a)}`);
+      const b = res('cmptwostep', c).consent;
+      assert.deepEqual([b.state, b.clicked], [CONSENT_STATES.REJECTED, ['Ustawienia zaawansowane', 'Odrzuć wszystko']], `B ${c}: ${JSON.stringify(b)}`);
+      const cc = res('cmpnoreject', c).consent;
+      assert.deepEqual([cc.state, cc.clicked], [CONSENT_STATES.UNRESOLVED, ['Ustawienia prywatności']], `C ${c}: ${JSON.stringify(cc)}`);
+      assert.equal(cc.reason, 'po otwarciu ustawień brak bezpiecznego odrzucenia');
+      assert.deepEqual(cc.diagnostics.visibleActions, ['Akceptuję']);
+      assert.deepEqual([cc.diagnostics.directReject, cc.diagnostics.settingsStep, cc.diagnostics.frame], [false, true, 'main']);
+      assert.deepEqual(cc.diagnostics.steps, [{ kind: 'settings', text: 'Ustawienia prywatności', frame: 'main' }]);
+      const d = res('cmpoutside', c).consent;
+      assert.deepEqual([d.state, d.clicked], [CONSENT_STATES.UNRESOLVED, []], `D ${c}: ${JSON.stringify(d)}`);
+      assert.match(d.reason, /tylko przycisk akceptacji/);
+      assert.deepEqual(d.diagnostics.visibleActions, ['Akceptuję'], 'przycisk poza CMP nie jest akcją CMP');
+    }
+    assert.deepEqual([st('cmpcustom'), st('cmptwostep'), st('cmpnoreject'), st('cmpoutside')], [STATUS.PASS, STATUS.PASS, STATUS.CONSENT_INCONCLUSIVE, STATUS.CONSENT_INCONCLUSIVE]);
     assert.deepEqual(hits.accepted, [], 'nigdy nie kliknięto akceptacji');
+    assert.deepEqual(hits.outside, [], 'przycisk ustawień poza CMP nie został kliknięty');
     // anti-adblock tylko z ChromeBlock
     assert.equal(st('anti'), STATUS.ANTI_ADBLOCK, dump('anti'));
     assert.equal(res('anti', 'none').antiAdblock, '');
