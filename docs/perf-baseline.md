@@ -7,6 +7,7 @@ npm run perf:baseline                       # pełny pomiar (~3 min): rozmiar + 
 npm run perf:baseline -- --size-only        # tylko rozmiar (deterministyczny, bez Chromium)
 npm run perf:baseline -- --runs 20          # liczba mierzonych powtórzeń (domyślnie 15, plus 1 rozgrzewka)
 npm run perf:baseline -- --write-baseline   # zapisuje perf/baseline.json (świadomie, do commita)
+npm run perf:baseline -- --modes all        # porównanie trybów Basic / Balanced / Strict (~25 min)
 ```
 
 Raport trafia do `perf/results/latest.txt` i `latest.json` (w `.gitignore`, nie commitujemy). Do repozytorium trafia tylko mały `perf/baseline.json` ze stabilnymi metrykami.
@@ -57,6 +58,14 @@ Twardych limitów czasu jeszcze nie ma; ustalimy je po kilku pomiarach. Determin
 - brak niechcianych plików w paczce (narzędzia, testy, raporty, ZIP-y, dokumentacja, `package.json`),
 - brak nagłego przyrostu paczki: maks. +10% i maks. +2 MB względem `perf/baseline.json`. Zamierzona zmiana (np. aktualizacja list) wymaga świadomej aktualizacji baseline (`--write-baseline`).
 
-## 6. Ocena każdej optymalizacji
+## 6. Porównanie trybów (`--modes`)
+
+Dla każdego trybu powstaje tymczasowa kopia paczki, w której zmieniona jest tylko flaga `enabledByDefault` w `data/lists.json` (tak wyglądałaby zmiana domyślnego trybu). Kod jest bez zmian. Na tej kopii wykonywany jest ten sam pomiar co baseline: świeża instalacja (profiler), fresh install → ready, wybudzenia SW. Dodatkowo mierzone jest przełączenie na tryb z popupu (`options:setProtectionMode`, zegar ścienny). Raport: `perf/results/modes-latest.txt` / `.json`. Porównuj tryby tylko w obrębie jednego przebiegu (ta sama maszyna).
+
+Przeładowanie rozszerzenia (`chrome.runtime.reload`) nie nadaje się do pomiaru: rozszerzenie z `--load-extension` po przeładowaniu znika.
+
+Skuteczność i breakage na prawdziwych stronach mierzy osobny tester lokalny (wymaga internetu): `docs/protection-modes-test.md`.
+
+## 7. Ocena każdej optymalizacji
 
 Bajty dodane/usunięte (rozmiar i ZIP) · internal startup (2A) · wybudzenie/runtime (2C, 4) · skuteczność blokowania · ryzyko breakage. Krótszy kod sam w sobie nie jest optymalizacją.

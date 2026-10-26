@@ -18,6 +18,8 @@
 //   --no-youtube      pomiń YouTube (SKIP)
 //   --no-consent      nie klikaj „Odrzuć wszystko” na ekranie zgody (wtedy YouTube → SKIP)
 //   --results <kat.>  katalog wyników (domyślnie tests/local/results)
+//   --modes           zamiast testu regresyjnego: porównanie trybów Basic / Balanced / Strict na ~50
+//                     prawdziwych stronach (tests/local/protection-modes-sites.mjs, raport w <results>/modes/)
 //
 // Kod wyjścia: 0 – PASS, 1 – FAIL, 2 – błąd uruchomienia testera, 3 – INCONCLUSIVE (są SKIP).
 // Działa też z rozpakowanej paczki download/ChromeBlock-dev.zip (folder tester/, bez Gita).
@@ -1154,6 +1156,11 @@ export function writeResults(result, dir = RESULTS_DIR) {
 }
 
 async function main() {
+  if (process.argv.includes('--modes')) {
+    const modes = await import('./protection-modes-sites.mjs');
+    process.exitCode = await modes.main(process.argv.slice(2));
+    return;
+  }
   const o = parseArgs(process.argv.slice(2));
   if (o.extensionDir && !fs.existsSync(path.join(o.extensionDir, 'manifest.json'))) {
     console.log(`Brak manifest.json w ${o.extensionDir}`);

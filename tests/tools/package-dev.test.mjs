@@ -87,9 +87,10 @@ test('package:dev: czysty dist/ChromeBlock tylko z plikami rozszerzenia + ZIP zg
     assert.equal(r.version, manifest.version_name);
 
     const zip = readZip(fs.readFileSync(path.join(outDir, ZIP_NAME)));
-    const extras = ['install-chromeblock.cmd', 'update-chromeblock.cmd', 'INSTALL.md', 'test-chromeblock.cmd'];
+    const extras = ['install-chromeblock.cmd', 'update-chromeblock.cmd', 'INSTALL.md', 'test-chromeblock.cmd', 'test-protection-modes.cmd'];
     const tester = ['tester/package.json', 'tester/tests/local/chromeblock-local-test.mjs', 'tester/tools/chromium-smoke.mjs',
-      'tester/tests/e2e/lib/classify.mjs', 'tester/tests/e2e/lib/youtube-page.mjs'];
+      'tester/tests/e2e/lib/classify.mjs', 'tester/tests/e2e/lib/youtube-page.mjs',
+      'tester/tests/local/protection-modes-sites.mjs', 'tester/tests/local/sites-protection-modes.json'];
     for (const n of [...extras, ...tester]) assert.ok(zip.has(n), n);
     for (const f of files) assert.ok(zip.get(`${PACKAGE_NAME}/${f}`).equals(fs.readFileSync(path.join(r.extDir, f))), f);
     assert.equal(zip.size, files.length + extras.length + tester.length, 'nic poza rozszerzeniem, skryptami .cmd, INSTALL.md i minimalnym testerem');
