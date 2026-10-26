@@ -9,8 +9,10 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const LISTS_DIR = path.join(ROOT, 'tools', 'lists');
 
 /**
- * Listy używane przez ChromeBlock. "trusted" = źródło uBlock filters (uAssets),
- * któremu wolno używać scriptletów zaufanych (trusted-*), tak jak w uBO.
+ * Listy używane przez ChromeBlock – stały zestaw (shared/core-lists.js: CORE_LISTS). Bez list
+ * cookies / annoyances (nie są częścią produktu 1.0 i nie trafiają do paczki).
+ * "trusted" = źródło uBlock filters (uAssets), któremu wolno używać scriptletów zaufanych
+ * (trusted-*), tak jak w uBO.
  */
 export const LISTS = [
   {
@@ -42,23 +44,6 @@ export const LISTS = [
     desc: 'uBlock filters – Badware risks (oszustwa, malware)',
     enabled: true,
     sources: [{ file: 'ubo/badware.txt', trusted: true }],
-  },
-  {
-    id: 'cookies',
-    name: 'Komunikaty o cookies',
-    desc: 'uBlock filters – Cookie Notices',
-    enabled: false,
-    sources: [{ file: 'ubo/annoyances-cookies.txt', trusted: true }],
-  },
-  {
-    id: 'annoyances',
-    name: 'Elementy irytujące',
-    desc: 'Fanboy Annoyances i uBlock filters – Annoyances (wyskakujące okna, newslettery, przyciski społecznościowe)',
-    enabled: false,
-    sources: [
-      { file: 'easylist/fanboy-annoyance.txt' },
-      { file: 'ubo/annoyances-others.txt', trusted: true },
-    ],
   },
 ];
 

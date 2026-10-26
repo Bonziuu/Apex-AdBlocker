@@ -19,17 +19,21 @@
 
     <p class="lead">ChromeBlock działa lokalnie w Twojej przeglądarce: blokuje reklamy, śledzenie i złośliwe strony na podstawie list filtrów zapisanych w rozszerzeniu. ChromeBlock nie wysyła Twoich danych ani telemetrii.</p>
 
-    <section aria-labelledby="modeTitle">
-      <h2 id="modeTitle">Wybierz tryb ochrony</h2>
-      <p class="muted">Kolejne tryby dodają więcej ingerencji w wygląd stron. Tryb możesz później zmienić w każdej chwili – w ustawieniach albo w okienku rozszerzenia.</p>
-      <div id="modes" class="modes" role="radiogroup" aria-labelledby="modeTitle"></div>
+    <section aria-labelledby="whatTitle">
+      <h2 id="whatTitle">Ochrona jest już włączona</h2>
+      <p class="muted">Nie musisz niczego wybierać ani konfigurować.</p>
+      <ul class="features">
+        <li><strong>Reklamy</strong> – w tym YouTube Protection</li>
+        <li><strong>Śledzenie</strong> – skrypty i piksele śledzące</li>
+        <li><strong>Złośliwe strony</strong> – znane oszustwa i malware</li>
+      </ul>
+      <p class="muted">Jeśli jakaś strona działa źle, wyłącz na niej ochronę przyciskiem w okienku rozszerzenia.</p>
     </section>
 
     <div class="actions">
       <button id="start" class="primary" type="button">Zacznij korzystać</button>
       <button id="openOptions" class="link" type="button">Otwórz ustawienia</button>
     </div>
-    <p id="status" class="status" role="status" aria-live="polite" hidden></p>
   </main>
   <script src="welcome.js" type="module"></script>
 </body>

@@ -14,7 +14,7 @@ import { PlayerReportStore } from './youtube/player-reports.js';
 import { buildDiagnosticsReport } from './background/diagnostics-report.js';
 import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js';
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
-import { PROTECTION_MODES, isPresetMode, listsForMode, modeForLists } from './shared/protection-modes.js';
+import { CORE_LISTS } from './shared/core-lists.js';
 import { buildBackup, backupFileName, parseBackup, summarizeSettings } from './shared/settings-backup.js';
 
 // Pomiar etapów startu (czas od uruchomienia service workera). Ostatni zakończony pomiar
@@ -54,7 +54,7 @@ function clearHostCaches() {
   gunhideCache = null;
   cacheGeneration++;
 }
-let state = null;               // { enabledLists, disabledSites, userFilters }
+let state = null;               // { enabledLists (zawsze CORE_LISTS), disabledSites, userFilters }
 let user = null;                // skompilowane własne filtry
 const playerReports = new PlayerReportStore(); // tabId → frameId → raport odtwarzacza (TTL 60 s)
 const perfReports = [];          // raporty wydajności (tylko gdy włączone w opcjach)
@@ -112,17 +112,14 @@ async function getListsMeta() {
 async function getState() {
   if (state) return state;
   const meta = await getListsMeta();
-  const stored = await startup.time('getState / storage', () => chrome.storage.local.get(['enabledLists', 'disabledSites', 'userFilters', 'protectionMode']));
+  const stored = await startup.time('getState / storage', () => chrome.storage.local.get(['disabledSites', 'userFilters']));
   state = {
-    enabledLists: Array.isArray(stored.enabledLists)
-      ? stored.enabledLists.filter((id) => meta.some((m) => m.id === id))
-      : meta.filter((m) => m.enabledByDefault).map((m) => m.id),
+    // stały zestaw list – zapisane w starszych wersjach enabledLists / protectionMode są ignorowane
+    // (i usuwane przy aktualizacji, LEGACY_STORAGE_KEYS)
+    enabledLists: CORE_LISTS.filter((id) => meta.some((m) => m.id === id)),
     disabledSites: Array.isArray(stored.disabledSites) ? stored.disabledSites : [],
     userFilters: typeof stored.userFilters === 'string' ? stored.userFilters : '',
   };
-  // Tryb ochrony zawsze odpowiada faktycznie włączonym listom (zapisany tryb niezgodny z listami,
-  // np. po ręcznej zmianie w starszej wersji, jest wyliczany od nowa).
-  state.protectionMode = modeForLists(state.enabledLists);
   user = compileUserFilters(state.userFilters);
   return state;
 }
@@ -191,9 +188,11 @@ export function isYouTubeHost(host) {
   return /(^|\.)(youtube\.com|youtube-nocookie\.com)$/.test(String(host || ''));
 }
 
-// Klucze storage po usuniętych funkcjach (Focus Mode, gałąź experiment/focus-mode) – usuwane przy
-// aktualizacji, żeby po starszej wersji nie zostawały martwe dane.
-export const LEGACY_STORAGE_KEYS = Object.freeze(['youtubeFocus']);
+// Klucze storage po usuniętych funkcjach – usuwane przy aktualizacji, żeby po starszej wersji nie
+// zostawały martwe dane: Focus Mode (gałąź experiment/focus-mode) oraz tryby ochrony i wybór list
+// (ChromeBlock 1.0 ma stały zestaw CORE_LISTS). Usunięcie jest idempotentne; nawet gdy się nie
+// powiedzie, getState() i tak ignoruje te klucze.
+export const LEGACY_STORAGE_KEYS = Object.freeze(['youtubeFocus', 'enabledLists', 'protectionMode']);
 
 function isSiteDisabled(host, s) {
   if (!host) return false;
@@ -585,29 +584,6 @@ async function checkCosmeticData() {
 }
 
 /**
- * Zmienia włączone listy (ręcznie albo przez tryb ochrony) i synchronizuje je z Chrome.
- * Tryb ochrony jest wyliczany z list: preset albo 'custom'. Gdy Chrome odrzuci zmianę
- * zestawów reguł, przywracane są poprzednie listy i tryb.
- */
-async function applyEnabledLists(enabledLists) {
-  const prev = await getState();
-  const previous = prev.enabledLists.slice();
-  await saveState({ enabledLists, protectionMode: modeForLists(enabledLists) });
-  const r = await runStep('rulesets', syncRulesets);
-  if (!r.ok) {
-    await saveState({ enabledLists: previous, protectionMode: modeForLists(previous) });
-    await runStep('rulesets', syncRulesets);
-    return { ok: false, error: 'Chrome nie pozwolił zmienić list: ' + r.message, protectionMode: state.protectionMode };
-  }
-  const sl = await runStep('scriptlets', syncScriptlets);
-  await checkCosmeticData();
-  await refreshYouTubeStatus();
-  return sl.ok
-    ? { ok: true, protectionMode: state.protectionMode, enabledLists: state.enabledLists.slice() }
-    : { ok: false, error: 'Listy zmienione, ale scriptlety nie zarejestrowały się: ' + sl.message, protectionMode: state.protectionMode };
-}
-
-/**
  * Rollback importu ustawień: przywraca poprzednie ustawienia, SPRAWDZA zapis w storage i wynik
  * każdego kroku synchronizacji poprzedniego stanu.
  * @returns {Promise<string[]>} błędy przywracania (pusta lista = rollback kompletny)
@@ -621,8 +597,7 @@ async function rollbackImport(previous, syncAllSteps) {
   }
   // weryfikacja zapisu
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-  const now = await chrome.storage.local.get(['enabledLists', 'disabledSites', 'userFilters']).catch(() => ({}));
-  if (!same(now.enabledLists, previous.enabledLists)) errors.push('storage: listy filtrów nie zostały przywrócone');
+  const now = await chrome.storage.local.get(['disabledSites', 'userFilters']).catch(() => ({}));
   if (!same(now.disabledSites, previous.disabledSites)) errors.push('storage: wyłączone strony nie zostały przywrócone');
   if (now.userFilters !== previous.userFilters) errors.push('storage: Moje filtry nie zostały przywrócone');
   // synchronizacja poprzedniego stanu – każdy krok osobno
@@ -1028,7 +1003,6 @@ const handlers = {
       canRun: !!host,
       problems,
       youtube: yt,
-      protectionMode: s.protectionMode,
     };
   },
 
@@ -1064,8 +1038,6 @@ const handlers = {
     return {
       lists: meta.map((m) => ({ ...m, enabled: s.enabledLists.includes(m.id) })),
       disabledSites: s.disabledSites,
-      protectionMode: s.protectionMode,
-      protectionModes: Object.fromEntries(Object.entries(PROTECTION_MODES).map(([k, v]) => [k, [...v]])),
       userFilters: s.userFilters,
       userErrors: user.errors,
       userCount: user.count,
@@ -1079,10 +1051,8 @@ const handlers = {
   async 'settings:export'() {
     const s = await getState();
     const backup = buildBackup({
-      enabledLists: s.enabledLists,
       disabledSites: s.disabledSites,
       userFilters: s.userFilters,
-      protectionMode: modeForLists(s.enabledLists),
     }, { extensionVersion: chrome.runtime.getManifest().version_name || chrome.runtime.getManifest().version });
     return { ok: true, backup, fileName: backupFileName() };
   },
@@ -1092,16 +1062,13 @@ const handlers = {
    * Błąd walidacji: nic nie jest zapisywane. Błąd synchronizacji: przywrócenie poprzednich ustawień.
    */
   async 'settings:import'(msg) {
-    const meta = await getListsMeta();
-    const parsed = parseBackup(msg && msg.text, { knownLists: meta.map((m) => m.id) });
+    const parsed = parseBackup(msg && msg.text);
     if (!parsed.ok) return { ok: false, errors: parsed.errors };
     const next = parsed.settings;
     const prevState = await getState();
     const previous = {
-      enabledLists: prevState.enabledLists.slice(),
       disabledSites: prevState.disabledSites.slice(),
       userFilters: prevState.userFilters,
-      protectionMode: modeForLists(prevState.enabledLists),
     };
     // wynik KAŻDEGO kroku synchronizacji: [nazwa, {ok, message}]
     const syncAllSteps = async () => {
@@ -1114,7 +1081,7 @@ const handlers = {
         await step('scriptlety', 'scriptlets', syncScriptlets),
       ];
     };
-    await saveState({ enabledLists: next.enabledLists, disabledSites: next.disabledSites, userFilters: next.userFilters, protectionMode: next.protectionMode });
+    await saveState({ disabledSites: next.disabledSites, userFilters: next.userFilters });
     const failed = (await syncAllSteps()).filter(([, r]) => !r.ok);
     if (failed.length) {
       const errors = failed.map(([name, r]) => `${name}: ${r.message}`);
@@ -1127,22 +1094,7 @@ const handlers = {
     }
     await checkCosmeticData();
     await refreshYouTubeStatus();
-    const names = Object.fromEntries(meta.map((m) => [m.id, m.name]));
-    return { ok: true, summary: summarizeSettings(next, { listNames: names }), ignored: parsed.ignored, userErrors: user.errors.length };
-  },
-
-  async 'options:setLists'(msg) {
-    const meta = await getListsMeta();
-    const enabledLists = msg.enabledLists.filter((id) => meta.some((m) => m.id === id));
-    return applyEnabledLists(enabledLists);
-  },
-
-  // Tryb ochrony: nazwany zestaw list, stosowany tą samą drogą co ręczna zmiana list.
-  async 'options:setProtectionMode'(msg) {
-    if (!isPresetMode(msg.mode)) return { ok: false, error: `nieznany tryb ochrony: ${String(msg.mode)}` };
-    const meta = await getListsMeta();
-    const enabledLists = listsForMode(msg.mode).filter((id) => meta.some((m) => m.id === id));
-    return applyEnabledLists(enabledLists);
+    return { ok: true, summary: summarizeSettings(next), ignored: parsed.ignored, userErrors: user.errors.length };
   },
 
   async 'options:setUserFilters'(msg) {
@@ -1189,7 +1141,7 @@ const handlers = {
 // Wiadomości zmieniające ustawienia wykonujemy jedna po drugiej. Każda czyta stan, modyfikuje go
 // i synchronizuje z Chrome; równoległe wykonanie gubiło zmiany (np. dwa szybkie przełączenia
 // stron albo dwa „Ukryj element” – druga zapisywała stan bez pierwszej).
-const MUTATING = new Set(['site:toggle', 'options:setLists', 'options:setProtectionMode', 'settings:import', 'options:setUserFilters', 'options:setDisabledSites',
+const MUTATING = new Set(['site:toggle', 'settings:import', 'options:setUserFilters', 'options:setDisabledSites',
   'options:setDevPerf', 'picker:add', 'health:resync']);
 let settingsQueue = Promise.resolve();
 function runHandler(h, msg, sender) {

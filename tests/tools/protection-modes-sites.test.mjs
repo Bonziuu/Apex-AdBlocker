@@ -1,17 +1,14 @@
-// Tester trybów ochrony na stronach (tests/local/protection-modes-sites.mjs): logika, lista stron,
-// raporty, wrappery .cmd oraz pełny przebieg w Chromium na lokalnych stronach-atrapach (bez internetu).
+// HISTORYCZNY tester trybów ochrony (tests/local/protection-modes-sites.mjs): produkt nie ma już trybów.
+// Zostają testy czystej logiki; przebieg w Chromium i wrappery usunięte (narzędzie działało do 0e3fe92,
+// gałąź legacy/protection-modes-tester).
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
-import http from 'node:http';
 import {
   ROOT, CONFIGS, AUTO, MANUAL_VERDICTS, parseModesArgs, loadSites, classifySite, summarizeConfig, adScore, siteOf,
-  formatTxt, formatHtml, runModesSites,
 } from '../../tests/local/protection-modes-sites.mjs';
-import { loadPlaywright } from '../../tools/chromium-smoke.mjs';
 
 const base = (o = {}) => ({
   textLength: 5000, mainContent: true, overflowX: false, scrollLocked: false, pageErrors: 0, menuLinks: 10,
@@ -96,94 +93,18 @@ test('podsumowanie trybu: zablokowane żądania, sygnały reklam i redukcja wzgl
   assert.equal(adScore({ error: 'x' }), 0);
 });
 
-test('wrappery: test-chromeblock.cmd --modes (osobne ścieżki raportu), test-protection-modes.cmd, wyniki poza repo', () => {
-  const cmd = fs.readFileSync(path.join(ROOT, 'test-chromeblock.cmd'), 'utf8');
-  assert.equal(cmd.split('\n').length - 1, (cmd.match(/\r\n/g) || []).length, 'CRLF');
-  assert.match(cmd, /for %%a in \(%\*\) do if \/i "%%~a"=="--modes" set "MODES=1"/);
-  assert.match(cmd, /if "%MODES%"=="1" goto :modesdone/);
-  assert.match(cmd, /%RES%\\modes\\latest\.html/);
-  assert.match(cmd, /\r\n:end\r\necho\.\r\npause\r\nexit \/b %RC%/);
-  const w = fs.readFileSync(path.join(ROOT, 'test-protection-modes.cmd'), 'utf8');
-  assert.equal(w.split('\n').length - 1, (w.match(/\r\n/g) || []).length, 'CRLF');
-  assert.match(w, /^call "%~dp0test-chromeblock\.cmd" --modes %\*\r$/m);
-  assert.doesNotMatch(w, /pause/i, 'jedno pause – w test-chromeblock.cmd');
-  const local = fs.readFileSync(path.join(ROOT, 'tests/local/chromeblock-local-test.mjs'), 'utf8');
-  assert.match(local, /if \(process\.argv\.includes\('--modes'\)\) \{\n\s+const modes = await import\('\.\/protection-modes-sites\.mjs'\);/);
-  assert.match(fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8'), /^tests\/local\/results\/$/m, 'raporty i zrzuty nie są commitowane');
-});
-
-// --- pełny przebieg w Chromium na stronach-atrapach -----------------------------------------------
-
-let chromium = null;
-try { chromium = await loadPlaywright(); } catch { chromium = null; }
-let exe = '';
-try { exe = chromium ? chromium.executablePath() : ''; } catch { /* */ }
-const skip = !chromium || !exe || !fs.existsSync(exe) ? 'Playwright/Chromium niedostępne' : false;
-
-const PAGES = {
-  '/news': `<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Portal testowy</title></head><body>
-    <header><nav><a href="/news/kraj">Kraj</a> <a href="/news/swiat">Świat</a> <a href="/news/sport">Sport</a> <a href="/login">Zaloguj</a></nav>
-      <form role="search"><input type="search" name="q" placeholder="Szukaj"></form></header>
-    <main><article><h1>Artykuł</h1><p>${'Treść artykułu testowego. '.repeat(80)}</p></article>
-      <div id="div-gpt-ad-1" style="width:300px;height:250px">slot reklamowy</div>
-      <ins class="adsbygoogle" style="display:block;width:300px;height:250px">reklama google</ins>
-      <div style="width:300px;height:250px"><span>REKLAMA</span></div></main>
-    <footer><a href="/reklama">Reklama</a></footer></body></html>`,
-  '/news/kraj': `<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Kraj</title></head><body><main><p>${'Wiadomości z kraju. '.repeat(40)}</p></main></body></html>`,
-  '/cookies': `<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Sklep</title></head><body><main><p>${'Oferta sklepu. '.repeat(80)}</p></main>
-    <div id="cmp" style="position:fixed;left:0;right:0;bottom:0;height:45vh;background:#eee;z-index:9">Używamy plików cookie. Wyrażasz zgodę na przetwarzanie danych? <button>Akceptuję</button></div></body></html>`,
-  '/antiab': `<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Blog</title></head><body><main><p>${'Wpis na blogu. '.repeat(80)}</p></main>
-    <div style="position:fixed;inset:0;background:rgba(0,0,0,.8);color:#fff;z-index:99">Wykryliśmy AdBlock. Wyłącz bloker reklam, aby czytać dalej.</div></body></html>`,
-};
-
-test('Chromium: kontrola + Basic na stronach-atrapach → raport JSON/TXT/HTML, sygnały reklam, cookies, anti-adblock, menu, wyszukiwarka', { skip, timeout: 300_000 }, async () => {
-  const server = http.createServer((req, res) => {
-    const body = PAGES[req.url.split('?')[0]];
-    res.writeHead(body ? 200 : 404, { 'content-type': 'text/html; charset=utf-8' });
-    res.end(body || 'brak');
-  });
-  await new Promise((r) => server.listen(0, '127.0.0.1', r));
-  const origin = `http://127.0.0.1:${server.address().port}`;
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-modes-sites-'));
-  const sitesFile = path.join(tmp, 'sites.json');
-  fs.writeFileSync(sitesFile, JSON.stringify({ categories: { atrapy: [`${origin}/news`, `${origin}/cookies`, `${origin}/antiab`] } }));
-  try {
-    const logs = [];
-    const { report, outDir } = await runModesSites({ ...parseModesArgs(['--configs', 'none,basic', '--headless', '--no-youtube']), sitesFile, resultsDir: tmp, log: (l) => logs.push(l) });
-    assert.equal(report.configs.basic.mode, 'basic', 'tryb ustawiony i potwierdzony');
-    assert.ok(report.configs.basic.startupMs > 0);
-    const [news, cookies, antiab] = report.sites;
-    const n0 = news.results.none;
-    assert.ok(n0.textLength > 1000 && n0.mainContent);
-    assert.ok(n0.ads.elements >= 2, 'slot GPT i ins.adsbygoogle widoczne bez rozszerzenia');
-    assert.ok(n0.ads.labels >= 1 && n0.ads.emptySlots >= 1, 'pusta etykieta REKLAMA (stopka pominięta)');
-    assert.ok(n0.menuLinks >= 3);
-    assert.equal(n0.nav.ok, true, 'link z menu działa');
-    assert.match(n0.nav.href, /\/news\/kraj$/, 'link logowania pominięty');
-    assert.equal(n0.search.ok, true, 'wyszukiwarka przyjmuje tekst');
-    assert.equal(n0.hasLogin, true);
-    assert.ok(news.results.basic.ads.elements < n0.ads.elements, 'ChromeBlock ukrywa slot reklamowy');
-    assert.equal(news.verdicts.basic.auto, AUTO.AD, 'pozostała widoczna reklama → „reklama?” (do ręcznej oceny)');
-    assert.equal(cookies.results.none.overlays.cmp, true, 'nakładka cookies rozpoznana');
-    assert.equal(antiab.results.none.overlays.antiAdblock, true, 'nakładka anti-adblock rozpoznana');
-    assert.match(antiab.results.none.antiAdblockText, /AdBlock/i);
-    assert.ok(news.verdicts.basic && !('none' in news.verdicts), 'ocena tylko dla trybów');
-    assert.ok(Object.values(AUTO).includes(news.verdicts.basic.auto));
-    assert.ok(report.summary.basic.adSignalsReductionPct > 0);
-    for (const f of ['latest.json', 'latest.txt', 'latest.html']) assert.ok(fs.existsSync(path.join(outDir, f)), f);
-    assert.ok(fs.readdirSync(path.join(outDir, 'shots')).some((f) => /-basic\.jpg$/.test(f)), 'zrzuty lokalnie');
-    const html = fs.readFileSync(path.join(outDir, 'latest.html'), 'utf8');
-    assert.equal((html.match(/<select data-key=/g) || []).length, 3, 'ręczna ocena dla każdej strony w trybie (bez kontroli)');
-    for (const v of MANUAL_VERDICTS) assert.ok(html.includes(`<option>${v}</option>`), v);
-    assert.match(html, /Eksportuj oceny/);
-    assert.doesNotMatch(html, /<script src=|<link [^>]*href="http/, 'raport bez zewnętrznych zasobów');
-    const txt = fs.readFileSync(path.join(outDir, 'latest.txt'), 'utf8');
-    assert.match(txt, /Wyniki automatyczne to podejrzenia, nie werdykt/);
-    assert.doesNotMatch(txt, /\bPASS\b/, 'automat nie ogłasza PASS');
-    assert.equal(formatTxt(report), txt);
-    assert.equal(formatHtml(report, outDir), html);
-  } finally {
-    server.close();
-    fs.rmSync(tmp, { recursive: true, force: true });
-  }
+test('narzędzie oznaczone jako historyczne: bez uruchomienia, bez wrappera i poza paczką testera', async () => {
+  const src = fs.readFileSync(path.join(ROOT, 'tests/local/protection-modes-sites.mjs'), 'utf8');
+  assert.match(src.split('\n').slice(0, 5).join('\n'), /HISTORYCZNE NARZĘDZIE/);
+  const { main, LEGACY_NOTICE } = await import('../../tests/local/protection-modes-sites.mjs');
+  const logs = [];
+  const orig = console.log;
+  console.log = (m) => logs.push(m);
+  try { assert.equal(await main(['--modes']), 2); } finally { console.log = orig; }
+  assert.deepEqual(logs, [LEGACY_NOTICE]);
+  assert.match(LEGACY_NOTICE, /legacy\/protection-modes-tester/);
+  assert.ok(!fs.existsSync(path.join(ROOT, 'test-protection-modes.cmd')));
+  assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'test-chromeblock.cmd'), 'utf8'), /--modes|MODES/);
+  assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'tests/local/chromeblock-local-test.mjs'), 'utf8'), /protection-modes-sites/);
+  assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'tools/package-dev.mjs'), 'utf8'), /protection-modes/);
 });
