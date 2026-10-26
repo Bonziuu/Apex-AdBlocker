@@ -112,9 +112,52 @@ test('ocena strony: priorytety, challenge vs kontrola, consent, błędy JS nie s
   const ci = classifySite(m({ consent: unresolved }), m({ ads: ads({ REAL_AD: 5 }) }));
   assert.equal(ci.status, STATUS.CONSENT_INCONCLUSIVE);
   assert.match(ci.reasons.join(), /reklamy nie są porównywane/);
-  assert.equal(consentComparable(m({ consent: { state: 'rejected', clicked: ['Odrzuć'] } }), m()), true, 'brak banera i odrzucony są równoważne');
   assert.equal(classifySite(m(), m({ consent: unresolved, scrollLocked: true })).status, STATUS.CONSENT_INCONCLUSIVE, 'blokada przewijania przez baner zgody ≠ breakage');
   assert.equal(diffOf(m({ consent: unresolved }), m()).comparable, false);
+});
+
+test('consent: do porównania reklam tylko ten sam stan (none+none, rejected+rejected)', () => {
+  const c = (state) => m({ consent: { state, clicked: state === 'rejected' ? ['Odrzuć wszystko'] : [], reason: state === 'unresolved' ? 'brak przycisku odrzucenia' : '' } });
+  const matrix = [
+    ['none', 'none', true], ['rejected', 'rejected', true],
+    ['none', 'rejected', false], ['rejected', 'none', false],
+    ['unresolved', 'none', false], ['none', 'unresolved', false], ['unresolved', 'rejected', false], ['rejected', 'unresolved', false], ['unresolved', 'unresolved', false],
+  ];
+  for (const [a, b, ok] of matrix) {
+    assert.equal(consentComparable(c(a), c(b)), ok, `${a} + ${b}`);
+    assert.equal(diffOf(c(a), c(b)).comparable, ok, `diff ${a} + ${b}`);
+    const v = classifySite(c(a), { ...c(b), ads: ads({ REAL_AD: 2 }) });
+    assert.equal(v.status, ok ? STATUS.REAL_AD : STATUS.CONSENT_INCONCLUSIVE, `${a} + ${b}`);
+    assert.notEqual(v.status, STATUS.BREAKAGE);
+  }
+  assert.match(classifySite(c('none'), c('rejected')).reasons[0], /^różny stan zgody: none vs rejected \(bez → z\) – reklamy nie są porównywane$/);
+  assert.match(classifySite(c('rejected'), c('none')).reasons[0], /różny stan zgody: rejected vs none/);
+  assert.match(classifySite(c('unresolved'), c('none')).reasons[0], /zgoda bez: unresolved – brak przycisku odrzucenia; z: none – reklamy nie są porównywane/);
+  assert.equal(consentComparable({ error: 'x' }, m()), false);
+  // strona z różnym stanem zgody nie wchodzi do zbiorczych metryk reklam
+  const rows = [[c('none'), m({ ads: ads({ REAL_AD: 2 }) }), m({ ads: ads({ REAL_AD: 1 }) })], [null, { ...c('none'), ads: ads({ REAL_AD: 5 }) }, { ...c('rejected'), ads: ads() }]]
+    .map(([, a, b]) => ({ results: { none: a, chromeblock: b }, verdict: classifySite(a, b), diff: diffOf(a, b) }));
+  const s = summarize(rows);
+  assert.deepEqual([s.comparableSites, s.ads.REAL_AD.none, s.ads.REAL_AD.chromeblock, s.realAdReductionPct], [1, 2, 1, 50]);
+});
+
+test('domena rejestrowalna: obca domena z tym samym sufiksem publicznym nie jest „własna”', () => {
+  assert.equal(siteOf('businessinsider.com.pl'), 'businessinsider.com.pl');
+  assert.equal(siteOf('www.businessinsider.com.pl'), 'businessinsider.com.pl');
+  assert.equal(siteOf('partner.com.pl'), 'partner.com.pl');
+  assert.notEqual(siteOf('www.businessinsider.com.pl'), siteOf('partner.com.pl'));
+  assert.equal(siteOf('www.dailymail.co.uk'), 'dailymail.co.uk');
+  assert.equal(siteOf('example.co.uk'), 'example.co.uk');
+  assert.notEqual(siteOf('www.dailymail.co.uk'), siteOf('example.co.uk'));
+  assert.equal(siteOf('news.dailymail.co.uk'), siteOf('www.dailymail.co.uk'), 'subdomena tej samej strony');
+  assert.equal(siteOf('www.onet.pl'), 'onet.pl');
+  // jedna logika: funkcja w stronie nie ma własnej wersji „2 ostatnie etykiety”
+  const src = fs.readFileSync(path.join(ROOT, 'tests/local/single-blocker-sites.mjs'), 'utf8');
+  assert.doesNotMatch(src, /ownSite|slice\(-2\)\.join\('\.'\)\s*;?\s*\}?\s*;\s*\n\s*const site/);
+  const collect = src.slice(src.indexOf('export function collectInPage'), src.indexOf('const scrollFn'));
+  assert.match(collect, /const site = siteOf\(location\.hostname\)/);
+  assert.equal((collect.match(/split\('\.'\)/g) || []).length, 0, 'brak drugiej logiki domeny w stronie');
+  assert.match(src, /const expression = `\(\(\) => \{ const siteOf = \$\{siteOf\};/);
 });
 
 test('YouTube: brak okazji reklamowej = INCONCLUSIVE; seek A/B z kontrolą; Protection i bramka 30/30', () => {
@@ -201,6 +244,12 @@ const CMP = (buttons) => `<div id="cookie-consent" style="position:fixed;inset:a
 <script>window.__accept = () => { fetch('/__accepted'); document.getElementById('cookie-consent').remove(); };
 window.__reject = () => document.getElementById('cookie-consent').remove();</script>`;
 
+// 2 linki menu do własnej strony + 3 do obcej domeny; kafelek promo do własnej subdomeny i do obcej domeny (krótki tekst → klasa zależy tylko od „tej samej strony”)
+const tile = (href) => `<div class="tile-k" style="width:320px;margin:10px"><span>Materiał partnera</span><a href="${href}"><img src="/img/promo.png" width="300" height="160" alt=""></a></div>`;
+const multiSuffix = (foreign, own) => `<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Atrapa</title></head><body style="margin:0;font:16px sans-serif">
+<header><nav><a href="/kraj">Kraj</a> <a href="/swiat">Świat</a> <a href="${foreign}/a">Partner A</a> <a href="${foreign}/b">Partner B</a> <a href="${foreign}/c">Partner C</a></nav></header>
+<main>${ARTICLE}${tile(`${own}/promocja`)}${tile(`${foreign}/oferta`)}</main></body></html>`;
+
 const FIXTURES = {
   // reklama: obrazek z hosta reklamowego w kontenerze z etykietą, w żadnym znanym selektorze kosmetycznym
   'ad.cb-fixture.pl': page(`${ARTICLE}<div class="box-x7" style="width:300px;margin:20px"><span>Reklama</span><a href="https://advertiser.example/"><img src="${AD_IMG}" width="300" height="250" alt=""></a></div>`),
@@ -222,6 +271,9 @@ document.head.appendChild(s);</script>`),
   'blank.cb-fixture.pl': `<!doctype html><html><head><meta charset="utf-8"><title>App</title></head><body><div id="app"></div><script>const s = document.createElement('script'); s.src = '${AD_JS}';
 s.onload = () => { document.getElementById('app').innerHTML = ${JSON.stringify(NAV + '<main>' + ARTICLE + '</main>')}; };
 document.head.appendChild(s);</script></body></html>`,
+  // sufiks com.pl / co.uk: menu i kafelki „Materiał partnera” do tej samej i do OBCEJ domeny z tym samym sufiksem
+  'www.businessinsider.com.pl': multiSuffix('https://partner.com.pl', 'https://www.businessinsider.com.pl'),
+  'www.dailymail.co.uk': multiSuffix('https://example.co.uk', 'https://news.dailymail.co.uk'),
   // challenge w obu konfiguracjach (jak Allegro)
   'challenge.cb-fixture.pl': '<!doctype html><html><head><meta charset="utf-8"><title>Just a moment...</title></head><body><h1>Verify you are human</h1><p>Potwierdź, że nie jesteś robotem.</p></body></html>',
   // challenge tylko z ChromeBlock (jak Forbes): pojawia się, gdy skrypt z hosta reklamowego się nie wczyta
@@ -259,6 +311,7 @@ test('atrapy stron w Chromium (bez internetu): none vs ChromeBlock, consent, sta
       onContext: (ctx) => installFixtures(ctx, hits), log: () => {},
     });
     const by = Object.fromEntries(report.sites.map((r) => [r.host.split('.')[0], r]));
+    const byHost = Object.fromEntries(report.sites.map((r) => [r.host, r]));
     const st = (k) => by[k].verdict.status;
     const res = (k, c) => by[k].results[c];
     const dump = (k) => JSON.stringify({ verdict: by[k].verdict, none: res(k, 'none').ads?.counts, cb: res(k, 'chromeblock').ads?.counts, consent: [res(k, 'none').consent, res(k, 'chromeblock').consent] });
@@ -276,6 +329,16 @@ test('atrapy stron w Chromium (bez internetu): none vs ChromeBlock, consent, sta
     assert.equal(res('empty', 'none').ads.counts.EMPTY_AD_SLOT, 1);
     assert.equal(res('promo', 'chromeblock').ads.counts.SITE_PROMO, 1, dump('promo'));
     assert.equal(st('promo'), STATUS.PASS, dump('promo'));
+    // com.pl / co.uk: obca domena z tym samym sufiksem nie jest własna (menu i SITE_PROMO)
+    for (const [host, own] of [['www.businessinsider.com.pl', 'businessinsider.com.pl'], ['www.dailymail.co.uk', 'dailymail.co.uk']]) {
+      for (const c of CONFIGS) {
+        const r = byHost[host].results[c];
+        assert.equal(r.menuLinks, 2, `${host} ${c}: tylko 2 linki menu do własnej strony`);
+        assert.equal(siteOf(new URL(r.navHref).hostname), own, `${host} ${c}: link nawigacji z własnej strony`);
+        assert.equal(r.ads.counts.SITE_PROMO, 1, `${host} ${c}: ${JSON.stringify(r.ads)}`);
+        assert.equal(r.ads.counts.UNKNOWN, 1, `${host} ${c}: kafelek do obcej domeny nie jest promocją strony`);
+      }
+    }
     // link „Reklama” w stopce nie jest reklamą ani etykietą
     assert.equal(res('clean', 'none').ads.counts.LABEL_ONLY, 0, dump('clean'));
     // CMP: ta sama procedura w obu, kliknięte tylko odrzucenie, baner nie jest reklamą

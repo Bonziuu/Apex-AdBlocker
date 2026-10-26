@@ -86,7 +86,11 @@ export function loadSites(file = SITES_FILE, { only = [], limit = 0 } = {}) {
   return { sites, youtube: data.youtube || null };
 }
 
-/** Domena „rejestrowalna” (przybliżenie) – do rozróżnienia żądań 3rd-party i linków tej samej strony. */
+/**
+ * Domena „rejestrowalna” (przybliżenie bez PSL) – do rozróżnienia linków tej samej strony i obcych.
+ * JEDYNA logika domeny w testerze: ta sama funkcja jest wstrzykiwana do stron przez evalIsolated
+ * (musi być samowystarczalna – bez odwołań do zmiennych modułu).
+ */
 export function siteOf(host) {
   const parts = String(host).split('.');
   const two = ['com.pl', 'net.pl', 'org.pl', 'co.uk', 'com.au', 'co.jp'];
@@ -110,11 +114,16 @@ const re = (k) => new RegExp(PATTERNS[k], 'i');
 // Ocena strony (czysta logika; testy: tests/tools/single-blocker-sites.test.mjs)
 
 const adCount = (m, cls) => (m && !m.error && m.ads && m.ads.counts ? m.ads.counts[cls] || 0 : 0);
-const consentOk = (m) => !!m && !m.error && [CONSENT_STATES.NONE, CONSENT_STATES.REJECTED].includes(m.consent && m.consent.state);
+const consentState = (m) => (!!m && !m.error && m.consent ? m.consent.state : null);
 
-/** Czy obie konfiguracje są w porównywalnym stanie zgody (brak banera albo odrzucony). */
+/**
+ * Czy reklamy można porównać automatycznie: ten sam stan zgody w obu konfiguracjach –
+ * none + none albo rejected + rejected. none + rejected (w dowolnej kolejności) i unresolved → nie.
+ */
 export function consentComparable(none, cb) {
-  return consentOk(none) && consentOk(cb);
+  const a = consentState(none);
+  const b = consentState(cb);
+  return a === b && (a === CONSENT_STATES.NONE || a === CONSENT_STATES.REJECTED);
 }
 
 /** Różnice none → ChromeBlock (do raportu). */
@@ -168,7 +177,12 @@ export function classifySite(none, cb) {
   if (cb.pageErrors > none.pageErrors + 5) info.push(`więcej błędów JS z ChromeBlock (${cb.pageErrors} vs ${none.pageErrors}) – tylko informacja, nie breakage`);
   if (!consentComparable(none, cb)) {
     const st = (m) => (m.consent ? `${m.consent.state}${m.consent.reason ? ` – ${m.consent.reason}` : ''}` : '?');
-    return r(STATUS.CONSENT_INCONCLUSIVE, [`zgoda bez: ${st(none)}; z: ${st(cb)} – reklamy nie są porównywane`, ...info]);
+    const a = consentState(none);
+    const b = consentState(cb);
+    const why = a !== CONSENT_STATES.UNRESOLVED && b !== CONSENT_STATES.UNRESOLVED && a !== b
+      ? `różny stan zgody: ${a} vs ${b} (bez → z) – reklamy nie są porównywane`
+      : `zgoda bez: ${st(none)}; z: ${st(cb)} – reklamy nie są porównywane`;
+    return r(STATUS.CONSENT_INCONCLUSIVE, [why, ...info]);
   }
   const ads = (c) => adCount(cb, c);
   const delta = (c) => `${adCount(none, c)} → ${ads(c)}`;
@@ -282,8 +296,8 @@ export function collectInPage(arg) {
   const adLabelRe = new RegExp(P.adLabel, 'i');
   const promoRe = new RegExp(P.promoLabel, 'i');
   const inCmp = (el) => !!el.closest('[data-cb-cmp]');
-  const ownSite = (h) => { const p = String(h).split('.'); return p.slice(-2).join('.'); };
-  const site = ownSite(location.hostname);
+  // siteOf – wstrzyknięta przez evalIsolated (ta sama funkcja co w Node)
+  const site = siteOf(location.hostname);
   const hasMedia = (el) => (el.tagName === 'IFRAME' || el.tagName === 'IMG' || el.tagName === 'VIDEO')
     || [...el.querySelectorAll('img, iframe, video, canvas, picture, svg, object, embed')].some((m) => { const s = size(m); return vis(m) && s.w >= 30 && s.h >= 30; });
   const adFrame = (el) => [el, ...el.querySelectorAll('iframe')].some((f) => f.tagName === 'IFRAME' && adHostRe.test(f.src || ''));
@@ -337,7 +351,7 @@ export function collectInPage(arg) {
     const media = hasMedia(el);
     const text = Math.max(0, norm(el.innerText).length - label.length);
     const hosts = links(el);
-    const sameSite = hosts.length > 0 && hosts.every((h) => ownSite(h) === site);
+    const sameSite = hosts.length > 0 && hosts.every((h) => siteOf(h) === site);
     const promo = promoRe.test(label);
     const info = `${desc(el)} ${s.w}x${s.h}${label ? ` „${label}”` : ''}${el.tagName === 'IFRAME' ? ` ${(() => { try { return new URL(el.src).hostname; } catch { return ''; } })()}` : ''}`;
     let cls;
@@ -360,7 +374,7 @@ export function collectInPage(arg) {
   const abRe = new RegExp(P.antiAdblock, 'i');
   const ab = abRe.exec(textNoCmp);
   // menu, link do sprawdzenia nawigacji, wyszukiwarka, logowanie
-  const sameHost = (href) => { try { const u = new URL(href, location.href); return /^https?:$/.test(u.protocol) && ownSite(u.hostname) === site && u.pathname.length > 1 && u.href.split('#')[0] !== location.href.split('#')[0]; } catch { return false; } };
+  const sameHost = (href) => { try { const u = new URL(href, location.href); return /^https?:$/.test(u.protocol) && siteOf(u.hostname) === site && u.pathname.length > 1 && u.href.split('#')[0] !== location.href.split('#')[0]; } catch { return false; } };
   const navAnchors = [...document.querySelectorAll('nav a[href], header a[href], [role="navigation"] a[href]')].filter((a) => vis(a) && !inCmp(a) && sameHost(a.href));
   const forbidden = new RegExp(P.forbidden, 'i');
   const pick = navAnchors.find((a) => !forbidden.test(norm(a.innerText) + ' ' + a.href) && !/koszyk|cart|konto|account/i.test(a.href));
@@ -397,7 +411,9 @@ export async function evalIsolated(page, fn, arg) {
   try {
     const { frameTree } = await cdp.send('Page.getFrameTree');
     const { executionContextId } = await cdp.send('Page.createIsolatedWorld', { frameId: frameTree.frame.id, worldName: 'chromeblock-sites' });
-    const r = await cdp.send('Runtime.evaluate', { expression: `(${fn})(${arg === undefined ? '' : JSON.stringify(arg)})`, contextId: executionContextId, returnByValue: true, awaitPromise: true });
+    // pomocnicza siteOf jest wstrzykiwana do zakresu funkcji – jedna logika domeny w Node i w stronie
+    const expression = `(() => { const siteOf = ${siteOf}; return (${fn})(${arg === undefined ? '' : JSON.stringify(arg)}); })()`;
+    const r = await cdp.send('Runtime.evaluate', { expression, contextId: executionContextId, returnByValue: true, awaitPromise: true });
     if (r.exceptionDetails) throw new Error((r.exceptionDetails.exception && r.exceptionDetails.exception.description) || r.exceptionDetails.text);
     return r.result.value;
   } finally { await cdp.detach().catch(() => {}); }
