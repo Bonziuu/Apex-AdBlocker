@@ -5,8 +5,6 @@
 //   npm run perf:baseline -- --size-only      tylko rozmiar paczki (deterministyczny, bez Chromium)
 //   npm run perf:baseline -- --runs 20        liczba mierzonych powtórzeń startupu (domyślnie 15, +1 rozgrzewka)
 //   npm run perf:baseline -- --write-baseline zapisuje mały plik perf/baseline.json (świadomie, do commita)
-//   npm run perf:baseline -- --modes all      porównanie trybów Basic / Balanced / Strict (perf/results/modes-latest.*)
-//                                             (--modes basic,strict – wybrane tryby)
 //
 // Metryki (szczegóły: docs/perf-baseline.md):
 //   1. Rozmiar: dokładnie pliki z paczki rozszerzenia (packageDev → <tmp>/ChromeBlock), ZIP samego
@@ -31,7 +29,6 @@ import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { packageDev, listFiles, createZip, PACKAGE_NAME } from './package-dev.mjs';
-import { PROTECTION_MODES as MODE_LISTS } from '../shared/protection-modes.js';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const BASELINE_FILE = 'perf/baseline.json';
@@ -178,7 +175,7 @@ async function runtimeSnapshot(sw) {
 }
 
 /** Jeden pomiar: świeży profil → instalacja → gotowość (opcjonalnie: stan runtime i wybudzenia SW). */
-async function measureOnce(chromium, extDir, dir, { withRuntime = false, wakeRuns = 0, switchMode = null, switchRuns = 0 } = {}) {
+async function measureOnce(chromium, extDir, dir, { withRuntime = false, wakeRuns = 0 } = {}) {
   const profile = fs.mkdtempSync(path.join(dir, 'profile-'));
   const out = {};
   // 2B + 2A: świeża instalacja
@@ -195,7 +192,6 @@ async function measureOnce(chromium, extDir, dir, { withRuntime = false, wakeRun
     out.freshInstall = { launchMs: tLaunched - t0, serviceWorkerVisibleMs: tSw - t0, readyMs: tReady - t0 };
     if (withRuntime) out.runtime = await runtimeSnapshot(sw);
     if (wakeRuns) out.wake = await measureWake(ctx, sw, wakeRuns);
-    if (switchRuns) out.switchMs = await measureSwitch(ctx, sw, switchMode, switchRuns);
   } finally {
     await ctx.close().catch(() => {});
     fs.rmSync(profile, { recursive: true, force: true });
@@ -239,43 +235,6 @@ async function measureWake(ctx, sw, runs) {
   }
   await page.close();
   return out;
-}
-
-/**
- * Przełączenie trybu z popupu/opcji (options:setProtectionMode – zapis, rulesety, scriptlety):
- * zegar ścienny w stronie rozszerzenia. Każdy pomiar: najpierw przejście na inny tryb (bez pomiaru),
- * potem mierzone przejście na `mode`.
- */
-async function measureSwitch(ctx, sw, mode, runs) {
-  const id = new URL(sw.url()).host;
-  const page = await ctx.newPage();
-  await page.goto(`chrome-extension://${id}/popup/popup.html`);
-  const other = mode === 'basic' ? 'balanced' : 'basic';
-  const set = (m) => page.evaluate(async (x) => { const t = performance.now(); const r = await chrome.runtime.sendMessage({ type: 'options:setProtectionMode', mode: x }); return { ms: performance.now() - t, ok: !!(r && r.ok), mode: r && r.protectionMode }; }, m);
-  const out = [];
-  for (let i = 0; i < runs; i++) {
-    const a = await set(other);
-    const b = await set(mode);
-    if (!a.ok || !b.ok || b.mode !== mode) throw new Error(`przełączenie trybu nie powiodło się (${other} → ${mode})`);
-    out.push(b.ms);
-  }
-  await page.close();
-  return out;
-}
-
-/**
- * Kopia paczki, w której świeża instalacja startuje w trybie `mode`: zmieniona TYLKO flaga
- * enabledByDefault w data/lists.json (tak wyglądałaby zmiana domyślnego trybu). Kod bez zmian.
- */
-export function modeVariant(extDir, mode, destDir, modes = MODE_LISTS) {
-  const lists = modes[mode];
-  if (!lists) throw new Error(`nieznany tryb: ${mode}`);
-  fs.cpSync(extDir, destDir, { recursive: true });
-  const file = path.join(destDir, 'data', 'lists.json');
-  const meta = JSON.parse(fs.readFileSync(file, 'utf8'));
-  for (const m of meta) m.enabledByDefault = lists.includes(m.id);
-  fs.writeFileSync(file, JSON.stringify(meta));
-  return destDir;
 }
 
 /** Statystyki etapów profilera (suma czasu etapu w danym starcie) i znaczników. */
@@ -419,41 +378,34 @@ export function baselineOf(r) {
 
 export function parseArgs(argv) {
   const o = { runs: DEFAULT_RUNS, sizeOnly: false, writeBaseline: false };
-  const known = Object.keys(MODE_LISTS);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--size-only') o.sizeOnly = true;
     else if (a === '--write-baseline') o.writeBaseline = true;
     else if (a === '--runs') o.runs = Math.max(1, parseInt(argv[++i], 10) || DEFAULT_RUNS);
-    else if (a === '--modes') {
-      const v = String(argv[++i] || 'all');
-      o.modes = v === 'all' ? known : v.split(',').map((s) => s.trim()).filter(Boolean);
-      const bad = o.modes.filter((m) => !known.includes(m));
-      if (bad.length || !o.modes.length) throw new Error(`nieznany tryb: ${bad.join(', ') || v} (dostępne: ${known.join(', ')}, all)`);
-    } else throw new Error(`nieznany argument: ${a}`);
+    else throw new Error(`nieznany argument: ${a}`);
   }
   return o;
 }
 
-/** Pomiar jednej konfiguracji paczki: rozgrzewka, N świeżych instalacji, wybudzenia (i opcjonalnie przełączenia trybu). */
-async function measureConfig(chromium, extDir, tmp, { runs, log, switchMode = null }) {
+/** Pomiar paczki: rozgrzewka, N świeżych instalacji, wybudzenia SW. */
+async function measureConfig(chromium, extDir, tmp, { runs, log }) {
   const warm = await measureOnce(chromium, extDir, tmp, { withRuntime: true });
   const samples = [];
   for (let i = 0; i < runs; i++) {
     samples.push(await measureOnce(chromium, extDir, tmp));
     log(`  run ${i + 1}/${runs}: internal install ${samples[i].install.totalMs} ms · fresh install→ready ${Math.round(samples[i].freshInstall.readyMs)} ms`);
   }
-  // wybudzenia (i przełączenia): osobna świeża instalacja; pierwszy pomiar = rozgrzewka (odrzucony)
-  const extra = await measureOnce(chromium, extDir, tmp, { wakeRuns: runs + 1, switchMode, switchRuns: switchMode ? runs + 1 : 0 });
+  // wybudzenia: osobna świeża instalacja; pierwszy pomiar = rozgrzewka (odrzucony)
+  const extra = await measureOnce(chromium, extDir, tmp, { wakeRuns: runs + 1 });
   const dropFirst = (a) => a.slice(1);
-  log(`  wybudzenia SW: ${runs} (+1 rozgrzewka)${switchMode ? `; przełączenia na ${switchMode}: ${runs} (+1 rozgrzewka)` : ''}`);
+  log(`  wybudzenia SW: ${runs} (+1 rozgrzewka)`);
   const startup = {
     warmup: 1, runs,
     install: profileStats(samples.map((s) => s.install)),
     wake: Object.fromEntries(Object.entries(extra.wake).map(([k, v]) => [k, stats(dropFirst(v))])),
     freshInstall: Object.fromEntries(['launchMs', 'serviceWorkerVisibleMs', 'readyMs'].map((k) => [k, stats(samples.map((s) => s.freshInstall[k]))])),
   };
-  if (switchMode) startup.switchMs = stats(dropFirst(extra.switchMs));
   return { startup, rawRuntime: warm.runtime };
 }
 
@@ -516,92 +468,10 @@ export async function run({ runs = DEFAULT_RUNS, sizeOnly = false, log = console
   }
 }
 
-/** Porównanie trybów: dla każdego – paczka z tym trybem domyślnym (modeVariant), ten sam pomiar co baseline. */
-export async function runModes({ runs = DEFAULT_RUNS, modes = Object.keys(MODE_LISTS), log = console.log } = {}) {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-perf-modes-'));
-  try {
-    const pkg = packageDev({ outDir: path.join(tmp, 'dist') });
-    const { loadPlaywright } = await import('./chromium-smoke.mjs');
-    const chromium = await loadPlaywright();
-    const report = { date: new Date().toISOString(), modes: {} };
-    for (const mode of modes) {
-      log(`\nTryb ${mode}: rozgrzewka + ${runs} świeżych instalacji, ${runs} wybudzeń, ${runs} przełączeń…`);
-      const ext = modeVariant(pkg.extDir, mode, path.join(tmp, `ext-${mode}`));
-      let m;
-      try {
-        m = await measureConfig(chromium, ext, tmp, { runs, log, switchMode: mode });
-      } catch (e) {
-        // błąd jednego trybu nie przekreśla pozostałych – zapisany w raporcie
-        report.modes[mode] = { lists: [...MODE_LISTS[mode]], error: String((e && e.message) || e) };
-        log(`  BŁĄD pomiaru trybu ${mode}: ${report.modes[mode].error}`);
-        continue;
-      }
-      const runtime = runtimeSummary(m.rawRuntime, m.startup.install, ext);
-      const expected = [...MODE_LISTS[mode]].sort();
-      if (JSON.stringify([...runtime.enabledRulesets].sort()) !== JSON.stringify(expected)) {
-        throw new Error(`tryb ${mode}: włączone rulesety ${runtime.enabledRulesets.join(',')} ≠ ${expected.join(',')}`);
-      }
-      report.modes[mode] = { lists: [...MODE_LISTS[mode]], startup: m.startup, runtime };
-    }
-    report.env = environment();
-    report.env.chromium = await chromiumVersion(chromium);
-    return report;
-  } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
-  }
-}
-
-/** Raport porównania trybów. */
-export function formatModesReport(r) {
-  const L = [];
-  const failed = Object.entries(r.modes).filter(([, x]) => x.error);
-  const modes = Object.keys(r.modes).filter((m) => !r.modes[m].error);
-  const MODE_PL = { basic: 'Basic', balanced: 'Balanced', strict: 'Strict' };
-  L.push('ChromeBlock – porównanie trybów ochrony (wydajność)', '='.repeat(64));
-  L.push(`Data: ${r.date}`, `Commit: ${r.env.commit}${r.env.workingTreeDirty ? ' (+ niezacommitowane zmiany)' : ''}`,
-    `Środowisko: ${r.env.os}; ${r.env.cpu}; ${r.env.memGB} GB RAM; Node ${r.env.node}; Chromium ${r.env.chromium || '?'}; headless`);
-  L.push('Metoda: dla każdego trybu kopia paczki z tym trybem domyślnym (zmieniona tylko flaga enabledByDefault w data/lists.json),',
-    'ten sam pomiar co npm run perf:baseline. Mediana [p95] w ms; 1 rozgrzewka odrzucona.');
-  const row = (label, f) => L.push(`  ${label.padEnd(44)}${modes.map((m) => String(f(r.modes[m]) ?? '—').padStart(20)).join('')}`);
-  const sm = (s) => (s ? `${num(s.median)} [${num(s.p95)}]` : '—');
-  L.push('', ...modes.map((m) => `Listy ${MODE_PL[m]}: ${r.modes[m].lists.join(', ')}`));
-  L.push('', `  ${''.padEnd(44)}${modes.map((m) => MODE_PL[m].padStart(20)).join('')}`);
-  row('Rulesety aktywne', (x) => x.runtime.enabledRulesets.length);
-  row('Reguły statyczne aktywne', (x) => x.runtime.staticRulesActive.toLocaleString('pl-PL'));
-  row('Reguły dynamiczne / sesyjne', (x) => `${x.runtime.dynamicRules} / ${x.runtime.sessionRules}`);
-  row('Scriptlety: wpisy rejestracji', (x) => x.runtime.registeredScripts);
-  row('Scriptlety: pliki JS', (x) => x.runtime.registeredJsFiles);
-  row('Scriptlety: rozmiar plików', (x) => kb(x.runtime.registeredJsBytes));
-  row('Content scripty – zwykła strona (pliki)', (x) => x.runtime.contentScripts['zwykła'].jsFiles);
-  row('Content scripty – YouTube (pliki)', (x) => x.runtime.contentScripts.youtube.jsFiles);
-  L.push('');
-  row('Internal SW init (świeża instalacja)', (x) => sm(x.startup.install.totalMs));
-  row('  DNR gotowy (ms od startu SW)', (x) => sm(x.startup.install.marks['DNR gotowy']));
-  row('  scriptlety gotowe (ms od startu SW)', (x) => sm(x.startup.install.marks['scriptlety gotowe']));
-  row('  registerContentScripts', (x) => sm((x.startup.install.stages.find((s) => s.name === 'scriptlety: registerContentScripts')) || null));
-  row('Fresh install → ready (z Chromium)', (x) => sm(x.startup.freshInstall.readyMs));
-  row('Przełączenie na tryb (popup)', (x) => sm(x.startup.switchMs));
-  row('Wybudzenie SW → cosmetic:init', (x) => sm(x.startup.wake.wakeCosmetic));
-  row('Działający SW → cosmetic:init', (x) => sm(x.startup.wake.warmCosmetic));
-  row('Wybudzenie SW → options:get', (x) => sm(x.startup.wake.wakeMinimal));
-  for (const [m, x] of failed) L.push('', `Tryb ${MODE_PL[m]}: pomiar nieudany – ${x.error}`);
-  L.push('', 'Pełne statystyki (mediana, p95, min, max, n) i etapy profilera: perf/results/modes-latest.json');
-  return L.join('\n') + '\n';
-}
-
 async function main() {
   const o = parseArgs(process.argv.slice(2));
   const outDir = path.join(ROOT, RESULTS_DIR);
   fs.mkdirSync(outDir, { recursive: true });
-  if (o.modes) {
-    const r = await runModes(o);
-    const txt = formatModesReport(r);
-    fs.writeFileSync(path.join(outDir, 'modes-latest.txt'), txt);
-    fs.writeFileSync(path.join(outDir, 'modes-latest.json'), JSON.stringify(r, null, 2) + '\n');
-    process.stdout.write('\n' + txt);
-    console.log(`Raport: ${RESULTS_DIR}/modes-latest.txt i modes-latest.json (niecommitowane)`);
-    return;
-  }
   const report = await run(o);
   const txt = formatReport(report);
   fs.writeFileSync(path.join(outDir, 'latest.txt'), txt);

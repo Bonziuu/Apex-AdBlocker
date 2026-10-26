@@ -46,37 +46,5 @@
   "scriptletSessionPatterns": 0,
   "unmatchedScriptletExceptions": 0,
   "crossListScriptletExceptions": 0
- },
- {
-  "id": "cookies",
-  "name": "Komunikaty o cookies",
-  "desc": "uBlock filters – Cookie Notices",
-  "enabledByDefault": false,
-  "networkRules": 59,
-  "networkFilters": 60,
-  "cosmeticFilters": 2224,
-  "scriptletFilters": 1948,
-  "scriptletRejected": 45,
-  "scriptletFiles": 5,
-  "scriptletPatterns": 3896,
-  "scriptletSessionPatterns": 2438,
-  "unmatchedScriptletExceptions": 1,
-  "crossListScriptletExceptions": 0
- },
- {
-  "id": "annoyances",
-  "name": "Elementy irytujące",
-  "desc": "Fanboy Annoyances i uBlock filters – Annoyances (wyskakujące okna, newslettery, przyciski społecznościowe)",
-  "enabledByDefault": false,
-  "networkRules": 3351,
-  "networkFilters": 4381,
-  "cosmeticFilters": 48280,
-  "scriptletFilters": 965,
-  "scriptletRejected": 41,
-  "scriptletFiles": 3,
-  "scriptletPatterns": 2233,
-  "scriptletSessionPatterns": 2277,
-  "unmatchedScriptletExceptions": 1,
-  "crossListScriptletExceptions": 0
  }
 ]

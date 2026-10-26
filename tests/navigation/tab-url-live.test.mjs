@@ -61,7 +61,7 @@ test('Chromium: history.pushState → tabs.onUpdated z url; YouTube SPA: stary r
     const id = new URL(sw.url()).host;
     const ext = await ctx.newPage();
     await ext.goto(`chrome-extension://${id}/options/options.html`);
-    await ext.waitForFunction(() => document.querySelectorAll('#listContainer input').length > 0, null, { timeout: 60000 });
+    await ext.waitForFunction(() => document.querySelectorAll('#listContainer .card').length > 0, null, { timeout: 60000 });
     assert.ok(!(await ext.evaluate(() => chrome.runtime.getManifest().permissions)).includes('webNavigation'));
     // własny podsłuch na stronie rozszerzenia – te same zdarzenia, które dostaje service worker
     await ext.evaluate(() => {
@@ -125,7 +125,7 @@ test('Chromium: ochrona wyłączona dla strony – stan per karta po nawigacji (
     const id = new URL(sw.url()).host;
     const ext = await ctx.newPage();
     await ext.goto(`chrome-extension://${id}/options/options.html`);
-    await ext.waitForFunction(() => document.querySelectorAll('#listContainer input').length > 0, null, { timeout: 60000 });
+    await ext.waitForFunction(() => document.querySelectorAll('#listContainer .card').length > 0, null, { timeout: 60000 });
     const call = (msg) => ext.evaluate((m) => chrome.runtime.sendMessage(m), msg);
     const r = await call({ type: 'options:setDisabledSites', sites: ['example.com'] });
     assert.deepEqual(r.disabledSites, ['example.com']);

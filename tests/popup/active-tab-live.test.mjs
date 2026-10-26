@@ -44,7 +44,7 @@ test('Chromium: bez activeTab getMatchedRules odmawia, popup:get działa przez f
 
     const ext = await ctx.newPage();
     await ext.goto(`chrome-extension://${id}/options/options.html`);
-    await ext.waitForFunction(() => document.querySelectorAll('#listContainer input').length > 0, null, { timeout: 60000 });
+    await ext.waitForFunction(() => document.querySelectorAll('#listContainer .card').length > 0, null, { timeout: 60000 });
 
     // manifest załadowany przez Chrome: activeTab, bez declarativeNetRequestFeedback
     const perms = await ext.evaluate(() => chrome.runtime.getManifest().permissions);

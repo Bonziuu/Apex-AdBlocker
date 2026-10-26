@@ -58,26 +58,34 @@ test('błąd syncRulesets() → status ERROR dla network i filters', async () =>
   } finally { bg.restore(); }
 });
 
-test('regresja: ogólny #@# z wyłączonej listy nie wpływa na inne listy; z włączonej – działa między listami', async () => {
-  const files = {
+test('regresja: ogólny #@# z listy spoza stałego zestawu nie wpływa na inne listy; z listy zestawu – działa między listami', async () => {
+  // „annoyances” w metadanych (np. stara paczka) nie jest w CORE_LISTS → nigdy nie jest włączona
+  const outside = await loadBackground({ files: {
     'data/lists.json': listsJson(['ads', 'annoyances']),
     'data/ads.json': emptyList({ sel: ['.example-ad', '.other'], gen: { '.example-ad': [0], '.other': [1] } }),
     'data/annoyances.json': emptyList({ gunhide: ['.example-ad'] }),
     'data/ads.scriptlets.json': [], 'data/annoyances.scriptlets.json': [],
-  };
-  const bg = await loadBackground({ files });
+  } });
   try {
-    await bg.install();
-    await bg.send({ type: 'cosmetic:tokens', tokens: ['.example-ad', '.other'], url: 'https://site.test/' }, sender('https://site.test/'));
-    let css = bg.state.css.at(-1).css;
-    assert.match(css, /\.example-ad\{display:none!important\}/, 'annoyances wyłączone – selektor ukrywa');
-    await bg.send({ type: 'options:setLists', enabledLists: ['ads', 'annoyances'] });
-    bg.state.css.length = 0;
-    await bg.send({ type: 'cosmetic:tokens', tokens: ['.example-ad', '.other'], url: 'https://site.test/' }, sender('https://site.test/'));
-    css = bg.state.css.at(-1).css;
-    assert.doesNotMatch(css, /\.example-ad\{/, 'annoyances włączone – wyjątek działa');
+    await outside.install();
+    await outside.send({ type: 'cosmetic:tokens', tokens: ['.example-ad', '.other'], url: 'https://site.test/' }, sender('https://site.test/'));
+    assert.match(outside.state.css.at(-1).css, /\.example-ad\{display:none!important\}/, 'lista spoza zestawu – jej wyjątek nie działa');
+    assert.deepEqual((await outside.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id), ['ads']);
+  } finally { outside.restore(); }
+  // „privacy” należy do stałego zestawu → jej ogólny wyjątek działa także dla selektorów z „ads”
+  const inside = await loadBackground({ files: {
+    'data/lists.json': listsJson(['ads', 'privacy']),
+    'data/ads.json': emptyList({ sel: ['.example-ad', '.other'], gen: { '.example-ad': [0], '.other': [1] } }),
+    'data/privacy.json': emptyList({ gunhide: ['.example-ad'] }),
+    'data/ads.scriptlets.json': [], 'data/privacy.scriptlets.json': [],
+  } });
+  try {
+    await inside.install();
+    await inside.send({ type: 'cosmetic:tokens', tokens: ['.example-ad', '.other'], url: 'https://site.test/' }, sender('https://site.test/'));
+    const css = inside.state.css.at(-1).css;
+    assert.doesNotMatch(css, /\.example-ad\{/, 'lista z zestawu – wyjątek działa');
     assert.match(css, /\.other\{/);
-  } finally { bg.restore(); }
+  } finally { inside.restore(); }
 });
 
 test('filtry specyficzne, wyjątki hosta i $generichide', async () => {

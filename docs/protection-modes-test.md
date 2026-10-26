@@ -1,4 +1,6 @@
-# Test trybów ochrony na prawdziwych stronach
+# Test trybów ochrony na prawdziwych stronach (HISTORYCZNY)
+
+> **Historyczne.** ChromeBlock 1.0 nie ma trybów ochrony – działa stały zestaw list ads, privacy i security (`shared/core-lists.js`). Tester opisany niżej działał do commita `0e3fe92` (gałąź `legacy/protection-modes-tester`) i posłużył do tej decyzji. Nie jest już podłączony do `test-chromeblock.cmd` ani do paczki.
 
 Porównanie Basic / Balanced / Strict na około 50 stronach. Wymaga internetu, dlatego uruchamia się lokalnie (Windows/Chrome); środowisko Claude Code nie ma dostępu do stron.
 
