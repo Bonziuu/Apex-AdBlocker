@@ -29,11 +29,14 @@ export const EXTRA_FILES = [
   ['installer/update-chromeblock.cmd', 'update-chromeblock.cmd'],
   ['INSTALL.md', 'INSTALL.md'],
   ['test-chromeblock.cmd', 'test-chromeblock.cmd'],
+  ['test-sites.cmd', 'test-sites.cmd'],
 ];
 export const TESTER_DIR = 'tester';
 // minimalny zestaw plików testera – ten sam układ katalogów co w repozytorium (importy względne bez zmian)
 export const TESTER_FILES = [
   'tests/local/chromeblock-local-test.mjs',
+  'tests/local/single-blocker-sites.mjs',
+  'tests/local/sites-single-blocker.json',
   'tools/chromium-smoke.mjs',
   'tests/e2e/lib/classify.mjs',
   'tests/e2e/lib/youtube-page.mjs',
