@@ -30,36 +30,18 @@ test('bug 1: synchronizacja samych reguł dynamicznych nie ukrywa wcześniejszeg
   } finally { bg.restore(); }
 });
 
-test('bug 1: i odwrotnie – udane syncRulesets nie ukrywa błędu reguł dynamicznych', async () => {
-  const bg = await loadBackground();
-  try {
-    await bg.install();
-    // błąd reguł dynamicznych
-    const orig = chrome.declarativeNetRequest.updateDynamicRules;
-    chrome.declarativeNetRequest.updateDynamicRules = async () => { throw new Error('limit reguł'); };
-    await bg.send({ type: 'options:setUserFilters', text: '||ads.example^' });
-    chrome.declarativeNetRequest.updateDynamicRules = orig;
-    // zmiana list → runStep('rulesets') kończy się sukcesem
-    const r = await bg.send({ type: 'options:setLists', enabledLists: ['ads', 'privacy', 'security'] });
-    assert.equal(r.ok, true);
-    const h = await bg.send({ type: 'health:get' });
-    assert.equal(h.components.network.status, 'error');
-    assert.match(h.components.network.detail, /dynamicRules: limit reguł/);
-  } finally { bg.restore(); }
-});
-
-test('bug 2: zmiana list zaraz po wybudzeniu SW – odrzucona przez Chrome nie wyłącza wszystkich list', async () => {
+test('bug 2: po wybudzeniu SW Chrome odrzuca rulesety – zestaw list zostaje stały, nic nie jest nadpisywane', async () => {
   const { registered, local } = await installedState();
-  assert.deepEqual(local.enabledLists, undefined, 'domyślne listy (bez zapisu)');
-  const before = ['ads', 'privacy', 'security'];
+  assert.deepEqual(local.enabledLists, undefined, 'listy nie są zapisywane (stały zestaw)');
   // nowy service worker (stan nie wczytany), Chrome odrzuca zmianę zestawów reguł
-  const bg = await loadBackground({ registered, local: { ...local, enabledLists: before }, failRulesets: true });
+  const bg = await loadBackground({ registered, local, failRulesets: true });
   try {
-    const r = await bg.send({ type: 'options:setLists', enabledLists: ['ads', 'cookies'] });
-    assert.equal(r.ok, false);
-    assert.deepEqual(bg.store.enabledLists, before, 'przywrócone poprzednie listy, nie []');
+    await bg.state.listeners.installed({ reason: 'update' });
     const o = await bg.send({ type: 'options:get' });
-    assert.deepEqual(o.lists.filter((l) => l.enabled).map((l) => l.id), before);
+    assert.deepEqual(o.lists.filter((l) => l.enabled).map((l) => l.id), ['ads', 'privacy', 'security']);
+    assert.equal(bg.store.enabledLists, undefined, 'błąd Chrome nie zapisuje pustego ani innego zestawu');
+    const h = await bg.send({ type: 'health:get' });
+    assert.equal(h.components.network.status, 'error', 'błąd widoczny w diagnostyce');
   } finally { bg.restore(); }
 });
 
@@ -122,32 +104,24 @@ test('bug 4: znacznik sesji zdjęty na czas pełnej rejestracji (przerwanie SW w
   } finally { bg.restore(); }
 });
 
-test('bug 5: wynik liczony w trakcie zmiany list nie trafia do cache hostów (brak nieaktualnego CSS)', async () => {
+test('bug 5: wynik liczony w trakcie zmiany ustawień nie trafia do cache hostów (brak nieaktualnego CSS)', async () => {
   let slow = false;
   const bg = await loadBackground({ fetchDelay: (p) => (slow && p === 'data/ads.json' ? 60 : 0) });
   try {
     await bg.install();
     const s = sender('https://news.example/');
     slow = true;
-    // strona ładuje się (CSS z listą „ads”), w tym czasie użytkownik wyłącza „ads”
+    // strona ładuje się (CSS liczony z wolno wczytywanych danych), w tym czasie użytkownik dodaje własny filtr
     const pending = bg.send({ type: 'cosmetic:init', url: 'https://news.example/' }, s);
     await tick(5);
-    const r = await bg.send({ type: 'options:setLists', enabledLists: ['privacy', 'security'] });
+    const r = await bg.send({ type: 'options:setUserFilters', text: 'news.example##.cb-nowy-selektor\n' });
     assert.equal(r.ok, true);
     await pending;
     slow = false;
     const cssBefore = bg.state.css.length;
     await bg.send({ type: 'cosmetic:init', url: 'https://news.example/' }, s);
     const css = bg.state.css.slice(cssBefore).map((c) => c.css).join('');
-    const withAds = (await (async () => {
-      const bg2 = await loadBackground();
-      try {
-        await bg2.install();
-        await bg2.send({ type: 'cosmetic:init', url: 'https://news.example/' }, s);
-        return bg2.state.css.at(-1).css;
-      } finally { bg2.restore(); }
-    })());
-    assert.ok(css.length < withAds.length / 2, `CSS po wyłączeniu „ads” nie może pochodzić ze starego cache (${css.length} vs ${withAds.length})`);
+    assert.match(css, /\.cb-nowy-selektor\{display:none!important\}/, 'CSS po zmianie nie pochodzi ze starego cache');
   } finally { bg.restore(); }
 });
 
@@ -166,7 +140,7 @@ test('bug 3: dwa szybkie „Ukryj element” – oba filtry zapisane (bez utraco
   } finally { bg.restore(); }
 });
 
-test('wyłączenie strony i zmiana list: część utrwalona i sesyjna zawsze w tym samym, poprawnym stanie', async () => {
+test('wyłączenie strony i pełna ponowna rejestracja: część utrwalona i sesyjna zawsze w tym samym, poprawnym stanie', async () => {
   const bg = await loadBackground();
   try {
     await bg.install();
@@ -174,9 +148,10 @@ test('wyłączenie strony i zmiana list: część utrwalona i sesyjna zawsze w t
     let ours = bg.state.registered.filter((r) => r.id.startsWith('sl-'));
     assert.ok(ours.some((r) => r.persistAcrossSessions === false) && ours.some((r) => r.persistAcrossSessions === true));
     for (const r of ours) assert.deepEqual(r.excludeMatches, ['*://*.news.example/*'], r.id);
-    await bg.send({ type: 'options:setLists', enabledLists: ['ads', 'privacy', 'security', 'cookies'] });
+    // pełna ponowna rejestracja (zmiana zestawu rejestracji) – wyłączona strona zostaje wykluczona
+    await bg.send({ type: 'options:setDevPerf', enabled: true });
     ours = bg.state.registered.filter((r) => r.id.startsWith('sl-'));
-    assert.ok(ours.some((r) => r.id.startsWith('sl-cookies-')));
+    assert.deepEqual([...new Set(ours.map((r) => r.id.split('-')[1]))].sort(), ['ads', 'privacy', 'security']);
     for (const r of ours) assert.deepEqual(r.excludeMatches, ['*://*.news.example/*'], r.id);
     assert.equal(new Set(ours.map((r) => r.id)).size, ours.length, 'bez duplikatów id');
     await bg.send({ type: 'site:toggle', host: 'news.example' });

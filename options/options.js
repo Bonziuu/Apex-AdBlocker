@@ -1,4 +1,3 @@
-import { PRESETS, MODE_LABEL, MODE_CONTENTS, MODE_ERROR, modeDisplay } from '../shared/protection-mode-ui.js';
 import { importFailureMessage } from '../shared/settings-backup.js';
 
 const $ = (id) => document.getElementById(id);
@@ -18,90 +17,23 @@ if (initial) document.querySelector(`.tab[data-tab="${initial}"]`)?.click();
 
 let data = await send({ type: 'options:get' });
 
-// jedna zmiana list / trybu naraz – blokada całej sekcji na czas operacji
-let listsBusy = false;
-function lockLists(on) {
-  listsBusy = on;
-  for (const i of $('lists').querySelectorAll('input')) i.disabled = on;
-  $('lists').setAttribute('aria-busy', String(on));
-}
-
-function renderMode(pendingMode = null) {
-  const box = $('modeCards');
-  const current = modeDisplay(data.protectionMode);
-  box.textContent = '';
-  for (const m of PRESETS) {
-    const card = document.createElement('label');
-    card.className = 'card mode-card';
-    card.dataset.mode = m;
-    card.innerHTML = `
-      <input type="radio" name="protectionMode">
-      <div class="text">
-        <div class="name"></div>
-        <div class="desc"></div>
-      </div>
-      <span class="mode-state" aria-hidden="true"></span>`;
-    card.querySelector('.name').textContent = MODE_LABEL[m];
-    card.querySelector('.desc').textContent = MODE_CONTENTS[m];
-    const input = card.querySelector('input');
-    input.value = m;
-    input.checked = m === current.mode;
-    input.disabled = listsBusy;
-    if (pendingMode === m) card.querySelector('.mode-state').textContent = 'Zmieniam…';
-    input.addEventListener('change', () => { if (input.checked) setMode(m); });
-    box.appendChild(card);
-  }
-  $('modeCustom').hidden = !current.isCustom;
-}
-
-async function setMode(mode) {
-  if (listsBusy) return;
-  const previous = data.protectionMode;
-  lockLists(true);
-  renderMode(mode);
-  let res;
-  try { res = await send({ type: 'options:setProtectionMode', mode }); } catch (e) { res = { ok: false, error: String(e) }; }
-  try { data = await send({ type: 'options:get' }); } catch { data = { ...data, protectionMode: previous }; }
-  lockLists(false);
-  renderMode();
-  renderLists();
-  const msg = $('modeMsg');
-  if (res && res.ok) msg.hidden = true;
-  else { msg.textContent = MODE_ERROR + (res && res.error ? ` (${res.error})` : ''); msg.hidden = false; }
-}
-
+/** Stały zestaw list – tylko informacja (bez przełączników). */
 function renderLists() {
   const box = $('listContainer');
   box.textContent = '';
   for (const l of data.lists) {
-    const card = document.createElement('label');
+    const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
       <div class="text">
         <div class="name"></div>
         <div class="desc"></div>
         <div class="count"></div>
-      </div>
-      <span class="switch"><input type="checkbox"><span></span></span>`;
+      </div>`;
     card.querySelector('.name').textContent = l.name;
     card.querySelector('.desc').textContent = l.desc;
     card.querySelector('.count').textContent =
       `${fmt(l.networkFilters)} filtrów sieciowych · ${fmt(l.cosmeticFilters)} kosmetycznych i scriptletów`;
-    const input = card.querySelector('input');
-    input.checked = l.enabled;
-    input.disabled = listsBusy;
-    input.addEventListener('change', async () => {
-      if (listsBusy) return;
-      const enabled = data.lists.filter((x) => (x.id === l.id ? input.checked : x.enabled)).map((x) => x.id);
-      lockLists(true);
-      const res = await send({ type: 'options:setLists', enabledLists: enabled }).catch((e) => ({ ok: false, error: String(e) }));
-      data = await send({ type: 'options:get' });
-      lockLists(false);
-      renderMode();
-      renderLists();
-      const msg = $('listMsg');
-      if (res && !res.ok) { msg.textContent = res.error; msg.hidden = false; } else msg.hidden = true;
-    });
     box.appendChild(card);
   }
 }
@@ -192,7 +124,6 @@ function showImportErrors(result) {
 
 function renderAll() {
   $('version').textContent = data.version;
-  renderMode();
   renderLists();
   $('userFilters').value = data.userFilters;
   renderErrors(data.userErrors);

@@ -4,7 +4,7 @@
 // Uruchamia Playwright Chromium z bieżącą wersją ChromeBlock w JEDNORAZOWYM profilu (katalog
 // tymczasowy, usuwany po teście – bez historii, loginów, cookies i danych konta; prywatny profil
 // Chrome nie jest używany) i sprawdza: ładowanie, service worker, health, start, rejestrację
-// scriptletów, popup i tryby ochrony, zwykłą stronę oraz YouTube (watch, odtwarzanie, seek, Shorts).
+// scriptletów, popup i stały zestaw list ochrony, zwykłą stronę oraz YouTube (watch, odtwarzanie, seek, Shorts).
 //
 // Wyniki: tests/local/results/latest.json i latest.txt (+ screenshot tylko przy FAIL).
 // Brak sieci / YouTube niedostępny / ekran weryfikacji → SKIP (INCONCLUSIVE), nigdy PASS.
@@ -18,8 +18,6 @@
 //   --no-youtube      pomiń YouTube (SKIP)
 //   --no-consent      nie klikaj „Odrzuć wszystko” na ekranie zgody (wtedy YouTube → SKIP)
 //   --results <kat.>  katalog wyników (domyślnie tests/local/results)
-//   --modes           zamiast testu regresyjnego: porównanie trybów Basic / Balanced / Strict na ~50
-//                     prawdziwych stronach (tests/local/protection-modes-sites.mjs, raport w <results>/modes/)
 //
 // Kod wyjścia: 0 – PASS, 1 – FAIL, 2 – błąd uruchomienia testera, 3 – INCONCLUSIVE (są SKIP).
 // Działa też z rozpakowanej paczki download/ChromeBlock-dev.zip (folder tester/, bez Gita).
@@ -38,12 +36,9 @@ export const RESULTS_DIR = path.join(ROOT, 'tests', 'local', 'results');
 export const DEFAULT_VIDEO = 'aqz-KE-bpKQ'; // Big Buck Bunny (~10 min, publiczny)
 export const DEFAULT_SHORTS = 'https://www.youtube.com/shorts/';
 export const COMPONENT_LABEL = { network: 'Network', cosmetic: 'Cosmetic', scriptlets: 'Scriptlets', filters: 'Filters', youtube: 'YouTube' };
-const MODE_LABEL = { basic: 'Basic', balanced: 'Balanced', strict: 'Strict', custom: 'Własny' };
-const MODE_LISTS = {
-  basic: ['ads', 'privacy', 'security'],
-  balanced: ['ads', 'privacy', 'security', 'cookies'],
-  strict: ['ads', 'privacy', 'security', 'cookies', 'annoyances'],
-};
+// stały zestaw list produktu (shared/core-lists.js) – tester nie importuje kodu rozszerzenia
+export const CORE_LISTS = Object.freeze(['ads', 'privacy', 'security']);
+const enabledListsOf = (o) => (o && o.lists ? o.lists.filter((l) => l.enabled).map((l) => l.id).sort() : []);
 
 // ---------------------------------------------------------------------------
 // Czysta logika (testy: tests/tools/local-tester.test.mjs)
@@ -292,7 +287,7 @@ export function formatReport(r) {
 // ---------------------------------------------------------------------------
 // Przeglądarka
 
-/** Lokalna „zwykła strona” (127.0.0.1) – do popupu i trybów, działa bez internetu. */
+/** Lokalna „zwykła strona” (127.0.0.1) – do popupu, działa bez internetu. */
 function startLocalSite() {
   const html = '<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>ChromeBlock – strona testowa</title></head>'
     + '<body><h1 id="ok">Strona testowa ChromeBlock</h1><p>Zwykła treść strony.</p></body></html>';
@@ -450,10 +445,10 @@ export async function runLocalTests(opts = {}) {
     if (reg && registered > 0) await add('register', 'registerContentScripts', 'PASS', `${reg.totalMs} ms, ${reg.count}× wywołanie, ${registered} zarejestrowanych skryptów`);
     else await add('register', 'registerContentScripts', 'FAIL', `pomiar: ${reg ? `${reg.totalMs} ms` : 'brak'}; zarejestrowanych: ${registered}`);
 
-    // 4. onboarding (świeży profil = świeża instalacja) – przed popupem i trybami, kończy w trybie Basic
+    // 4. onboarding (świeży profil = świeża instalacja) – przed popupem
     await runOnboarding({ context, add, call, setCurrent: (pg) => { current = pg; } });
 
-    // 5. zwykła strona (lokalna) + popup + tryby
+    // 5. zwykła strona (lokalna) + popup
     const local = await context.newPage();
     current = local;
     await local.goto(site.url);
@@ -473,11 +468,11 @@ export async function runLocalTests(opts = {}) {
     const popupState = (pp) => pp.evaluate(() => ({
       host: document.getElementById('host').textContent,
       unsupported: !document.getElementById('unsupported').hidden,
-      modeVisible: !document.getElementById('mode').hidden,
-      current: document.getElementById('modeCurrent').textContent,
-      checked: [...document.querySelectorAll('#modeSeg .seg-btn')].filter((b) => b.getAttribute('aria-checked') === 'true').map((b) => b.dataset.mode),
-      busy: document.getElementById('mode').dataset.busy,
-      error: document.getElementById('modeErr').hidden ? '' : document.getElementById('modeErr').textContent,
+      status: document.getElementById('status').textContent,
+      toggle: !!document.getElementById('toggle') && !document.getElementById('toggle').disabled,
+      picker: !!document.getElementById('picker'),
+      settings: !!document.getElementById('settings'),
+      modeUi: !!document.querySelector('#mode, #modeSeg, [data-mode]'),
     }));
 
     let popup = null;
@@ -485,44 +480,21 @@ export async function runLocalTests(opts = {}) {
       popup = await openPopup();
       current = popup;
       const st = await popupState(popup);
-      if (st.unsupported || !st.modeVisible || popupErrors.length) await add('popup', 'Popup otwiera się bez błędów', 'FAIL', popupErrors[0] || (st.unsupported ? 'strona oznaczona jako nieobsługiwana' : 'brak sekcji trybu'));
-      else await add('popup', 'Popup otwiera się bez błędów', 'PASS', `domena ${st.host}, tryb ${st.current}`);
+      const missing = [!st.toggle && 'przełącznik strony', !st.picker && '„Ukryj element”', !st.settings && '„Ustawienia”'].filter(Boolean);
+      if (st.unsupported || missing.length || st.modeUi || popupErrors.length) {
+        await add('popup', 'Popup otwiera się bez błędów', 'FAIL', popupErrors[0] || (st.unsupported ? 'strona oznaczona jako nieobsługiwana' : st.modeUi ? 'w popupie jest wybór trybu (usunięty z produktu)' : `brak: ${missing.join(', ')}`));
+      } else await add('popup', 'Popup otwiera się bez błędów', 'PASS', `domena ${st.host}, ${st.status}; przełącznik, „Ukryj element”, „Ustawienia”`);
     } catch (e) {
       await add('popup', 'Popup otwiera się bez błędów', 'FAIL', String(e.message || e).split('\n')[0]);
     }
 
-    const reopenOk = [];
-    for (const [from, to] of [['basic', 'balanced'], ['balanced', 'strict'], ['strict', 'basic']]) {
-      const id = `mode-${from}-${to}`;
-      const name = `Tryb ${MODE_LABEL[from]} → ${MODE_LABEL[to]}`;
-      if (!popup) { await add(id, name, 'FAIL', 'popup się nie otworzył'); continue; }
-      try {
-        current = popup;
-        const t = Date.now();
-        await popup.click(`#modeSeg [data-mode="${to}"]`);
-        await popup.waitForFunction(() => document.getElementById('mode').dataset.busy === 'false', null, { timeout: 90000 });
-        const ms = Date.now() - t;
-        const st = await popupState(popup);
-        const be = await call({ type: 'options:get' });
-        const lists = [...(be.lists || []).filter((l) => l.enabled).map((l) => l.id)].sort();
-        const problems = [];
-        if (st.error) problems.push(`komunikat błędu: ${st.error}`);
-        if (st.current !== MODE_LABEL[to] || st.checked.join() !== to) problems.push(`popup pokazuje ${st.current} [${st.checked.join()}]`);
-        if (be.protectionMode !== to) problems.push(`backend: ${be.protectionMode}`);
-        if (lists.join() !== [...MODE_LISTS[to]].sort().join()) problems.push(`listy: ${lists.join(',')}`);
-        await add(id, name, problems.length ? 'FAIL' : 'PASS', problems.join('; ') || `${(ms / 1000).toFixed(1)} s, listy ${lists.join(', ')}`);
-        // stan popupu po ponownym otwarciu
-        const again = await openPopup();
-        const st2 = await popupState(again);
-        reopenOk.push({ mode: to, ok: st2.current === MODE_LABEL[to] && st2.checked.join() === to, shown: st2.current });
-        await again.close();
-      } catch (e) {
-        await add(id, name, 'FAIL', String(e.message || e).split('\n')[0]);
-      }
-    }
-    const bad = reopenOk.filter((x) => !x.ok);
-    if (reopenOk.length === 3 && !bad.length) await add('popup-state', 'Stan popupu = wybrany tryb', 'PASS', 'po ponownym otwarciu: Balanced, Strict, Basic');
-    else await add('popup-state', 'Stan popupu = wybrany tryb', 'FAIL', bad.map((x) => `oczekiwano ${MODE_LABEL[x.mode]}, jest ${x.shown}`).join('; ') || 'nie sprawdzono wszystkich trybów');
+    // stały zestaw list ochrony (bez trybów)
+    const be = await call({ type: 'options:get' }).catch(() => null);
+    const lists = enabledListsOf(be);
+    const legacy = be ? ['protectionMode', 'protectionModes'].filter((k) => k in be) : [];
+    const coreOk = JSON.stringify(lists) === JSON.stringify([...CORE_LISTS].sort()) && be.lists.length === CORE_LISTS.length && !legacy.length;
+    await add('core-lists', 'Ochrona: stały zestaw list', coreOk ? 'PASS' : 'FAIL',
+      coreOk ? `włączone: ${lists.join(', ')}; brak trybów i innych list` : `listy: ${be ? be.lists.map((l) => `${l.id}${l.enabled ? '' : ' (wył.)'}`).join(', ') : 'brak odpowiedzi'}${legacy.length ? `; pola trybów: ${legacy.join(', ')}` : ''}`);
     if (popup) await popup.close().catch(() => {});
 
     const localOk = await local.evaluate(() => document.getElementById('ok') && document.getElementById('ok').textContent).catch(() => null);
@@ -732,7 +704,7 @@ export async function dismissConsentModal(page, { click = true, appearMs = 8000,
 // --- Onboarding (strona powitalna po świeżej instalacji) -------------------------------------------
 export const ONBOARDING_CHECKS = Object.freeze([
   ['onb-open', 'Onboarding: otwarcie'],
-  ['onb-default', 'Onboarding: domyślny tryb'],
+  ['onb-default', 'Onboarding: ochrona od razu (bez wyboru trybu)'],
   ['onb-start', 'Onboarding: start'],
   ['onb-errors', 'Onboarding: bez błędów'],
 ]);
@@ -759,29 +731,25 @@ async function runOnboarding({ context, add, call, setCurrent }) {
     setCurrent(welcome);
     await report('onb-open', count === 1 ? 'PASS' : 'FAIL', count === 1 ? 'jedna karta welcome/welcome.html po świeżej instalacji' : `kart powitalnych: ${count}`);
 
-    // 2. Basic zaznaczony; widoczne Basic / Balanced / Strict
-    await welcome.waitForSelector('#modes input', { timeout: 15000 });
-    const names = await welcome.$$eval('#modes .name', (n) => n.filter((x) => x.offsetParent !== null).map((x) => x.textContent.trim()));
-    const checked = await welcome.$eval('#modes input:checked', (i) => i.value).catch(() => null);
-    const okDefault = checked === 'basic' && JSON.stringify(names) === JSON.stringify(['Basic', 'Balanced', 'Strict']);
-    await report('onb-default', okDefault ? 'PASS' : 'FAIL', okDefault ? 'Basic zaznaczony; widoczne Basic, Balanced, Strict' : `zaznaczony: ${checked}; widoczne: ${names.join(', ')}`);
+    // 2. ochrona działa od razu: informacja o blokowaniu, bez wyboru trybu; stały zestaw list
+    await welcome.waitForSelector('#start', { timeout: 15000 });
+    const features = await welcome.$$eval('.features li', (n) => n.filter((x) => x.offsetParent !== null).length).catch(() => 0);
+    const modeUi = await welcome.$$eval('#modes, input[name="mode"]', (n) => n.length).catch(() => 0);
+    const o = await call({ type: 'options:get' }).catch(() => null);
+    const lists = enabledListsOf(o);
+    const okDefault = features >= 3 && !modeUi && JSON.stringify(lists) === JSON.stringify([...CORE_LISTS].sort());
+    await report('onb-default', okDefault ? 'PASS' : 'FAIL', okDefault ? `opis ochrony (${features} pozycje), brak wyboru trybu; listy: ${lists.join(', ')}` : `opis: ${features}; wybór trybu: ${modeUi ? 'jest' : 'brak'}; listy: ${lists.join(', ')}`);
 
-    // 3. „Zacznij korzystać” bez zmiany Basic → sukces, karta się zamyka, Basic = istniejący preset
+    // 3. „Zacznij korzystać” → karta się zamyka, ustawienia bez zmian
     await welcome.bringToFront();
     const closed = welcome.waitForEvent('close', { timeout: 30000 }).then(() => true).catch(() => false);
     await welcome.click('#start');
-    const success = await welcome.waitForSelector('#status.ok', { timeout: 60000 }).then(() => true).catch(() => false);
-    const msg = welcome.isClosed() ? '' : ((await welcome.textContent('#status').catch(() => '')) || '');
     const wasClosed = await closed;
-    const o = await call({ type: 'options:get' }).catch(() => null);
-    const lists = o ? o.lists.filter((l) => l.enabled).map((l) => l.id).sort() : [];
-    const preset = o && o.protectionModes && o.protectionModes.basic ? [...o.protectionModes.basic].sort() : null;
+    const lists2 = enabledListsOf(await call({ type: 'options:get' }).catch(() => null));
     const problems = [];
-    if (!success) problems.push(`brak komunikatu sukcesu${msg ? ` (${msg.trim().slice(0, 120)})` : ''}`);
     if (!wasClosed) problems.push('karta powitalna się nie zamknęła');
-    if (!o || o.protectionMode !== 'basic') problems.push(`protectionMode: ${o && o.protectionMode}`);
-    if (!preset || JSON.stringify(lists) !== JSON.stringify(preset)) problems.push(`listy ${lists.join(',')} ≠ preset Basic ${preset ? preset.join(',') : '—'}`);
-    await report('onb-start', problems.length ? 'FAIL' : 'PASS', problems.join('; ') || `„Gotowe” → karta zamknięta; protectionMode = basic; listy = preset Basic (${lists.join(', ')})`);
+    if (JSON.stringify(lists2) !== JSON.stringify(lists)) problems.push(`listy zmieniły się: ${lists2.join(',')}`);
+    await report('onb-start', problems.length ? 'FAIL' : 'PASS', problems.join('; ') || 'karta zamknięta; ustawienia bez zmian');
   } catch (e) {
     const why = `przerwano: ${String((e && e.message) || e).split('\n')[0]}`;
     for (const [id] of ONBOARDING_CHECKS) if (id !== 'onb-errors' && !done.has(id)) await report(id, 'FAIL', why);
@@ -801,7 +769,8 @@ export const BACKUP_CHECKS = Object.freeze([
   ['backup-badfile', 'Backup: błędny plik'],
   ['backup-final', 'Backup: stan po teście'],
 ]);
-const BACKUP_KEYS = ['enabledLists', 'disabledSites', 'userFilters', 'protectionMode'];
+const BACKUP_KEYS = ['disabledSites', 'userFilters'];
+const BACKUP_VERSION = 2;
 const BACKUP_TEST_HOST = 'chromeblock-backup-test.example';
 // w kopii nie może być: health, diagnostyki, danych sesji, statystyk, kart, adresów
 const BACKUP_FORBIDDEN = ['"health"', 'startupProfile', 'devPerf', 'scriptletPerf', 'statsTabs', 'statsRt', 'sessionScriptletsOk', 'tabId', '"errors"', 'http://', 'https://'];
@@ -810,8 +779,6 @@ const BACKUP_FORBIDDEN = ['"health"', 'startupProfile', 'devPerf', 'scriptletPer
 export function settingsView(o) {
   if (!o) return null;
   return {
-    enabledLists: (o.lists || []).filter((l) => l.enabled).map((l) => l.id).sort(),
-    protectionMode: o.protectionMode,
     disabledSites: [...(o.disabledSites || [])].sort(),
     userFilters: o.userFilters || '',
   };
@@ -823,18 +790,18 @@ export function settingsDiff(a, b) {
   return BACKUP_KEYS.filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]));
 }
 
-/** Kontrola kopii (czysta logika): format, dokładnie 4 pola, zgodność ze snapshotem, prywatność. */
+/** Kontrola kopii (czysta logika): format v2, dokładnie 2 pola, zgodność ze snapshotem, prywatność. */
 export function checkBackupFile(text, snapshot) {
   const out = { export: [], privacy: [], data: null };
   let b;
   try { b = JSON.parse(text); } catch { out.export.push('pobrany plik nie jest poprawnym JSON'); return out; }
   out.data = b;
   if (b.format !== 'chromeblock-settings') out.export.push(`format: ${JSON.stringify(b.format)}`);
-  if (b.version !== 1) out.export.push(`version: ${JSON.stringify(b.version)}`);
+  if (b.version !== BACKUP_VERSION) out.export.push(`version: ${JSON.stringify(b.version)}`);
   const keys = b.settings && typeof b.settings === 'object' ? Object.keys(b.settings).sort() : [];
   if (JSON.stringify(keys) !== JSON.stringify([...BACKUP_KEYS].sort())) out.export.push(`pola ustawień: ${keys.join(', ') || 'brak'} (oczekiwano dokładnie ${BACKUP_KEYS.length})`);
   if (snapshot && b.settings) {
-    const v = { ...b.settings, enabledLists: [...(b.settings.enabledLists || [])].sort(), disabledSites: [...(b.settings.disabledSites || [])].sort() };
+    const v = { ...b.settings, disabledSites: [...(b.settings.disabledSites || [])].sort() };
     const diff = settingsDiff(v, snapshot);
     if (diff.length) out.export.push(`kopia różni się od bieżących ustawień: ${diff.join(', ')}`);
   }
@@ -864,7 +831,7 @@ async function runBackup({ context, add, extId, opt, dir, setCurrent }) {
     setCurrent(page);
     await page.goto(`chrome-extension://${extId}/options/options.html#backup`);
     await page.waitForSelector('#exportSettings', { timeout: 15000 });
-    await page.waitForFunction(() => document.querySelectorAll('#listContainer input').length > 0, null, { timeout: 30000 });
+    await page.waitForFunction(() => document.querySelectorAll('#listContainer .card').length > 0, null, { timeout: 30000 });
 
     // 1. eksport przez UI
     const [download] = await Promise.all([page.waitForEvent('download', { timeout: 20000 }), page.click('#exportSettings')]);
@@ -873,18 +840,17 @@ async function runBackup({ context, add, extId, opt, dir, setCurrent }) {
     const name = download.suggestedFilename();
     const chk = checkBackupFile(fs.readFileSync(file, 'utf8'), snapshot);
     if (!/^chromeblock-ustawienia-\d{4}-\d{2}-\d{2}\.json$/.test(name)) chk.export.push(`nazwa pliku: ${name}`);
-    await report('backup-export', chk.export.length ? 'FAIL' : 'PASS', chk.export.join('; ') || `${name}: format chromeblock-settings v1, 4 pola zgodne z ustawieniami`);
+    await report('backup-export', chk.export.length ? 'FAIL' : 'PASS', chk.export.join('; ') || `${name}: format chromeblock-settings v2, 2 pola zgodne z ustawieniami`);
     await report('backup-privacy', chk.privacy.length ? 'FAIL' : 'PASS', chk.privacy.join('; ') || 'bez health, diagnostyki, sesji, statystyk, kart i adresów');
     if (chk.export.length) throw new Error('eksport niepoprawny – import pominięty');
 
     // 2. zmiana wszystkich ustawień (istniejące API Opcji)
-    await call({ type: 'options:setProtectionMode', mode: snapshot.protectionMode === 'strict' ? 'basic' : 'strict' });
     await call({ type: 'options:setDisabledSites', sites: [...snapshot.disabledSites, BACKUP_TEST_HOST] });
     await call({ type: 'options:setUserFilters', text: `${snapshot.userFilters}${snapshot.userFilters && !snapshot.userFilters.endsWith('\n') ? '\n' : ''}||${BACKUP_TEST_HOST}^\n` });
     const changed = settingsDiff(await view(), snapshot);
     const dynBefore = await opt.evaluate(() => chrome.declarativeNetRequest.getDynamicRules()).catch(() => []);
     const testRulesBefore = JSON.stringify(dynBefore).includes(BACKUP_TEST_HOST);
-    if (changed.length < 4) throw new Error(`nie udało się zmienić ustawień przed importem (zmienione: ${changed.join(', ')})`);
+    if (changed.length < 2) throw new Error(`nie udało się zmienić ustawień przed importem (zmienione: ${changed.join(', ')})`);
 
     // 3. import wcześniej wyeksportowanego pliku przez UI
     const importStart = await opt.evaluate(() => Date.now());
@@ -907,7 +873,8 @@ async function runBackup({ context, add, extId, opt, dir, setCurrent }) {
       return { rulesets, dyn, regLists: [...new Set(reg.filter((r) => r.id.startsWith('sl-')).map((r) => r.id.split('-')[1]))].sort() };
     }).catch((e) => ({ error: String(e) }));
     const withScriptlets = [];
-    for (const id of after ? after.enabledLists : []) {
+    const afterLists = enabledListsOf(await call({ type: 'options:get' }).catch(() => null));
+    for (const id of afterLists) {
       const files = await opt.evaluate((x) => fetch(chrome.runtime.getURL(`data/${x}.scriptlets.json`)).then((r) => r.json()).catch(() => []), id);
       if (files.length) withScriptlets.push(id);
     }
@@ -920,7 +887,7 @@ async function runBackup({ context, add, extId, opt, dir, setCurrent }) {
     }
     if (eng.error) problems.push(`odczyt stanu Chrome: ${eng.error}`);
     else if (after) {
-      if (JSON.stringify(eng.rulesets) !== JSON.stringify(after.enabledLists)) problems.push(`zestawy reguł Chrome (${eng.rulesets.join(',')}) ≠ listy (${after.enabledLists.join(',')})`);
+      if (JSON.stringify(eng.rulesets) !== JSON.stringify([...CORE_LISTS].sort())) problems.push(`zestawy reguł Chrome (${eng.rulesets.join(',')}) ≠ stały zestaw (${[...CORE_LISTS].sort().join(',')})`);
       const site = eng.dyn.find((r) => r.id === 1);
       const siteDomains = site ? [...(site.condition.requestDomains || [])].sort() : [];
       if (JSON.stringify(siteDomains) !== JSON.stringify(after.disabledSites)) problems.push('reguła wyłączonych stron ≠ ustawienia');
@@ -930,7 +897,7 @@ async function runBackup({ context, add, extId, opt, dir, setCurrent }) {
     }
     await report('backup-import', problems.length ? 'FAIL' : 'PASS', problems.join('; ') || `przez UI; podsumowanie widoczne; health bez ERROR; listy, reguły dynamiczne i scriptlety zsynchronizowane`);
     const diff = settingsDiff(after, snapshot);
-    await report('backup-match', diff.length ? 'FAIL' : 'PASS', diff.length ? `nie wróciły: ${diff.join(', ')}` : 'enabledLists, protectionMode, disabledSites, userFilters = snapshot');
+    await report('backup-match', diff.length ? 'FAIL' : 'PASS', diff.length ? `nie wróciły: ${diff.join(', ')}` : 'disabledSites, userFilters = snapshot');
 
     // 4. błędny plik → odrzucony, bez zmian
     const bad = path.join(dir, 'uszkodzony.json');
@@ -956,7 +923,6 @@ async function runBackup({ context, add, extId, opt, dir, setCurrent }) {
       if (!snapshot) throw new Error('brak snapshotu');
       let diff = settingsDiff(await view(), snapshot);
       if (diff.length) {
-        await call({ type: 'options:setLists', enabledLists: snapshot.enabledLists });
         await call({ type: 'options:setDisabledSites', sites: snapshot.disabledSites });
         await call({ type: 'options:setUserFilters', text: snapshot.userFilters });
         diff = settingsDiff(await view(), snapshot);
@@ -1156,11 +1122,6 @@ export function writeResults(result, dir = RESULTS_DIR) {
 }
 
 async function main() {
-  if (process.argv.includes('--modes')) {
-    const modes = await import('./protection-modes-sites.mjs');
-    process.exitCode = await modes.main(process.argv.slice(2));
-    return;
-  }
   const o = parseArgs(process.argv.slice(2));
   if (o.extensionDir && !fs.existsSync(path.join(o.extensionDir, 'manifest.json'))) {
     console.log(`Brak manifest.json w ${o.extensionDir}`);

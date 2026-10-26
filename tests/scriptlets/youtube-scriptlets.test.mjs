@@ -221,8 +221,10 @@ test('remove-node-text (rmnt script, window,"fetch"): opróżnia treść skryptu
   assert.equal(run(ctx, 'c.textContent'), '');
 });
 
+// Dwa poniższe filtry pochodziły z usuniętej listy „annoyances” (uBO Annoyances). Test sprawdza
+// IMPLEMENTACJĘ scriptletów (używaną dalej przez ads/privacy/security), więc filtr jest wpisany wprost.
 test('prevent-addEventListener (m.youtube visibilitychange)', () => {
-  const call = ytCall(/m\.youtube\.com##\+js\(aeld, visibilitychange, /);
+  const call = scriptletCallFromLine({ line: 'm.youtube.com##+js(aeld, visibilitychange, /bgmobile|\\{\\w\\.\\w+\\(\\)\\}|\\.getVisibilityState\\(\\)/)', trusted: true });
   const ctx = createEnv('m.youtube.com');
   runScriptlets(ctx, [call]);
   const fired = run(ctx, `(() => {
@@ -237,7 +239,7 @@ test('prevent-addEventListener (m.youtube visibilitychange)', () => {
 });
 
 test('trusted-set-constant json:"visible" (m.youtube document.visibilityState)', () => {
-  const call = ytCall(/m\.youtube\.com##\+js\(trusted-set, document\.visibilityState, json:"visible"\)/);
+  const call = scriptletCallFromLine({ line: 'm.youtube.com##+js(trusted-set, document.visibilityState, json:"visible")', trusted: true });
   const ctx = createEnv('m.youtube.com');
   run(ctx, 'document.visibilityState = "hidden";');
   runScriptlets(ctx, [call]);

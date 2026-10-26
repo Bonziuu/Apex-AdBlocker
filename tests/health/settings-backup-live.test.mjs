@@ -33,10 +33,9 @@ test('UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez
     opt.on('pageerror', (e) => errors.push(String(e)));
     await opt.goto(`chrome-extension://${id}/options/options.html#backup`);
     const call = (msg) => opt.evaluate((m) => chrome.runtime.sendMessage(m), msg);
-    await opt.waitForFunction(() => document.querySelectorAll('#listContainer input').length > 0, null, { timeout: 30000 });
+    await opt.waitForFunction(() => document.querySelectorAll('#listContainer .card').length > 0, null, { timeout: 30000 });
 
-    // stan do zapisania: Balanced, 1 wyłączona strona, własny filtr
-    await call({ type: 'options:setProtectionMode', mode: 'balanced' });
+    // stan do zapisania: 1 wyłączona strona, własny filtr
     await call({ type: 'options:setDisabledSites', sites: ['bank.example'] });
     await call({ type: 'options:setUserFilters', text: '||ads.example^\n' });
     await opt.reload();
@@ -49,12 +48,11 @@ test('UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez
     await download.saveAs(file);
     const backup = JSON.parse(fs.readFileSync(file, 'utf8'));
     assert.equal(backup.format, 'chromeblock-settings');
-    assert.equal(backup.settings.protectionMode, 'balanced');
+    assert.equal(backup.version, 2);
     assert.deepEqual(backup.settings.disabledSites, ['bank.example']);
-    assert.deepEqual(Object.keys(backup.settings).sort(), ['disabledSites', 'enabledLists', 'protectionMode', 'userFilters']);
+    assert.deepEqual(Object.keys(backup.settings).sort(), ['disabledSites', 'userFilters']);
 
     // zmiana wszystkiego na inne wartości
-    await call({ type: 'options:setProtectionMode', mode: 'basic' });
     await call({ type: 'options:setDisabledSites', sites: [] });
     await call({ type: 'options:setUserFilters', text: '' });
 
@@ -65,22 +63,23 @@ test('UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez
     await opt.setInputFiles('#importFile', broken);
     await opt.waitForSelector('#importErrors:not([hidden])');
     assert.match(await opt.textContent('#importErrors'), /niepoprawny.*JSON/s);
-    assert.equal((await call({ type: 'options:get' })).protectionMode, 'basic', 'bez zmian po złym pliku');
+    assert.deepEqual((await call({ type: 'options:get' })).disabledSites, [], 'bez zmian po złym pliku');
 
     // import kopii przez UI → przywrócone + podsumowanie
     await opt.setInputFiles('#importFile', file);
     await opt.waitForSelector('#importSummary:not([hidden])', { timeout: 60000 });
     const summary = await opt.textContent('#importSummary');
-    assert.match(summary, /Tryb ochrony: Balanced/);
     assert.match(summary, /Wyłączone strony: 1/);
-    assert.doesNotMatch(summary, /Focus/);
+    assert.match(summary, /Moje filtry: 1 reguła/);
+    assert.doesNotMatch(summary, /Focus|Tryb|Listy/);
     assert.equal(await opt.isHidden('#importErrors'), true);
     const o = await call({ type: 'options:get' });
-    assert.equal(o.protectionMode, 'balanced');
+    assert.deepEqual(o.lists.filter((l) => l.enabled).map((l) => l.id), ['ads', 'privacy', 'security']);
     assert.deepEqual(o.disabledSites, ['bank.example']);
     assert.equal(o.userFilters, '||ads.example^\n');
     assert.equal(await opt.inputValue('#userFilters'), '||ads.example^\n', 'UI opcji odświeżone po imporcie');
-    assert.ok(!('youtubeFocus' in await opt.evaluate(() => chrome.storage.local.get(null))), 'brak klucza Focus Mode w storage');
+    const stored = await opt.evaluate(() => chrome.storage.local.get(null));
+    for (const k of ['youtubeFocus', 'enabledLists', 'protectionMode']) assert.ok(!(k in stored), `brak klucza ${k} w storage`);
     assert.deepEqual(errors, []);
   } finally {
     await ctx.close();
@@ -112,7 +111,7 @@ test('UI: niepełny rollback nie twierdzi, że przywrócono ustawienia; pokazuje
     await opt.goto(`chrome-extension://${id}/options/options.html#backup`);
     await opt.waitForSelector('#importSettings');
     // obsługa importu jest podpinana po pierwszym options:get – czekamy na pełne wyrenderowanie Opcji
-    await opt.waitForFunction(() => document.querySelectorAll('#listContainer input').length > 0, null, { timeout: 60000 });
+    await opt.waitForFunction(() => document.querySelectorAll('#listContainer .card').length > 0, null, { timeout: 60000 });
     const file = path.join(tmp, 'kopia.json');
     fs.writeFileSync(file, '{}');
 

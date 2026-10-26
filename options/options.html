@@ -17,7 +17,7 @@
     </header>
 
     <nav>
-      <button class="tab" data-tab="lists" aria-selected="true">Listy filtrów</button>
+      <button class="tab" data-tab="protection" aria-selected="true">Ochrona</button>
       <button class="tab" data-tab="filters">Moje filtry</button>
       <button class="tab" data-tab="sites">Wyłączone strony</button>
       <button class="tab" data-tab="backup">Kopia ustawień</button>
@@ -25,17 +25,10 @@
       <button class="tab" data-tab="about">O wtyczce</button>
     </nav>
 
-    <section id="lists" class="panel">
-      <h2 class="mode-h" id="modeHeading">Tryb ochrony</h2>
-      <p class="muted">Tryb to gotowy zestaw list. Kolejne tryby dodają więcej ingerencji w wygląd stron – wybierz poziom, który Ci odpowiada. YouTube Protection działa w każdym trybie.</p>
-      <div id="modeCards" class="mode-cards" role="radiogroup" aria-labelledby="modeHeading"></div>
-      <div id="modeCustom" class="mode-custom" hidden><strong>Własny</strong> – listy poniżej zostały ustawione ręcznie i nie pasują do żadnego trybu.</div>
-      <div id="modeMsg" class="msg" role="alert" hidden></div>
-
-      <h2 class="mode-h">Listy filtrów</h2>
-      <p class="muted">Włączone listy decydują o tym, co jest blokowane. Domyślnie działają reklamy, śledzenie i złośliwe strony – to odpowiednik domyślnych ustawień uBlock Origin.</p>
+    <section id="protection" class="panel">
+      <h2 class="mode-h">Ochrona</h2>
+      <p class="muted">ChromeBlock blokuje reklamy, śledzenie i złośliwe strony – zawsze tym samym zestawem list, bez wybierania poziomu ochrony. YouTube Protection działa razem z listą reklam. Na wybranych stronach ochronę wyłączysz przyciskiem w okienku wtyczki albo w zakładce „Wyłączone strony”.</p>
       <div id="listContainer" class="cards"></div>
-      <div id="listMsg" class="msg" hidden></div>
     </section>
 
     <section id="filters" class="panel" hidden>
@@ -69,7 +62,7 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
 
     <section id="backup" class="panel" hidden>
       <h2 class="mode-h">Kopia ustawień</h2>
-      <p class="muted">Zapisz ustawienia ChromeBlock do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: włączone listy filtrów, tryb ochrony, wyłączone strony (same nazwy domen) i Moje filtry. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
+      <p class="muted">Zapisz ustawienia ChromeBlock do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: wyłączone strony (same nazwy domen) i Moje filtry – listy ochrony są stałe. Kopie ze starszych wersji ChromeBlock też da się zaimportować. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
       <div class="bar">
         <button id="exportSettings" class="primary">Eksportuj ustawienia</button>
         <button id="importSettings" class="secondary">Importuj ustawienia</button>
@@ -132,7 +125,7 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
         <li><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, podmieniane są fragmenty kodu strony. ChromeBlock wykonuje tylko te warianty scriptletów, których semantykę zna; pozostałe są pomijane (szczegóły w zakładce Diagnostyka i w raporcie <code>npm run audit:scriptlets</code>).</li>
       </ul>
       <h2>Listy filtrów</h2>
-      <p>EasyList, EasyPrivacy, Fanboy Annoyances (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.</p>
+      <p>EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.</p>
       <h2>Ograniczenia MV3</h2>
       <p>Części filtrów nie da się wyrazić w Manifest V3 (np. filtrowanie HTML, modyfikacja nagłówków CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma jeszcze implementacji w ChromeBlock. Na pojedynczych stronach skuteczność może być więc niższa niż w dawnym uBlock Origin. ChromeBlock nie obiecuje niewykrywalności przez strony.</p>
       <div id="stats" class="muted"></div>

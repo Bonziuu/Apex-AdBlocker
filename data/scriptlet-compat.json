@@ -1,9 +1,9 @@
 {
  "summary": {
-  "total": 14598,
-  "supported": 13818,
-  "partial": 84,
-  "unsupported": 696
+  "total": 10353,
+  "supported": 9698,
+  "partial": 32,
+  "unsupported": 623
  },
  "byList": {
   "ads": {
@@ -23,18 +23,6 @@
    "supported": 20,
    "partial": 0,
    "unsupported": 4
-  },
-  "cookies": {
-   "total": 2146,
-   "supported": 2063,
-   "partial": 45,
-   "unsupported": 38
-  },
-  "annoyances": {
-   "total": 2099,
-   "supported": 2057,
-   "partial": 7,
-   "unsupported": 35
   }
  }
 }

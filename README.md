@@ -27,6 +27,8 @@ Chrome ładuje rozszerzenie bezpośrednio z tego folderu – nie przenoś go po 
 | Moje filtry | Własne reguły w składni ABP/uBO (bez scriptletów) |
 | Diagnostyka | Stan silników, wyniki synchronizacji, dziennik błędów, pomiary wydajności (opcje → Diagnostyka) |
 
+Ochrona ma **jeden stały zestaw list**: Reklamy (`ads`), Śledzenie i prywatność (`privacy`), Złośliwe strony (`security`) – `shared/core-lists.js`. Nie ma trybów ochrony ani wyboru list; listy komunikatów o cookies i „annoyances” nie są częścią produktu i nie trafiają do paczki. Użytkownik ustawia tylko wyłączone strony i własne filtry (także przez „Ukryj element”).
+
 ## Compatibility
 
 ChromeBlock **nie jest** uBlock Origin i **nie ma pełnej zgodności** z uBO.
@@ -35,7 +37,7 @@ ChromeBlock **nie jest** uBlock Origin i **nie ma pełnej zgodności** z uBO.
 - Obsługuje **określony podzbiór** składni ABP/uBO. Filtrów, których nie da się poprawnie wyrazić, ChromeBlock nie wykonuje – zasada **fail closed**:
   - scriptlet jest wykonywany tylko wtedy, gdy ChromeBlock zna jego semantykę **dla dokładnie tego wariantu argumentów**,
   - nieznany scriptlet, nieznany parametr, niesparowany vararg albo nieobsługiwana wartość oznaczają, że filtr jest pomijany (nie „częściowo wykonywany”).
-- **Build kontroluje zgodność kluczowych filtrów YouTube** (youtube.com, www/m/music.youtube.com, youtube-nocookie.com) w listach domyślnie włączonych. Jeśli pojawi się filtr YouTube, którego ChromeBlock nie obsługuje, `npm run build` kończy się błędem `CRITICAL YOUTUBE COMPATIBILITY FAILURE`. Wyjątkiem są braki świadomie wpisane do `youtube/known-gaps.json`.
+- **Build kontroluje zgodność kluczowych filtrów YouTube** (youtube.com, www/m/music.youtube.com, youtube-nocookie.com) w stałym zestawie list. Jeśli pojawi się filtr YouTube, którego ChromeBlock nie obsługuje, `npm run build` kończy się błędem `CRITICAL YOUTUBE COMPATIBILITY FAILURE`. Wyjątkiem są braki świadomie wpisane do `youtube/known-gaps.json`.
 
 Stan przy obecnych listach (`npm run audit:scriptlets`):
 
@@ -152,4 +154,4 @@ ChromeBlock jest w 100% darmowy – bez wersji Pro, płatnych funkcji, paywalla,
 
 ## Źródła list i licencje
 
-EasyList, EasyPrivacy, Fanboy Annoyances © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3) · Polskie Filtry Reklamowe © MajkiIT (CC BY-NC-SA 4.0). Listy są wbudowane w repozytorium (`tools/lists/`). Pełny audyt licencyjny zostanie wykonany przed ewentualnym publicznym wydaniem.
+EasyList, EasyPrivacy © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3) · Polskie Filtry Reklamowe © MajkiIT (CC BY-NC-SA 4.0). Listy są wbudowane w repozytorium (`tools/lists/`). Pełny audyt licencyjny zostanie wykonany przed ewentualnym publicznym wydaniem.

@@ -1,8 +1,7 @@
 // ChromeBlock – popup. Odczyt stanu (popup:get) i akcje: włączenie/wyłączenie ochrony na stronie,
-// tryb ochrony (options:setProtectionMode – bez przeładowania karty), „Ukryj element”, ustawienia, diagnostyka.
+// „Ukryj element”, ustawienia, diagnostyka. Ochrona ma jeden stały zestaw list (bez trybów).
 
 import { viewModel } from './view-model.js';
-import { createModeController } from '../shared/protection-mode-ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -46,51 +45,6 @@ if (tab) {
   try { info = await chrome.runtime.sendMessage({ type: 'popup:get', tabId: tab.id }); } catch { info = null; }
 }
 render(info);
-
-// --- tryb ochrony ---
-function renderMode(st) {
-  const box = $('mode');
-  box.dataset.busy = String(st.busy);
-  $('modeCurrent').textContent = st.busy ? 'Zmieniam…' : st.label;
-  $('modeDesc').textContent = st.short;
-  $('modeEdit').hidden = !st.isCustom;
-  $('modeErr').hidden = !st.error;
-  $('modeErr').textContent = st.error;
-  for (const b of $('modeSeg').querySelectorAll('.seg-btn')) {
-    const m = b.dataset.mode;
-    b.setAttribute('aria-checked', String(!st.busy && m === st.mode));
-    b.dataset.pending = String(st.pending === m);
-    b.disabled = st.busy;
-    b.tabIndex = (m === st.mode || (st.isCustom && m === 'basic')) ? 0 : -1;
-  }
-}
-const modes = createModeController({
-  send: (msg) => chrome.runtime.sendMessage(msg),
-  initial: info && info.canRun ? info.protectionMode : undefined,
-  onChange: renderMode,
-});
-if (info && info.canRun) {
-  renderMode(modes.state);
-  $('modeSeg').addEventListener('click', (e) => {
-    const b = e.target.closest('.seg-btn');
-    if (b) modes.select(b.dataset.mode);
-  });
-  $('modeSeg').addEventListener('keydown', (e) => {
-    const order = ['basic', 'balanced', 'strict'];
-    const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
-    if (!d || modes.state.busy) return;
-    e.preventDefault();
-    const cur = modes.state.isCustom ? (d > 0 ? -1 : order.length) : order.indexOf(modes.state.mode);
-    const next = order[Math.max(0, Math.min(order.length - 1, cur + d))];
-    modes.select(next).then(() => $('modeSeg').querySelector(`[data-mode="${modes.state.mode}"]`)?.focus());
-  });
-  $('modeEdit').addEventListener('click', () => {
-    chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#lists') });
-    window.close();
-  });
-} else {
-  $('mode').hidden = true;
-}
 
 $('toggle').addEventListener('click', async () => {
   if (!info || !info.canRun) return;

@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+// HISTORYCZNE NARZĘDZIE – nie rozwijamy go. ChromeBlock 1.0 nie ma trybów ochrony (stały zestaw
+// list: shared/core-lists.js), więc ten tester nie działa z obecnym produktem. Ostatnia wersja, z
+// którą działał: gałąź legacy/protection-modes-tester (commit 0e3fe92). Wyniki z tej wersji posłużyły
+// do decyzji o jednym stałym zestawie list. Zostaje tylko jako dokumentacja metody.
+//
+// (opis historyczny)
 // ChromeBlock – porównanie trybów ochrony na prawdziwych stronach (lokalnie, Windows/Chrome).
 //
 //   test-chromeblock.cmd --modes            (Windows, dwuklik: test-protection-modes.cmd)
@@ -535,7 +541,14 @@ document.getElementById('clear').addEventListener('click', () => { saved = {}; p
 `;
 }
 
+export const LEGACY_NOTICE = 'Tester trybów ochrony jest historyczny: ChromeBlock nie ma już trybów (stały zestaw list). '
+  + 'Ostatnia działająca wersja: git switch legacy/protection-modes-tester';
+
 export async function main(argv = process.argv.slice(2)) {
+  if (!argv.includes('--legacy-force')) {
+    console.log(LEGACY_NOTICE);
+    return 2;
+  }
   const opts = parseModesArgs(argv);
   if (opts.extensionDir && !fs.existsSync(path.join(opts.extensionDir, 'manifest.json'))) {
     console.log(`Brak manifest.json w ${opts.extensionDir}`);
