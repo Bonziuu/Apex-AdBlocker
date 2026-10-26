@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "measuredAt": "2026-10-25T23:30:27.452Z",
-  "commit": "9ee1041d39e9344f3dbeb0fbec741e5e3027679f",
+  "measuredAt": "2026-10-26T12:43:29.814Z",
+  "commit": "bfa08f8a48b05fedba83203d73d7516a19b66be4",
   "environment": {
     "os": "Linux 6.18.44-fc-v153 x64",
     "cpu": "Intel(R) Xeon(R) Processor @ 2.80GHz ×2",
@@ -11,72 +11,86 @@
     "headless": true
   },
   "size": {
-    "packageSha256": "ee39d172986109ed8e8567d22f6ef3cc3154b3a6255762a294d22a8b42a004ec",
-    "files": 115,
-    "unpackedBytes": 18522602,
-    "zipBytes": 4519619,
+    "packageSha256": "1c52d8b53d126a43f1297b8504728cdb4fbc9383d29006c97e9e301224676a29",
+    "files": 97,
+    "unpackedBytes": 14007822,
+    "zipBytes": 3327256,
     "categories": {
       "rules/ (rulesety DNR)": {
-        "files": 5,
-        "bytes": 6725089
-      },
-      "data/ (kosmetyka, scriptlety, metadane)": {
-        "files": 19,
-        "bytes": 6460685
+        "files": 3,
+        "bytes": 6229467
       },
       "scriptlets/ (wygenerowane scriptlety)": {
-        "files": 34,
-        "bytes": 5050123
+        "files": 26,
+        "bytes": 3989884
+      },
+      "data/ (kosmetyka, scriptlety, metadane)": {
+        "files": 13,
+        "bytes": 3521086
       },
       "JS rozszerzenia (SW, content scripts, shared)": {
-        "files": 19,
-        "bytes": 193295
+        "files": 18,
+        "bytes": 185851
       },
       "UI (popup, opcje, powitanie)": {
-        "files": 11,
-        "bytes": 56979
+        "files": 10,
+        "bytes": 45319
       },
       "ikony / zasoby / manifest": {
         "files": 27,
-        "bytes": 36431
+        "bytes": 36215
       }
     }
   },
   "startup": {
     "note": "internalInstall = profiler SW (timeOrigin workera → finishStartupProfile, świeża instalacja); freshInstallToReady = zegar ścienny z uruchomieniem Chromium; wake* = eksperymentalne, zegar ścienny ze strony rozszerzenia",
     "internalInstallMs": {
-      "median": 3187.9,
-      "p95": 3457.2,
-      "min": 2967.4,
-      "max": 3572.1,
+      "median": 2785.5,
+      "p95": 3090.3,
+      "min": 2510.6,
+      "max": 3161.8,
+      "n": 20
+    },
+    "registerContentScriptsMs": {
+      "median": 2451.5,
+      "p95": 2695.7,
+      "min": 2198.8,
+      "max": 2761.8,
+      "n": 20
+    },
+    "dnrReadyMs": {
+      "median": 349.3,
+      "p95": 438,
+      "min": 281.4,
+      "max": 440.8,
       "n": 20
     },
     "freshInstallToReadyMs": {
-      "median": 4308.1,
-      "p95": 4665.9,
-      "min": 4023.5,
-      "max": 4700.4,
+      "median": 3612.3,
+      "p95": 4102.5,
+      "min": 3370.1,
+      "max": 4130,
       "n": 20
     },
     "wakeMinimalMs": {
-      "median": 37.9,
-      "p95": 53.9,
-      "min": 30.2,
-      "max": 54.7,
+      "median": 27.4,
+      "p95": 33.1,
+      "min": 22.1,
+      "max": 34,
       "n": 20
     },
     "wakeCosmeticMs": {
-      "median": 101.9,
-      "p95": 129.7,
-      "min": 87.2,
-      "max": 141.2,
+      "median": 82.4,
+      "p95": 94.6,
+      "min": 67.7,
+      "max": 102.7,
       "n": 20
     },
     "warmCosmeticMs": {
-      "median": 3.9,
-      "p95": 5.7,
-      "min": 3,
-      "max": 8.6,
+      "median": 3.1,
+      "p95": 3.8,
+      "min": 2.4,
+      "max": 4.2,
       "n": 20
     }
   },
@@ -88,6 +102,10 @@
     ],
     "staticRulesActive": 21691,
     "registeredScripts": 51,
+    "registeredJsFiles": 26,
+    "registeredJsBytes": 3989884,
+    "dynamicRules": 0,
+    "sessionRules": 0,
     "contentScriptJsFiles": {
       "zwykła": 1,
       "youtube": 3
