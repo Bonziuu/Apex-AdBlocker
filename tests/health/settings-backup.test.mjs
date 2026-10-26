@@ -1,4 +1,5 @@
-// Kopia ustawień (eksport / import): format, prywatność, pełna walidacja, atomowość z rollbackiem.
+// Kopia ustawień (eksport / import): format v2 (tylko wyłączone strony i własne filtry), import kopii
+// v1 ze starszych wersji, prywatność, pełna walidacja, atomowość z rollbackiem.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -6,30 +7,34 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  BACKUP_FORMAT, BACKUP_VERSION, BACKUP_SETTINGS_KEYS, buildBackup, backupFileName, parseBackup, validateBackup, summarizeSettings, rulesWord,
+  BACKUP_FORMAT, BACKUP_VERSION, SUPPORTED_BACKUP_VERSIONS, BACKUP_SETTINGS_KEYS, LEGACY_BACKUP_KEYS,
+  buildBackup, backupFileName, parseBackup, validateBackup, summarizeSettings, rulesWord, importFailureMessage, IMPORT_MSG,
 } from '../../shared/settings-backup.js';
+import { CORE_LISTS } from '../../shared/core-lists.js';
 import { loadBackground } from '../helpers/chrome-mock.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const LISTS = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/lists.json'), 'utf8'));
-const KNOWN = (Array.isArray(LISTS) ? LISTS : LISTS.lists).map((l) => l.id);
 const sorted = (a) => [...a].sort();
-// pole z kopii starszych wersji (Focus Mode usunięty z produktu, kod na gałęzi experiment/focus-mode)
-const LEGACY_FOCUS = { enabled: true, shorts: true, recommendations: false, comments: true, endscreen: true };
+const CORE = sorted(CORE_LISTS);
+const SITES = ['bank.example', 'www.shop.example'];
+const FILTERS = '! moje\n||ads.example^\nexample.com##.reklama\n';
 
-function backupText(settings, extra = {}) {
+/** Kopia v2 (bieżący format). */
+function backupText(settings = {}, extra = {}) {
   return JSON.stringify({
-    format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt: '2026-10-25T12:00:00.000Z', extensionVersion: '0.3.2-dev',
-    settings: {
-      enabledLists: ['ads', 'privacy', 'security', 'cookies'],
-      disabledSites: ['bank.example', 'www.shop.example'],
-      userFilters: '! moje\n||ads.example^\nexample.com##.reklama\n',
-      protectionMode: 'balanced',
-      ...settings,
-    },
+    format: BACKUP_FORMAT, version: 2, exportedAt: '2026-10-26T12:00:00.000Z', extensionVersion: '0.3.4-dev',
+    settings: { disabledSites: SITES, userFilters: FILTERS, ...settings },
     ...extra,
   });
 }
+/** Kopia v1 ze starszej wersji ChromeBlock (z listami, trybem i Focus Mode). */
+function backupV1(enabledLists, protectionMode, more = {}) {
+  return JSON.stringify({
+    format: BACKUP_FORMAT, version: 1, exportedAt: '2026-10-20T12:00:00.000Z', extensionVersion: '0.3.2-dev',
+    settings: { enabledLists, disabledSites: SITES, userFilters: FILTERS, protectionMode, ...more },
+  });
+}
+const enabledNow = async (bg) => sorted((await bg.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id));
 
 /** Dane, które NIE mogą trafić do kopii (health, diagnostyka, cache, sesja, statystyki, karty, URL). */
 const TECH = {
@@ -43,8 +48,8 @@ const TECH = {
 
 // --- eksport ---------------------------------------------------------------------
 
-test('eksport: format wersjonowany, tylko 4 ustawienia użytkownika, wartości z bieżącego stanu', async () => {
-  const bg = await loadBackground({ local: { ...TECH, youtubeFocus: LEGACY_FOCUS } });
+test('eksport v2: tylko wyłączone strony i własne filtry (bez list, trybu, Focus Mode), wartości z bieżącego stanu', async () => {
+  const bg = await loadBackground({ local: { ...TECH, enabledLists: ['ads', 'cookies'], protectionMode: 'custom', youtubeFocus: { enabled: true } } });
   try {
     await bg.install();
     await bg.send({ type: 'options:setDisabledSites', sites: ['bank.example', 'www.Shop.example'] });
@@ -54,17 +59,15 @@ test('eksport: format wersjonowany, tylko 4 ustawienia użytkownika, wartości z
     assert.match(r.fileName, /^chromeblock-ustawienia-\d{4}-\d{2}-\d{2}\.json$/);
     const b = r.backup;
     assert.equal(b.format, 'chromeblock-settings');
-    assert.equal(b.version, 1);
+    assert.equal(b.version, 2);
+    assert.equal(BACKUP_VERSION, 2);
     assert.deepEqual(Object.keys(b).sort(), ['exportedAt', 'extensionVersion', 'format', 'settings', 'version']);
-    assert.deepEqual(Object.keys(b.settings).sort(), [...BACKUP_SETTINGS_KEYS].sort());
-    assert.deepEqual(sorted(b.settings.enabledLists), ['ads', 'privacy', 'security']);
-    assert.equal(b.settings.protectionMode, 'basic');
+    assert.deepEqual(Object.keys(b.settings).sort(), ['disabledSites', 'userFilters']);
+    assert.deepEqual([...BACKUP_SETTINGS_KEYS], ['disabledSites', 'userFilters']);
+    for (const k of ['enabledLists', 'protectionMode', 'youtubeFocus']) assert.ok(!(k in b.settings), k);
     assert.deepEqual(b.settings.disabledSites, ['bank.example', 'shop.example']);
     assert.equal(b.settings.userFilters, '||ads.example^\n');
-    assert.deepEqual(BACKUP_SETTINGS_KEYS, ['enabledLists', 'disabledSites', 'userFilters', 'protectionMode']);
-    assert.ok(!('youtubeFocus' in b.settings), 'stary klucz Focus Mode nie trafia do kopii');
-    // eksport → import tego samego pliku przechodzi walidację
-    assert.equal(parseBackup(JSON.stringify(b), { knownLists: KNOWN }).ok, true);
+    assert.equal(parseBackup(JSON.stringify(b)).ok, true, 'eksport → import tego samego pliku');
   } finally { bg.restore(); }
 });
 
@@ -79,35 +82,68 @@ test('eksport: brak danych technicznych i prywatnych (health, diagnostyka, cache
     }
   } finally { bg.restore(); }
   // tylko dozwolone pola nawet z „brudnych” danych wejściowych
-  const b = buildBackup({ enabledLists: ['ads'], disabledSites: [], userFilters: '', protectionMode: 'custom', youtubeFocus: LEGACY_FOCUS, stats: 1, health: 2 });
-  assert.deepEqual(Object.keys(b.settings).sort(), [...BACKUP_SETTINGS_KEYS].sort());
+  const b = buildBackup({ enabledLists: ['ads'], disabledSites: [], userFilters: '', protectionMode: 'custom', youtubeFocus: {}, stats: 1, health: 2 });
+  assert.deepEqual(Object.keys(b.settings).sort(), ['disabledSites', 'userFilters']);
 });
 
-// --- import ------------------------------------------------------------------------
+// --- import v2 ---------------------------------------------------------------------
 
-test('import poprawny: zapis, synchronizacja list / filtrów / scriptletów, podsumowanie', async () => {
+test('import v2: zapis, synchronizacja reguł dynamicznych i scriptletów, podsumowanie; listy dalej stałe', async () => {
   const bg = await loadBackground();
   try {
     await bg.install();
-    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
+    const r = await bg.send({ type: 'settings:import', text: backupText() });
     assert.equal(r.ok, true, JSON.stringify(r.errors));
-    assert.deepEqual(sorted(bg.store.enabledLists), ['ads', 'cookies', 'privacy', 'security']);
-    assert.deepEqual(sorted(bg.state.enabledRulesets), ['ads', 'cookies', 'privacy', 'security'], 'Chrome: zestawy reguł zsynchronizowane');
     assert.deepEqual(bg.store.disabledSites, ['bank.example', 'shop.example']);
-    assert.equal(bg.store.userFilters, '! moje\n||ads.example^\nexample.com##.reklama\n');
-    assert.ok(bg.state.dynamic.length > 0, 'reguły dynamiczne (moje filtry / wyłączone strony) zsynchronizowane');
-    assert.ok(bg.state.registered.some((x) => x.id.startsWith('sl-cookies')), 'scriptlety nowej listy zarejestrowane');
-    assert.ok(!('youtubeFocus' in bg.store));
-    const o = await bg.send({ type: 'options:get' });
-    assert.equal(o.protectionMode, 'balanced');
-    assert.ok(!('youtubeFocus' in o));
-    assert.ok(r.summary.some((l) => /Tryb ochrony: Balanced/.test(l)));
-    assert.ok(r.summary.some((l) => /Wyłączone strony: 2/.test(l)));
-    assert.ok(r.summary.some((l) => /Moje filtry: 2 reguły/.test(l)));
-    assert.equal(r.summary.length, 4);
-    assert.ok(!r.summary.some((l) => /Focus/.test(l)));
+    assert.equal(bg.store.userFilters, FILTERS);
+    assert.ok(bg.state.dynamic.some((r2) => r2.action.type === 'allowAllRequests'), 'reguła wyłączonych stron');
+    assert.ok(bg.state.registered.some((x) => x.id.startsWith('sl-') && (x.excludeMatches || []).some((m) => m.includes('bank.example'))), 'scriptlety pomijają wyłączone strony');
+    assert.deepEqual(sorted(bg.state.enabledRulesets), CORE);
+    assert.deepEqual(await enabledNow(bg), CORE);
+    for (const k of ['enabledLists', 'protectionMode']) assert.ok(!(k in bg.store), k);
+    assert.deepEqual(r.summary, ['Wyłączone strony: 2', 'Moje filtry: 2 reguły']);
+    assert.deepEqual(r.ignored, []);
   } finally { bg.restore(); }
 });
+
+// --- import v1 (kopie ze starszych wersji) -----------------------------------------
+
+const V1 = {
+  basic: ['ads', 'privacy', 'security'],
+  balanced: ['ads', 'privacy', 'security', 'cookies'],
+  strict: ['ads', 'privacy', 'security', 'cookies', 'annoyances'],
+  custom: ['ads', 'cookies'],
+};
+for (const [mode, lists] of Object.entries(V1)) {
+  test(`import v1 (${mode}): przywraca wyłączone strony i własne filtry; listy/tryb/Focus Mode ignorowane; ochrona zostaje ads/privacy/security`, async () => {
+    const bg = await loadBackground();
+    try {
+      await bg.install();
+      const r = await bg.send({ type: 'settings:import', text: backupV1(lists, mode, { youtubeFocus: { enabled: true } }) });
+      assert.equal(r.ok, true, JSON.stringify(r.errors));
+      assert.deepEqual(sorted(r.ignored), ['settings.enabledLists', 'settings.protectionMode', 'settings.youtubeFocus']);
+      assert.deepEqual(bg.store.disabledSites, ['bank.example', 'shop.example']);
+      assert.equal(bg.store.userFilters, FILTERS);
+      assert.deepEqual(sorted(bg.state.enabledRulesets), CORE, 'rulesety');
+      assert.deepEqual(await enabledNow(bg), CORE);
+      assert.ok(!bg.state.registered.some((x) => /^sl-(cookies|annoyances)-/.test(x.id)));
+      for (const k of ['enabledLists', 'protectionMode', 'youtubeFocus']) assert.ok(!(k in bg.store), `storage: ${k}`);
+    } finally { bg.restore(); }
+  });
+}
+
+test('import v1: stare pola nie są walidowane (np. nieznane listy, zły tryb) – nie blokują przywrócenia danych', () => {
+  for (const [lists, mode] of [[['cookies', 'nieistniejaca'], 'turbo'], ['ads', 42], [[], undefined]]) {
+    const r = parseBackup(backupV1(lists, mode, { youtubeFocus: [] }));
+    assert.equal(r.ok, true, JSON.stringify(r.errors));
+    assert.equal(r.version, 1);
+    assert.deepEqual(Object.keys(r.settings).sort(), ['disabledSites', 'userFilters']);
+  }
+  assert.deepEqual([...SUPPORTED_BACKUP_VERSIONS], [1, 2]);
+  assert.deepEqual([...LEGACY_BACKUP_KEYS], ['enabledLists', 'protectionMode', 'youtubeFocus']);
+});
+
+// --- walidacja -------------------------------------------------------------------
 
 test('uszkodzony JSON: nic nie jest zapisywane', async () => {
   const bg = await loadBackground();
@@ -129,24 +165,22 @@ test('zły format / wersja / brak pól / złe typy: odrzucone w całości, z lis
     await bg.install();
     const before = structuredClone(bg.store);
     const cases = [
-      [JSON.stringify({ format: 'ublock-backup', version: 1, settings: {} }), /nieznany format/],
-      [backupText({}, { version: 2 }), /nieobsługiwana wersja/],
-      [backupText({}, { version: '1' }), /nieobsługiwana wersja/],
-      [JSON.stringify({ format: BACKUP_FORMAT, version: 1 }), /brak sekcji „settings”/],
-      [JSON.stringify({ format: BACKUP_FORMAT, version: 1, settings: { enabledLists: ['ads'] } }), /brak pola settings\.disabledSites/],
-      [backupText({ enabledLists: ['ads', 'nieistniejaca'] }), /nieznane listy filtrów: nieistniejaca/],
-      [backupText({ enabledLists: ['ads', 'ads'] }), /powtórzenia/],
-      [backupText({ enabledLists: 'ads' }), /enabledLists musi być listą/],
+      [JSON.stringify({ format: 'ublock-backup', version: 2, settings: {} }), /nieznany format/],
+      [backupText({}, { version: 3 }), /nieobsługiwana wersja/],
+      [backupText({}, { version: '2' }), /nieobsługiwana wersja/],
+      [JSON.stringify({ format: BACKUP_FORMAT, version: 2 }), /brak sekcji „settings”/],
+      [JSON.stringify({ format: BACKUP_FORMAT, version: 2, settings: { userFilters: '' } }), /brak pola settings\.disabledSites/],
+      [JSON.stringify({ format: BACKUP_FORMAT, version: 1, settings: { enabledLists: ['ads'], protectionMode: 'basic' } }), /brak pola settings\.disabledSites/],
       [backupText({ disabledSites: ['https://bank.example/konto?id=1'] }), /niepoprawne domeny/],
+      [backupText({ disabledSites: 'bank.example' }), /disabledSites musi być listą/],
       [backupText({ userFilters: 42 }), /userFilters musi być tekstem/],
-      [backupText({ protectionMode: 'turbo' }), /nieznany tryb ochrony/],
     ];
     for (const [text, re] of cases) {
       const r = await bg.send({ type: 'settings:import', text });
       assert.equal(r.ok, false, text.slice(0, 80));
       assert.ok(r.errors.some((e) => re.test(e)), `${re}: ${r.errors.join(' | ')}`);
     }
-    // błąd w jednym polu blokuje całość, mimo poprawnych pozostałych
+    // błąd w jednym polu blokuje całość
     const mixed = await bg.send({ type: 'settings:import', text: backupText({ disabledSites: ['ok.example', 'zła domena'], userFilters: 1 }) });
     assert.equal(mixed.ok, false);
     assert.equal(mixed.errors.length, 2, 'wszystkie błędy naraz');
@@ -159,111 +193,36 @@ test('nieznane pola: ignorowane, nie trafiają do storage', async () => {
   try {
     await bg.install();
     const keysBefore = Object.keys(bg.store);
-    const text = backupText(
-      { stats: { total: 999 }, health: { x: 1 }, devPerf: true },
-      { comment: 'z innego komputera', storage: { evil: 1 } },
-    );
-    const r = await bg.send({ type: 'settings:import', text });
+    const r = await bg.send({ type: 'settings:import', text: backupText({ stats: { total: 999 }, health: { x: 1 }, devPerf: true }, { comment: 'z innego komputera', storage: { evil: 1 } }) });
     assert.equal(r.ok, true, JSON.stringify(r.errors));
     assert.deepEqual(sorted(r.ignored), sorted(['comment', 'storage', 'settings.stats', 'settings.health', 'settings.devPerf']));
     const added = Object.keys(bg.store).filter((k) => !keysBefore.includes(k));
-    for (const k of added) assert.ok(['enabledLists', 'disabledSites', 'userFilters', 'protectionMode'].includes(k), `nowy klucz w storage: ${k}`);
+    for (const k of added) assert.ok(['disabledSites', 'userFilters'].includes(k), `nowy klucz w storage: ${k}`);
     for (const k of ['stats', 'comment', 'storage', 'evil']) assert.ok(!(k in bg.store), `z pliku do storage trafiło: ${k}`);
-    assert.notDeepEqual(bg.store.health, { x: 1 }, 'health z pliku nie nadpisał stanu rozszerzenia');
-    assert.notEqual(bg.store.devPerf, true, 'devPerf z pliku zignorowany');
+    assert.notDeepEqual(bg.store.health, { x: 1 });
+    assert.notEqual(bg.store.devPerf, true);
   } finally { bg.restore(); }
 });
 
-test('rollback: jednorazowy błąd synchronizacji list przy imporcie → poprzednie ustawienia przywrócone', async () => {
-  const opts = {};
-  const bg = await loadBackground(opts);
-  try {
-    await bg.install();
-    await bg.send({ type: 'options:setUserFilters', text: '||stare.example^\n' });
-    const enabledNow = async () => sorted((await bg.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id));
-    const before = { lists: await enabledNow(), sites: bg.store.disabledSites ? [...bg.store.disabledSites] : [], filters: bg.store.userFilters };
-    const rulesetsBefore = sorted(bg.state.enabledRulesets);
-    // Chrome odrzuca TYLKO pierwszą zmianę zestawów reguł (import); przywracanie przechodzi
-    let calls = 0;
-    Object.defineProperty(opts, 'failRulesets', { configurable: true, get: () => calls++ === 0 });
-    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
-    Object.defineProperty(opts, 'failRulesets', { configurable: true, value: false });
-    assert.equal(r.ok, false);
-    assert.equal(r.rolledBack, true, JSON.stringify(r.rollbackErrors));
-    assert.ok(r.errors.some((e) => /listy filtrów/.test(e)));
-    assert.deepEqual(await enabledNow(), before.lists);
-    assert.deepEqual(bg.store.disabledSites || [], before.sites);
-    assert.equal(bg.store.userFilters, before.filters);
-    assert.deepEqual(sorted(bg.state.enabledRulesets), rulesetsBefore);
-    assert.equal((await bg.send({ type: 'options:get' })).protectionMode, 'basic');
-  } finally { bg.restore(); }
-});
+// --- martwe dane po starszych wersjach -----------------------------------------------
 
-test('rollback: błąd rejestracji scriptletów → poprzednie ustawienia', async () => {
-  const opts = { failRegister: () => false };
-  const bg = await loadBackground(opts);
-  try {
-    await bg.install();
-    const listsBefore = sorted(bg.store.enabledLists || ['ads', 'privacy', 'security']);
-    opts.failRegister = (id) => id.startsWith('sl-cookies');
-    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
-    opts.failRegister = () => false;
-    assert.equal(r.ok, false);
-    assert.equal(r.rolledBack, true);
-    assert.ok(r.errors.some((e) => /scriptlety/.test(e)));
-    assert.deepEqual(sorted(bg.store.enabledLists), listsBefore);
-    assert.equal(bg.store.userFilters || '', '');
-  } finally { bg.restore(); }
-});
-
-test('protectionMode przeliczany z faktycznie włączonych list (wartość z pliku nie decyduje)', async () => {
-  const bg = await loadBackground();
-  try {
-    await bg.install();
-    let r = await bg.send({ type: 'settings:import', text: backupText({ enabledLists: ['ads', 'privacy', 'security'], protectionMode: 'strict' }) });
-    assert.equal(r.ok, true);
-    assert.equal(bg.store.protectionMode, 'basic');
-    assert.equal((await bg.send({ type: 'options:get' })).protectionMode, 'basic');
-    r = await bg.send({ type: 'settings:import', text: backupText({ enabledLists: ['ads', 'security'], protectionMode: 'balanced' }) });
-    assert.equal(r.ok, true);
-    assert.equal(bg.store.protectionMode, 'custom');
-    assert.ok(r.summary.some((l) => /Tryb ochrony: Własny/.test(l)));
-    r = await bg.send({ type: 'settings:import', text: backupText({ enabledLists: ['ads', 'privacy', 'security', 'cookies', 'annoyances'], protectionMode: 'basic' }) });
-    assert.equal(bg.store.protectionMode, 'strict');
-  } finally { bg.restore(); }
-});
-
-test('kopia ze starszej wersji (z polem youtubeFocus): import działa, pole ignorowane i nie trafia do storage', async () => {
-  const bg = await loadBackground();
-  try {
-    await bg.install();
-    const r = await bg.send({ type: 'settings:import', text: backupText({ youtubeFocus: LEGACY_FOCUS }) });
-    assert.equal(r.ok, true, JSON.stringify(r.errors));
-    assert.deepEqual(r.ignored, ['settings.youtubeFocus']);
-    assert.ok(!('youtubeFocus' in bg.store));
-    // także uszkodzona wartość starego pola nie blokuje importu (pole nie jest już walidowane)
-    const r2 = await bg.send({ type: 'settings:import', text: backupText({ youtubeFocus: [] }) });
-    assert.equal(r2.ok, true, JSON.stringify(r2.errors));
-  } finally { bg.restore(); }
-});
-
-test('aktualizacja rozszerzenia usuwa martwy klucz Focus Mode; świeża instalacja i zwykła praca go nie tworzą', async () => {
-  const bg = await loadBackground({ local: { youtubeFocus: LEGACY_FOCUS, userFilters: '||zostaje.example^\n' } });
+test('aktualizacja usuwa martwe klucze (Focus Mode, listy, tryb); świeża instalacja i zwykła praca ich nie tworzą', async () => {
+  const bg = await loadBackground({ local: { youtubeFocus: { enabled: true }, enabledLists: ['ads'], protectionMode: 'custom', userFilters: '||zostaje.example^\n' } });
   try {
     await bg.install(); // mock: onInstalled bez szczegółów (nie „update”) – nic nie usuwa
-    assert.ok('youtubeFocus' in bg.store);
+    assert.ok('youtubeFocus' in bg.store && 'enabledLists' in bg.store);
     await bg.state.listeners.installed({ reason: 'update' });
-    assert.ok(!('youtubeFocus' in bg.store), 'stary klucz usunięty przy aktualizacji');
+    for (const k of ['youtubeFocus', 'enabledLists', 'protectionMode']) assert.ok(!(k in bg.store), k);
     assert.equal(bg.store.userFilters, '||zostaje.example^\n', 'pozostałe ustawienia bez zmian');
-    assert.deepEqual([...bg.mod.LEGACY_STORAGE_KEYS], ['youtubeFocus']);
+    assert.deepEqual([...bg.mod.LEGACY_STORAGE_KEYS], ['youtubeFocus', 'enabledLists', 'protectionMode']);
   } finally { bg.restore(); }
   const fresh = await loadBackground();
   try {
     await fresh.install();
     await fresh.send({ type: 'options:get' });
     await fresh.send({ type: 'settings:export' });
-    await fresh.send({ type: 'settings:import', text: backupText({ youtubeFocus: LEGACY_FOCUS }) });
-    assert.ok(!('youtubeFocus' in fresh.store));
+    await fresh.send({ type: 'settings:import', text: backupV1(['ads', 'cookies'], 'custom', { youtubeFocus: { enabled: true } }) });
+    for (const k of ['youtubeFocus', 'enabledLists', 'protectionMode']) assert.ok(!(k in fresh.store), k);
   } finally { fresh.restore(); }
 });
 
@@ -272,13 +231,12 @@ test('aktualizacja rozszerzenia usuwa martwy klucz Focus Mode; świeża instalac
 test('czysta logika: nazwa pliku, podsumowanie, odmiana, limit rozmiaru', () => {
   assert.equal(backupFileName(new Date(2026, 0, 5)), 'chromeblock-ustawienia-2026-01-05.json');
   assert.deepEqual([1, 2, 4, 5, 12, 22, 25].map(rulesWord), ['reguła', 'reguły', 'reguły', 'reguł', 'reguł', 'reguły', 'reguł']);
-  const sum = summarizeSettings({ enabledLists: ['ads'], disabledSites: [], userFilters: '', protectionMode: 'custom' }, { listNames: { ads: 'Reklamy' } });
-  assert.deepEqual(sum, ['Tryb ochrony: Własny', 'Listy filtrów (1): Reklamy', 'Wyłączone strony: 0', 'Moje filtry: 0 reguł']);
-  assert.match(parseBackup('x'.repeat(2 * 1024 * 1024 + 1), { knownLists: KNOWN }).errors[0], /za duży/);
-  assert.equal(validateBackup(JSON.parse(backupText({})), { knownLists: KNOWN }).settings.protectionMode, 'balanced');
+  assert.deepEqual(summarizeSettings({ disabledSites: [], userFilters: '' }), ['Wyłączone strony: 0', 'Moje filtry: 0 reguł']);
+  assert.match(parseBackup('x'.repeat(2 * 1024 * 1024 + 1)).errors[0], /za duży/);
+  assert.deepEqual(validateBackup(JSON.parse(backupText())).settings, { disabledSites: ['bank.example', 'shop.example'], userFilters: FILTERS });
 });
 
-test('opcje: zakładka „Kopia ustawień” z przyciskami eksportu i importu', () => {
+test('opcje: zakładka „Kopia ustawień” z przyciskami eksportu i importu; opis bez list i trybu', () => {
   const html = fs.readFileSync(path.join(ROOT, 'options/options.html'), 'utf8');
   assert.match(html, /data-tab="backup">Kopia ustawień</);
   const sec = html.slice(html.indexOf('id="backup"'), html.indexOf('id="diag"'));
@@ -287,6 +245,8 @@ test('opcje: zakładka „Kopia ustawień” z przyciskami eksportu i importu', 
   assert.match(sec, /id="importSettings"[^>]*>Importuj ustawienia</);
   assert.match(sec, /type="file" id="importFile"/);
   assert.match(sec, /id="importSummary"/);
+  assert.match(sec, /wyłączone strony \(same nazwy domen\) i Moje filtry/);
+  assert.doesNotMatch(sec, /tryb ochrony|włączone listy/i);
   const js = fs.readFileSync(path.join(ROOT, 'options/options.js'), 'utf8');
   assert.match(js, /settings:export/);
   assert.match(js, /settings:import/);
@@ -295,31 +255,47 @@ test('opcje: zakładka „Kopia ustawień” z przyciskami eksportu i importu', 
 
 // --- wiarygodność rollbacku ----------------------------------------------------------
 
-import { importFailureMessage, IMPORT_MSG } from '../../shared/settings-backup.js';
-
-/** Stan przed importem: lista „Basic”, 1 filtr. */
+/** Stan przed importem: stały zestaw, 1 własny filtr, bez wyłączonych stron. */
 async function prepared(opts) {
   const bg = await loadBackground(opts);
   await bg.install();
   await bg.send({ type: 'options:setUserFilters', text: '||stare.example^\n' });
-  const lists = sorted((await bg.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id));
-  return { bg, before: { lists, filters: bg.store.userFilters, sites: [...(bg.store.disabledSites || [])] } };
+  return { bg, before: { filters: bg.store.userFilters, sites: [...(bg.store.disabledSites || [])] } };
 }
 const healthErrors = async (bg) => ((await bg.send({ type: 'health:get' })).errors || []).filter((e) => /import ustawień/.test(e.message));
+const once = () => { let n = 0; return () => n++ === 0; };
 
-test('rollback kompletny: import nie powiódł się → rolledBack=true tylko gdy storage i wszystkie synchronizacje poprzedniego stanu OK', async () => {
+test('rollback: jednorazowy błąd reguł dynamicznych przy imporcie → poprzednie ustawienia przywrócone (rolledBack=true)', async () => {
+  const opts = {};
+  const { bg, before } = await prepared(opts);
+  try {
+    opts.failDynamic = once();
+    const r = await bg.send({ type: 'settings:import', text: backupText() });
+    opts.failDynamic = false;
+    assert.equal(r.ok, false);
+    assert.equal(r.rolledBack, true, JSON.stringify(r.rollbackErrors));
+    assert.equal(r.rollbackErrors, undefined);
+    assert.ok(r.errors.some((e) => /moje filtry \/ wyłączone strony/.test(e)));
+    assert.equal(bg.store.userFilters, before.filters);
+    assert.deepEqual(bg.store.disabledSites || [], before.sites);
+    assert.deepEqual(sorted(bg.state.enabledRulesets), CORE);
+    assert.deepEqual(await healthErrors(bg), [], 'pełny rollback – bez wpisu o niepełnym przywróceniu');
+  } finally { bg.restore(); }
+});
+
+test('rollback: błąd rejestracji scriptletów przy imporcie → poprzednie ustawienia przywrócone', async () => {
   const opts = { failRegister: () => false };
   const { bg, before } = await prepared(opts);
   try {
-    opts.failRegister = (id) => id.startsWith('sl-cookies'); // nowa lista z importu – scriptlety się nie rejestrują
-    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
+    // Chrome odrzuca tylko rejestracje ze stanu po imporcie (z wyłączoną stroną bank.example)
+    opts.failRegister = (id, s) => (s.excludeMatches || []).some((m) => m.includes('bank.example'));
+    const r = await bg.send({ type: 'settings:import', text: backupText() });
+    opts.failRegister = () => false;
     assert.equal(r.ok, false);
-    assert.equal(r.rolledBack, true);
-    assert.equal(r.rollbackErrors, undefined);
+    assert.equal(r.rolledBack, true, JSON.stringify(r.rollbackErrors));
     assert.ok(r.errors.some((e) => /scriptlety/.test(e)));
-    assert.deepEqual(sorted((await bg.send({ type: 'options:get' })).lists.filter((l) => l.enabled).map((l) => l.id)), before.lists);
     assert.equal(bg.store.userFilters, before.filters);
-    assert.deepEqual(await healthErrors(bg), [], 'pełny rollback – bez wpisu o niepełnym przywróceniu');
+    assert.deepEqual(bg.store.disabledSites || [], before.sites);
   } finally { bg.restore(); }
 });
 
@@ -328,7 +304,7 @@ test('rollback niepełny: synchronizacja list (rulesets) poprzedniego stanu nie 
   const { bg } = await prepared(opts);
   try {
     opts.failRulesets = true; // Chrome odrzuca zmiany zestawów reguł – także przy przywracaniu
-    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
+    const r = await bg.send({ type: 'settings:import', text: backupText() });
     opts.failRulesets = false;
     assert.equal(r.ok, false);
     assert.equal(r.rolledBack, false);
@@ -344,15 +320,14 @@ test('rollback niepełny: synchronizacja reguł dynamicznych poprzedniego stanu 
   const opts = { failRegister: () => false };
   const { bg } = await prepared(opts);
   try {
-    // import: scriptlety nowej listy się nie rejestrują; od tej chwili Chrome odrzuca reguły dynamiczne (przywracanie)
-    opts.failRegister = (id) => { if (id.startsWith('sl-cookies')) { opts.failDynamic = true; return true; } return false; };
-    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
+    // import: scriptlety się nie rejestrują; od tej chwili Chrome odrzuca reguły dynamiczne (przywracanie)
+    opts.failRegister = () => { opts.failDynamic = true; return true; };
+    const r = await bg.send({ type: 'settings:import', text: backupText() });
     opts.failDynamic = false;
     opts.failRegister = () => false;
     assert.equal(r.ok, false);
     assert.equal(r.rolledBack, false);
     assert.ok(r.rollbackErrors.some((e) => /synchronizacja \(moje filtry \/ wyłączone strony\)/.test(e)), r.rollbackErrors.join(' | '));
-    assert.ok(!r.rollbackErrors.some((e) => /listy filtrów|scriptlety/.test(e)), 'pozostałe kroki przywracania OK');
     assert.equal((await healthErrors(bg)).length, 1);
   } finally { bg.restore(); }
 });
@@ -363,7 +338,7 @@ test('rollback niepełny: rejestracja scriptletów poprzedniego stanu nie powiod
   try {
     // import: reguły dynamiczne odrzucone raz; od tej chwili Chrome odrzuca każdą rejestrację scriptletów
     opts.failDynamic = () => { opts.failDynamic = false; opts.failRegister = () => true; return true; };
-    const r = await bg.send({ type: 'settings:import', text: backupText({}) });
+    const r = await bg.send({ type: 'settings:import', text: backupText() });
     opts.failRegister = () => false;
     assert.equal(r.ok, false);
     assert.equal(r.rolledBack, false);
@@ -380,11 +355,8 @@ test('komunikat UI: „przywrócono” tylko przy rolledBack=true; niepełny rol
   const bad = importFailureMessage({ ok: false, rolledBack: false, errors: ['scriptlety: x'], rollbackErrors: ['synchronizacja (listy filtrów): y'] });
   assert.equal(bad.title, 'Import nie powiódł się i nie udało się w pełni przywrócić poprzedniego stanu. Otwórz Diagnostykę.');
   assert.doesNotMatch(bad.title, /przywrócono poprzednie/);
-  assert.ok(!bad.items.some((x) => /przywrócono poprzednie/.test(x)));
   assert.deepEqual(bad.items, ['scriptlety: x', 'przywracanie: synchronizacja (listy filtrów): y']);
   assert.equal(bad.diagnostics, true);
-  const invalid = importFailureMessage({ ok: false, errors: ['plik nie jest poprawnym JSON'] });
-  assert.equal(invalid.title, IMPORT_MSG.invalid);
-  // bez pola rolledBack, ale z rollbackErrors – nadal nie twierdzimy „przywrócono”
+  assert.equal(importFailureMessage({ ok: false, errors: ['plik nie jest poprawnym JSON'] }).title, IMPORT_MSG.invalid);
   assert.equal(importFailureMessage({ ok: false, rollbackErrors: ['z'] }).title, IMPORT_MSG.incomplete);
 });

@@ -85,16 +85,6 @@
         "id": "security",
         "enabled": true,
         "path": "rules/security.json"
-      },
-      {
-        "id": "cookies",
-        "enabled": false,
-        "path": "rules/cookies.json"
-      },
-      {
-        "id": "annoyances",
-        "enabled": false,
-        "path": "rules/annoyances.json"
       }
     ]
   }

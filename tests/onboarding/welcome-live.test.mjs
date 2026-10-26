@@ -1,7 +1,7 @@
 // Onboarding w prawdziwym Chromium z ChromeBlock (bez sieci). Brak Playwright/Chromium → SKIP.
-// Świeża instalacja → strona powitalna sama się otwiera; Basic domyślnie; wybór trybu przez istniejące
-// presety; potwierdzenie i zamknięcie karty; przeładowanie rozszerzenia jej nie otwiera; „Otwórz ustawienia”
-// nic nie zmienia; błąd → bez „Gotowe”, karta zostaje.
+// Świeża instalacja → strona powitalna sama się otwiera; ochrona działa od razu (stały zestaw list,
+// bez wyboru trybu); „Zacznij korzystać” zamyka kartę; przeładowanie rozszerzenia (onInstalled:
+// update) jej nie otwiera i migruje zapisane tryby/listy starszej wersji; „Otwórz ustawienia” nic nie zmienia.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,16 +9,16 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { loadPlaywright, EXTENSION_ENTRIES, ROOT } from '../../tools/chromium-smoke.mjs';
-import { PROTECTION_MODES } from '../../shared/protection-modes.js';
 
 let chromium = null;
 try { chromium = await loadPlaywright(); } catch { chromium = null; }
 let exe = '';
 try { exe = chromium ? chromium.executablePath() : ''; } catch { /* */ }
 const skip = !chromium || !exe || !fs.existsSync(exe) ? 'Playwright/Chromium niedostępne' : false;
-const sorted = (a) => [...a].sort();
+const CORE = ['ads', 'privacy', 'security'];
+const enabledOf = (o) => o.lists.filter((l) => l.enabled).map((l) => l.id).sort();
 
-test('onboarding w Chromium: instalacja → wybór Strict → potwierdzenie i zamknięcie; reload bez strony; ustawienia; błąd', { skip, timeout: 240_000 }, async () => {
+test('onboarding w Chromium: instalacja → ochrona od razu → zamknięcie; przeładowanie: bez strony + migracja starych trybów; ustawienia', { skip, timeout: 240_000 }, async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-welcome-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
@@ -32,30 +32,33 @@ test('onboarding w Chromium: instalacja → wybór Strict → potwierdzenie i za
   const isWelcome = (p) => /\/welcome\/welcome\.html$/.test(p.url());
   try {
     // 1. świeża instalacja → karta powitalna (dokładnie jedna)
-    let welcome = ctx.pages().find(isWelcome) || await ctx.waitForEvent('page', { predicate: isWelcome, timeout: 20000 });
-    await welcome.waitForSelector('#modes input');
+    const welcome = ctx.pages().find(isWelcome) || await ctx.waitForEvent('page', { predicate: isWelcome, timeout: 20000 });
+    let [sw] = ctx.serviceWorkers();
+    if (!sw) sw = await ctx.waitForEvent('serviceworker', { timeout: 30000 });
+    const id = new URL(sw.url()).host;
+    await welcome.waitForSelector('#start');
     assert.equal(ctx.pages().filter(isWelcome).length, 1);
-    const id = new URL(welcome.url()).host;
-    assert.match(await welcome.textContent('h1'), /ChromeBlock/);
-    assert.match(await welcome.textContent('.lead'), /lokalnie/);
-    assert.deepEqual(await welcome.$$eval('#modes .name', (n) => n.map((x) => x.textContent)), ['Basic', 'Balanced', 'Strict']);
-    assert.equal(await welcome.$eval('#modes input:checked', (i) => i.value), 'basic', 'Basic domyślnie');
-    assert.match(await welcome.textContent('body'), /później zmienić/);
 
-    // 2. Strict → „Zacznij korzystać” → potwierdzenie → karta zamknięta → listy z presetu
-    await welcome.check('#modes input[value="strict"]');
-    const closed = welcome.waitForEvent('close', { timeout: 60000 });
-    await welcome.click('#start');
-    await welcome.waitForSelector('#status.ok', { timeout: 60000 });
-    assert.match(await welcome.textContent('#status'), /Gotowe – włączono tryb Strict/);
-    await closed;
+    // 2. ochrona od razu: opis blokowania, brak wyboru trybu; stały zestaw list
+    assert.equal(await welcome.locator('.features li').count(), 3);
+    assert.equal(await welcome.locator('#modes, input[name="mode"], [data-mode]').count(), 0, 'bez wyboru trybu');
     const opt = await ctx.newPage();
     await opt.goto(`chrome-extension://${id}/options/options.html`);
-    const lists = await opt.evaluate(() => chrome.storage.local.get('enabledLists').then((x) => x.enabledLists));
-    assert.deepEqual(sorted(lists), sorted(PROTECTION_MODES.strict));
-    assert.equal((await opt.evaluate(() => chrome.runtime.sendMessage({ type: 'options:get' }))).protectionMode, 'strict');
+    const call = (m) => opt.evaluate((x) => chrome.runtime.sendMessage(x), m);
+    for (let i = 0; i < 60 && !(await call({ type: 'health:get' })).startupProfile?.totalMs; i++) await new Promise((r) => setTimeout(r, 250));
+    assert.deepEqual(enabledOf(await call({ type: 'options:get' })), CORE);
 
-    // 3. przeładowanie rozszerzenia (jak „↻” w chrome://extensions; reason = update) → strona powitalna się NIE otwiera
+    // „Zacznij korzystać” → karta się zamyka
+    await welcome.bringToFront();
+    const closed = welcome.waitForEvent('close', { timeout: 15000 });
+    await welcome.click('#start');
+    await closed;
+
+    // 3. stan starszej wersji (tryb Strict z cookies/annoyances) + przeładowanie (reason = update)
+    await opt.evaluate(() => chrome.storage.local.set({
+      enabledLists: ['ads', 'privacy', 'security', 'cookies', 'annoyances'], protectionMode: 'strict', youtubeFocus: { enabled: true },
+      disabledSites: ['bank.example'], userFilters: '||stare.example^\n',
+    }));
     const ce = await ctx.newPage();
     await ce.goto('chrome://extensions');
     await ce.evaluate(async (extId) => {
@@ -63,49 +66,37 @@ test('onboarding w Chromium: instalacja → wybór Strict → potwierdzenie i za
       await chrome.developerPrivate.reload(extId, { failQuietly: true });
     }, id);
     let reason = '';
-    for (let i = 0; i < 40 && !/update/.test(reason); i++) {
+    let stored = null;
+    let lists = null;
+    for (let i = 0; i < 40 && !(/update/.test(reason) && stored && !('enabledLists' in stored)); i++) {
       await new Promise((r) => setTimeout(r, 500));
       const p = await ctx.newPage();
       try {
         await p.goto(`chrome-extension://${id}/options/options.html`);
         const prof = await p.evaluate(() => chrome.runtime.sendMessage({ type: 'startup:profile' })).catch(() => null);
         reason = (prof && prof.profile && prof.profile.reason) || '';
+        stored = await p.evaluate(() => chrome.storage.local.get(null));
+        lists = enabledOf(await p.evaluate(() => chrome.runtime.sendMessage({ type: 'options:get' })));
       } catch { /* rozszerzenie jeszcze się przeładowuje */ } finally { await p.close().catch(() => {}); }
     }
     assert.match(reason, /onInstalled: update/, 'przeładowanie wywołało onInstalled(update)');
-    await new Promise((r) => setTimeout(r, 2000));
+    for (const k of ['enabledLists', 'protectionMode', 'youtubeFocus']) assert.ok(!(k in stored), `migracja: usunięty ${k}`);
+    assert.deepEqual(stored.disabledSites, ['bank.example'], 'wyłączone strony zachowane');
+    assert.equal(stored.userFilters, '||stare.example^\n', 'własne filtry zachowane');
+    assert.deepEqual(lists, CORE, 'po migracji stały zestaw');
+    await new Promise((r) => setTimeout(r, 1500));
     assert.equal(ctx.pages().filter(isWelcome).length, 0, 'po przeładowaniu bez strony powitalnej');
     await ce.close();
 
     // 4. „Otwórz ustawienia” → Opcje, bez zmiany ustawień
     const page = await ctx.newPage();
     await page.goto(`chrome-extension://${id}/welcome/welcome.html`);
-    await page.waitForSelector('#modes input');
-    const before = await page.evaluate(() => chrome.storage.local.get(null).then((s) => JSON.stringify({ l: s.enabledLists, m: s.protectionMode, d: s.disabledSites, u: s.userFilters })));
+    await page.waitForSelector('#openOptions');
+    const snap = () => page.evaluate(() => chrome.storage.local.get(null).then((s) => JSON.stringify({ d: s.disabledSites, u: s.userFilters, l: s.enabledLists, m: s.protectionMode })));
+    const before = await snap();
     const [options] = await Promise.all([ctx.waitForEvent('page', { predicate: (p) => /options\/options\.html/.test(p.url()), timeout: 15000 }), page.click('#openOptions')]);
     assert.match(options.url(), /options\/options\.html/);
-    const after = await page.evaluate(() => chrome.storage.local.get(null).then((s) => JSON.stringify({ l: s.enabledLists, m: s.protectionMode, d: s.disabledSites, u: s.userFilters })));
-    assert.equal(after, before, 'otwarcie ustawień nic nie zmienia');
-    await page.close();
-
-    // 5. błąd zastosowania trybu → bez „Gotowe”, karta zostaje, przycisk znów aktywny
-    const failing = await ctx.newPage();
-    await failing.addInitScript(() => {
-      const real = chrome.runtime.sendMessage.bind(chrome.runtime);
-      chrome.runtime.sendMessage = async (m) => (m && m.type === 'options:setProtectionMode'
-        ? { ok: false, error: 'Chrome nie pozwolił zmienić list: Internal error', protectionMode: 'strict' } : real(m));
-    });
-    await failing.goto(`chrome-extension://${id}/welcome/welcome.html`);
-    await failing.waitForSelector('#modes input');
-    await failing.check('#modes input[value="balanced"]');
-    await failing.click('#start');
-    await failing.waitForSelector('#status.err');
-    const msg = await failing.textContent('#status');
-    assert.match(msg, /Nie udało się zastosować trybu Balanced/);
-    assert.doesNotMatch(msg, /Gotowe/);
-    await failing.waitForTimeout(2500);
-    assert.equal(failing.isClosed(), false, 'karta zostaje otwarta');
-    assert.equal(await failing.isEnabled('#start'), true, 'można spróbować ponownie');
+    assert.equal(await snap(), before, 'otwarcie ustawień nic nie zmienia');
     assert.deepEqual(errors, []);
   } finally {
     await ctx.close();

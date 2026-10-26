@@ -1,7 +1,5 @@
 // ChromeBlock – model widoku popupu (czysta logika; testy: tests/popup/popup.test.mjs).
 
-import { modeDisplay } from '../shared/protection-mode-ui.js';
-
 export const COMPONENT_PL = { network: 'sieć', cosmetic: 'filtry kosmetyczne', scriptlets: 'scriptlety', filters: 'listy filtrów', youtube: 'YouTube' };
 export const STATUS_PL = { ok: 'Aktywna', warning: 'Ostrzeżenie', error: 'Błąd', disabled: 'Wyłączona', unknown: 'Nieznany' };
 
@@ -34,7 +32,6 @@ export function viewModel(info) {
     problems: problems.length
       ? `Problem z silnikiem: ${problems.map((p) => COMPONENT_PL[p] || p).join(', ')} – otwórz diagnostykę`
       : '',
-    protectionMode: modeDisplay(info.protectionMode).mode,
     youtube: yt ? { status: yt.status, label: STATUS_PL[yt.status] || yt.status, detail: yt.detail || '' } : null,
   };
 }

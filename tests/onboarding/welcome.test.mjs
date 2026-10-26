@@ -1,4 +1,4 @@
-// Onboarding (strona powitalna): kiedy się otwiera, wybór trybu przez istniejące presety, błędy, uprawnienia.
+// Onboarding (strona powitalna): kiedy się otwiera, ochrona od razu (bez wyboru trybu), uprawnienia.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -6,9 +6,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadBackground } from '../helpers/chrome-mock.mjs';
-import { WELCOME_DEFAULT, welcomeOptions, welcomeResult } from '../../welcome/welcome-model.js';
-import { PROTECTION_MODES } from '../../shared/protection-modes.js';
-import { MODE_CONTENTS } from '../../shared/protection-mode-ui.js';
 import { EXTENSION_ENTRIES } from '../../tools/chromium-smoke.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -45,49 +42,24 @@ test('start Chrome → bez strony powitalnej', async () => {
   } finally { bg.restore(); }
 });
 
-test('wybór trybu: Basic domyślnie; opisy i presety z istniejących modułów (bez kopiowania mapowania)', () => {
-  assert.equal(WELCOME_DEFAULT, 'basic');
-  const opts = welcomeOptions();
-  assert.deepEqual(opts.map((o) => o.mode), ['basic', 'balanced', 'strict']);
-  assert.deepEqual(opts.map((o) => o.checked), [true, false, false]);
-  for (const o of opts) assert.equal(o.desc, MODE_CONTENTS[o.mode]);
-  const src = ['welcome/welcome.js', 'welcome/welcome-model.js', 'welcome/welcome.html'].map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
-  assert.doesNotMatch(src, /['"](ads|privacy|security|cookies|annoyances)['"]/, 'brak własnego mapowania list');
-  assert.doesNotMatch(src, /options:setLists|enabledLists|updateEnabledRulesets/, 'brak nowej logiki list');
-  assert.match(src, /options:setProtectionMode/, 'istniejąca ścieżka trybów');
+test('strona powitalna: ochrona od razu – opis blokowania, bez wyboru trybu i bez zmiany ustawień', () => {
+  const html = fs.readFileSync(path.join(ROOT, 'welcome/welcome.html'), 'utf8');
+  const js = fs.readFileSync(path.join(ROOT, 'welcome/welcome.js'), 'utf8');
+  assert.match(html, /Ochrona jest już włączona/);
+  assert.equal((html.match(/<li>/g) || []).length, 3, 'reklamy, śledzenie, złośliwe strony');
+  assert.doesNotMatch(html + js, /Basic|Balanced|Strict|tryb ochrony|name="mode"|id="modes"/i);
+  assert.doesNotMatch(js, /sendMessage|options:set|chrome\.storage/, '„Zacznij korzystać” niczego nie zapisuje');
+  assert.match(js, /\$\('start'\)\.addEventListener\('click', closeTab\)/);
+  assert.ok(!fs.existsSync(path.join(ROOT, 'welcome/welcome-model.js')));
 });
 
-test('Basic / Balanced / Strict przez istniejącą ścieżkę options:setProtectionMode → listy z presetów', async () => {
+test('instalacja: strona powitalna nie zmienia stałego zestawu list', async () => {
   const bg = await loadBackground();
   try {
-    await bg.install();
-    for (const mode of ['balanced', 'strict', 'basic']) {
-      const res = await bg.send({ type: 'options:setProtectionMode', mode });
-      assert.equal(welcomeResult(res, mode).done, true, mode);
-      assert.deepEqual(sorted(bg.store.enabledLists), sorted(PROTECTION_MODES[mode]));
-      assert.deepEqual(sorted(bg.state.enabledRulesets), sorted(PROTECTION_MODES[mode]));
-    }
+    await bg.state.listeners.installed({ reason: 'install' });
+    assert.deepEqual(sorted(bg.state.enabledRulesets), ['ads', 'privacy', 'security']);
+    assert.ok(!('enabledLists' in bg.store) && !('protectionMode' in bg.store));
   } finally { bg.restore(); }
-});
-
-test('błąd synchronizacji → onboarding nie twierdzi, że zakończono (karta zostaje, można ponowić)', async () => {
-  const opts = {};
-  const bg = await loadBackground(opts);
-  try {
-    await bg.install();
-    opts.failRulesets = true;
-    const res = await bg.send({ type: 'options:setProtectionMode', mode: 'strict' });
-    opts.failRulesets = false;
-    const r = welcomeResult(res, 'strict');
-    assert.equal(r.done, false);
-    assert.equal(r.close, false);
-    assert.doesNotMatch(r.message, /Gotowe|włączono/);
-    assert.match(r.message, /Nie udało się zastosować trybu Strict/);
-  } finally { bg.restore(); }
-  for (const res of [null, undefined, { ok: false, error: 'scriptlety' }, { ok: true, protectionMode: 'basic' }, { ok: true }]) {
-    assert.equal(welcomeResult(res, 'strict').done, false, JSON.stringify(res));
-  }
-  assert.equal(welcomeResult({ ok: true, protectionMode: 'balanced' }, 'balanced').done, true);
 });
 
 test('brak nowych uprawnień; strona w paczce; bez telemetrii i bez dodatkowego profilu użytkownika', () => {
@@ -97,11 +69,11 @@ test('brak nowych uprawnień; strona w paczce; bez telemetrii i bez dodatkowego 
   assert.deepEqual(m.host_permissions, ['<all_urls>']);
   assert.equal(m.optional_permissions, undefined);
   assert.ok(EXTENSION_ENTRIES.includes('welcome'), 'katalog welcome w paczce');
-  const src = ['welcome/welcome.js', 'welcome/welcome-model.js'].map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
+  const src = fs.readFileSync(path.join(ROOT, 'welcome/welcome.js'), 'utf8');
   assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|sendBeacon|WebSocket|chrome\.storage/);
   const html = fs.readFileSync(path.join(ROOT, 'welcome/welcome.html'), 'utf8');
   assert.doesNotMatch(html, /<script[^>]+src="https?:|<link[^>]+href="https?:/, 'bez zasobów z sieci');
-  for (const t of ['ChromeBlock', 'lokalnie', 'Zacznij korzystać', 'Otwórz ustawienia', 'później zmienić']) assert.match(html, new RegExp(t), t);
+  for (const t of ['ChromeBlock', 'lokalnie', 'Zacznij korzystać', 'Otwórz ustawienia', 'wyłącz na niej ochronę']) assert.match(html, new RegExp(t), t);
   assert.match(html, /ChromeBlock nie wysyła Twoich danych ani telemetrii\./, 'precyzyjne sformułowanie o danych');
   assert.doesNotMatch(html, /niczego nie wysyła|żadnych danych/, 'bez zbyt absolutnych sformułowań');
   assert.doesNotMatch(html, /\b(Pro|Premium|subskrypcj|licencj|zaloguj|konto)\b/i, 'bez płatnych funkcji i kont');

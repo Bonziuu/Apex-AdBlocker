@@ -9,7 +9,7 @@ let counter = 0;
 
 /**
  * Tworzy atrapę chrome.* i ładuje świeżą kopię background.js.
- * opts.failRegister(id) → true, aby rejestracja danego skryptu się nie powiodła
+ * opts.failRegister(id, script) → true, aby rejestracja danego skryptu się nie powiodła
  * opts.failRulesets → true, aby updateEnabledRulesets rzucało błąd
  * opts.failDynamic → true (albo funkcja zwracająca true), aby updateDynamicRules rzucało błąd
  * opts.files → podmiana plików rozszerzenia (ścieżka → obiekt JSON)
@@ -118,7 +118,7 @@ export async function loadBackground(opts = {}) {
         state.calls.register++;
         state.calls.registeredInCalls.push(arr.length);
         for (const s of arr) {
-          if (opts.failRegister && opts.failRegister(s.id)) throw new Error(`Invalid match pattern in ${s.id}`);
+          if (opts.failRegister && opts.failRegister(s.id, s)) throw new Error(`Invalid match pattern in ${s.id}`);
         }
         for (const s of arr) state.registered.push(structuredClone(s));
       },

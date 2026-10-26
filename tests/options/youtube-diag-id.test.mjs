@@ -66,7 +66,7 @@ test('Opcje w Chromium: diagnostyka YouTube w #youtubeDiag; każda zakładka ma 
     opt.on('pageerror', (e) => errors.push(String(e)));
     await opt.goto(`chrome-extension://${id}/options/options.html`);
     // options.js podpina listenery zakładek po `await options:get` – czekamy na wyrenderowane Opcje
-    await opt.waitForFunction(() => document.getElementById('modeCards').children.length > 0, null, { timeout: 15000 });
+    await opt.waitForFunction(() => document.querySelectorAll('#listContainer .card').length > 0, null, { timeout: 15000 });
 
     // każda zakładka otwiera dokładnie swój panel, a panel nie jest pusty
     const tabs = await opt.$$eval('.tab', (els) => els.map((e) => e.dataset.tab));

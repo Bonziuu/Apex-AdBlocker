@@ -1,18 +1,22 @@
 // ChromeBlock – kopia ustawień (eksport / import). Czysta logika: format, pełna walidacja, podsumowanie.
 //
-// Kopia zawiera WYŁĄCZNIE ustawienia użytkownika: enabledLists, disabledSites, userFilters,
-// protectionMode. Bez health, diagnostyki, cache, danych sesji, statystyk,
-// identyfikatorów kart i adresów odwiedzanych stron (disabledSites to same nazwy hostów).
+// Kopia zawiera WYŁĄCZNIE ustawienia, które użytkownik nadal może zmienić: disabledSites i
+// userFilters (wersja 2). Listy ochrony są stałe (shared/core-lists.js), więc nie trafiają do kopii.
+// Bez health, diagnostyki, cache, danych sesji, statystyk, identyfikatorów kart i adresów
+// odwiedzanych stron (disabledSites to same nazwy hostów).
 //
 // Import: najpierw walidacja CAŁEGO pliku – jeśli cokolwiek jest niepoprawne, nic nie jest zapisywane.
-// Nieznane pola są ignorowane (nie trafiają do storage). protectionMode jest przeliczany z list.
-// Starsze kopie z polem settings.youtubeFocus (usunięty Focus Mode) importują się – pole jest ignorowane.
-
-import { MODE_IDS, modeForLists } from './protection-modes.js';
+// Nieznane pola są ignorowane (nie trafiają do storage).
+// Kopie wersji 1 (starsze wersje ChromeBlock) nadal się importują: przywracane są disabledSites
+// i userFilters, a enabledLists, protectionMode i youtubeFocus są ignorowane (nie są walidowane
+// i nie wpływają na stały zestaw list).
 
 export const BACKUP_FORMAT = 'chromeblock-settings';
-export const BACKUP_VERSION = 1;
-export const BACKUP_SETTINGS_KEYS = Object.freeze(['enabledLists', 'disabledSites', 'userFilters', 'protectionMode']);
+export const BACKUP_VERSION = 2;
+export const SUPPORTED_BACKUP_VERSIONS = Object.freeze([1, 2]);
+export const BACKUP_SETTINGS_KEYS = Object.freeze(['disabledSites', 'userFilters']);
+/** Pola kopii v1, które nie są już ustawieniami (ignorowane przy imporcie). */
+export const LEGACY_BACKUP_KEYS = Object.freeze(['enabledLists', 'protectionMode', 'youtubeFocus']);
 export const BACKUP_LIMITS = Object.freeze({
   maxFileBytes: 2 * 1024 * 1024,   // cały plik
   maxUserFiltersChars: 1_000_000,
@@ -29,10 +33,8 @@ export function buildBackup(settings, { extensionVersion = '', exportedAt = new 
     exportedAt,
     extensionVersion: String(extensionVersion || ''),
     settings: {
-      enabledLists: [...settings.enabledLists],
       disabledSites: [...settings.disabledSites],
       userFilters: String(settings.userFilters || ''),
-      protectionMode: settings.protectionMode,
     },
   };
 }
@@ -48,45 +50,34 @@ const isPlainObject = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
 /**
  * Pełna walidacja tekstu pliku kopii.
  * @param {string} text  zawartość pliku
- * @param {{knownLists: string[]}} o  identyfikatory list dostępnych w tej wersji
- * @returns {{ok:true, settings:object, ignored:string[]} | {ok:false, errors:string[]}}
+ * @returns {{ok:true, settings:{disabledSites:string[], userFilters:string}, ignored:string[], version:number} | {ok:false, errors:string[]}}
  */
-export function parseBackup(text, { knownLists }) {
+export function parseBackup(text) {
   if (typeof text !== 'string') return { ok: false, errors: ['brak zawartości pliku'] };
   if (text.length > BACKUP_LIMITS.maxFileBytes) return { ok: false, errors: ['plik jest za duży (maks. 2 MB)'] };
   let data;
   try { data = JSON.parse(text); } catch { return { ok: false, errors: ['plik nie jest poprawnym JSON'] }; }
-  return validateBackup(data, { knownLists });
+  return validateBackup(data);
 }
 
 /** Walidacja obiektu kopii (wszystkie błędy naraz). */
-export function validateBackup(data, { knownLists }) {
+export function validateBackup(data) {
   const errors = [];
   const ignored = [];
   if (!isPlainObject(data)) return { ok: false, errors: ['plik nie zawiera obiektu kopii ustawień'] };
   if (data.format !== BACKUP_FORMAT) errors.push(`nieznany format pliku (oczekiwano „${BACKUP_FORMAT}”)`);
-  if (data.version !== BACKUP_VERSION) errors.push(`nieobsługiwana wersja kopii: ${JSON.stringify(data.version)} (obsługiwana: ${BACKUP_VERSION})`);
+  if (!SUPPORTED_BACKUP_VERSIONS.includes(data.version)) errors.push(`nieobsługiwana wersja kopii: ${JSON.stringify(data.version)} (obsługiwane: ${SUPPORTED_BACKUP_VERSIONS.join(', ')})`);
   for (const k of Object.keys(data)) if (!['format', 'version', 'exportedAt', 'extensionVersion', 'settings'].includes(k)) ignored.push(k);
   const s = data.settings;
   if (!isPlainObject(s)) {
     errors.push('brak sekcji „settings”');
     return { ok: false, errors };
   }
+  // pola v1 (enabledLists, protectionMode, youtubeFocus) i nieznane: ignorowane, bez walidacji
   for (const k of Object.keys(s)) if (!BACKUP_SETTINGS_KEYS.includes(k)) ignored.push(`settings.${k}`);
   for (const k of BACKUP_SETTINGS_KEYS) if (!(k in s)) errors.push(`brak pola settings.${k}`);
 
   const out = {};
-  // enabledLists
-  if ('enabledLists' in s) {
-    const v = s.enabledLists;
-    if (!Array.isArray(v) || !v.every((x) => typeof x === 'string')) errors.push('settings.enabledLists musi być listą identyfikatorów');
-    else {
-      const unknown = v.filter((x) => !knownLists.includes(x));
-      if (unknown.length) errors.push(`nieznane listy filtrów: ${unknown.slice(0, 5).join(', ')}`);
-      if (new Set(v).size !== v.length) errors.push('settings.enabledLists zawiera powtórzenia');
-      out.enabledLists = knownLists.filter((id) => v.includes(id)); // kolejność jak w rozszerzeniu
-    }
-  }
   // disabledSites (same hostname'y)
   if ('disabledSites' in s) {
     const v = s.disabledSites;
@@ -105,11 +96,8 @@ export function validateBackup(data, { knownLists }) {
     else if (s.userFilters.length > BACKUP_LIMITS.maxUserFiltersChars) errors.push('settings.userFilters jest za długie');
     else out.userFilters = s.userFilters;
   }
-  // protectionMode (sprawdzany, ale przy imporcie i tak przeliczany z list)
-  if ('protectionMode' in s && !MODE_IDS.includes(s.protectionMode)) errors.push(`nieznany tryb ochrony: ${JSON.stringify(s.protectionMode)}`);
   if (errors.length) return { ok: false, errors };
-  out.protectionMode = modeForLists(out.enabledLists);
-  return { ok: true, settings: out, ignored };
+  return { ok: true, settings: out, ignored, version: data.version };
 }
 
 /** Odmiana: 1 reguła, 2–4 reguły (bez 12–14), pozostałe reguł. */
@@ -140,14 +128,10 @@ export function importFailureMessage(r) {
   return { title: IMPORT_MSG.invalid, items: errors.length ? errors : ['nieznany błąd'], diagnostics: false };
 }
 
-const MODE_PL = { basic: 'Basic', balanced: 'Balanced', strict: 'Strict', custom: 'Własny' };
-
 /** Krótkie podsumowanie przywróconych ustawień (lista linii). */
-export function summarizeSettings(settings, { listNames = {} } = {}) {
+export function summarizeSettings(settings) {
   const lines = (settings.userFilters || '').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('!')).length;
   return [
-    `Tryb ochrony: ${MODE_PL[settings.protectionMode] || settings.protectionMode}`,
-    `Listy filtrów (${settings.enabledLists.length}): ${settings.enabledLists.map((id) => listNames[id] || id).join(', ') || 'brak'}`,
     `Wyłączone strony: ${settings.disabledSites.length}`,
     `Moje filtry: ${lines} ${rulesWord(lines)}`,
   ];
