@@ -100,7 +100,12 @@ export function siteOf(host) {
 // Wzorce (źródłem prawdy są stringi – używane i w Node, i w stronie)
 export const PATTERNS = Object.freeze({
   adHost: 'doubleclick\\.net|googlesyndication|googleadservices|adnxs|criteo|rtbhouse|adform|smartadserver|teads|taboola|outbrain|adocean|amazon-adsystem|pubmatic|rubiconproject|openx|yieldbird|onetads|ocdn\\.eu\\/ads|adservice|\\bads\\.|\\/ads\\/',
-  reject: '^(odrzuć( wszystk\\w*)?|odrzucam( wszystk\\w*)?|nie zgadzam się|nie akceptuję|nie wyrażam zgody|tylko (niezbędne|wymagane|konieczne)( pliki cookies?)?|(zaakceptuj|akceptuj|zezwól na|zapisz) tylko (niezbędne|wymagane|konieczne)( pliki cookies?)?|odmów|kontynuuj bez akceptacji|reject( all)?|decline( all)?|deny( all)?|refuse( all)?|only (necessary|essential)( cookies)?|necessary (cookies )?only|use necessary cookies only|continue without (accepting|agreeing))$',
+  // bezpośrednie odrzucenie: tylko pełne, jednoznaczne teksty (zakotwiczone) – bez fuzzy „zawiera słowo odrzuć”
+  reject: '^(odrzuć( wszystk\\w*)?|odrzucam( wszystk\\w*)?|odrzucam i chcę dowiedzieć się więcej|odrzuć i (zamknij|chcę dowiedzieć się więcej)|nie zgadzam się|nie akceptuję|nie wyrażam zgody|tylko (niezbędne|wymagane|konieczne)( pliki cookies?)?|(zaakceptuj|akceptuj|zezwól na|zapisz) tylko (niezbędne|wymagane|konieczne)( pliki cookies?)?|odmów|kontynuuj bez akceptacji|reject( all)?|decline( all)?|deny( all)?|refuse( all)?|only (necessary|essential)( cookies)?|necessary (cookies )?only|use necessary cookies only|continue without (accepting|agreeing))$',
+  // krok „ustawienia CMP” (otwiera panel z odrzuceniem) – klikany WYŁĄCZNIE wewnątrz wykrytego kontenera CMP
+  settings: '^(ustawienia (zaawansowane|prywatności|preferencji|cookies?|plików cookies?)|zarządzaj (ustawieniami|preferencjami|opcjami)|pokaż cele|manage (options|preferences|settings)|privacy settings|cookie settings)$',
+  // nigdy nie klikamy (zgoda / niejednoznaczne zamknięcie) – tylko do diagnostyki i acceptOnly
+  accept: 'akceptuj|zaakceptuj|zgadzam|zgoda|przejdź do serwisu|kontynuuj|accept|agree|allow all|zezwól|got it',
   forbidden: 'zaloguj|logowanie|login|log in|sign in|zarejestruj|subskryb|subscribe|kup|zapłać|płatn|premium|abonament|newsletter|pay',
   cmpText: 'cookie|ciasteczk|zgod[ayęo]|prywatno|RODO|consent|przetwarzani\\w* (twoich )?danych|personaliz|partner(zy|ów)? (reklamow|zaufan)|your data|we value your privacy',
   challenge: 'nie jestem robotem|i\'?m not a robot|verify you are (a )?human|potwierdź, że jesteś człowiekiem|weryfikacja bezpieczeństwa|security check|checking your browser|just a moment|attention required|access denied|unusual traffic|nietypowy ruch|are you a robot|human verification|captcha',
@@ -223,6 +228,8 @@ export function detectConsentInPage(arg) {
   const P = arg.patterns;
   const cmpRe = new RegExp(P.cmpText, 'i');
   const rejectRe = new RegExp(P.reject, 'i');
+  const settingsRe = new RegExp(P.settings, 'i');
+  const acceptRe = new RegExp(P.accept, 'i');
   const forbiddenRe = new RegExp(P.forbidden, 'i');
   const vis = (el) => {
     if (!el || !el.getBoundingClientRect) return false;
@@ -232,7 +239,7 @@ export function detectConsentInPage(arg) {
     return cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity) > 0.05;
   };
   const norm = (s) => String(s || '').replace(/\s+/g, ' ').trim();
-  document.querySelectorAll('[data-cb-consent]').forEach((e) => e.removeAttribute('data-cb-consent'));
+  document.querySelectorAll('[data-cb-consent],[data-cb-settings]').forEach((e) => { e.removeAttribute('data-cb-consent'); e.removeAttribute('data-cb-settings'); });
   const KNOWN = '#onetrust-banner-sdk, #onetrust-consent-sdk, #CybotCookiebotDialog, .fc-consent-root, #qc-cmp2-ui, .qc-cmp2-container, #didomi-host, #didomi-popup, [id^="sp_message_container"], #cmpbox, .cmp-root, [class*="cookie-consent"], [id*="cookie-consent"], [class*="cookiebanner"], [id*="cookie-banner"], [class*="cookie-banner"], [class*="consent-banner"], [id*="consent"], [class*="gdpr"], [id*="gdpr"], [class*="rodo"], [id*="rodo"], [role="dialog"], [role="alertdialog"], [aria-modal="true"], dialog[open]';
   const containers = new Set();
   if (arg.wholeDocument) {
@@ -257,24 +264,32 @@ export function detectConsentInPage(arg) {
   // tylko zewnętrzne kontenery
   const list = [...containers].filter((c) => ![...containers].some((o) => o !== c && o.contains(c)));
   const candidates = [];
+  const settings = [];
+  const actions = [];
   let acceptOnly = false;
   for (const c of list) {
     const clickable = [...c.querySelectorAll('button, [role="button"], a, input[type="button"], input[type="submit"]')].filter(vis);
     for (const b of clickable) {
       const t = norm(b.innerText || b.value || b.getAttribute('aria-label') || '');
+      if (t && actions.length < 12 && !actions.includes(t.slice(0, 60))) actions.push(t.slice(0, 60)); // diagnostyka: tylko teksty akcji
       if (!t || t.length > 60 || forbiddenRe.test(t)) continue;
       if (b.tagName === 'A') {
         const href = b.getAttribute('href') || '';
         if (href && !href.startsWith('#') && !/^javascript:/i.test(href)) continue; // linki nawigujące – nie klikamy
       }
       if (rejectRe.test(t)) candidates.push({ el: b, text: t, prio: /wszystk|all/i.test(t) ? 0 : 1 });
-      else if (/akceptuj|zaakceptuj|zgadzam|accept|agree|allow all|zezwól/i.test(t)) acceptOnly = true;
+      else if (settingsRe.test(t)) settings.push({ el: b, text: t });
+      else if (acceptRe.test(t)) acceptOnly = true;
     }
   }
   candidates.sort((a, b) => a.prio - b.prio);
   candidates.forEach((c, i) => c.el.setAttribute('data-cb-consent', String(i)));
+  settings.forEach((c, i) => c.el.setAttribute('data-cb-settings', String(i)));
   if (list.length) list.forEach((c) => c.setAttribute('data-cb-cmp', '1'));
-  return { present: list.length > 0, containers: list.length, reject: candidates.map((c) => c.text), acceptOnly: acceptOnly && !candidates.length };
+  return {
+    present: list.length > 0, containers: list.length, reject: candidates.map((c) => c.text), settings: settings.map((c) => c.text),
+    actions, acceptOnly: acceptOnly && !candidates.length && !settings.length,
+  };
 }
 
 /** Pomiar strony: treść, reklamy (klasy), nakładki, challenge, menu, wyszukiwarka, wideo. */
@@ -423,41 +438,69 @@ export async function evalIsolated(page, fn, arg) {
 // Przebieg
 
 /**
- * Ta sama procedura w obu konfiguracjach: wykryj baner zgody (strona główna + ramki zgody),
- * kliknij wyłącznie przycisk odrzucenia, sprawdź, czy baner zniknął. Do 2 prób.
+ * Ta sama procedura w obu konfiguracjach (maks. 3 kliknięcia łącznie):
+ *   1. wykryj baner zgody (strona główna + ramki CMP),
+ *   2. jest bezpośrednie odrzucenie → kliknij je,
+ *   3. brak odrzucenia, ale jest jednoznaczny przycisk ustawień CMP (whitelista, tylko w kontenerze CMP) → kliknij go,
+ *   4. wykryj ponownie i szukaj odrzucenia,
+ *   5. brak bezpiecznej ścieżki → unresolved (z diagnostyką). Akceptacji nigdy nie klikamy.
  */
+export const CONSENT_MAX_STEPS = 3;
+
+async function findConsent(page, arg) {
+  const found = [];
+  const main = await evalIsolated(page, detectConsentInPage, arg).catch(() => null);
+  if (main && main.present) found.push({ frame: page.mainFrame(), where: 'main', det: main });
+  for (const f of page.frames()) {
+    if (f === page.mainFrame()) continue;
+    if (!/consent|cmp|privacy|sourcepoint|sp-prod|didomi|onetrust|cookiebot|quantcast|consensu|usercentrics|trustarc|fundingchoices|gdpr|rodo/i.test(f.url())) continue;
+    const d = await f.evaluate(detectConsentInPage, { ...arg, wholeDocument: true }).catch(() => null);
+    if (d && d.present) found.push({ frame: f, where: `iframe:${hostOf(f.url())}`, det: d });
+  }
+  return found.find((x) => x.det.reject.length) || found.find((x) => x.det.settings.length) || found[0] || null;
+}
+
 export async function handleConsent(page) {
   const arg = { patterns: PATTERNS };
   const out = { state: CONSENT_STATES.NONE, clicked: [], reason: '' };
-  for (let attempt = 0; attempt < 3; attempt++) {
-    let found = null;
-    const main = await evalIsolated(page, detectConsentInPage, arg).catch(() => null);
-    if (main && main.present) found = { frame: page.mainFrame(), det: main };
-    if (!found || !found.det.reject.length) {
-      for (const f of page.frames()) {
-        if (f === page.mainFrame()) continue;
-        if (!/consent|cmp|privacy|sourcepoint|sp-prod|didomi|onetrust|cookiebot|quantcast|consensu|usercentrics|trustarc|fundingchoices|gdpr|rodo/i.test(f.url())) continue;
-        const d = await f.evaluate(detectConsentInPage, { ...arg, wholeDocument: true }).catch(() => null);
-        if (d && d.present && (d.reject.length || !found)) { found = { frame: f, det: d }; if (d.reject.length) break; }
-      }
-    }
+  const steps = [];
+  let last = null;
+  const unresolved = (reason) => {
+    out.state = CONSENT_STATES.UNRESOLVED;
+    out.reason = reason;
+    out.diagnostics = {
+      frame: last ? last.where : null,
+      visibleActions: last ? last.det.actions.slice(0, 12) : [],
+      directReject: !!(last && last.det.reject.length),
+      settingsStep: steps.some((x) => x.kind === 'settings') || !!(last && last.det.settings.length),
+      steps,
+      reason,
+    };
+    return out;
+  };
+  for (let step = 0; step <= CONSENT_MAX_STEPS; step++) {
+    const found = await findConsent(page, arg);
     if (!found) {
-      if (out.clicked.length) out.state = CONSENT_STATES.REJECTED;
-      return out;
+      if (!steps.length) return out; // brak banera
+      if (steps[steps.length - 1].kind === 'reject') { out.state = CONSENT_STATES.REJECTED; return out; }
+      return unresolved('baner zniknął po otwarciu ustawień, bez odrzucenia');
     }
-    if (!found.det.reject.length) {
-      out.state = CONSENT_STATES.UNRESOLVED;
-      out.reason = found.det.acceptOnly ? 'tylko przycisk akceptacji (nie klikamy)' : 'brak przycisku odrzucenia';
-      return out;
-    }
-    const ok = await found.frame.locator('[data-cb-consent="0"]').first().click({ timeout: 4000 }).then(() => true).catch(() => false);
-    if (!ok) { out.state = CONSENT_STATES.UNRESOLVED; out.reason = `nie udało się kliknąć „${found.det.reject[0]}”`; return out; }
-    out.clicked.push(found.det.reject[0]);
-    await page.waitForTimeout(2000);
+    last = found;
+    if (step === CONSENT_MAX_STEPS) return unresolved(`baner zgody nadal widoczny po ${CONSENT_MAX_STEPS} krokach`);
+    let kind;
+    let text;
+    let sel;
+    if (found.det.reject.length) { kind = 'reject'; text = found.det.reject[0]; sel = '[data-cb-consent="0"]'; }
+    else if (found.det.settings.length && !steps.some((x) => x.kind === 'settings' && x.text === found.det.settings[0])) { kind = 'settings'; text = found.det.settings[0]; sel = '[data-cb-settings="0"]'; }
+    else if (steps.some((x) => x.kind === 'settings')) return unresolved('po otwarciu ustawień brak bezpiecznego odrzucenia');
+    else return unresolved(found.det.acceptOnly ? 'tylko przycisk akceptacji (nie klikamy)' : 'brak przycisku odrzucenia ani ustawień CMP');
+    const ok = await found.frame.locator(sel).first().click({ timeout: 4000 }).then(() => true).catch(() => false);
+    if (!ok) return unresolved(`nie udało się kliknąć „${text}”`);
+    steps.push({ kind, text, frame: found.where });
+    out.clicked.push(text);
+    await page.waitForTimeout(kind === 'settings' ? 1500 : 2000);
   }
-  out.state = CONSENT_STATES.UNRESOLVED;
-  out.reason = 'baner zgody nadal widoczny po odrzuceniu';
-  return out;
+  return unresolved('przekroczono limit kroków');
 }
 
 async function visitSite(context, site, { shotPath = null, settleMs = SETTLE_MS } = {}) {

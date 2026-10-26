@@ -22,8 +22,14 @@ Dwie przeglądarki Playwright Chromium w jednorazowych profilach, okno 1366×800
 Przed pomiarem ta sama procedura w obu konfiguracjach:
 
 1. Wykryj widoczny baner zgody: znane kontenery (OneTrust, Cookiebot, Funding Choices, Quantcast, Didomi, Sourcepoint, `role=dialog`, `aria-modal`…) albo duża stała warstwa z tekstem o cookies/zgodzie/RODO. Sprawdzane są też ramki CMP.
-2. Kliknij **tylko** przycisk odrzucenia („Odrzuć wszystko”, „Nie zgadzam się”, „Tylko niezbędne”, „Reject all”, „Only necessary”…). Linki nawigujące, logowanie, subskrypcje, płatności i akceptacja są wykluczone.
-3. Po 2 s sprawdź ponownie (do 3 kroków, np. dwuetapowe CMP).
+2. Jest bezpośrednie odrzucenie → kliknij je. Tylko pełne, jednoznaczne teksty: „Odrzuć”, „Odrzuć wszystko”, „Odrzucam”, „Odrzucam i chcę dowiedzieć się więcej” (WP, o2), „Nie zgadzam się”, „Tylko niezbędne”, „Reject all”, „Decline”, „Only necessary”… – bez dopasowania „zawiera słowo odrzuć”.
+3. Brak odrzucenia, ale **wewnątrz kontenera CMP** jest jednoznaczny przycisk ustawień z whitelisty → kliknij go: „Ustawienia zaawansowane”, „Ustawienia prywatności”, „Ustawienia preferencji”, „Ustawienia cookies”, „Zarządzaj ustawieniami/preferencjami/opcjami”, „Pokaż cele”, „Manage options/preferences/settings”, „Privacy settings”, „Cookie settings”. Takie same teksty poza banerem nie są klikane.
+4. Wykryj baner ponownie i szukaj odrzucenia. Łącznie maksymalnie 3 kliknięcia.
+5. Brak bezpiecznej ścieżki → `unresolved`.
+
+Nigdy nie klikamy: akceptacji („Akceptuję”, „Akceptuję wszystko”), „Przejdź do serwisu” (może oznaczać zgodę), „Kontynuuj”, logowania, rejestracji, subskrypcji, płatności ani linków nawigujących.
+
+Dla `unresolved` wynik zawiera krótką diagnostykę (`consent.diagnostics`): teksty widocznych akcji w CMP (do 12), czy było bezpośrednie odrzucenie, czy był krok ustawień, wykonane kroki, ramka (`main` / `iframe:host`) i powód, np. „po otwarciu ustawień brak bezpiecznego odrzucenia”.
 
 Stan: `none` (brak banera), `rejected` (odrzucono), `unresolved` (tylko akceptacja, brak odrzucenia albo baner nie znika). Do automatycznego porównania reklam kwalifikuje się tylko ten sam stan w obu konfiguracjach: `none` + `none` albo `rejected` + `rejected`. Różny stan (`none` vs `rejected`, w dowolnej kolejności) albo `unresolved` w którejkolwiek konfiguracji → **CONSENT_INCONCLUSIVE** (nie breakage) i strona nie wchodzi do zbiorczych metryk reklam (np. „różny stan zgody: none vs rejected – reklamy nie są porównywane”). Baner zgody nie jest liczony jako reklama ani anti-adblock.
 
