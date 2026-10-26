@@ -5,12 +5,15 @@ rem albo z repozytorium. Wymaga tylko Node.js 20+ (bez Gita).
 rem Startuje Playwright Chromium z ChromeBlock w TYMCZASOWYM profilu
 rem (nie uzywa Twojego profilu Chrome, nie zapisuje historii, loginow ani cookies).
 rem Opcje (z wiersza polecen): --headless  --no-youtube
+rem   --modes  porownanie trybow Basic / Balanced / Strict na ok. 50 stronach (dlugo: ok. 45-60 min)
 rem Kod wyjscia: 0 PASS, 1 FAIL, 2 blad uruchomienia, 3 INCONCLUSIVE.
 setlocal
 chcp 65001 >nul
 title ChromeBlock - test lokalny
 set "RC=2"
 set "BASE=%~dp0"
+set "MODES=0"
+for %%a in (%*) do if /i "%%~a"=="--modes" set "MODES=1"
 
 if exist "%BASE%tester\tests\local\chromeblock-local-test.mjs" goto :package
 rem --- repozytorium ---
@@ -66,6 +69,7 @@ if "%PKG%"=="1" (
 )
 set "RC=%ERRORLEVEL%"
 
+if "%MODES%"=="1" goto :modesdone
 echo.
 echo ============================================================
 if "%RC%"=="0" echo   WYNIK: PASS - wszystkie testy przeszly.
@@ -76,6 +80,19 @@ echo ============================================================
 echo.
 echo Raport:  %RES%\latest.txt
 echo JSON:    %RES%\latest.json
+goto :end
+
+:modesdone
+echo.
+echo ============================================================
+if "%RC%"=="0" echo   Porownanie trybow zakonczone. Ocen strony recznie w raporcie HTML.
+if not "%RC%"=="0" echo   Porownanie trybow nie powiodlo sie ^(kod %RC%^).
+echo ============================================================
+echo.
+echo Raport HTML ^(reczna ocena^): %RES%\modes\latest.html
+echo Raport:  %RES%\modes\latest.txt
+echo JSON:    %RES%\modes\latest.json
+echo Zrzuty:  %RES%\modes\shots\
 
 :end
 echo.

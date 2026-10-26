@@ -8,7 +8,9 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   ROOT, BASELINE_FILE, categoryOf, sizeReport, unwantedFiles, stats, matchesPattern, scriptsFor, parseArgs, baselineOf, formatReport, plural,
+  modeVariant, formatModesReport,
 } from '../../tools/perf-baseline.mjs';
+import { PROTECTION_MODES } from '../../shared/protection-modes.js';
 import { packageDev } from '../../tools/package-dev.mjs';
 import { EXTENSION_ENTRIES } from '../../tools/chromium-smoke.mjs';
 
@@ -110,4 +112,38 @@ test('strażnik paczki: brak niechcianych plików i brak nagłego przyrostu wzgl
     assert.ok(r.unpackedBytes <= limit,
       `paczka urosła z ${base.size.unpackedBytes} B do ${r.unpackedBytes} B (limit ${Math.round(limit)} B). Jeśli to zamierzone (np. aktualizacja list), zaktualizuj baseline: npm run perf:baseline -- --write-baseline`);
   } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
+});
+
+test('tryby: --modes, kopia paczki zmienia TYLKO enabledByDefault w data/lists.json, raport znosi błąd jednego trybu', () => {
+  assert.deepEqual(parseArgs(['--modes', 'all']).modes, ['basic', 'balanced', 'strict']);
+  assert.deepEqual(parseArgs(['--modes', 'strict,basic']).modes, ['strict', 'basic']);
+  assert.throws(() => parseArgs(['--modes', 'turbo']), /nieznany tryb/);
+  const src = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-variant-src-'));
+  const dst = path.join(os.tmpdir(), `cb-variant-dst-${process.pid}`);
+  try {
+    fs.mkdirSync(path.join(src, 'data'));
+    const meta = ['ads', 'privacy', 'security', 'cookies', 'annoyances'].map((id) => ({ id, enabledByDefault: ['ads', 'privacy', 'security'].includes(id), networkRules: 7 }));
+    fs.writeFileSync(path.join(src, 'data', 'lists.json'), JSON.stringify(meta));
+    fs.writeFileSync(path.join(src, 'background.js'), '// kod');
+    modeVariant(src, 'strict', dst);
+    const out = JSON.parse(fs.readFileSync(path.join(dst, 'data', 'lists.json'), 'utf8'));
+    assert.deepEqual(out.filter((m) => m.enabledByDefault).map((m) => m.id), [...PROTECTION_MODES.strict]);
+    assert.deepEqual(out.map(({ enabledByDefault, ...rest }) => rest), meta.map(({ enabledByDefault, ...rest }) => rest), 'pozostałe pola bez zmian');
+    assert.equal(fs.readFileSync(path.join(dst, 'background.js'), 'utf8'), '// kod', 'kod bez zmian');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(src, 'data', 'lists.json'), 'utf8'))[3].enabledByDefault, false, 'źródło nietknięte');
+    assert.throws(() => modeVariant(src, 'custom', `${dst}-x`), /nieznany tryb/);
+  } finally {
+    fs.rmSync(src, { recursive: true, force: true });
+    fs.rmSync(dst, { recursive: true, force: true });
+  }
+  const s = (median) => ({ n: 15, median, p95: median, min: median, max: median });
+  const mode = (lists) => ({
+    lists,
+    runtime: { enabledRulesets: lists, staticRulesActive: 1000, dynamicRules: 0, sessionRules: 0, registeredScripts: 5, registeredJsFiles: 2, registeredJsBytes: 2048, contentScripts: { 'zwykła': { jsFiles: 1 }, youtube: { jsFiles: 3 } } },
+    startup: { install: { totalMs: s(3000), marks: { 'DNR gotowy': s(300), 'scriptlety gotowe': s(2900) }, stages: [{ name: 'scriptlety: registerContentScripts', ...s(2500) }] }, freshInstall: { readyMs: s(4000) }, switchMs: s(2800), wake: { wakeCosmetic: s(70), warmCosmetic: s(3), wakeMinimal: s(30) } },
+  });
+  const txt = formatModesReport({ date: 'd', env: { commit: 'c', os: 'o', cpu: 'p', memGB: 8, node: 'n', chromium: 'ch' }, modes: { basic: mode(['ads']), strict: { lists: ['ads', 'annoyances'], error: 'service worker nie zatrzymał się' } } });
+  assert.match(txt, /Listy Basic: ads/);
+  assert.match(txt, /registerContentScripts\s+2500 \[2500\]/);
+  assert.match(txt, /Tryb Strict: pomiar nieudany – service worker nie zatrzymał się/);
 });
