@@ -154,4 +154,4 @@ ChromeBlock jest w 100% darmowy – bez wersji Pro, płatnych funkcji, paywalla,
 
 ## Źródła list i licencje
 
-EasyList, EasyPrivacy © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3) · Polskie Filtry Reklamowe © MajkiIT (CC BY-NC-SA 4.0). Listy są wbudowane w repozytorium (`tools/lists/`). Pełny audyt licencyjny zostanie wykonany przed ewentualnym publicznym wydaniem.
+EasyList, EasyPrivacy © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3) · Polskie Filtry Reklamowe © MajkiIT (CC BY-NC-SA 4.0). Listy są wbudowane w repozytorium (`tools/lists/`). Pochodzenie, wersje snapshotów, licencje i otwarte kwestie licencyjne: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) i [docs/filter-provenance.md](docs/filter-provenance.md) (audyt dokumentacyjny, nie opinia prawna).
