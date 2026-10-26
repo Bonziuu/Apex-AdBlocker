@@ -358,6 +358,8 @@ export function baselineOf(r) {
     b.startup = {
       note: 'internalInstall = profiler SW (timeOrigin workera → finishStartupProfile, świeża instalacja); freshInstallToReady = zegar ścienny z uruchomieniem Chromium; wake* = eksperymentalne, zegar ścienny ze strony rozszerzenia',
       internalInstallMs: pick(r.startup.install.totalMs),
+      registerContentScriptsMs: pick((r.startup.install.stages || []).find((s) => s.name === 'scriptlety: registerContentScripts')),
+      dnrReadyMs: pick((r.startup.install.marks || {})['DNR gotowy']),
       freshInstallToReadyMs: pick(r.startup.freshInstall.readyMs),
       wakeMinimalMs: pick(r.startup.wake.wakeMinimal),
       wakeCosmeticMs: pick(r.startup.wake.wakeCosmetic),
@@ -368,6 +370,10 @@ export function baselineOf(r) {
     b.runtime = {
       enabledRulesets: r.runtime.enabledRulesets, staticRulesActive: r.runtime.staticRulesActive,
       registeredScripts: r.runtime.registeredScripts,
+      registeredJsFiles: r.runtime.registeredJsFiles,
+      registeredJsBytes: r.runtime.registeredJsBytes,
+      dynamicRules: r.runtime.dynamicRules,
+      sessionRules: r.runtime.sessionRules,
       contentScriptJsFiles: Object.fromEntries(Object.entries(r.runtime.contentScripts).map(([k, c]) => [k, c.jsFiles])),
     };
   }
