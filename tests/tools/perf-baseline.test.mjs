@@ -112,6 +112,23 @@ test('strażnik paczki: brak niechcianych plików i brak nagłego przyrostu wzgl
   } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
 });
 
+test('baseline: zapisuje registerContentScripts, DNR gotowy, aktywne pliki/bajty scriptletów i reguły dynamiczne/sesyjne', () => {
+  const s = (median) => ({ n: 20, median, p95: median + 1, min: median - 1, max: median + 2 });
+  const r = {
+    date: 'd', env: { commit: 'c', os: 'o', cpu: 'p', memGB: 8, node: 'n', chromium: 'ch' },
+    size: { packageSha256: 'h', files: 1, unpackedBytes: 1, zipBytes: 1, categories: {} },
+    startup: {
+      install: { totalMs: s(2700), marks: { 'DNR gotowy': s(330) }, stages: [{ name: 'scriptlety: registerContentScripts', runsWithStage: 20, ...s(2400) }] },
+      freshInstall: { readyMs: s(3600) }, wake: { wakeMinimal: s(27), wakeCosmetic: s(82), warmCosmetic: s(3) },
+    },
+    runtime: { enabledRulesets: ['ads'], staticRulesActive: 5, registeredScripts: 51, registeredJsFiles: 26, registeredJsBytes: 100, dynamicRules: 0, sessionRules: 0, contentScripts: { 'zwykła': { jsFiles: 1 } } },
+  };
+  const b = baselineOf(r);
+  assert.deepEqual(b.startup.registerContentScriptsMs, { median: 2400, p95: 2401, min: 2399, max: 2402, n: 20 }, 'bez runsWithStage/name');
+  assert.equal(b.startup.dnrReadyMs.median, 330);
+  assert.deepEqual([b.runtime.registeredScripts, b.runtime.registeredJsFiles, b.runtime.registeredJsBytes, b.runtime.dynamicRules, b.runtime.sessionRules], [51, 26, 100, 0, 0]);
+});
+
 test('opcja --modes usunięta (produkt ma jeden stały zestaw list)', () => {
   assert.throws(() => parseArgs(['--modes', 'all']), /nieznany argument: --modes/);
 });
