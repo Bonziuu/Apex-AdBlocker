@@ -18,14 +18,15 @@ export const LISTS = [
   {
     id: 'ads',
     name: 'Reklamy',
-    desc: 'EasyList, uBlock filters i Polskie Filtry Reklamowe',
+    desc: 'EasyList i uBlock filters',
     enabled: true,
     sources: [
       { file: 'easylist/easylist.txt' },
       { file: 'ubo/filters.txt', trusted: true },
       { file: 'ubo/quick-fixes.txt', trusted: true },
       { file: 'ubo/unbreak.txt', trusted: true },
-      { file: 'pl/adblock.txt' },
+      // EKSPERYMENT (experiment/no-polish-filters): Polskie Filtry (pl/adblock.txt + !#include) wyłączone z buildu
+      // – pomiar kosztu i wartości źródła przed decyzją dla 1.0. Snapshoty tools/lists/pl/ zostają.
     ],
   },
   {
