@@ -20,7 +20,6 @@
 //   --results <kat.>  katalog wyników (domyślnie tests/local/results)
 //
 // Kod wyjścia: 0 – PASS, 1 – FAIL, 2 – błąd uruchomienia testera, 3 – INCONCLUSIVE (są SKIP).
-// Działa też z rozpakowanej paczki download/ChromeBlock-dev.zip (folder tester/, bez Gita).
 
 import fs from 'node:fs';
 import os from 'node:os';

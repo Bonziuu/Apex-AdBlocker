@@ -1,4 +1,4 @@
-// Paczka developerska (npm run package:dev) i instalator Windows.
+// Czysta paczka rozszerzenia (npm run package:dev): dist/ChromeBlock + ZIP tylko z rozszerzeniem.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import { EXTENSION_ENTRIES } from '../../tools/chromium-smoke.mjs';
 import {
   packageDev, validatePackage, manifestReferences, listFiles, createZip, crc32, ROOT, ZIP_NAME, PACKAGE_NAME,
 } from '../../tools/package-dev.mjs';
@@ -73,55 +74,49 @@ test('validatePackage: brak pliku z manifestu i pliki deweloperskie są wykrywan
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('package:dev: czysty dist/ChromeBlock tylko z plikami rozszerzenia + ZIP zgodny z katalogiem', () => {
+test('package:dev: czysty dist/ChromeBlock tylko z plikami rozszerzenia + ZIP wyłącznie z rozszerzeniem', () => {
   const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-dist-'));
   try {
     fs.writeFileSync(path.join(outDir, 'stary-plik.txt'), 'x'); // ma zniknąć (czysty build)
     const r = packageDev({ outDir });
     assert.ok(!fs.existsSync(path.join(outDir, 'stary-plik.txt')));
+    assert.deepEqual(fs.readdirSync(outDir).sort(), [PACKAGE_NAME, ZIP_NAME].sort(), 'w dist/ tylko rozszerzenie i ZIP');
     assert.deepEqual(validatePackage(r.extDir), []);
     const files = listFiles(r.extDir);
     assert.ok(files.includes('manifest.json') && files.includes('background.js'));
-    for (const f of files) assert.ok(!/^(tools|tests|docs|node_modules|installer|dist|_metadata)\//.test(f) && !/^(package\.json|README\.md)$/.test(f), f);
+    for (const f of files) {
+      assert.ok(EXTENSION_ENTRIES.includes(f.split('/')[0]), `spoza EXTENSION_ENTRIES: ${f}`);
+      assert.ok(!/^(tools|tests|docs|node_modules|installer|download|tester|dist|_metadata|\.git)\//.test(f) && !/^(package\.json|README\.md|INSTALL\.md)$/.test(f), f);
+    }
     const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
     assert.equal(r.version, manifest.version_name);
 
-    const zip = readZip(fs.readFileSync(path.join(outDir, ZIP_NAME)));
-    const extras = ['install-chromeblock.cmd', 'update-chromeblock.cmd', 'INSTALL.md', 'test-chromeblock.cmd', 'test-sites.cmd'];
-    const tester = ['tester/package.json', 'tester/tests/local/chromeblock-local-test.mjs', 'tester/tests/local/single-blocker-sites.mjs',
-      'tester/tests/local/sites-single-blocker.json', 'tester/tools/chromium-smoke.mjs',
-      'tester/tests/e2e/lib/classify.mjs', 'tester/tests/e2e/lib/youtube-page.mjs'];
-    for (const n of [...extras, ...tester]) assert.ok(zip.has(n), n);
+    // ZIP: dokładnie pliki rozszerzenia w folderze ChromeBlock/, bajt w bajt
+    const buf = fs.readFileSync(path.join(outDir, ZIP_NAME));
+    const zip = readZip(buf);
+    assert.deepEqual([...zip.keys()].sort(), files.map((f) => `${PACKAGE_NAME}/${f}`).sort());
     for (const f of files) assert.ok(zip.get(`${PACKAGE_NAME}/${f}`).equals(fs.readFileSync(path.join(r.extDir, f))), f);
-    assert.equal(zip.size, files.length + extras.length + tester.length, 'nic poza rozszerzeniem, skryptami .cmd, INSTALL.md i minimalnym testerem');
+    for (const n of zip.keys()) {
+      assert.ok(n.startsWith(`${PACKAGE_NAME}/`), n);
+      assert.doesNotMatch(n, /\.cmd$|INSTALL\.md|(^|\/)tester\/|node_modules|(^|\/)\.git(\/|$)|^ChromeBlock\/(tools|tests|docs)\//, n);
+    }
+    assert.equal(r.zipBytes, buf.length);
+
+    // deterministyczny: drugi build daje identyczny ZIP
+    const outDir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-dist-'));
+    try {
+      packageDev({ outDir: outDir2 });
+      assert.ok(fs.readFileSync(path.join(outDir2, ZIP_NAME)).equals(buf), 'ZIP bajt w bajt taki sam');
+    } finally { fs.rmSync(outDir2, { recursive: true, force: true }); }
   } finally { fs.rmSync(outDir, { recursive: true, force: true }); }
 });
 
-const cmd = (name) => fs.readFileSync(path.join(ROOT, 'installer', name), 'utf8');
-
-test('instalator: stały katalog, chrome://extensions, ścieżka w schowku, 3 kroki', () => {
-  const s = cmd('install-chromeblock.cmd');
-  assert.match(s, /set "DEST=%LOCALAPPDATA%\\ChromeBlock"/);
-  assert.match(s, /"chrome:\/\/extensions"/);
-  assert.match(s, /set \/p "=%DEST%" \| clip/);
-  assert.match(s, /1\. Wlacz "Tryb dewelopera"/);
-  assert.match(s, /2\. Kliknij "Załaduj rozpakowane"/);
-  assert.match(s, /3\. Wklej skopiowana sciezke/);
-});
-
-test('aktualizacja: podmienia pliki w tym samym katalogu', () => {
-  const s = cmd('update-chromeblock.cmd');
-  assert.match(s, /set "DEST=%LOCALAPPDATA%\\ChromeBlock"/);
-  assert.match(s, /robocopy "%SRC%" "%DEST%" \/MIR/);
-  assert.match(s, /install-chromeblock\.cmd/, 'bez instalacji odsyła do instalatora');
-});
-
-test('instalator nie zmienia polityk, rejestru ani nie instaluje rozszerzenia samodzielnie', () => {
-  for (const name of ['install-chromeblock.cmd', 'update-chromeblock.cmd']) {
-    const code = cmd(name).split(/\r?\n/).filter((l) => !/^\s*rem\b/i.test(l)).join('\n');
-    assert.ok(!/\breg(\.exe)?\s+(add|delete|import|load)\b/i.test(code), `${name}: rejestr`);
-    assert.ok(!/HKLM|HKCU|HKEY_|Policies|ExtensionInstallForcelist|ExtensionInstallAllowlist/i.test(code), `${name}: polityki`);
-    assert.ok(!/--load-extension|--disable-extensions-except|External Extensions|\.crx\b|gpupdate|Set-ItemProperty|powershell/i.test(code), `${name}: instalacja bez wiedzy użytkownika`);
-    assert.match(cmd(name), /\r\n/, `${name}: końce linii CRLF`);
+test('repozytorium: bez commitowanego ZIP-a, instalatora i INSTALL.md', () => {
+  for (const f of ['download/ChromeBlock-dev.zip', 'installer/install-chromeblock.cmd', 'installer/update-chromeblock.cmd', 'INSTALL.md']) {
+    assert.ok(!fs.existsSync(path.join(ROOT, f)), f);
   }
+  const ignore = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8');
+  assert.match(ignore, /^\*\.zip$/m);
+  assert.match(ignore, /^dist\/$/m);
+  assert.doesNotMatch(ignore, /^!.*\.zip$/m, 'bez wyjątku dla ZIP-a');
 });

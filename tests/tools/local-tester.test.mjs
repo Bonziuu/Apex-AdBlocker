@@ -11,8 +11,6 @@ import {
   seekFacts, seekFailureKinds, classifyAB, formatSeekAB, browserArgs, AB, hardSeekFailures,
   BACKUP_CHECKS, checkBackupFile, settingsView, settingsDiff, ONBOARDING_CHECKS, CORE_LISTS,
 } from '../local/chromeblock-local-test.mjs';
-import { packageDev, missingTesterImports, TESTER_FILES, testerPackageJson } from '../../tools/package-dev.mjs';
-import { createRequire } from 'node:module';
 
 const c = (status, name = 'x') => ({ id: name, name, status, detail: '' });
 
@@ -99,31 +97,10 @@ test('kody wyjścia: PASS 0, FAIL 1, błąd uruchomienia 2, INCONCLUSIVE 3', () 
   assert.equal(parseArgs(['--results', 'x']).resultsDir, path.resolve('x'));
 });
 
-test('paczka: test-chromeblock.cmd + minimalny tester (domknięte importy), bez repozytorium', () => {
-  assert.deepEqual(missingTesterImports(), []);
-  assert.ok(missingTesterImports(ROOT, TESTER_FILES.filter((f) => !f.endsWith('classify.mjs'))).length > 0, 'wykrywa brakujący import');
-  const pkg = testerPackageJson(JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')));
-  assert.deepEqual(Object.keys(pkg.dependencies), ['playwright']);
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-pkg-'));
-  try {
-    const r = packageDev({ outDir: out });
-    assert.ok(fs.existsSync(path.join(out, 'test-chromeblock.cmd')));
-    assert.ok(fs.existsSync(path.join(out, 'update-chromeblock.cmd')));
-    assert.deepEqual(r.testerFiles.sort(), [...TESTER_FILES, 'package.json'].sort());
-    // pliki testera ładują się z rozpakowanej paczki (bez Gita i bez repozytorium)
-    const req = createRequire(import.meta.url);
-    assert.ok(req.resolve(path.join(out, 'tester', 'tests', 'local', 'chromeblock-local-test.mjs')));
-  } finally { fs.rmSync(out, { recursive: true, force: true }); }
-});
-
-test('paczka: tester importuje się poza repozytorium', async () => {
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-pkg-'));
-  try {
-    packageDev({ outDir: out });
-    const m = await import(new URL(`file://${path.join(out, 'tester', 'tests', 'local', 'chromeblock-local-test.mjs')}`).href);
-    assert.equal(typeof m.runLocalTests, 'function');
-    assert.equal(m.ROOT, path.join(out, 'tester'));
-  } finally { fs.rmSync(out, { recursive: true, force: true }); }
+test('test-chromeblock.cmd działa tylko z repozytorium (bez trybu paczki i folderu tester/)', () => {
+  const cmd = fs.readFileSync(path.join(ROOT, 'test-chromeblock.cmd'), 'utf8');
+  assert.doesNotMatch(cmd, /tester\\|wyniki-testu|ChromeBlock-dev\.zip|--dir/);
+  assert.match(cmd, /set "RES=%BASE%tests\\local\\results"/);
 });
 
 // --- seek -----------------------------------------------------------------

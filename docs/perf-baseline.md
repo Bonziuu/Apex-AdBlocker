@@ -15,7 +15,7 @@ Narzędzie (`tools/perf-baseline.mjs`) nie trafia do paczki rozszerzenia: paczka
 
 ## 1. Rozmiar
 
-- Pliki: dokładnie te, które buduje `npm run package:dev` (`packageDev()` → katalog `ChromeBlock/`), budowane w katalogu tymczasowym. `dist/` i `download/` nie są ruszane.
+- Pliki: dokładnie te, które buduje `npm run package:dev` (`packageDev()` → katalog `ChromeBlock/`), budowane w katalogu tymczasowym. `dist/` nie jest ruszany.
 - ZIP: tylko pliki rozszerzenia, ta sama metoda co paczka (`createZip`: deflate raw poziom 9, stała data), więc wynik jest powtarzalny. Uwaga: wcześniejsze liczby z `zip -9` (narzędzie systemowe) różnią się o kilkadziesiąt KB, bo to inna implementacja deflate.
 - Kategorie są rozłączne (suma = cała paczka): `rules/`, `data/`, `scriptlets/`, JS rozszerzenia (`background*`, `shared/`, `content/`, `youtube/`), UI (`popup/`, `options/`, `welcome/`), ikony/zasoby/manifest. Dla każdej: bajty rozpakowane i po deflate.
 - Hash SHA-256 zawartości paczki (ścieżki + treść): identyczny hash = identyczny produkt.
