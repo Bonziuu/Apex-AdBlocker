@@ -80,10 +80,11 @@ test('Opcje w Chromium: diagnostyka YouTube w #youtubeDiag; każda zakładka ma 
     assert.equal(await opt.locator('[id^="focus"], .focus-master, .focus-options').count(), 0, 'brak kontrolek Focus Mode');
 
     // Diagnostyka: raport YouTube Protection w #youtubeDiag
-    await opt.click('.tab[data-tab="diag"]');
+    await opt.click('.tab[data-tab="more"]');
+    await opt.click('#diag > summary');
     await opt.waitForFunction(() => document.getElementById('youtubeDiag').textContent.trim().length > 0, null, { timeout: 15000 });
     assert.match(await opt.locator('#youtubeDiag').innerText(), /Status:/, 'raport YouTube w bloku diagnostyki');
-    assert.equal(await opt.locator('#youtubeDiag').evaluate((e) => !!e.closest('#diag')), true, 'blok w panelu Diagnostyka');
+    assert.equal(await opt.locator('#youtubeDiag').evaluate((e) => !!e.closest('#diag')), true, 'blok w sekcji Diagnostyka');
     assert.equal(await opt.locator('[id="youtubeDiag"]').count(), 1);
     assert.deepEqual(errors, []);
   } finally {

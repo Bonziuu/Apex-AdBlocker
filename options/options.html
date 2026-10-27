@@ -20,9 +20,7 @@
       <button class="tab" data-tab="protection" aria-selected="true">Ochrona</button>
       <button class="tab" data-tab="filters">Moje filtry</button>
       <button class="tab" data-tab="sites">Wyłączone strony</button>
-      <button class="tab" data-tab="backup">Kopia ustawień</button>
-      <button class="tab" data-tab="diag">Diagnostyka</button>
-      <button class="tab" data-tab="about">O wtyczce</button>
+      <button class="tab" data-tab="more">Więcej</button>
     </nav>
 
     <section id="protection" class="panel">
@@ -60,75 +58,87 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       </div>
     </section>
 
-    <section id="backup" class="panel" hidden>
-      <h2 class="mode-h">Kopia ustawień</h2>
-      <p class="muted">Zapisz ustawienia ChromeBlock do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: wyłączone strony (same nazwy domen) i Moje filtry – listy ochrony są stałe. Kopie ze starszych wersji ChromeBlock też da się zaimportować. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
-      <div class="bar">
-        <button id="exportSettings" class="primary">Eksportuj ustawienia</button>
-        <button id="importSettings" class="secondary">Importuj ustawienia</button>
-        <input type="file" id="importFile" accept="application/json,.json" hidden>
-        <span id="backupMsg" class="msg-inline" role="status"></span>
-      </div>
-      <p class="muted backup-note">Import zastępuje obecne ustawienia. Jeśli plik jest niepoprawny albo Chrome nie przyjmie zmian, ustawienia pozostaną bez zmian.</p>
-      <div id="importSummary" class="backup-summary" hidden>
-        <strong>Przywrócono:</strong>
-        <ul id="importSummaryList"></ul>
-      </div>
-      <div id="importErrors" class="msg" role="alert" hidden></div>
-    </section>
+    <section id="more" class="panel" hidden>
+      <details id="backup" class="more-section">
+        <summary><h2>Kopia ustawień</h2></summary>
+        <div class="more-body">
+          <p class="muted">Zapisz ustawienia ChromeBlock do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: wyłączone strony (same nazwy domen) i Moje filtry – listy ochrony są stałe. Kopie ze starszych wersji ChromeBlock też da się zaimportować. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
+          <div class="bar">
+            <button id="exportSettings" class="primary">Eksportuj ustawienia</button>
+            <button id="importSettings" class="secondary">Importuj ustawienia</button>
+            <input type="file" id="importFile" accept="application/json,.json" hidden>
+            <span id="backupMsg" class="msg-inline" role="status"></span>
+          </div>
+          <p class="muted backup-note">Import zastępuje obecne ustawienia. Jeśli plik jest niepoprawny albo Chrome nie przyjmie zmian, ustawienia pozostaną bez zmian.</p>
+          <div id="importSummary" class="backup-summary" hidden>
+            <strong>Przywrócono:</strong>
+            <ul id="importSummaryList"></ul>
+          </div>
+          <div id="importErrors" class="msg" role="alert" hidden></div>
+        </div>
+      </details>
 
-    <section id="diag" class="panel" hidden>
-      <p class="muted">Stan silników ChromeBlock. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce. Raport diagnostyczny nie zawiera adresów stron, identyfikatorów filmów, ciasteczek ani danych konta – możesz go bezpiecznie wkleić do rozmowy.</p>
-      <textarea id="reportPreview" class="report" readonly hidden></textarea>
-      <div class="bar">
-        <button id="refreshDiag" class="primary">Odśwież</button>
-        <button id="resync" class="secondary">Synchronizuj ponownie</button>
-        <button id="copyReport" class="secondary">Kopiuj raport diagnostyczny</button>
-        <span id="diagMsg" class="msg-inline"></span>
-      </div>
+      <details id="diag" class="more-section">
+        <summary><h2>Diagnostyka</h2></summary>
+        <div class="more-body">
+          <p class="muted">Stan silników ChromeBlock. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce. Raport diagnostyczny nie zawiera adresów stron, identyfikatorów filmów, ciasteczek ani danych konta – możesz go bezpiecznie wkleić do rozmowy.</p>
+          <textarea id="reportPreview" class="report" readonly hidden></textarea>
+          <div class="bar">
+            <button id="refreshDiag" class="primary">Odśwież</button>
+            <button id="resync" class="secondary">Synchronizuj ponownie</button>
+            <button id="copyReport" class="secondary">Kopiuj raport diagnostyczny</button>
+            <span id="diagMsg" class="msg-inline"></span>
+          </div>
 
-      <h2>Silniki</h2>
-      <table class="diag" id="components"></table>
+          <h3>Silniki</h3>
+          <table class="diag" id="components"></table>
 
-      <h2>Ostatnia synchronizacja</h2>
-      <table class="diag" id="sync"></table>
+          <h3>Ostatnia synchronizacja</h3>
+          <table class="diag" id="sync"></table>
 
-      <h2>YouTube Protection</h2>
-      <div id="youtubeDiag" class="diag-block"></div>
+          <h3>YouTube Protection</h3>
+          <div id="youtubeDiag" class="diag-block"></div>
 
-      <h2>Zgodność scriptletów</h2>
-      <div id="scriptletCompat" class="diag-block muted"></div>
+          <h3>Dziennik błędów</h3>
+          <div class="bar"><button id="clearErrors" class="secondary">Wyczyść dziennik</button></div>
+          <table class="diag" id="errors"></table>
 
-      <h2>Dziennik błędów</h2>
-      <div class="bar"><button id="clearErrors" class="secondary">Wyczyść dziennik</button></div>
-      <table class="diag" id="errors"></table>
+          <details id="devDiag" class="dev">
+            <summary>Dane deweloperskie</summary>
+            <h3>Zgodność scriptletów</h3>
+            <div id="scriptletCompat" class="diag-block muted"></div>
 
-      <h2>Start rozszerzenia</h2>
-      <p class="muted small">Czas etapów ostatniej instalacji, aktualizacji lub przeładowania ChromeBlock (od uruchomienia service workera).</p>
-      <table class="diag" id="startupProfile"></table>
+            <h3>Start rozszerzenia</h3>
+            <p class="muted small">Czas etapów ostatniej instalacji, aktualizacji lub przeładowania ChromeBlock (od uruchomienia service workera).</p>
+            <table class="diag" id="startupProfile"></table>
 
-      <h2>Pomiary wydajności (dla deweloperów)</h2>
-      <label class="check"><input type="checkbox" id="devPerf"> Mierz pracę filtrów kosmetycznych i scriptletów na stronach (domyślnie wyłączone)</label>
-      <p class="muted small">Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu ChromeBlock (bez czasu oryginalnej funkcji strony). Bez adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty.</p>
-      <div class="bar"><button id="resetPerf" class="secondary">Resetuj pomiary</button></div>
-      <table class="diag" id="perf"></table>
-      <h3>Najdroższe scriptlety</h3>
-      <table class="diag" id="scriptletPerf"></table>
-    </section>
+            <h3>Pomiary wydajności</h3>
+            <label class="check"><input type="checkbox" id="devPerf"> Mierz pracę filtrów kosmetycznych i scriptletów na stronach (domyślnie wyłączone)</label>
+            <p class="muted small">Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu ChromeBlock (bez czasu oryginalnej funkcji strony). Bez adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty.</p>
+            <div class="bar"><button id="resetPerf" class="secondary">Resetuj pomiary</button></div>
+            <table class="diag" id="perf"></table>
+            <h3>Najdroższe scriptlety</h3>
+            <table class="diag" id="scriptletPerf"></table>
+          </details>
+        </div>
+      </details>
 
-    <section id="about" class="panel" hidden>
-      <h2>Jak to działa</h2>
-      <p>ChromeBlock jest napisany w Manifest V3 – jedynej technologii rozszerzeń, którą obecnie akceptuje Chrome. Ma własny silnik, który obsługuje określony podzbiór składni filtrów ABP/uBO, i blokuje reklamy na trzech poziomach:</p>
-      <ul>
-        <li><b>Blokowanie żądań sieciowych</b> – przeglądarka nie pobiera reklam ani skryptów śledzących (declarativeNetRequest).</li>
-        <li><b>Ukrywanie elementów</b> – puste ramki i kontenery po reklamach są ukrywane arkuszem stylów.</li>
-        <li><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, podmieniane są fragmenty kodu strony. ChromeBlock wykonuje tylko te warianty scriptletów, których semantykę zna; pozostałe są pomijane (szczegóły w zakładce Diagnostyka i w raporcie <code>npm run audit:scriptlets</code>).</li>
-      </ul>
-      <h2>Listy filtrów</h2>
-      <p>EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.</p>
-      <h2>Ograniczenia MV3</h2>
-      <p>Części filtrów nie da się wyrazić w Manifest V3 (np. filtrowanie HTML, modyfikacja nagłówków CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma jeszcze implementacji w ChromeBlock. Na pojedynczych stronach skuteczność może być więc niższa niż w dawnym uBlock Origin. ChromeBlock nie obiecuje niewykrywalności przez strony.</p>
-      <div id="stats" class="muted"></div>
+      <details id="about" class="more-section">
+        <summary><h2>O wtyczce</h2></summary>
+        <div class="more-body">
+          <p>ChromeBlock działa w Manifest V3 (MV3) i blokuje na trzech poziomach:</p>
+          <ul>
+            <li><b>Sieć</b> – żądania reklam i skryptów śledzących są blokowane regułami declarativeNetRequest.</li>
+            <li><b>Ukrywanie elementów</b> – puste ramki i kontenery po reklamach są ukrywane kosmetycznie (arkusze stylów).</li>
+            <li><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, ChromeBlock wykonuje tylko obsługiwane warianty scriptletów; pozostałe pomija.</li>
+          </ul>
+          <h3>Ograniczenia</h3>
+          <p>ChromeBlock obsługuje podzbiór składni filtrów uBO/ABP. Części filtrów nie da się wyrazić w MV3 (np. filtrowanie HTML, nagłówki CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma implementacji, więc na niektórych stronach skuteczność może być niższa niż w uBlock Origin. ChromeBlock nie obiecuje niewykrywalności przez strony.</p>
+          <h3>Listy filtrów</h3>
+          <p>EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.</p>
+          <div id="stats" class="muted"></div>
+        </div>
+      </details>
     </section>
   </div>
   <script src="options.js" type="module"></script>
