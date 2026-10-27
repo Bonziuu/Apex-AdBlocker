@@ -1191,6 +1191,34 @@ return typeof r !== 'string' ? super.responseText : r;
 }
 };
 }
+let nativeLookalikes = null; // opakowanie → tekst natywnej funkcji
+function asNativeLike(native, wrapper, isProxy = false) {
+if (nativeLookalikes === null) {
+nativeLookalikes = new WeakMap();
+const realToString = Function.prototype.toString;
+const toStringProxy = new Proxy(realToString, {
+apply(target, thisArg, args) {
+const text = (typeof thisArg === 'function' || (thisArg !== null && typeof thisArg === 'object')) ? nativeLookalikes.get(thisArg) : undefined;
+return text !== undefined ? text : reflectApply(target, thisArg, args);
+},
+});
+nativeLookalikes.set(toStringProxy, reflectApply(nativeFnToString, realToString, []));
+defineProperty(Function.prototype, 'toString', { ...getOwnDesc(Function.prototype, 'toString'), value: toStringProxy });
+}
+if (!isProxy) { // Proxy przekazuje name/length z oryginału
+try { defineProperty(wrapper, 'name', { value: native.name, configurable: true }); } catch { /* */ }
+try { defineProperty(wrapper, 'length', { value: native.length, configurable: true }); } catch { /* */ }
+}
+nativeLookalikes.set(wrapper, reflectApply(nativeFnToString, native, []));
+return wrapper;
+}
+/** owner[prop] → Proxy(apply = run) wyglądający jak oryginał (toString, name, length). */
+function wrapNativeMethod(owner, prop, run) {
+const native = owner[prop];
+if (typeof native !== 'function') return;
+const proxy = new Proxy(native, { apply: (target, thisArg, args) => run(target, thisArg, args) });
+owner[prop] = asNativeLike(native, proxy, true);
+}
 const SCRIPTLETS = {
 'set-constant'(...args) { setConstantImpl(false, ...args); },
 'trusted-set-constant'(...args) { setConstantImpl(true, ...args); },
@@ -1375,27 +1403,43 @@ const byKey = new Map(byDashed);
 for (const [dashed, value] of byDashed) byKey.set(toCamel(dashed), value);
 const elementMatches = Element.prototype.matches;
 const nativeGetPropertyValue = CSSStyleDeclaration.prototype.getPropertyValue;
-proxyApply('getComputedStyle', ({ callArgs, reflect }) => {
-const style = reflect();
-const el = callArgs[0];
-if (!(el instanceof Element) || callArgs[1]) return style;
-let hit = false;
-try { hit = reflectApply(elementMatches, el, [selector]); } catch { /* */ }
-if (!hit) return style;
-return new Proxy(style, {
-get(target, prop) {
-if (typeof prop === 'string' && byKey.has(prop)) return byKey.get(prop);
-if (prop === 'getPropertyValue') {
-return function getPropertyValue(name) {
-const key = String(name).toLowerCase();
-return byDashed.has(key) ? byDashed.get(key) : reflectApply(nativeGetPropertyValue, target, [name]);
-};
+const matching = (el) => { try { return el instanceof Element && reflectApply(elementMatches, el, [selector]); } catch { return false; } };
+const spoofed = new WeakMap(); // proxy deklaracji → prawdziwa deklaracja
+const methods = new WeakMap(); // natywna metoda → opakowanie (jedno na metodę)
+const methodFor = (native) => {
+let w = methods.get(native);
+if (w) return w;
+w = asNativeLike(native, function (...args) {
+const real = spoofed.get(this);
+if (real === undefined) return reflectApply(native, this, args);
+if (native === nativeGetPropertyValue) {
+const key = String(args[0]).toLowerCase();
+if (byDashed.has(key)) return byDashed.get(key);
 }
-const value = Reflect.get(target, prop, target);
-return typeof value === 'function' ? value.bind(target) : value;
+return reflectApply(native, real, args);
+});
+methods.set(native, w);
+return w;
+};
+wrapNativeMethod(win, 'getComputedStyle', (target, thisArg, args) => {
+const style = reflectApply(target, thisArg, args);
+if (args[1] || !matching(args[0])) return style;
+const proxy = new Proxy(style, {
+get(real, prop) {
+if (typeof prop === 'string' && byKey.has(prop)) return byKey.get(prop);
+const value = Reflect.get(real, prop, real);
+return typeof value === 'function' ? methodFor(value) : value;
+},
+getOwnPropertyDescriptor(real, prop) {
+const d = Reflect.getOwnPropertyDescriptor(real, prop);
+if (d && 'value' in d && typeof prop === 'string' && byKey.has(prop) && d.configurable) return { ...d, value: byKey.get(prop) };
+return d;
 },
 });
+spoofed.set(proxy, style);
+return proxy;
 });
+wrapNativeMethod(Element.prototype, 'getBoundingClientRect', (target, thisArg, args) => reflectApply(target, thisArg, args));
 },
 'prevent-fetch'(...args) { fetchPrevent(false, ...args); },
 'trusted-prevent-fetch'(...args) { fetchPrevent(true, ...args); },

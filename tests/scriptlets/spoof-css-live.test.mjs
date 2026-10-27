@@ -37,6 +37,21 @@ function check(when) {
     priority: cs.getPropertyPriority('visibility'), item0: typeof cs.item(0), length: cs.length > 0, isDecl: cs instanceof CSSStyleDeclaration,
     other: getComputedStyle(document.getElementById('other')).visibility, otherTop: getComputedStyle(document.getElementById('other')).top,
     pseudo: getComputedStyle(slot, '::before').visibility, rectTop: Math.round(slot.getBoundingClientRect().top),
+    // introspekcja (porównywana z przebiegiem bez rozszerzenia)
+    descVisibility: (() => { const d = Object.getOwnPropertyDescriptor(cs, 'visibility'); return d ? ('value' in d ? d.value : 'accessor') : null; })(),
+    descTop: (() => { const d = Object.getOwnPropertyDescriptor(cs, 'top'); return d ? ('value' in d ? d.value : 'accessor') : null; })(),
+    introspect: {
+      gpvToString: cs.getPropertyValue.toString(), gpvFnToString: Function.prototype.toString.call(cs.getPropertyValue),
+      names: [cs.getPropertyValue.name, cs.item.name, cs.getPropertyPriority.name, cs.getPropertyValue.length, cs.item.length],
+      itemToString: Function.prototype.toString.call(cs.item),
+      gcsToString: getComputedStyle.toString(), gcsFnToString: Function.prototype.toString.call(getComputedStyle), gcsName: getComputedStyle.name, gcsLength: getComputedStyle.length,
+      fpToString: Function.prototype.toString.toString(), fpToStringName: Function.prototype.toString.name,
+      bcrToString: Function.prototype.toString.call(Element.prototype.getBoundingClientRect), bcrName: Element.prototype.getBoundingClientRect.name,
+      tag: Object.prototype.toString.call(cs), otherDesc: JSON.stringify(Object.getOwnPropertyDescriptor(getComputedStyle(document.getElementById('other')), 'visibility') || null),
+      ownKeys: Object.keys(cs).length > 0,
+    },
+    rect: (() => { const r = slot.getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map(Math.round); })(),
+    otherRect: (() => { const r = document.getElementById('other').getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map(Math.round); })(),
   };
   if ((r.visibility === 'hidden' || r.top === '-4000px') && !document.querySelector('.reinjected-ad')) {
     const ad = document.createElement('div'); ad.className = 'reinjected-ad'; ad.textContent = 'REKLAMA'; document.body.appendChild(ad);
@@ -85,7 +100,8 @@ async function run(withExt) {
     const reinjected = await page.locator('.reinjected-ad').count();
     // prawdziwy stan (świat izolowany ma natywne getComputedStyle)
     const real = await evalIsolated(page, () => { const s = getComputedStyle(document.getElementById('slot')); return { visibility: s.visibility, top: s.top, position: s.position }; });
-    return { checks, reinjected, real, errors };
+    const realRects = await evalIsolated(page, () => ['slot', 'other'].map((id) => { const r = document.getElementById(id).getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map(Math.round); }));
+    return { checks, reinjected, real, realRects, errors };
   } finally {
     await ctx.close();
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -125,4 +141,23 @@ test('spoof-css (wykop.pl): bez rozszerzenia strona wykrywa ukrycie i wstawia re
   }
   // rzeczywisty styl elementu bez zmian (scriptlet tylko „kłamie” kodowi strony)
   assert.deepEqual(cb.real, { visibility: 'hidden', top: '-4000px', position: 'absolute' });
+
+  const last = cb.checks.at(-1);
+  const ctrl = none.checks.at(-1);
+  // deskryptory nie ujawniają prawdziwej wartości: brak własnej właściwości jak natywnie albo wartość podmieniona
+  for (const k of ['descVisibility', 'descTop']) {
+    assert.notEqual(last[k], k === 'descVisibility' ? 'hidden' : '-4000px', k);
+    if (ctrl[k] === null) assert.equal(last[k], null, `${k}: jak natywnie`);
+    else assert.equal(last[k], k === 'descVisibility' ? 'visible' : '0px', k);
+  }
+  // metody deklaracji, getComputedStyle, Function.prototype.toString i getBoundingClientRect wyglądają jak natywne
+  assert.deepEqual(last.introspect, ctrl.introspect);
+  assert.equal(last.introspect.gpvToString, 'function getPropertyValue() { [native code] }');
+  assert.equal(last.introspect.gcsFnToString, 'function getComputedStyle() { [native code] }');
+  assert.equal(last.introspect.fpToString, 'function toString() { [native code] }');
+  assert.equal(last.introspect.bcrToString, 'function getBoundingClientRect() { [native code] }');
+  assert.deepEqual(last.introspect.names.slice(0, 3), ['getPropertyValue', 'item', 'getPropertyPriority']);
+  // getBoundingClientRect przezroczysty: jak natywny (świat izolowany) i jak bez rozszerzenia
+  assert.deepEqual([last.rect, last.otherRect], cb.realRects);
+  assert.deepEqual([last.rect, last.otherRect], [ctrl.rect, ctrl.otherRect]);
 });
