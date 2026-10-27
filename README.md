@@ -89,7 +89,8 @@ npm run check        # walidacja buildu + zgodność YouTube (strict) + audyt + 
 | `npm run audit:scriptlets` | Raport zgodności scriptletów (supported / partial / unsupported, YouTube) |
 | `npm run update-lists` | Pobiera listy i od razu pokazuje zmiany filtrów YouTube i nowe nieobsługiwane scriptlety |
 | `npm run check` | Wszystkie kontrole; kod ≠ 0 przy błędzie. Jeśli dostępny jest Playwright + Chromium, dodatkowo ładuje rozszerzenie w Chromium (tymczasowy profil, bez stron zewnętrznych); inaczej `SKIP: Chromium smoke test unavailable`. `CHROMEBLOCK_SMOKE=0` pomija ten krok |
-| `npm run package:dev` | Paczka dla osób bez Gita: `dist/ChromeBlock/` (tylko pliki rozszerzenia) + `dist/ChromeBlock-dev.zip` z instalatorem Windows (`install-chromeblock.cmd`, `update-chromeblock.cmd`) i [INSTALL.md](INSTALL.md). Test paczki: `node tools/chromium-smoke.mjs --dir dist/ChromeBlock` |
+| `npm run package:dev` | Czysta paczka rozszerzenia w `dist/` (lokalnie, nie commitowana): `dist/ChromeBlock/` – tylko pliki rozszerzenia, `dist/ChromeBlock-dev.zip` – te same pliki w ZIP-ie; bez instalatora i testera. Test paczki: `node tools/chromium-smoke.mjs --dir dist/ChromeBlock` |
+| `test-chromeblock.cmd`, `test-sites.cmd` | Lokalne testy w Windows (z folderu repozytorium, Node.js 20+): test regresyjny w tymczasowym profilu Chromium oraz porównanie stron bez / z ChromeBlock ([docs/single-blocker-sites-test.md](docs/single-blocker-sites-test.md)). Wyniki w `tests/local/results/` |
 | `npm run test:e2e` | Testy E2E YouTube w prawdziwym Chromium (wymagają `npx playwright install chromium`) |
 
 Aktualizacja list:

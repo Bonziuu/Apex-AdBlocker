@@ -1,19 +1,14 @@
 #!/usr/bin/env node
-// ChromeBlock – paczka developerska dla osób bez Gita i terminala.
+// ChromeBlock – czysta paczka rozszerzenia (lokalnie, nie commitowana).
 //
 //   npm run package:dev
 //
 // Tworzy:
-//   dist/ChromeBlock/            tylko pliki potrzebne rozszerzeniu (do „Załaduj rozpakowane”)
-//   dist/install-chromeblock.cmd instalator Windows (kopiuje do %LOCALAPPDATA%\ChromeBlock)
-//   dist/update-chromeblock.cmd  aktualizacja istniejącej instalacji (ten sam katalog)
-//   dist/INSTALL.md              instrukcja dla osoby nietechnicznej
-//   dist/test-chromeblock.cmd    lokalny test regresyjny (Node.js 20+, bez Gita)
-//   dist/tester/                 minimalne pliki testera + package.json (zależność: playwright)
-//   dist/ChromeBlock-dev.zip     wszystko powyżej w jednym pliku ZIP
+//   dist/ChromeBlock/        dokładnie pliki rozszerzenia (EXTENSION_ENTRIES) – do „Załaduj rozpakowane”
+//   dist/ChromeBlock-dev.zip te same pliki (folder ChromeBlock/) w deterministycznym ZIP-ie
 //
-// Bez zależności: ZIP jest zapisywany przez node:zlib. Paczka niczego nie instaluje sama –
-// użytkownik ładuje rozszerzenie w Chrome własnoręcznie (Tryb dewelopera → Załaduj rozpakowane).
+// Bez instalatora, testera i dokumentacji. Bez zależności: ZIP jest zapisywany przez node:zlib.
+// Z packageDev() korzysta też tools/perf-baseline.mjs (rozmiar paczki).
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -24,49 +19,7 @@ import { EXTENSION_ENTRIES } from './chromium-smoke.mjs';
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const PACKAGE_NAME = 'ChromeBlock';
 export const ZIP_NAME = 'ChromeBlock-dev.zip';
-export const EXTRA_FILES = [
-  ['installer/install-chromeblock.cmd', 'install-chromeblock.cmd'],
-  ['installer/update-chromeblock.cmd', 'update-chromeblock.cmd'],
-  ['INSTALL.md', 'INSTALL.md'],
-  ['test-chromeblock.cmd', 'test-chromeblock.cmd'],
-  ['test-sites.cmd', 'test-sites.cmd'],
-];
-export const TESTER_DIR = 'tester';
-// minimalny zestaw plików testera – ten sam układ katalogów co w repozytorium (importy względne bez zmian)
-export const TESTER_FILES = [
-  'tests/local/chromeblock-local-test.mjs',
-  'tests/local/single-blocker-sites.mjs',
-  'tests/local/sites-single-blocker.json',
-  'tools/chromium-smoke.mjs',
-  'tests/e2e/lib/classify.mjs',
-  'tests/e2e/lib/youtube-page.mjs',
-];
 
-/** package.json testera: tylko Playwright (wersja jak w repozytorium). */
-export function testerPackageJson(rootPkg) {
-  return {
-    name: 'chromeblock-local-tester',
-    private: true,
-    description: 'ChromeBlock – lokalny test regresyjny (uruchom test-chromeblock.cmd)',
-    type: 'module',
-    engines: { node: '>=20' },
-    dependencies: { playwright: rootPkg.devDependencies.playwright },
-  };
-}
-
-/** Względne importy plików .mjs, które nie należą do zestawu (puste = zestaw domknięty). */
-export function missingTesterImports(root = ROOT, files = TESTER_FILES) {
-  const set = new Set(files);
-  const missing = [];
-  for (const f of files) {
-    const src = fs.readFileSync(path.join(root, f), 'utf8');
-    for (const m of src.matchAll(/(?:^|\n)\s*import\s[^;]*?from\s+['"](\.{1,2}\/[^'"]+)['"]/g)) {
-      const target = path.posix.normalize(path.posix.join(path.posix.dirname(f), m[1]));
-      if (!set.has(target)) missing.push(`${f} → ${target}`);
-    }
-  }
-  return missing;
-}
 // stała data w ZIP → powtarzalna paczka
 const ZIP_DATE = new Date(Date.UTC(2026, 0, 1, 0, 0, 0));
 
@@ -198,7 +151,7 @@ export function createZip(entries) {
 
 // --- Paczka -------------------------------------------------------------------
 
-/** Buduje dist/ (czysty) i ZIP. Zwraca opis paczki. */
+/** Buduje dist/ (czysty): katalog rozszerzenia i ZIP z samym rozszerzeniem. Zwraca opis paczki. */
 export function packageDev({ root = ROOT, outDir = path.join(root, 'dist') } = {}) {
   fs.rmSync(outDir, { recursive: true, force: true });
   const extDir = path.join(outDir, PACKAGE_NAME);
@@ -209,30 +162,13 @@ export function packageDev({ root = ROOT, outDir = path.join(root, 'dist') } = {
   }
   const problems = validatePackage(extDir);
   if (problems.length) throw new Error(`Paczka niepoprawna:\n  - ${problems.join('\n  - ')}`);
-  for (const [src, dest] of EXTRA_FILES) fs.copyFileSync(path.join(root, src), path.join(outDir, dest));
-
-  // tester
-  const missing = missingTesterImports(root);
-  if (missing.length) throw new Error(`Tester: brakujące importy w paczce:\n  - ${missing.join('\n  - ')}`);
-  const testerDir = path.join(outDir, TESTER_DIR);
-  for (const f of TESTER_FILES) {
-    fs.mkdirSync(path.dirname(path.join(testerDir, f)), { recursive: true });
-    fs.copyFileSync(path.join(root, f), path.join(testerDir, f));
-  }
-  const rootPkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-  fs.writeFileSync(path.join(testerDir, 'package.json'), JSON.stringify(testerPackageJson(rootPkg), null, 2) + '\n');
-  const testerFiles = listFiles(testerDir);
 
   const files = listFiles(extDir);
-  const entries = [
-    ...EXTRA_FILES.map(([, dest]) => ({ name: dest, data: fs.readFileSync(path.join(outDir, dest)) })),
-    ...testerFiles.map((f) => ({ name: `${TESTER_DIR}/${f}`, data: fs.readFileSync(path.join(testerDir, f)) })),
-    ...files.map((f) => ({ name: `${PACKAGE_NAME}/${f}`, data: fs.readFileSync(path.join(extDir, f)) })),
-  ];
+  const entries = files.map((f) => ({ name: `${PACKAGE_NAME}/${f}`, data: fs.readFileSync(path.join(extDir, f)) }));
   const zipPath = path.join(outDir, ZIP_NAME);
   fs.writeFileSync(zipPath, createZip(entries));
   const manifest = JSON.parse(fs.readFileSync(path.join(extDir, 'manifest.json'), 'utf8'));
-  return { outDir, extDir, testerDir, testerFiles, zipPath, files: files.length, version: manifest.version_name || manifest.version, zipBytes: fs.statSync(zipPath).size };
+  return { outDir, extDir, zipPath, files: files.length, version: manifest.version_name || manifest.version, zipBytes: fs.statSync(zipPath).size };
 }
 
 function main() {
@@ -240,9 +176,7 @@ function main() {
   const rel = (p) => path.relative(ROOT, p).split(path.sep).join('/');
   console.log(`✓ ChromeBlock ${r.version}: ${r.files} plików rozszerzenia`);
   console.log(`  ${rel(r.extDir)}/`);
-  for (const [, dest] of EXTRA_FILES) console.log(`  ${rel(path.join(r.outDir, dest))}`);
-  console.log(`  ${rel(r.testerDir)}/ (${r.testerFiles.length} plików testera)`);
-  console.log(`  ${rel(r.zipPath)} (${(r.zipBytes / 1024 / 1024).toFixed(1)} MB)`);
+  console.log(`  ${rel(r.zipPath)} (${(r.zipBytes / 1024 / 1024).toFixed(1)} MB, tylko rozszerzenie)`);
   console.log('Sprawdzenie w Chromium: node tools/chromium-smoke.mjs --dir dist/ChromeBlock');
 }
 

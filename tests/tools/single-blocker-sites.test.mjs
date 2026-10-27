@@ -222,7 +222,7 @@ test('tester nie dotyka produktu: brak zmian zachowania, osobny plik', () => {
   assert.doesNotMatch(src, /protectionMode|basic|balanced|strict/i, 'bez trybów');
 });
 
-test('uruchomienie: test-sites.cmd → test-chromeblock.cmd --sites, npm run test:sites, paczka testera', async () => {
+test('uruchomienie: test-sites.cmd → test-chromeblock.cmd --sites, npm run test:sites', () => {
   const cmd = fs.readFileSync(path.join(ROOT, 'test-chromeblock.cmd'), 'utf8');
   assert.match(cmd, /if \/i "%~1"=="--sites" set "SCRIPT=tests\\local\\single-blocker-sites\.mjs"/);
   assert.match(cmd, /sites\\latest\.html/);
@@ -232,10 +232,6 @@ test('uruchomienie: test-sites.cmd → test-chromeblock.cmd --sites, npm run tes
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   assert.equal(pkg.scripts['test:sites'], 'node tests/local/single-blocker-sites.mjs');
   assert.doesNotMatch(pkg.scripts.test, /sites/);
-  const { TESTER_FILES, EXTRA_FILES, missingTesterImports } = await import('../../tools/package-dev.mjs');
-  for (const f of ['tests/local/single-blocker-sites.mjs', 'tests/local/sites-single-blocker.json']) assert.ok(TESTER_FILES.includes(f), f);
-  assert.ok(EXTRA_FILES.some(([, d]) => d === 'test-sites.cmd'));
-  assert.deepEqual(missingTesterImports(), []);
 });
 
 // ---------------------------------------------------------------------------------------------
