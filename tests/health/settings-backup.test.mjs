@@ -236,9 +236,9 @@ test('czysta logika: nazwa pliku, podsumowanie, odmiana, limit rozmiaru', () => 
   assert.deepEqual(validateBackup(JSON.parse(backupText())).settings, { disabledSites: ['bank.example', 'shop.example'], userFilters: FILTERS });
 });
 
-test('opcje: zakładka „Kopia ustawień” z przyciskami eksportu i importu; opis bez list i trybu', () => {
+test('opcje: sekcja „Kopia ustawień” (w „Więcej”) z przyciskami eksportu i importu; opis bez list i trybu', () => {
   const html = fs.readFileSync(path.join(ROOT, 'options/options.html'), 'utf8');
-  assert.match(html, /data-tab="backup">Kopia ustawień</);
+  assert.match(html, /<details id="backup" class="more-section">\s*<summary><h2>Kopia ustawień<\/h2><\/summary>/);
   const sec = html.slice(html.indexOf('id="backup"'), html.indexOf('id="diag"'));
   assert.match(sec, /<h2[^>]*>Kopia ustawień<\/h2>/);
   assert.match(sec, /id="exportSettings"[^>]*>Eksportuj ustawienia</);

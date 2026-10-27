@@ -1,19 +1,35 @@
 import { importFailureMessage } from '../shared/settings-backup.js';
+import { resolveRoute, MORE_SECTIONS } from './routing.js';
 
 const $ = (id) => document.getElementById(id);
 const send = (msg) => chrome.runtime.sendMessage(msg);
 const fmt = (n) => Number(n || 0).toLocaleString('pl-PL');
 
-// zakładki
+// zakładki: Ochrona, Moje filtry, Wyłączone strony, Więcej (z sekcjami backup / diag / about)
+function selectTab(id) {
+  for (const t of document.querySelectorAll('.tab')) t.setAttribute('aria-selected', String(t.dataset.tab === id));
+  for (const p of document.querySelectorAll('.panel')) p.hidden = p.id !== id;
+}
 for (const tab of document.querySelectorAll('.tab')) {
   tab.addEventListener('click', () => {
-    for (const t of document.querySelectorAll('.tab')) t.setAttribute('aria-selected', String(t === tab));
-    for (const p of document.querySelectorAll('.panel')) p.hidden = p.id !== tab.dataset.tab;
+    selectTab(tab.dataset.tab);
     history.replaceState(null, '', '#' + tab.dataset.tab);
   });
 }
-const initial = location.hash.slice(1);
-if (initial) document.querySelector(`.tab[data-tab="${initial}"]`)?.click();
+/** Przejście do zakładki/sekcji (deep link #diag, #backup, #about i zwykłe zakładki). */
+function route(hash) {
+  const r = resolveRoute(hash);
+  selectTab(r.tab);
+  if (r.section) {
+    const d = $(r.section);
+    d.open = true;
+    d.scrollIntoView({ block: 'start' });
+  }
+}
+selectTab(resolveRoute(location.hash).tab); // od razu właściwa zakładka; sekcja otwiera się na końcu skryptu
+for (const id of MORE_SECTIONS) {
+  $(id).addEventListener('toggle', () => { if ($(id).open) history.replaceState(null, '', '#' + id); });
+}
 
 let data = await send({ type: 'options:get' });
 
@@ -115,7 +131,7 @@ function showImportErrors(result) {
     b.className = 'secondary';
     b.id = 'openDiag';
     b.textContent = 'Otwórz Diagnostykę';
-    b.addEventListener('click', () => document.querySelector('.tab[data-tab="diag"]').click());
+    b.addEventListener('click', () => { route('diag'); history.replaceState(null, '', '#diag'); });
     box.appendChild(b);
   }
   box.hidden = false;
@@ -244,8 +260,9 @@ $('resync').addEventListener('click', async () => {
 $('clearErrors').addEventListener('click', async () => { await send({ type: 'health:clearErrors' }); renderDiag(); });
 $('devPerf').addEventListener('change', async () => { await send({ type: 'options:setDevPerf', enabled: $('devPerf').checked }); renderDiag(); });
 $('resetPerf').addEventListener('click', async () => { await send({ type: 'perf:reset' }); flash($('diagMsg'), 'Pomiary wyzerowane', 'ok'); renderDiag(); });
-document.querySelector('.tab[data-tab="diag"]').addEventListener('click', renderDiag);
-if (initial === 'diag') renderDiag();
+// Diagnostyka ładowana leniwie: health:get dopiero po rozwinięciu sekcji (także z deep linku #diag),
+// przy każdym ponownym rozwinięciu odświeżana.
+$('diag').addEventListener('toggle', () => { if ($('diag').open) renderDiag(); });
 
 $('copyReport').addEventListener('click', async () => {
   const r = await send({ type: 'diagnostics:export' });
@@ -261,3 +278,7 @@ $('copyReport').addEventListener('click', async () => {
     flash($('diagMsg'), 'Zaznaczono raport – skopiuj go ręcznie (Ctrl+C)', '');
   }
 });
+
+// deep link na końcu – wszystkie obsługi (w tym leniwa diagnostyka) są już podpięte
+route(location.hash);
+window.addEventListener('hashchange', () => route(location.hash));
