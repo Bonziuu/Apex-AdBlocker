@@ -64,7 +64,7 @@ Dowody:
 | Licencja | GPL-3.0 (plik `LICENSE` w repozytorium: „GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007”) |
 | Źródło licencji | nagłówek każdej listy: `License: https://github.com/uBlockOrigin/uAssets/blob/master/LICENSE`; blob `LICENSE` = `9cecc1d4669ee8af2ca727a5d8cde10cd8b2d7cc`, identyczny w commicie snapshotu i w `master` z 2026-10-26 |
 | Uznanie autorstwa | upstream nie podaje formuły; nagłówki list nie zawierają linii Copyright. README/Opcje ChromeBlock piszą „© Raymond Hill i współtwórcy” – to opis ChromeBlock, nie tekst upstreamu |
-| Obowiązki licencji | GPL-3.0: m.in. dołączenie tekstu licencji i dostęp do źródła przy dystrybucji (zob. sekcja 5) |
+| Obowiązki licencji | GPL-3.0 zawiera obowiązki dotyczące conveyance covered works, w tym warunki dotyczące licencji i Corresponding Source. Czy i w jakim zakresie dotyczą one wygenerowanych artefaktów ChromeBlock, pozostaje `NEEDS LEGAL REVIEW` (zob. sekcja 5). |
 
 Nagłówki `Last modified: %timestamp%` nie zawierają daty. Wersję ustalono porównaniem hashy: `git hash-object` każdego snapshotu jest **bajtowo identyczny** z blobem w historii `uBlockOrigin/uAssets` (`master`, ścieżka `filters/<nazwa>.txt`). Kolumna „commit” = najstarszy commit, w którym ta treść pojawiła się w upstreamie.
 
@@ -114,7 +114,7 @@ Uwagi:
 Uwagi:
 - Nagłówek `adblock.txt` podaje `Last modified: 20 November 2026`, a `Version: 20261012001` i linia „aktualizacja: wt, 20 pazdziernika 2026”. Daty są niespójne w samym upstreamie; zapisane dosłownie.
 - README i strona Opcji ChromeBlock piszą „© MajkiIT”, a nagłówek listy „Copyright © 2026 Certyficate IT”. Do ujednolicenia po przeglądzie prawnym (zmiana tekstu UI nie jest częścią tego audytu).
-- Audyt odczytał wyłącznie nagłówek, `LICENSE`, `README.md` i `STATEMENT.md` upstreamu oraz hashe plików (bez czytania reguł) – zgodnie z zasadą clean room dla własnej listy uzupełniającej.
+- W ramach tego audytu nie analizowano treści reguł Polskich Filtrów; sprawdzono wyłącznie metadane, nagłówki, dokumenty licencyjne i hashe.
 
 ## 3. Snapshoty w repozytorium, których build nie używa
 
@@ -137,9 +137,12 @@ Te pliki są nadal redystrybuowane w repozytorium (obecnie prywatnym).
 
 `NEEDS LEGAL REVIEW`:
 1. **Polskie Filtry – CC BY-NC-SA 4.0 (NonCommercial + ShareAlike).** Czy darmowa dystrybucja ChromeBlock (ewentualnie w Chrome Web Store) mieści się w „NonCommercial”, oraz czy skompilowane reguły DNR / kosmetyka / argumenty scriptletów to „Adapted Material” podlegający share-alike.
-2. **Mieszanie licencji w jednym artefakcie listy `ads`:** EasyList (GPL-3.0+ albo CC BY-SA 3.0+), uBlock filters (GPL-3.0) i Polskie Filtry (CC BY-NC-SA 4.0) w tych samych plikach `rules/ads.json`, `data/ads*.json`, `scriptlets/ads-*.js`. CC BY-NC-SA 4.0 nie jest wymieniona jako zgodna z GPL-3.0; skutki wymagają oceny.
-3. **Obowiązki GPL-3.0 / CC BY-SA przy dystrybucji paczki:** paczka nie zawiera tekstów licencji ani informacji o dostępie do źródeł list; uznanie autorstwa jest tylko w zakładce „O wtyczce” w Opcjach. Do ustalenia: czy i w jakiej formie dołączyć teksty licencji / notice / źródło.
-4. **Licencja kodu ChromeBlock:** repozytorium nie ma pliku licencji. Audyt niczego nie dodaje; skutki połączenia z treściami GPL-3.0 (scriptlety łączą własny kod z argumentami filtrów w jednym pliku) do oceny prawnika.
+2. **Mieszanie licencji w jednym artefakcie listy `ads`:** EasyList (GPL-3.0+ albo CC BY-SA 3.0+), uBlock filters (GPL-3.0) i Polskie Filtry (CC BY-NC-SA 4.0) w tych samych plikach `rules/ads.json`, `data/ads*.json`, `scriptlets/ads-*.js`. Creative Commons obecnie nie wskazuje żadnej licencji spoza CC jako BY-NC-SA Compatible License dla BY-NC-SA 4.0 (https://creativecommons.org/share-your-work/licensing-considerations/compatible-licenses). Skutki dla mieszanych artefaktów: `NEEDS LEGAL REVIEW`.
+3. **GPL-3.0 / CC BY-SA a dystrybucja paczki.**
+   - *Treść licencji (fakt):* GPL-3.0 zawiera obowiązki dotyczące conveyance covered works, w tym warunki dotyczące licencji i Corresponding Source; CC BY-SA zawiera warunki uznania autorstwa i share-alike.
+   - *Stan paczki (fakt):* paczka nie zawiera tekstów licencji ani informacji o źródłach list; uznanie autorstwa jest tylko w zakładce „O wtyczce” w Opcjach.
+   - *Pytanie otwarte (`NEEDS LEGAL REVIEW`):* czy wygenerowane artefakty ChromeBlock (reguły DNR, dane kosmetyczne, pliki scriptletów) są covered / modified work w rozumieniu tych licencji i jakie obowiązki z tego wynikają. Ten dokument tego nie rozstrzyga.
+4. **Licencja kodu ChromeBlock:** repozytorium nie ma pliku licencji (fakt). Audyt niczego nie dodaje. Czy połączenie własnego kodu z treściami GPL-3.0 (scriptlety łączą bibliotekę ChromeBlock z argumentami filtrów w jednym pliku) tworzy covered work i jakie ma to skutki – `NEEDS LEGAL REVIEW`.
 5. **Commitowana paczka `download/ChromeBlock-dev.zip` jest nieaktualna** (0.3.4-dev z 2026-10-25): nadal zawiera artefakty list `cookies` i `annoyances` (uBlock filters – Cookie Notices, Fanboy's Annoyance, uBlock filters – Other Annoyances). Nie zmieniona w tym audycie (bez budowania ZIP).
 
 `UNKNOWN`:

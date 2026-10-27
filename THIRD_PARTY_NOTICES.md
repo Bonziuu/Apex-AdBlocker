@@ -1,5 +1,7 @@
 # Third-party notices – listy filtrów
 
+Ten dokument jest inwentarzem źródeł i notice audytowym. Nie stanowi potwierdzenia, że wszystkie obowiązki licencyjne wymagane przy publicznej dystrybucji ChromeBlock zostały już spełnione.
+
 ChromeBlock kompiluje do swoich plików (`rules/`, `data/`, `scriptlets/`) poniższe listy filtrów stron trzecich. Szczegóły pochodzenia, wersje snapshotów, hashe i otwarte kwestie: [`docs/filter-provenance.md`](docs/filter-provenance.md). Ten plik nie jest opinią prawną.
 
 ## EasyList, EasyPrivacy
