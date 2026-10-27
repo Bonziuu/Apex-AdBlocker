@@ -5,7 +5,7 @@ import { viewModel } from './view-model.js';
 
 const $ = (id) => document.getElementById(id);
 
-try { $('version').textContent = chrome.runtime.getManifest().version_name || chrome.runtime.getManifest().version; } catch { /* */ }
+try { $('version').textContent = chrome.runtime.getManifest().version; } catch { /* */ }
 
 const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 

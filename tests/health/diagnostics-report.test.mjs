@@ -39,7 +39,6 @@ test('sanitizeText: zachowuje zwykłe komunikaty techniczne', () => {
 
 const fullInput = () => ({
   version: '0.2.1',
-  versionName: '0.2.1-dev',
   manifestVersion: 3,
   now: Date.UTC(2026, 9, 21, 12),
   enabledLists: ['ads', 'privacy', 'evil/<x>'],
@@ -61,7 +60,7 @@ const fullInput = () => ({
 test('buildDiagnosticsReport: zawiera dozwolone dane', () => {
   const { data, text } = buildDiagnosticsReport(fullInput());
   assert.match(text, /^ChromeBlock Diagnostics/);
-  assert.match(text, /Version: 0\.2\.1-dev \(manifest v3\)/);
+  assert.match(text, /Version: 0\.2\.1 \(manifest v3\)/);
   assert.match(text, /Network: OK/);
   assert.match(text, /Cosmetic: WARNING/);
   assert.match(text, /YouTube compatibility:\n {2}30 \/ 30/);

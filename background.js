@@ -933,7 +933,6 @@ const handlers = {
     const manifest = chrome.runtime.getManifest();
     return buildDiagnosticsReport({
       version: manifest.version,
-      versionName: manifest.version_name,
       manifestVersion: manifest.manifest_version,
       now: Date.now(),
       enabledLists: s.enabledLists,
@@ -1053,7 +1052,7 @@ const handlers = {
     const backup = buildBackup({
       disabledSites: s.disabledSites,
       userFilters: s.userFilters,
-    }, { extensionVersion: chrome.runtime.getManifest().version_name || chrome.runtime.getManifest().version });
+    }, { extensionVersion: chrome.runtime.getManifest().version });
     return { ok: true, backup, fileName: backupFileName() };
   },
 
