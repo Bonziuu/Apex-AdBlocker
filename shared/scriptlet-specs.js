@@ -70,6 +70,7 @@ const ALIAS_GROUPS = {
   'noeval-if': ['prevent-eval-if'],
   'nowebrtc': [],
   'trusted-click-element': [],
+  'spoof-css': [],
 };
 
 export const SCRIPTLET_ALIASES = {};
@@ -543,6 +544,27 @@ spec('trusted-click-element', {
         const m = /^\/(.+)\/(i?)$/.exec(val);
         if (m) { try { new RegExp(m[1], m[2] || undefined); } catch { return 'niepoprawny regex warunku'; } }
       }
+    }
+    return null;
+  },
+});
+
+// spoof-css: tylko podmiana wyniku getComputedStyle() dla elementów pasujących do selektora.
+// NIE obsługujemy (filtr nie jest wykonywany): width/height (wymagałyby podmiany getBoundingClientRect),
+// prywatnych parametrów „_…” (np. _rectx) i tokenu debug.
+const CSS_PROP_NAME = /^-?[A-Za-z][A-Za-z0-9-]*$/;
+spec('spoof-css', {
+  validate(a) {
+    const [selector = '', ...pairs] = a;
+    if (!selector.trim()) return 'brak selektora';
+    if (!pairs.length) return 'brak par właściwość, wartość';
+    if (pairs.length % 2 !== 0) return `niesparowana para "${pairs[pairs.length - 1]}"`;
+    for (let i = 0; i < pairs.length; i += 2) {
+      const prop = pairs[i];
+      if (prop === 'debug') return 'token debug nie jest obsługiwany';
+      if (prop.startsWith('_')) return `parametr prywatny "${prop}" nie jest obsługiwany`;
+      if (/^(width|height)$/i.test(prop)) return `"${prop}" wymaga podmiany getBoundingClientRect – nieobsługiwane`;
+      if (!CSS_PROP_NAME.test(prop)) return `niepoprawna nazwa właściwości CSS "${prop}"`;
     }
     return null;
   },

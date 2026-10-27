@@ -1,16 +1,16 @@
 {
  "summary": {
   "total": 10353,
-  "supported": 9698,
+  "supported": 9702,
   "partial": 32,
-  "unsupported": 623
+  "unsupported": 619
  },
  "byList": {
   "ads": {
    "total": 9971,
-   "supported": 9400,
+   "supported": 9404,
    "partial": 31,
-   "unsupported": 540
+   "unsupported": 536
   },
   "privacy": {
    "total": 358,

@@ -68,3 +68,26 @@ test('każda specyfikacja ma walidator albo jest oznaczona jako niezaimplementow
     assert.ok(typeof s.validate === 'function' || s.implemented === false, s.name);
   }
 });
+
+test('spoof-css: wariant getComputedStyle supported; width/height, _prywatne, debug i niesparowane → partial (fail closed)', () => {
+  // dokładny filtr uBlock filters dla wykop.pl (tools/lists/ubo/filters-2026.txt)
+  const line = 'spoof-css, .pub-slot-wrapper, visibility, visible, top, 0px';
+  const [name, ...args] = splitScriptletArgs(line);
+  assert.deepEqual(a(name, args), { status: 'supported', name: 'spoof-css', canonical: 'spoof-css', reason: '' });
+  assert.equal(canonicalScriptletName('spoof-css'), 'spoof-css');
+  assert.equal(a('spoof-css', ['.x', 'visibility', 'visible', 'top', '0px']).status, 'supported');
+  assert.equal(a('spoof-css', ['.x', 'display', 'block']).status, 'supported');
+  assert.equal(a('spoof-css', ['.x', 'backgroundColor', 'red']).status, 'supported', 'camelCase');
+  assert.equal(a('spoof-css', ['.x', 'visibility', 'visible'], false).status, 'supported', 'nie jest scriptletem zaufanym');
+  const partial = (args, re) => { const r = a('spoof-css', args); assert.equal(r.status, 'partial', JSON.stringify(args)); assert.match(r.reason, re); };
+  partial([], /brak selektora/);
+  partial(['', 'visibility', 'visible'], /brak selektora/);
+  partial(['.x'], /brak par/);
+  partial(['.x', 'visibility'], /niesparowana/);
+  partial(['.x', 'visibility', 'visible', 'top'], /niesparowana/);
+  partial(['.x', '_rectx', '10'], /prywatny/);
+  partial(['.x', 'debug', '1'], /debug/);
+  partial(['.x', 'width', '100px'], /getBoundingClientRect/);
+  partial(['.x', 'Height', '1px'], /getBoundingClientRect/);
+  partial(['.x', 'top;evil', '0'], /niepoprawna nazwa/);
+});

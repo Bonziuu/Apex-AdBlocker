@@ -1364,6 +1364,39 @@ set(...rest) { return Reflect.set(...rest); },
 return popup;
 });
 },
+'spoof-css'(selector = '', ...pairs) {
+if (selector === '' || pairs.length === 0 || pairs.length % 2 !== 0) return;
+try { doc.createDocumentFragment().querySelector(selector); } catch { return; } // niepoprawny selektor
+const toDashed = (name) => (/[A-Z]/.test(name) ? name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`) : name.toLowerCase());
+const toCamel = (dashed) => dashed.replace(/-([a-z])/g, (m, c) => c.toUpperCase());
+const byDashed = new Map();
+for (let i = 0; i < pairs.length; i += 2) byDashed.set(toDashed(pairs[i]), pairs[i + 1]);
+const byKey = new Map(byDashed);
+for (const [dashed, value] of byDashed) byKey.set(toCamel(dashed), value);
+const elementMatches = Element.prototype.matches;
+const nativeGetPropertyValue = CSSStyleDeclaration.prototype.getPropertyValue;
+proxyApply('getComputedStyle', ({ callArgs, reflect }) => {
+const style = reflect();
+const el = callArgs[0];
+if (!(el instanceof Element) || callArgs[1]) return style;
+let hit = false;
+try { hit = reflectApply(elementMatches, el, [selector]); } catch { /* */ }
+if (!hit) return style;
+return new Proxy(style, {
+get(target, prop) {
+if (typeof prop === 'string' && byKey.has(prop)) return byKey.get(prop);
+if (prop === 'getPropertyValue') {
+return function getPropertyValue(name) {
+const key = String(name).toLowerCase();
+return byDashed.has(key) ? byDashed.get(key) : reflectApply(nativeGetPropertyValue, target, [name]);
+};
+}
+const value = Reflect.get(target, prop, target);
+return typeof value === 'function' ? value.bind(target) : value;
+},
+});
+});
+},
 'prevent-fetch'(...args) { fetchPrevent(false, ...args); },
 'trusted-prevent-fetch'(...args) { fetchPrevent(true, ...args); },
 'prevent-xhr'(...args) { xhrPrevent(false, ...args); },
