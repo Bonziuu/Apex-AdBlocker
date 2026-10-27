@@ -89,7 +89,7 @@ test('package:dev: czysty dist/ChromeBlock tylko z plikami rozszerzenia + ZIP wy
       assert.ok(!/^(tools|tests|docs|node_modules|installer|download|tester|dist|_metadata|\.git)\//.test(f) && !/^(package\.json|README\.md|INSTALL\.md)$/.test(f), f);
     }
     const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
-    assert.equal(r.version, manifest.version_name);
+    assert.equal(r.version, manifest.version);
 
     // ZIP: dokładnie pliki rozszerzenia w folderze ChromeBlock/, bajt w bajt
     const buf = fs.readFileSync(path.join(outDir, ZIP_NAME));

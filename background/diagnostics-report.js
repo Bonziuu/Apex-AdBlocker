@@ -34,8 +34,7 @@ const iso = (t) => (typeof t === 'number' && Number.isFinite(t) ? new Date(t).to
 /**
  * Buduje raport (obiekt + tekst).
  * @param {object} input
- * @param {string} input.version        np. "0.2.1"
- * @param {string} input.versionName    np. "0.2.1-dev"
+ * @param {string} input.version        wersja z manifestu (manifest.version)
  * @param {number} input.manifestVersion
  * @param {number} input.now
  * @param {string[]} input.enabledLists
@@ -78,7 +77,6 @@ export function buildDiagnosticsReport(input) {
   const data = {
     product: 'ChromeBlock',
     version: String(input.version || ''),
-    versionName: String(input.versionName || ''),
     manifestVersion: input.manifestVersion,
     generatedAt: iso(input.now),
     enabledLists: (input.enabledLists || []).map((x) => String(x).replace(/[^\w-]/g, '')),
@@ -99,7 +97,7 @@ export function buildDiagnosticsReport(input) {
 
   const lines = [];
   lines.push('ChromeBlock Diagnostics');
-  lines.push(`Version: ${data.versionName || data.version} (manifest v${data.manifestVersion})`);
+  lines.push(`Version: ${data.version} (manifest v${data.manifestVersion})`);
   lines.push(`Generated: ${data.generatedAt}`);
   lines.push(`Enabled lists: ${data.enabledLists.join(', ') || 'none'}`);
   lines.push('');

@@ -358,7 +358,7 @@ export async function runLocalTests(opts = {}) {
   const extDir = path.join(tmp, 'extension');
   fs.mkdirSync(extDir);
   copyExtension(extDir, extensionDir);
-  try { result.version = JSON.parse(fs.readFileSync(path.join(extDir, 'manifest.json'), 'utf8')).version_name || null; } catch { /* */ }
+  try { result.version = JSON.parse(fs.readFileSync(path.join(extDir, 'manifest.json'), 'utf8')).version || null; } catch { /* */ }
 
   const site = await startLocalSite();
   let context = null;
