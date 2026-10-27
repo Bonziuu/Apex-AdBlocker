@@ -5,5 +5,4 @@ tests/e2e/results/
 tests/local/results/
 _metadata/
 dist/
-!download/ChromeBlock-dev.zip
 perf/results/
