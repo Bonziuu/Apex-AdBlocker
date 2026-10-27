@@ -124,10 +124,11 @@ test('UI: niepełny rollback nie twierdzi, że przywrócono ustawienia; pokazuje
     assert.match(text, /przywracanie: synchronizacja \(listy filtrów\)/);
     assert.equal(await opt.isHidden('#importSummary'), true);
     await opt.click('#openDiag');
-    assert.equal(await opt.getAttribute('.tab[data-tab="diag"]', 'aria-selected'), 'true', 'przycisk otwiera Diagnostykę');
+    assert.equal(await opt.getAttribute('.tab[data-tab="more"]', 'aria-selected'), 'true', 'przycisk otwiera zakładkę Więcej');
+    assert.equal(await opt.evaluate(() => document.getElementById('diag').open), true, 'przycisk rozwija Diagnostykę');
 
     // pełny rollback – dopiero wtedy komunikat „przywrócono”
-    await opt.click('.tab[data-tab="backup"]');
+    await opt.click('.tab[data-tab="more"]'); // sekcja Kopia ustawień nadal rozwinięta
     await opt.evaluate(() => { window.__importResult = { ok: false, rolledBack: true, errors: ['listy filtrów: Internal error'] }; });
     // jak użytkownik: przycisk „Importuj ustawienia” → okno wyboru pliku (ten sam plik ponownie)
     await opt.bringToFront(); // karta powitalna po instalacji mogła przejąć fokus
