@@ -1,7 +1,6 @@
 @echo off
-rem ChromeBlock - lokalny test regresyjny (Windows). Uruchom dwuklikiem.
-rem Dziala z rozpakowanej paczki ChromeBlock-dev.zip (foldery ChromeBlock i tester obok)
-rem albo z repozytorium. Wymaga tylko Node.js 20+ (bez Gita).
+rem ChromeBlock - lokalny test regresyjny (Windows). Uruchom dwuklikiem w folderze repozytorium.
+rem Wymaga Node.js 20+.
 rem Startuje Playwright Chromium z ChromeBlock w TYMCZASOWYM profilu
 rem (nie uzywa Twojego profilu Chrome, nie zapisuje historii, loginow ani cookies).
 rem Opcje (z wiersza polecen): --headless  --no-youtube
@@ -12,27 +11,9 @@ chcp 65001 >nul
 title ChromeBlock - test lokalny
 set "RC=2"
 set "BASE=%~dp0"
-
-if exist "%BASE%tester\tests\local\chromeblock-local-test.mjs" goto :package
-rem --- repozytorium ---
-set "PKG=0"
-set "TDIR=%BASE%."
 set "RES=%BASE%tests\local\results"
-goto :prepare
 
-:package
-set "PKG=1"
-set "TDIR=%BASE%tester"
-set "RES=%BASE%wyniki-testu"
-if not exist "%BASE%ChromeBlock\manifest.json" (
-  echo.
-  echo Nie znaleziono folderu "ChromeBlock" obok tego pliku.
-  echo Rozpakuj CALE archiwum ChromeBlock-dev.zip i uruchom test-chromeblock.cmd z rozpakowanego folderu.
-  goto :end
-)
-
-:prepare
-cd /d "%TDIR%"
+cd /d "%BASE%"
 where node >nul 2>nul
 if errorlevel 1 (
   echo.
@@ -62,11 +43,7 @@ if errorlevel 1 (
 echo.
 set "SCRIPT=tests\local\chromeblock-local-test.mjs"
 if /i "%~1"=="--sites" set "SCRIPT=tests\local\single-blocker-sites.mjs"
-if "%PKG%"=="1" (
-  node %SCRIPT% --dir "%BASE%ChromeBlock" --results "%RES%" %*
-) else (
-  node %SCRIPT% --results "%RES%" %*
-)
+node %SCRIPT% --results "%RES%" %*
 set "RC=%ERRORLEVEL%"
 if /i "%~1"=="--sites" goto :sites
 

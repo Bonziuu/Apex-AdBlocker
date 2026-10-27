@@ -49,7 +49,7 @@ YouTube (obie konfiguracje): player i wideo, postęp odtwarzania, Shorts, seek A
 
 ## Raport
 
-`tests/local/results/sites/` (paczka: `wyniki-testu\sites\`):
+`tests/local/results/sites/`:
 
 - `latest.html` – podsumowanie none → ChromeBlock, zrzuty **BEZ ChromeBlock | Z ChromeBlock** obok siebie, dane obu konfiguracji, znane przypadki, ręczna ocena (zapamiętywana w przeglądarce) i **Eksportuj oceny (JSON)**;
 - `latest.txt`, `latest.json`;

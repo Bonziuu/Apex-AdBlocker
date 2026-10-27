@@ -143,7 +143,7 @@ Te pliki są nadal redystrybuowane w repozytorium (obecnie prywatnym).
    - *Stan paczki (fakt):* paczka nie zawiera tekstów licencji ani informacji o źródłach list; uznanie autorstwa jest tylko w zakładce „O wtyczce” w Opcjach.
    - *Pytanie otwarte (`NEEDS LEGAL REVIEW`):* czy wygenerowane artefakty ChromeBlock (reguły DNR, dane kosmetyczne, pliki scriptletów) są covered / modified work w rozumieniu tych licencji i jakie obowiązki z tego wynikają. Ten dokument tego nie rozstrzyga.
 4. **Licencja kodu ChromeBlock:** repozytorium nie ma pliku licencji (fakt). Audyt niczego nie dodaje. Czy połączenie własnego kodu z treściami GPL-3.0 (scriptlety łączą bibliotekę ChromeBlock z argumentami filtrów w jednym pliku) tworzy covered work i jakie ma to skutki – `NEEDS LEGAL REVIEW`.
-5. **Commitowana paczka `download/ChromeBlock-dev.zip` jest nieaktualna** (0.3.4-dev z 2026-10-25): nadal zawiera artefakty list `cookies` i `annoyances` (uBlock filters – Cookie Notices, Fanboy's Annoyance, uBlock filters – Other Annoyances). Nie zmieniona w tym audycie (bez budowania ZIP).
+5. ~~Commitowana paczka `download/ChromeBlock-dev.zip` była nieaktualna~~ (0.3.4-dev z 2026-10-25, z artefaktami list `cookies` i `annoyances`) – usunięta z repozytorium; ZIP tworzy się tylko lokalnie przez `npm run package:dev` (ignorowany przez Git).
 
 `UNKNOWN`:
 1. Dokładna wersja EasyList/EasyPrivacy jako pliku: commit źródłowy znany (`9f43d878…`), ale bajtowej zgodności pliku zbudowanego przez EasyList nie da się sprawdzić (plik nie jest przechowywany w repo upstreamu).
