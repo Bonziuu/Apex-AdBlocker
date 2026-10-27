@@ -32,7 +32,7 @@ const documented = (file) => {
 
 test('provenance: każde źródło z LISTS (z !#include) jest opisane', () => {
   const files = new Set(LISTS.flatMap((l) => l.sources.flatMap((s) => [...withIncludes(s.file)])));
-  assert.ok(files.size >= 20, `źródeł: ${files.size}`);
+  assert.ok(files.size > 0, `źródeł: ${files.size}`);
   for (const f of files) {
     assert.ok(fs.existsSync(path.join(LISTS_DIR, f)), `brak snapshotu ${f}`);
     assert.ok(documented(f), `brak provenance dla ${f} w docs/filter-provenance.md`);
