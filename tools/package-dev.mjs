@@ -168,7 +168,7 @@ export function packageDev({ root = ROOT, outDir = path.join(root, 'dist') } = {
   const zipPath = path.join(outDir, ZIP_NAME);
   fs.writeFileSync(zipPath, createZip(entries));
   const manifest = JSON.parse(fs.readFileSync(path.join(extDir, 'manifest.json'), 'utf8'));
-  return { outDir, extDir, zipPath, files: files.length, version: manifest.version_name || manifest.version, zipBytes: fs.statSync(zipPath).size };
+  return { outDir, extDir, zipPath, files: files.length, version: manifest.version, zipBytes: fs.statSync(zipPath).size };
 }
 
 function main() {
