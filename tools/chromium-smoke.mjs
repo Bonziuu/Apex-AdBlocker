@@ -25,7 +25,8 @@ export const SYNC_STEPS = ['rulesets', 'dynamicRules', 'scriptlets'];
 export const COMPONENTS = ['network', 'cosmetic', 'scriptlets', 'filters', 'youtube'];
 // pliki potrzebne rozszerzeniu (bez tools/, tests/, docs/, node_modules/)
 export const EXTENSION_ENTRIES = ['manifest.json', 'background.js', 'background', 'shared', 'content', 'youtube',
-  'popup', 'options', 'welcome', 'icons', 'rules', 'data', 'scriptlets', 'web_accessible_resources', '_locales'];
+  'popup', 'options', 'welcome', 'icons', 'rules', 'data', 'scriptlets', 'web_accessible_resources', '_locales',
+  'THIRD_PARTY_NOTICES.md'];
 
 /** Wyciąga komunikaty Chromium o odrzuceniu rozszerzenia z logów przeglądarki. */
 export function extractLoadErrors(lines) {

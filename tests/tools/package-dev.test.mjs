@@ -84,6 +84,8 @@ test('package:dev: czysty dist/ChromeBlock tylko z plikami rozszerzenia + ZIP wy
     assert.deepEqual(validatePackage(r.extDir), []);
     const files = listFiles(r.extDir);
     assert.ok(files.includes('manifest.json') && files.includes('background.js'));
+    // informacja o listach stron trzecich (autorzy, źródła, licencje) jest częścią dystrybucji
+    assert.ok(files.includes('THIRD_PARTY_NOTICES.md'), 'THIRD_PARTY_NOTICES.md w paczce');
     for (const f of files) {
       assert.ok(EXTENSION_ENTRIES.includes(f.split('/')[0]), `spoza EXTENSION_ENTRIES: ${f}`);
       assert.ok(!/^(tools|tests|docs|node_modules|installer|download|tester|dist|_metadata|\.git)\//.test(f) && !/^(package\.json|README\.md|INSTALL\.md)$/.test(f), f);
