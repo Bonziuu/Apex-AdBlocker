@@ -2,7 +2,7 @@
 
 Bloker reklam i śledzenia dla Chrome (Manifest V3) z własnym silnikiem filtrów.
 
-> **Status: wersja developerska / engine baseline** – prywatny build do własnego użytku, nie wydanie stabilne. Numer wersji: `manifest.json` → `version`.
+> **Status:** pierwsze stabilne wydanie. Numer wersji: `manifest.json` → `version`.
 
 ## Instalacja (rozpakowane rozszerzenie)
 
@@ -39,17 +39,15 @@ ChromeBlock **nie jest** uBlock Origin i **nie ma pełnej zgodności** z uBO.
   - nieznany scriptlet, nieznany parametr, niesparowany vararg albo nieobsługiwana wartość oznaczają, że filtr jest pomijany (nie „częściowo wykonywany”).
 - **Build kontroluje zgodność kluczowych filtrów YouTube** (youtube.com, www/m/music.youtube.com, youtube-nocookie.com) w stałym zestawie list. Jeśli pojawi się filtr YouTube, którego ChromeBlock nie obsługuje, `npm run build` kończy się błędem `CRITICAL YOUTUBE COMPATIBILITY FAILURE`. Wyjątkiem są braki świadomie wpisane do `youtube/known-gaps.json`.
 
-Stan przy obecnych listach (`npm run audit:scriptlets`):
+Filtry scriptletów dzielą się na w pełni obsługiwane, częściowo obsługiwane (znany scriptlet, nieobsługiwany wariant – **niewykonywane**) i nieobsługiwane (**niewykonywane**). Liczby zależą od bieżących snapshotów list, dlatego nie są tu wpisane na sztywno. Aktualny raport zgodności (liczby, pełna lista nieobsługiwanych scriptletów z liczbą wystąpień, przykładowymi domenami i powodem) generuje:
 
-| | liczba | |
-|---|---|---|
-| Filtry scriptletów | 14 598 | |
-| W pełni obsługiwane | 13 818 | 94,7% |
-| Częściowo (znany scriptlet, nieobsługiwany wariant – **niewykonywane**) | 84 | 0,6% |
-| Nieobsługiwane (**niewykonywane**) | 696 | 4,8% |
-| **Krytyczne reguły YouTube** | **30** | **30 obsługiwanych, 0 braków** |
+```
+npm run audit:scriptlets
+```
 
-Najważniejsze scriptlety bez implementacji: `abort-on-stack-trace` (221 filtrów; ChromeBlock nie odtwarza normalizacji stosu wywołań uBO), `trusted-replace-argument` (93), `href-sanitizer` (74), `trusted-suppress-native-method`, `nobab`, `nofab`, `trusted-create-html`, `xml-prune`, `m3u-prune`, `trusted-replace-outbound-text`, `refresh-defuser`, `prevent-innerHTML`, `spoof-css` i inne. Pełna lista z liczbą wystąpień, przykładowymi domenami i powodem jest w raporcie audytu.
+Krótkie podsumowanie pokazuje też `npm run check` (sekcja „Audyt scriptletów”). Krytyczne reguły YouTube są sprawdzane osobno przy każdym buildzie (zob. wyżej).
+
+Przykłady scriptletów bez implementacji: `abort-on-stack-trace` (ChromeBlock nie odtwarza normalizacji stosu wywołań uBO), `trusted-replace-argument`, `href-sanitizer`, `trusted-suppress-native-method`, `nobab`, `nofab`, `trusted-create-html`, `xml-prune`, `m3u-prune`, `trusted-replace-outbound-text`, `refresh-defuser`, `prevent-innerHTML`, `spoof-css`.
 
 Inne ograniczenia:
 - Manifest V3 nie pozwala na filtrowanie HTML (`##^`), modyfikację nagłówków CSP ani blokowanie popupów filtrami `$popup`; ok. 3% filtrów sieciowych i 1% kosmetycznych jest pomijanych.
@@ -57,6 +55,10 @@ Inne ograniczenia:
 - `trusted-click-element` z `>>>` (zamknięty shadow DOM) i warunkiem `localStorage:` nie jest wykonywany.
 - Wyjątki `#@#+js(...)` działają tylko w obrębie własnej listy. Build zlicza wyjątki wskazujące scriptlety innej listy – przy obecnych listach jest ich 0.
 - **ChromeBlock nie obiecuje niewykrywalności.** Strony mogą wykryć, że reklamy są blokowane.
+
+Znane problemy na konkretnych stronach:
+- `Wykop.pl` może wykrywać blokowanie i wyświetlać własne reklamy zastępcze (first-party); mechanizm po stronie serwisu zmienia się w czasie.
+- `Kafeteria.pl` może wyświetlać dynamiczne reklamy first-party z infrastruktury WP, których bieżące filtry nie zawsze identyfikują kosmetycznie.
 
 ## YouTube Protection
 
@@ -155,4 +157,4 @@ ChromeBlock jest w 100% darmowy – bez wersji Pro, płatnych funkcji, paywalla,
 
 ## Źródła list i licencje
 
-EasyList, EasyPrivacy © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3) · Polskie Filtry Reklamowe © MajkiIT (CC BY-NC-SA 4.0). Listy są wbudowane w repozytorium (`tools/lists/`). Pochodzenie, wersje snapshotów, licencje i otwarte kwestie licencyjne: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) i [docs/filter-provenance.md](docs/filter-provenance.md) (audyt dokumentacyjny, nie opinia prawna).
+EasyList, EasyPrivacy © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3) · Polskie Filtry Reklamowe © MajkiIT (CC BY-NC-SA 4.0). Listy są wbudowane w repozytorium (`tools/lists/`). Pochodzenie, wersje snapshotów, licencje i otwarte kwestie licencyjne: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) (plik jest też dołączany do paczki rozszerzenia) i [docs/filter-provenance.md](docs/filter-provenance.md) (audyt dokumentacyjny, nie opinia prawna).
