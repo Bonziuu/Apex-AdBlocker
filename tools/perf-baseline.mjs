@@ -83,8 +83,11 @@ export function sizeReport(extDir, { top = 20 } = {}) {
 }
 
 /** Pliki, które nie powinny być w paczce (narzędzia, testy, raporty, ZIP-y, dokumentacja). */
+// THIRD_PARTY_NOTICES.md (tylko w katalogu głównym paczki) to część dystrybucji: autorzy, źródła i licencje list
+export const PACKAGE_DOCS = Object.freeze(['THIRD_PARTY_NOTICES.md']);
+
 export function unwantedFiles(list) {
-  return list.filter((f) => /(^|\/)(tests?|tools|docs|perf|node_modules|\.git|dist|download|installer|_metadata)(\/|$)/.test(f)
+  return list.filter((f) => !PACKAGE_DOCS.includes(f)).filter((f) => /(^|\/)(tests?|tools|docs|perf|node_modules|\.git|dist|download|installer|_metadata)(\/|$)/.test(f)
     || /\.(zip|md|mjs|map|log|cmd)$/i.test(f) || /(^|\/)package(-lock)?\.json$/.test(f));
 }
 
