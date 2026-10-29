@@ -1,4 +1,4 @@
-// ChromeBlock – popup. Odczyt stanu (popup:get) i akcje: włączenie/wyłączenie ochrony na stronie,
+// Apex AdBlocker – popup. Odczyt stanu (popup:get) i akcje: włączenie/wyłączenie ochrony na stronie,
 // „Ukryj element”, ustawienia, diagnostyka. Ochrona ma jeden stały zestaw list (bez trybów).
 
 import { viewModel } from './view-model.js';
@@ -33,8 +33,8 @@ function render(info) {
   $('autoReload').checked = autoReload;
   $('autoReload').disabled = false;
   $('toggleHint').textContent = autoReload
-    ? 'Włącza lub wyłącza ochronę ChromeBlock na tej stronie. Karta zostanie przeładowana.'
-    : 'Włącza lub wyłącza ochronę ChromeBlock na tej stronie bez automatycznego przeładowania.';
+    ? 'Włącza lub wyłącza ochronę Apex AdBlocker na tej stronie. Karta zostanie przeładowana.'
+    : 'Włącza lub wyłącza ochronę Apex AdBlocker na tej stronie bez automatycznego przeładowania.';
 
   $('problems').hidden = !vm.problems;
   $('problemsText').textContent = vm.problems;
