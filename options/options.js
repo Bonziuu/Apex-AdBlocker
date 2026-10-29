@@ -49,7 +49,7 @@ function renderLists() {
     card.querySelector('.name').textContent = l.name;
     card.querySelector('.desc').textContent = l.desc;
     card.querySelector('.count').textContent =
-      `${fmt(l.networkFilters)} filtrów sieciowych · ${fmt(l.cosmeticFilters)} kosmetycznych i scriptletów`;
+      `${fmt(l.networkFilters)} filtrów sieciowych · ${fmt(l.cosmeticFilters)} kosmetycznych · ${fmt(l.scriptletFilters)} scriptletów`;
     box.appendChild(card);
   }
 }
@@ -146,7 +146,8 @@ function renderAll() {
   $('disabledSites').value = data.disabledSites.join('\n');
   const enabled = data.lists.filter((l) => l.enabled);
   $('stats').textContent = `Aktywne: ${fmt(enabled.reduce((n, l) => n + l.networkFilters, 0))} filtrów sieciowych, `
-    + `${fmt(enabled.reduce((n, l) => n + l.cosmeticFilters, 0))} kosmetycznych i scriptletów, `
+    + `${fmt(enabled.reduce((n, l) => n + l.cosmeticFilters, 0))} kosmetycznych, `
+    + `${fmt(enabled.reduce((n, l) => n + l.scriptletFilters, 0))} scriptletów, `
     + `${fmt(data.userCount)} własnych.`;
 }
 renderAll();

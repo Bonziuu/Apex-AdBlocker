@@ -17,8 +17,8 @@ Chrome ładuje rozszerzenie bezpośrednio z tego folderu – nie przenoś go po 
 
 | Mechanizm | Opis |
 |---|---|
-| Blokowanie sieciowe | ~131 tys. filtrów z EasyList, EasyPrivacy, uBlock filters i Polskich Filtrów zamienionych na reguły `declarativeNetRequest` |
-| Ukrywanie elementów | ~97 tys. filtrów kosmetycznych wstrzykiwanych jako arkusz stylów użytkownika |
+| Blokowanie sieciowe | Filtry z EasyList, EasyPrivacy, uBlock filters i Polskich Filtrów kompilowane do reguł `declarativeNetRequest` |
+| Ukrywanie elementów | Filtry kosmetyczne z aktywnych list wstrzykiwane jako arkusz stylów użytkownika |
 | Filtry proceduralne | `:has-text()`, `:upward()`, `:remove()`, `:style()`, `:matches-path()`, `:min-text-length()` |
 | Scriptlety | Własne implementacje scriptletów uBO (lista i warianty – sekcja Compatibility) |
 | YouTube Protection | Domyślnie włączona; kontrola zgodności filtrów YouTube przy buildzie i lokalna diagnostyka odtwarzacza |
