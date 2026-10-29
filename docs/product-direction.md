@@ -1,6 +1,6 @@
 # Kierunek produktu
 
-ChromeBlock jest i pozostanie **w 100% darmowy**.
+Apex AdBlocker jest i pozostanie **w 100% darmowy**.
 
 Nie planujemy:
 
@@ -12,7 +12,7 @@ Nie planujemy:
 - kluczy aktywacyjnych,
 - ograniczania funkcji na podstawie licencji.
 
-Nie dotyczy to warunków licencyjnych samego kodu ChromeBlock ani komponentów i list filtrów stron trzecich – obowiązują one bez zmian (zob. sekcję „Źródła list i licencje” w README).
+Nie dotyczy to warunków licencyjnych samego kodu Apex AdBlocker ani komponentów i list filtrów stron trzecich – obowiązują one bez zmian (zob. sekcję „Źródła list i licencje” w README).
 
 W przyszłości mogą pojawić się wyłącznie **opcjonalne linki**:
 
@@ -20,6 +20,6 @@ W przyszłości mogą pojawić się wyłącznie **opcjonalne linki**:
 - Wesprzyj rozwój
 - GitHub
 
-Linki będą otwierane wyłącznie po świadomym kliknięciu. ChromeBlock nie będzie przekazywał do stron autora, wsparcia ani GitHuba danych z rozszerzenia.
+Linki będą otwierane wyłącznie po świadomym kliknięciu. Apex AdBlocker nie będzie przekazywał do stron autora, wsparcia ani GitHuba danych z rozszerzenia.
 
 Te linki nie są jeszcze dodane (brak docelowych adresów).
