@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// ChromeBlock – paczka do uploadu w Chrome Web Store.
+// Apex AdBlocker – paczka do uploadu w Chrome Web Store.
 //
 //   npm run package:store
 //
 // Tworzy w dist/:
-//   ChromeBlock/                         czysty katalog rozszerzenia do smoke testu
-//   ChromeBlock-WebStore-<version>.zip  ZIP z manifest.json w katalogu głównym
+//   Apex-AdBlocker/                         czysty katalog rozszerzenia do smoke testu
+//   Apex-AdBlocker-WebStore-<version>.zip  ZIP z manifest.json w katalogu głównym
 //
-// Bez START-HERE.txt i bez nadrzędnego folderu ChromeBlock/ w ZIP-ie.
+// Bez START-HERE.txt i bez nadrzędnego folderu Apex-AdBlocker/ w ZIP-ie.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -24,7 +24,7 @@ import {
 export function packageStore({ root = ROOT, outDir = path.join(root, 'dist') } = {}) {
   const dev = packageDev({ root, outDir });
   const files = listFiles(dev.extDir);
-  const zipName = `ChromeBlock-WebStore-${dev.version}.zip`;
+  const zipName = `Apex-AdBlocker-WebStore-${dev.version}.zip`;
   const zipPath = path.join(outDir, zipName);
 
   const entries = files.map((file) => ({
@@ -46,7 +46,7 @@ export function packageStore({ root = ROOT, outDir = path.join(root, 'dist') } =
 function main() {
   const r = packageStore();
   const rel = (p) => path.relative(ROOT, p).split(path.sep).join('/');
-  console.log(`✓ ChromeBlock ${r.version}: paczka Chrome Web Store gotowa`);
+  console.log(`✓ Apex AdBlocker ${r.version}: paczka Chrome Web Store gotowa`);
   console.log(`  ${rel(r.zipPath)} (${(r.zipBytes / 1024 / 1024).toFixed(1)} MB)`);
   console.log('  manifest.json znajduje się w katalogu głównym ZIP-a');
 }
