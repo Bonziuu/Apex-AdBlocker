@@ -15,6 +15,7 @@
     "perf:baseline": "node tools/perf-baseline.mjs",
     "test:e2e": "node tools/run-tests.mjs --e2e",
     "package:dev": "node tools/package-dev.mjs",
+    "package:release": "node tools/package-release.mjs",
     "icons": "node tools/build-icons.mjs",
     "test:local": "node tests/local/chromeblock-local-test.mjs",
     "test:sites": "node tests/local/single-blocker-sites.mjs"
