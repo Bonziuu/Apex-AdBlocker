@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ChromeBlock – opcjonalny smoke test: prawdziwe załadowanie rozszerzenia w Chromium.
+// Apex AdBlocker – opcjonalny smoke test: prawdziwe załadowanie rozszerzenia w Chromium.
 //
 // Sprawdza: czy Chromium przyjął rozszerzenie (manifest/reguły nie odrzucone),
 // czy działa service worker i czy po pierwszej synchronizacji health nie ma ERROR.
@@ -9,8 +9,8 @@
 //
 // Wynik: PASS / FAIL / SKIP (brak Playwright lub Chromium → SKIP, kod 0).
 //   node tools/chromium-smoke.mjs
-//   node tools/chromium-smoke.mjs --dir dist/ChromeBlock   (gotowa paczka)
-//   CHROMEBLOCK_SMOKE=0 – pomija test
+//   node tools/chromium-smoke.mjs --dir dist/Apex-AdBlocker   (gotowa paczka)
+//   CHROMEBLOCK_SMOKE=0 – legacy zmienna pomijająca test
 
 import fs from 'node:fs';
 import os from 'node:os';
@@ -104,7 +104,7 @@ export async function loadPlaywright({ root = ROOT } = {}) {
 }
 
 function copyExtension(dest, sourceDir = null) {
-  // gotowa paczka (np. dist/ChromeBlock) – kopiujemy ją w całości
+  // gotowa paczka (np. dist/Apex-AdBlocker) – kopiujemy ją w całości
   if (sourceDir) { fs.cpSync(sourceDir, dest, { recursive: true }); return; }
   for (const entry of EXTENSION_ENTRIES) {
     const src = path.join(ROOT, entry);
@@ -137,7 +137,7 @@ export async function runSmoke({ log = console.log, syncTimeoutMs = 180_000, ext
   try { exe = chromium.executablePath(); } catch { /* brak */ }
   if (!exe || !fs.existsSync(exe)) return { ...evaluateSmoke({ unavailable: 'Chromium nie jest zainstalowany (npx playwright install chromium)' }), launched: false };
 
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-smoke-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-adblocker-smoke-'));
   const extDir = path.join(tmp, 'extension');
   const profileDir = path.join(tmp, 'profile');
   fs.mkdirSync(extDir);
@@ -168,7 +168,7 @@ export async function runSmoke({ log = console.log, syncTimeoutMs = 180_000, ext
     await page.goto('chrome://extensions');
     input.extension = await page.evaluate(async () => {
       const list = await chrome.developerPrivate.getExtensionsInfo();
-      const e = list.find((x) => x.name === 'ChromeBlock');
+      const e = list.find((x) => x.name === 'Apex AdBlocker');
       return e ? {
         state: e.state,
         manifestErrors: (e.manifestErrors || []).map((m) => m.message),
@@ -202,7 +202,7 @@ export async function runSmoke({ log = console.log, syncTimeoutMs = 180_000, ext
 
 async function main() {
   if (process.env.CHROMEBLOCK_SMOKE === '0') { console.log(`${SKIP_MESSAGE} (CHROMEBLOCK_SMOKE=0)`); return; }
-  // --dir <katalog>: test gotowej paczki (np. dist/ChromeBlock) zamiast repozytorium
+  // --dir <katalog>: test gotowej paczki (np. dist/Apex-AdBlocker) zamiast repozytorium
   const i = process.argv.indexOf('--dir');
   const extensionDir = i > 0 && process.argv[i + 1] ? path.resolve(process.argv[i + 1]) : null;
   if (extensionDir && !fs.existsSync(path.join(extensionDir, 'manifest.json'))) {
