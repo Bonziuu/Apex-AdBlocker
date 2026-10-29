@@ -16,6 +16,8 @@ function render(info) {
     $('main').hidden = true;
     $('unsupported').hidden = false;
     $('picker').disabled = true;
+    $('autoReload').disabled = true;
+    $('reloadNotice').hidden = true;
     return;
   }
   $('host').textContent = vm.host;
@@ -27,6 +29,12 @@ function render(info) {
   $('blocked').textContent = vm.blocked;
   $('blockedLabel').textContent = vm.blockedLabel;
   $('picker').disabled = !vm.pickerEnabled;
+  const autoReload = info.autoReloadOnToggle !== false;
+  $('autoReload').checked = autoReload;
+  $('autoReload').disabled = false;
+  $('toggleHint').textContent = autoReload
+    ? 'Włącza lub wyłącza ochronę ChromeBlock na tej stronie. Karta zostanie przeładowana.'
+    : 'Włącza lub wyłącza ochronę ChromeBlock na tej stronie bez automatycznego przeładowania.';
 
   $('problems').hidden = !vm.problems;
   $('problemsText').textContent = vm.problems;
@@ -48,9 +56,28 @@ render(info);
 
 $('toggle').addEventListener('click', async () => {
   if (!info || !info.canRun) return;
+  const shouldReload = info.autoReloadOnToggle !== false;
   $('toggle').disabled = true;
   const res = await chrome.runtime.sendMessage({ type: 'site:toggle', host: info.host, tabId: tab.id }).catch(() => null);
-  if (res && res.ok) info = { ...info, disabled: res.disabled, blocked: 0 };
+  if (res && res.ok) {
+    info = { ...info, disabled: res.disabled, ...(shouldReload ? { blocked: 0 } : {}) };
+    render(info);
+    $('reloadNotice').hidden = shouldReload;
+  } else {
+    render(info);
+  }
+});
+
+$('autoReload').addEventListener('change', async () => {
+  const enabled = $('autoReload').checked;
+  $('autoReload').disabled = true;
+  const res = await chrome.runtime.sendMessage({ type: 'popup:setAutoReload', enabled }).catch(() => null);
+  if (res && res.ok) {
+    if (info) info = { ...info, autoReloadOnToggle: res.autoReloadOnToggle };
+  } else {
+    $('autoReload').checked = !enabled;
+  }
+  $('reloadNotice').hidden = true;
   render(info);
 });
 
