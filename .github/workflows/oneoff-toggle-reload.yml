@@ -1,0 +1,210 @@
+name: One-off toggle reload patch
+
+on:
+  push:
+    branches:
+      - fix/toggle-reload-icon-state
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/toggle-reload-icon-state
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Apply focused patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def must_replace(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected one match, got {count}')
+              p.write_text(text.replace(old, new), encoding='utf-8')
+
+          # background.js: preference, optional reload, icon restoration after F5, teal badge.
+          must_replace('background.js',
+          "const stored = await startup.time('getState / storage', () => chrome.storage.local.get(['disabledSites', 'userFilters']));\n",
+          "const stored = await startup.time('getState / storage', () => chrome.storage.local.get(['disabledSites', 'userFilters', 'autoReloadOnToggle']));\n")
+
+          must_replace('background.js',
+          "    disabledSites: Array.isArray(stored.disabledSites) ? stored.disabledSites : [],\n    userFilters: typeof stored.userFilters === 'string' ? stored.userFilters : '',\n",
+          "    disabledSites: Array.isArray(stored.disabledSites) ? stored.disabledSites : [],\n    userFilters: typeof stored.userFilters === 'string' ? stored.userFilters : '',\n    // brak klucza zachowuje dotychczasowe zachowanie: automatyczny reload po zmianie ochrony\n    autoReloadOnToggle: stored.autoReloadOnToggle !== false,\n")
+
+          must_replace('background.js',
+          "      await chrome.action.setBadgeBackgroundColor({ color: '#5b5bd6' });\n",
+          "      await chrome.action.setBadgeBackgroundColor({ color: '#0f7f8c' });\n")
+
+          must_replace('background.js',
+          "chrome.tabs.onUpdated.addListener((tabId, changeInfo) => { onTabUrlChanged(tabId, changeInfo); });\n",
+          "async function restoreDisabledIcon(tabId, url) {\n  const s = await getState();\n  if (!isSiteDisabled(hostOf(url), s)) return false;\n  await updateIcon(tabId, url);\n  return true;\n}\n\nexport function onTabUpdated(tabId, changeInfo, tab) {\n  if (onTabUrlChanged(tabId, changeInfo)) return true;\n  // Przy zwykłym F5 Chrome może zresetować ikonę przypisaną do karty do domyślnej,\n  // nie podając ponownie changeInfo.url. Odtwarzamy tylko wariant OFF; dla aktywnej ochrony\n  // domyślna ikona jest już właściwa. Nie traktujemy reloadu jako zmiany URL.\n  if (changeInfo && changeInfo.status === 'loading' && tab && typeof tab.url === 'string') {\n    restoreDisabledIcon(tabId, tab.url);\n    return true;\n  }\n  return false;\n}\n\nchrome.tabs.onUpdated.addListener(onTabUpdated);\n")
+
+          must_replace('background.js',
+          "      canRun: !!host,\n      problems,\n",
+          "      canRun: !!host,\n      autoReloadOnToggle: s.autoReloadOnToggle,\n      problems,\n")
+
+          must_replace('background.js',
+          "  async 'site:toggle'(msg) {\n",
+          "  async 'popup:setAutoReload'(msg) {\n    const s = await getState();\n    const enabled = msg.enabled !== false;\n    s.autoReloadOnToggle = enabled;\n    await chrome.storage.local.set({ autoReloadOnToggle: enabled });\n    return { ok: true, autoReloadOnToggle: enabled };\n  },\n\n  async 'site:toggle'(msg) {\n")
+
+          must_replace('background.js',
+          "      if (tab) await updateIcon(tab.id, tab.url);\n      chrome.tabs.reload(msg.tabId);\n",
+          "      if (tab) await updateIcon(tab.id, tab.url);\n      if (s.autoReloadOnToggle) chrome.tabs.reload(msg.tabId);\n")
+
+          must_replace('background.js',
+          "const MUTATING = new Set(['site:toggle', 'settings:import', 'options:setUserFilters', 'options:setDisabledSites',\n  'options:setDevPerf', 'picker:add', 'health:resync']);\n",
+          "const MUTATING = new Set(['site:toggle', 'popup:setAutoReload', 'settings:import', 'options:setUserFilters', 'options:setDisabledSites',\n  'options:setDevPerf', 'picker:add', 'health:resync']);\n")
+
+          # Popup: compact global checkbox under status + gentle no-reload notice.
+          must_replace('popup/popup.html',
+          "        <div class=\"status\" id=\"statusLabel\">\n          <span class=\"dot\" aria-hidden=\"true\"></span>\n          <span id=\"status\">Sprawdzanie…</span>\n        </div>\n      </div>\n",
+          "        <div class=\"status\" id=\"statusLabel\">\n          <span class=\"dot\" aria-hidden=\"true\"></span>\n          <span id=\"status\">Sprawdzanie…</span>\n        </div>\n        <label class=\"reload-option\" for=\"autoReload\">\n          <input type=\"checkbox\" id=\"autoReload\" checked>\n          <span>Odświeżaj stronę po zmianie ochrony</span>\n        </label>\n        <div class=\"reload-notice\" id=\"reloadNotice\" role=\"status\" aria-live=\"polite\" hidden>Odśwież stronę, aby w pełni zastosować zmianę.</div>\n      </div>\n")
+
+          must_replace('popup/popup.css',
+          ".site[data-state=\"off\"] .status { color: var(--muted); }\n\n/* przełącznik */\n",
+          ".site[data-state=\"off\"] .status { color: var(--muted); }\n.reload-option {\n  display: flex; align-items: center; gap: 6px; margin-top: 7px;\n  color: var(--muted); font-size: 11.5px; line-height: 1.25; cursor: pointer;\n}\n.reload-option input { width: 13px; height: 13px; margin: 0; flex: none; accent-color: var(--accent); }\n.reload-option:has(input:disabled) { cursor: default; opacity: .55; }\n.reload-notice { margin-top: 5px; color: var(--muted); font-size: 11.5px; line-height: 1.3; }\n\n/* przełącznik */\n")
+
+          must_replace('popup/popup.js',
+          "    $('picker').disabled = true;\n    return;\n",
+          "    $('picker').disabled = true;\n    $('autoReload').disabled = true;\n    $('reloadNotice').hidden = true;\n    return;\n")
+
+          must_replace('popup/popup.js',
+          "  $('picker').disabled = !vm.pickerEnabled;\n\n  $('problems').hidden = !vm.problems;\n",
+          "  $('picker').disabled = !vm.pickerEnabled;\n  const autoReload = info.autoReloadOnToggle !== false;\n  $('autoReload').checked = autoReload;\n  $('autoReload').disabled = false;\n  $('toggleHint').textContent = autoReload\n    ? 'Włącza lub wyłącza ochronę ChromeBlock na tej stronie. Karta zostanie przeładowana.'\n    : 'Włącza lub wyłącza ochronę ChromeBlock na tej stronie bez automatycznego przeładowania.';\n\n  $('problems').hidden = !vm.problems;\n")
+
+          must_replace('popup/popup.js',
+          "$('toggle').addEventListener('click', async () => {\n  if (!info || !info.canRun) return;\n  $('toggle').disabled = true;\n  const res = await chrome.runtime.sendMessage({ type: 'site:toggle', host: info.host, tabId: tab.id }).catch(() => null);\n  if (res && res.ok) info = { ...info, disabled: res.disabled, blocked: 0 };\n  render(info);\n});\n\n$('picker').addEventListener('click', async () => {\n",
+          "$('toggle').addEventListener('click', async () => {\n  if (!info || !info.canRun) return;\n  const shouldReload = info.autoReloadOnToggle !== false;\n  $('toggle').disabled = true;\n  const res = await chrome.runtime.sendMessage({ type: 'site:toggle', host: info.host, tabId: tab.id }).catch(() => null);\n  if (res && res.ok) {\n    info = { ...info, disabled: res.disabled, ...(shouldReload ? { blocked: 0 } : {}) };\n    render(info);\n    $('reloadNotice').hidden = shouldReload;\n  } else {\n    render(info);\n  }\n});\n\n$('autoReload').addEventListener('change', async () => {\n  const enabled = $('autoReload').checked;\n  $('autoReload').disabled = true;\n  const res = await chrome.runtime.sendMessage({ type: 'popup:setAutoReload', enabled }).catch(() => null);\n  if (res && res.ok) {\n    if (info) info = { ...info, autoReloadOnToggle: res.autoReloadOnToggle };\n  } else {\n    $('autoReload').checked = !enabled;\n  }\n  $('reloadNotice').hidden = true;\n  render(info);\n});\n\n$('picker').addEventListener('click', async () => {\n")
+
+          # Regression tests kept in new files so existing test intent remains intact.
+          Path('tests/popup/auto-reload.test.mjs').write_text(r'''import test from 'node:test';
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { loadBackground } from '../helpers/chrome-mock.mjs';
+          import { ROOT } from '../../tools/lists-config.mjs';
+
+          test('auto reload: brak klucza = true i site:toggle przeładowuje kartę', async () => {
+            const bg = await loadBackground({ tabUrl: 'https://www.example.com/' });
+            try {
+              await bg.install();
+              const info = await bg.send({ type: 'popup:get', tabId: 7 });
+              assert.equal(info.autoReloadOnToggle, true);
+              bg.state.reloads.length = 0;
+              const r = await bg.send({ type: 'site:toggle', host: 'example.com', tabId: 7 });
+              assert.equal(r.ok, true);
+              assert.equal(r.disabled, true);
+              assert.deepEqual(bg.state.reloads, [7]);
+            } finally { bg.restore(); }
+          });
+
+          test('auto reload: false zapisuje preferencję i nie przeładowuje, ale synchronizuje stan i ikonę', async () => {
+            const bg = await loadBackground({ tabUrl: 'https://www.example.com/', local: { autoReloadOnToggle: false } });
+            try {
+              await bg.install();
+              bg.state.reloads.length = 0;
+              bg.state.icons.length = 0;
+              const r = await bg.send({ type: 'site:toggle', host: 'example.com', tabId: 7 });
+              assert.equal(r.ok, true);
+              assert.equal(r.disabled, true);
+              assert.equal(bg.state.reloads.length, 0);
+              assert.ok(bg.state.dynamic.some((x) => x.id === 1 && x.condition.requestDomains.includes('example.com')));
+              assert.match(bg.state.icons.at(-1).path[16], /-off\.png$/);
+            } finally { bg.restore(); }
+          });
+
+          test('popup:setAutoReload zapisuje globalną preferencję i popup:get ją zwraca', async () => {
+            const bg = await loadBackground({ tabUrl: 'https://www.example.com/' });
+            try {
+              await bg.install();
+              const set = await bg.send({ type: 'popup:setAutoReload', enabled: false });
+              assert.deepEqual(set, { ok: true, autoReloadOnToggle: false });
+              assert.equal(bg.store.autoReloadOnToggle, false);
+              assert.equal((await bg.send({ type: 'popup:get', tabId: 7 })).autoReloadOnToggle, false);
+              await bg.send({ type: 'popup:setAutoReload', enabled: true });
+              assert.equal(bg.store.autoReloadOnToggle, true);
+            } finally { bg.restore(); }
+          });
+
+          test('popup: ma dostępny checkbox, dynamiczny hint i łagodną informację o ręcznym odświeżeniu', () => {
+            const html = fs.readFileSync(path.join(ROOT, 'popup', 'popup.html'), 'utf8');
+            const js = fs.readFileSync(path.join(ROOT, 'popup', 'popup.js'), 'utf8');
+            const css = fs.readFileSync(path.join(ROOT, 'popup', 'popup.css'), 'utf8');
+            assert.match(html, /id="autoReload"/);
+            assert.match(html, /Odświeżaj stronę po zmianie ochrony/);
+            assert.match(html, /id="reloadNotice"[^>]*aria-live="polite"/);
+            assert.match(js, /popup:setAutoReload/);
+            assert.match(js, /bez automatycznego przeładowania/);
+            assert.match(js, /reloadNotice/);
+            assert.match(css, /accent-color:\s*var\(--accent\)/);
+          });
+
+          test('badge używa palety morskiej, bez starego fioletu', () => {
+            const src = fs.readFileSync(path.join(ROOT, 'background.js'), 'utf8');
+            assert.match(src, /setBadgeBackgroundColor\(\{ color: '#0f7f8c' \}\)/);
+            assert.doesNotMatch(src, /#5b5bd6/i);
+          });
+          ''', encoding='utf-8')
+
+          Path('tests/navigation/icon-reload.test.mjs').write_text(r'''import test from 'node:test';
+          import assert from 'node:assert/strict';
+          import { loadBackground, sender } from '../helpers/chrome-mock.mjs';
+
+          const tick = () => new Promise((resolve) => setTimeout(resolve, 25));
+
+          test('F5 na wyłączonej stronie przywraca szarą ikonę bez traktowania reloadu jako zmiany URL', async () => {
+            const bg = await loadBackground({ tabUrl: 'https://example.com/page' });
+            try {
+              await bg.install();
+              await bg.send({ type: 'options:setDisabledSites', sites: ['example.com'] });
+              bg.state.icons.length = 0;
+              bg.state.listeners.tabUpdated(7, { status: 'loading' }, { id: 7, url: 'https://example.com/page' });
+              await tick();
+              assert.equal(bg.state.icons.length, 1);
+              assert.equal(bg.state.icons[0].tabId, 7);
+              assert.match(bg.state.icons[0].path[16], /-off\.png$/);
+            } finally { bg.restore(); }
+          });
+
+          test('reload aktywnej strony nie wymusza setIcon, a raport YouTube nie jest czyszczony', async () => {
+            const url = 'https://www.youtube.com/watch?v=A';
+            const bg = await loadBackground({ tabUrl: url });
+            try {
+              await bg.install();
+              await bg.send({ type: 'youtube:health', status: 'error', reasons: ['test'], page: 'watch' }, sender(url));
+              bg.state.icons.length = 0;
+              bg.state.tabMessages.length = 0;
+              bg.state.listeners.tabUpdated(7, { status: 'loading' }, { id: 7, url });
+              await tick();
+              assert.equal(bg.state.icons.length, 0);
+              assert.equal(bg.state.tabMessages.length, 0);
+              assert.equal((await bg.send({ type: 'health:get' })).youtube.player.status, 'error');
+            } finally { bg.restore(); }
+          });
+          ''', encoding='utf-8')
+          PY
+
+      - name: Run tests
+        run: npm test
+
+      - name: Commit focused fix and remove one-off workflow
+        shell: bash
+        run: |
+          rm .github/workflows/oneoff-toggle-reload.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add background.js popup/popup.html popup/popup.css popup/popup.js tests/popup/auto-reload.test.mjs tests/navigation/icon-reload.test.mjs .github/workflows/oneoff-toggle-reload.yml
+          git commit -m "Fix icon reload and add optional page refresh"
+          git push origin HEAD:fix/toggle-reload-icon-state
