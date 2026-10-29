@@ -4,8 +4,9 @@
   --fg: #18181b;
   --muted: #71717a;
   --line: #e4e4e7;
-  --accent: #5b5bd6;
-  --accent-hover: #4c4cc4;
+  --accent: #0f7f8c;
+  --accent-hover: #0c6a75;
+  --on-accent: #ffffff;
   --danger: #dc2626;
   --ok: #16a34a;
 }
@@ -16,8 +17,9 @@
     --fg: #f4f4f5;
     --muted: #a1a1aa;
     --line: #2a2a2e;
-    --accent: #8b8bf0;
-    --accent-hover: #a3a3f5;
+    --accent: #22b8a8;
+    --accent-hover: #3fd0bf;
+    --on-accent: #0b1d20;
     --danger: #f87171;
     --ok: #4ade80;
   }
@@ -77,7 +79,7 @@ textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
 
 .bar { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
 button.primary {
-  background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 9px 18px;
+  background: var(--accent); color: var(--on-accent); border: 0; border-radius: 8px; padding: 9px 18px;
   font: inherit; font-weight: 600; cursor: pointer;
 }
 button.primary:hover { background: var(--accent-hover); }
