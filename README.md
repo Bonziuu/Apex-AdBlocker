@@ -6,6 +6,22 @@
 
 > **Status:** stabilne wydanie. Źródłem numeru wersji jest `manifest.json`.
 
+## Instalacja
+
+Najprościej zainstalować ChromeBlock z gotowej paczki:
+
+**[Pobierz najnowsze wydanie ChromeBlock](https://github.com/Bonziuu/Chromeblock/releases/latest)**
+
+1. w sekcji **Assets** pobierz `ChromeBlock-<wersja>.zip`,
+2. rozpakuj ZIP do stałego miejsca na dysku,
+3. otwórz `chrome://extensions`,
+4. włącz **Tryb dewelopera**,
+5. kliknij **Załaduj rozpakowane** i wskaż folder `ChromeBlock` z paczki.
+
+> Po instalacji nie usuwaj ani nie przenoś folderu `ChromeBlock` — Chrome korzysta z niego podczas działania rozszerzenia.
+
+Pełna instrukcja instalacji, aktualizacji i usuwania: [docs/INSTALLATION.md](docs/INSTALLATION.md).
+
 ## Najważniejsze funkcje
 
 - blokowanie żądań sieciowych przez `declarativeNetRequest`,
@@ -18,21 +34,6 @@
 - jasny i ciemny motyw interfejsu.
 
 ChromeBlock używa jednego stałego zestawu ochrony: reklamy, prywatność/śledzenie i bezpieczeństwo. Produkt nie ma płatnych funkcji, kont ani subskrypcji.
-
-## Instalacja lokalna
-
-```bash
-git clone https://github.com/Bonziuu/Chromeblock.git
-```
-
-Następnie:
-
-1. otwórz `chrome://extensions`,
-2. włącz **Tryb dewelopera**,
-3. wybierz **Załaduj rozpakowane**,
-4. wskaż katalog repozytorium zawierający `manifest.json`.
-
-Po `git pull` przy wersji rozpakowanej trzeba kliknąć **Odśwież** przy ChromeBlock w `chrome://extensions`, aby przeładować również service workera.
 
 ## Jak to działa
 
@@ -57,12 +58,16 @@ Projekt ma automatyczny pipeline GitHub Actions oraz testy uruchamiane w Node.js
 npm test
 npm run check
 npm run package:dev
+npm run package:release
 ```
 
 `npm run check` sprawdza m.in. aktualność wygenerowanych artefaktów, zgodność krytycznych filtrów YouTube, audyt scriptletów, testy oraz smoke test rozszerzenia w Chromium.
 
+`npm run package:release` tworzy paczkę dla użytkownika z plikiem `START-HERE.txt`, wersjonowanym ZIP-em, stałą kopią `ChromeBlock.zip` i sumami SHA-256.
+
 Dodatkowe materiały:
 
+- [instrukcja instalacji](docs/INSTALLATION.md),
 - [baseline wydajności](docs/perf-baseline.md),
 - [tester prawdziwych stron](docs/single-blocker-sites-test.md),
 - [ręczny test YouTube](docs/manual-youtube-test.md),
@@ -97,6 +102,8 @@ Repozytorium nie deklaruje obecnie jednej licencji obejmującej cały projekt i 
 Wymagany Node.js 20+.
 
 ```bash
+git clone https://github.com/Bonziuu/Chromeblock.git
+cd Chromeblock
 npm install
 npm test
 npm run check
@@ -105,7 +112,9 @@ npm run update-lists
 npm run build
 ```
 
-`npm run package:dev` tworzy czystą paczkę rozszerzenia w `dist/`; narzędzia developerskie i testy nie są do niej kopiowane.
+Do lokalnego testowania jako rozszerzenie rozpakowane można wskazać katalog repozytorium zawierający `manifest.json`. Po `git pull` trzeba kliknąć **Odśwież** przy ChromeBlock w `chrome://extensions`, aby przeładować również service workera.
+
+`npm run package:dev` tworzy czystą paczkę developerską w `dist/`. `npm run package:release` tworzy gotowy bundle dla użytkownika; narzędzia developerskie i testy nie trafiają do folderu rozszerzenia.
 
 ---
 
