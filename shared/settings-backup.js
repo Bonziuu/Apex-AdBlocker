@@ -1,4 +1,4 @@
-// ChromeBlock – kopia ustawień (eksport / import). Czysta logika: format, pełna walidacja, podsumowanie.
+// Apex AdBlocker – kopia ustawień (eksport / import). Czysta logika: format, pełna walidacja, podsumowanie.
 //
 // Kopia zawiera WYŁĄCZNIE ustawienia, które użytkownik nadal może zmienić: disabledSites i
 // userFilters (wersja 2). Listy ochrony są stałe (shared/core-lists.js), więc nie trafiają do kopii.
@@ -10,6 +10,8 @@
 // Kopie wersji 1 (starsze wersje ChromeBlock) nadal się importują: przywracane są disabledSites
 // i userFilters, a enabledLists, protectionMode i youtubeFocus są ignorowane (nie są walidowane
 // i nie wpływają na stały zestaw list).
+// Identyfikator formatu `chromeblock-settings` pozostaje celowo bez zmian, żeby stare kopie
+// zachowały pełną zgodność po rebrandzie na Apex AdBlocker.
 
 export const BACKUP_FORMAT = 'chromeblock-settings';
 export const BACKUP_VERSION = 2;
@@ -42,7 +44,7 @@ export function buildBackup(settings, { extensionVersion = '', exportedAt = new 
 /** Nazwa pliku eksportu (data lokalna). */
 export function backupFileName(date = new Date()) {
   const p = (n) => String(n).padStart(2, '0');
-  return `chromeblock-ustawienia-${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}.json`;
+  return `apex-adblocker-ustawienia-${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}.json`;
 }
 
 const isPlainObject = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
