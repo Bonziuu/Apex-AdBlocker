@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Apex AdBlocker – ikony marki „Apex A”, gradient morski (#22b8a8 → #0f7f8c).
+// Responsive mark: 16/32 px = uproszczone „A / wzgórze” na przezroczystym tle,
+// 48/128 px = pełniejszy znak marki z badge'em blokowania.
 // Jedno źródło (iconSvg) → tools/icons/*.svg (podgląd/edycja) i icons/icon{16,32,48,128}[-off].png.
 //
 //   npm run icons        generuje SVG i PNG (render w Chromium z Playwright, przezroczyste tło)
 //
-// Concept 1: stylizowane A / szczyt + czytelny symbol blokowania.
-// Stan „wyłączony” zachowuje ten sam znak w szarym gradiencie.
+// Małe rozmiary celowo nie mają białego kafelka ani drobnego badge'a – mają być czytelne
+// na jasnym i ciemnym pasku Chrome. Stan „wyłączony” zachowuje ten sam znak w szarości.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,23 +17,41 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const SIZES = Object.freeze([16, 32, 48, 128]);
 export const PALETTE = Object.freeze({
   on: ['#22b8a8', '#0f7f8c'],
-  off: ['#b3b5bd', '#8d9099'],
+  off: ['#c2c4ca', '#777b85'],
 });
+
+function gradient(id, c1, c2, x2 = '0.42') {
+  return `<linearGradient id="g-${id}" x1="0" y1="0" x2="${x2}" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient>`;
+}
 
 /** SVG ikony „Apex A” w danym rozmiarze. */
 export function iconSvg(size, off = false) {
   const [c1, c2] = off ? PALETTE.off : PALETTE.on;
   const id = off ? 'off' : 'on';
-  const border = off ? '#dddddf' : '#d6ece9';
+
+  if (size <= 32) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 128 128">
+  <defs>
+    ${gradient(id, c1, c2, '0.45')}
+    <mask id="m-${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+      <rect width="128" height="128" fill="white"/>
+      <path d="M31 99C49 82 72 74 102 80" fill="none" stroke="black" stroke-width="13" stroke-linecap="round"/>
+    </mask>
+  </defs>
+  <path fill="url(#g-${id})" fill-rule="evenodd" mask="url(#m-${id})" d="M64 5 121 120H92L64 64 35 120H7L64 5ZM64 47 54 69H74L64 47Z"/>
+</svg>
+`;
+  }
+
+  const ring = off ? '#696d76' : '#0b6670';
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 128 128">
   <defs>
-    <linearGradient id="g-${id}" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient>
+    ${gradient(id, c1, c2)}
   </defs>
-  <rect x="7" y="7" width="114" height="114" rx="27" fill="#fff" stroke="${border}" stroke-width="2"/>
-  <path fill="url(#g-${id})" fill-rule="evenodd" d="M64 17 108 103H87L64 57 40 103H19L64 17Zm0 31-10 21h20L64 48Z"/>
-  <path d="M34 94C50 78 72 70 96 76" fill="none" stroke="url(#g-${id})" stroke-width="12" stroke-linecap="round"/>
-  <circle cx="92" cy="84" r="18" fill="${c2}" fill-opacity="0.94" stroke="#fff" stroke-width="7"/>
-  <path d="M79 71 105 97" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <path fill="url(#g-${id})" fill-rule="evenodd" d="M64 7 116 112H91L64 59 37 112H12L64 7Zm0 34-12 25h24L64 41Z"/>
+  <path d="M26 104C45 84 72 75 105 82" fill="none" stroke="url(#g-${id})" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="94" cy="88" r="19" fill="${c2}" fill-opacity="0.98" stroke="${ring}" stroke-width="4"/>
+  <path d="M81 75 107 101" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
 </svg>
 `;
 }
