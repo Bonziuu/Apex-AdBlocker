@@ -4,7 +4,7 @@
 
 **ChromeBlock** to bloker reklam i śledzenia dla Google Chrome oparty o Manifest V3 i własny silnik filtrów.
 
-> **Status:** stabilne wydanie 1.0.0. Źródłem numeru wersji jest `manifest.json`.
+> **Status:** stabilne wydanie. Źródłem numeru wersji jest `manifest.json`.
 
 ## Najważniejsze funkcje
 
