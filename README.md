@@ -59,11 +59,14 @@ npm test
 npm run check
 npm run package:dev
 npm run package:release
+npm run package:store
 ```
 
 `npm run check` sprawdza m.in. aktualność wygenerowanych artefaktów, zgodność krytycznych filtrów YouTube, audyt scriptletów, testy oraz smoke test rozszerzenia w Chromium.
 
 `npm run package:release` tworzy paczkę dla użytkownika z plikiem `START-HERE.txt`, wersjonowanym ZIP-em, stałą kopią `ChromeBlock.zip` i sumami SHA-256.
+
+`npm run package:store` tworzy osobny ZIP gotowy do uploadu w Chrome Web Store: `manifest.json` znajduje się bezpośrednio w katalogu głównym archiwum, bez folderu nadrzędnego i bez plików instalacyjnych.
 
 Dodatkowe materiały:
 
@@ -114,7 +117,7 @@ npm run build
 
 Do lokalnego testowania jako rozszerzenie rozpakowane można wskazać katalog repozytorium zawierający `manifest.json`. Po `git pull` trzeba kliknąć **Odśwież** przy ChromeBlock w `chrome://extensions`, aby przeładować również service workera.
 
-`npm run package:dev` tworzy czystą paczkę developerską w `dist/`. `npm run package:release` tworzy gotowy bundle dla użytkownika; narzędzia developerskie i testy nie trafiają do folderu rozszerzenia.
+`npm run package:dev` tworzy czystą paczkę developerską w `dist/`. `npm run package:release` tworzy gotowy bundle dla użytkownika, a `npm run package:store` tworzy ZIP do Chrome Web Store; narzędzia developerskie i testy nie trafiają do dystrybucji.
 
 ---
 
