@@ -22,6 +22,11 @@
           <span class="dot" aria-hidden="true"></span>
           <span id="status">Sprawdzanie…</span>
         </div>
+        <label class="reload-option" for="autoReload">
+          <input type="checkbox" id="autoReload" checked>
+          <span>Odświeżaj stronę po zmianie ochrony</span>
+        </label>
+        <div class="reload-notice" id="reloadNotice" role="status" aria-live="polite" hidden>Odśwież stronę, aby w pełni zastosować zmianę.</div>
       </div>
       <button id="toggle" class="toggle" role="switch" aria-checked="false" aria-labelledby="statusLabel" aria-describedby="toggleHint" disabled>
         <span class="knob" aria-hidden="true"></span>

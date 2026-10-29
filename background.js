@@ -109,13 +109,15 @@ async function getListsMeta() {
 async function getState() {
   if (state) return state;
   const meta = await getListsMeta();
-  const stored = await startup.time('getState / storage', () => chrome.storage.local.get(['disabledSites', 'userFilters']));
+  const stored = await startup.time('getState / storage', () => chrome.storage.local.get(['disabledSites', 'userFilters', 'autoReloadOnToggle']));
   state = {
     // stały zestaw list – zapisane w starszych wersjach enabledLists / protectionMode są ignorowane
     // (i usuwane przy aktualizacji, LEGACY_STORAGE_KEYS)
     enabledLists: CORE_LISTS.filter((id) => meta.some((m) => m.id === id)),
     disabledSites: Array.isArray(stored.disabledSites) ? stored.disabledSites : [],
     userFilters: typeof stored.userFilters === 'string' ? stored.userFilters : '',
+    // brak klucza zachowuje dotychczasowe zachowanie: automatyczny reload po zmianie ochrony
+    autoReloadOnToggle: stored.autoReloadOnToggle !== false,
   };
   user = compileUserFilters(state.userFilters);
   return state;
@@ -539,7 +541,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   await startup.time('ustawienia plakietki', async () => {
     try {
       await chrome.declarativeNetRequest.setExtensionActionOptions({ displayActionCountAsBadgeText: true });
-      await chrome.action.setBadgeBackgroundColor({ color: '#5b5bd6' });
+      await chrome.action.setBadgeBackgroundColor({ color: '#0f7f8c' });
       try { await chrome.action.setBadgeTextColor({ color: '#ffffff' }); } catch { /* starszy Chrome */ }
     } catch (e) {
       await health.error('network', `ustawienia plakietki: ${e.message || e}`);
@@ -736,7 +738,26 @@ export function onTabUrlChanged(tabId, changeInfo) {
   return true;
 }
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => { onTabUrlChanged(tabId, changeInfo); });
+async function restoreDisabledIcon(tabId, url) {
+  const s = await getState();
+  if (!isSiteDisabled(hostOf(url), s)) return false;
+  await updateIcon(tabId, url);
+  return true;
+}
+
+export function onTabUpdated(tabId, changeInfo, tab) {
+  if (onTabUrlChanged(tabId, changeInfo)) return true;
+  // Przy zwykłym F5 Chrome może zresetować ikonę przypisaną do karty do domyślnej,
+  // nie podając ponownie changeInfo.url. Odtwarzamy tylko wariant OFF; dla aktywnej ochrony
+  // domyślna ikona jest już właściwa. Nie traktujemy reloadu jako zmiany URL.
+  if (changeInfo && changeInfo.status === 'loading' && tab && typeof tab.url === 'string') {
+    restoreDisabledIcon(tabId, tab.url);
+    return true;
+  }
+  return false;
+}
+
+chrome.tabs.onUpdated.addListener(onTabUpdated);
 
 chrome.tabs.onRemoved.addListener((tabId) => { playerReports.clearTab(tabId); });
 
@@ -900,9 +921,18 @@ const handlers = {
       disabled: isSiteDisabled(host, s),
       blocked,
       canRun: !!host,
+      autoReloadOnToggle: s.autoReloadOnToggle,
       problems,
       youtube: yt,
     };
+  },
+
+  async 'popup:setAutoReload'(msg) {
+    const s = await getState();
+    const enabled = msg.enabled !== false;
+    s.autoReloadOnToggle = enabled;
+    await chrome.storage.local.set({ autoReloadOnToggle: enabled });
+    return { ok: true, autoReloadOnToggle: enabled };
   },
 
   async 'site:toggle'(msg) {
@@ -923,7 +953,7 @@ const handlers = {
     if (msg.tabId) {
       const tab = await chrome.tabs.get(msg.tabId).catch(() => null);
       if (tab) await updateIcon(tab.id, tab.url);
-      chrome.tabs.reload(msg.tabId);
+      if (s.autoReloadOnToggle) chrome.tabs.reload(msg.tabId);
     }
     return { ok: dyn.ok && sl.ok, disabled: isSiteDisabled(host, state), error: [dyn, sl].filter((r) => !r.ok).map((r) => r.message).join('; ') };
   },
@@ -1040,7 +1070,7 @@ const handlers = {
 // Wiadomości zmieniające ustawienia wykonujemy jedna po drugiej. Każda czyta stan, modyfikuje go
 // i synchronizuje z Chrome; równoległe wykonanie gubiło zmiany (np. dwa szybkie przełączenia
 // stron albo dwa „Ukryj element” – druga zapisywała stan bez pierwszej).
-const MUTATING = new Set(['site:toggle', 'settings:import', 'options:setUserFilters', 'options:setDisabledSites',
+const MUTATING = new Set(['site:toggle', 'popup:setAutoReload', 'settings:import', 'options:setUserFilters', 'options:setDisabledSites',
   'options:setDevPerf', 'picker:add', 'health:resync']);
 let settingsQueue = Promise.resolve();
 function runHandler(h, msg, sender) {

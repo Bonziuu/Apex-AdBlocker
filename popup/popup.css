@@ -76,6 +76,13 @@ main { padding: 0 12px 4px; display: grid; gap: 8px; }
 .site[data-state="on"] .status { color: var(--on); font-weight: 550; }
 .site[data-state="on"] .dot { background: var(--on); box-shadow: 0 0 0 3px var(--accent-soft); }
 .site[data-state="off"] .status { color: var(--muted); }
+.reload-option {
+  display: flex; align-items: center; gap: 6px; margin-top: 7px;
+  color: var(--muted); font-size: 11.5px; line-height: 1.25; cursor: pointer;
+}
+.reload-option input { width: 13px; height: 13px; margin: 0; flex: none; accent-color: var(--accent); }
+.reload-option:has(input:disabled) { cursor: default; opacity: .55; }
+.reload-notice { margin-top: 5px; color: var(--muted); font-size: 11.5px; line-height: 1.3; }
 
 /* przełącznik */
 .toggle {
