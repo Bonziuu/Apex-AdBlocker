@@ -56,7 +56,7 @@ test('eksport v2: tylko wyłączone strony i własne filtry (bez list, trybu, Fo
     await bg.send({ type: 'options:setUserFilters', text: '||ads.example^\n' });
     const r = await bg.send({ type: 'settings:export' });
     assert.equal(r.ok, true);
-    assert.match(r.fileName, /^chromeblock-ustawienia-\d{4}-\d{2}-\d{2}\.json$/);
+    assert.match(r.fileName, /^apex-adblocker-ustawienia-\d{4}-\d{2}-\d{2}\.json$/);
     const b = r.backup;
     assert.equal(b.format, 'chromeblock-settings');
     assert.equal(b.version, 2);
@@ -229,7 +229,7 @@ test('aktualizacja usuwa martwe klucze (Focus Mode, listy, tryb); świeża insta
 // --- czysta logika i UI ------------------------------------------------------------
 
 test('czysta logika: nazwa pliku, podsumowanie, odmiana, limit rozmiaru', () => {
-  assert.equal(backupFileName(new Date(2026, 0, 5)), 'chromeblock-ustawienia-2026-01-05.json');
+  assert.equal(backupFileName(new Date(2026, 0, 5)), 'apex-adblocker-ustawienia-2026-01-05.json');
   assert.deepEqual([1, 2, 4, 5, 12, 22, 25].map(rulesWord), ['reguła', 'reguły', 'reguły', 'reguł', 'reguł', 'reguły', 'reguł']);
   assert.deepEqual(summarizeSettings({ disabledSites: [], userFilters: '' }), ['Wyłączone strony: 0', 'Moje filtry: 0 reguł']);
   assert.match(parseBackup('x'.repeat(2 * 1024 * 1024 + 1)).errors[0], /za duży/);
