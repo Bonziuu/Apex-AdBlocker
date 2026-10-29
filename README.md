@@ -1,160 +1,112 @@
 # ChromeBlock
 
-Bloker reklam i śledzenia dla Chrome (Manifest V3) z własnym silnikiem filtrów.
+<img src="icons/icon128.png" alt="ChromeBlock" width="96">
 
-> **Status:** pierwsze stabilne wydanie. Numer wersji: `manifest.json` → `version`.
+**ChromeBlock** to bloker reklam i śledzenia dla Google Chrome oparty o Manifest V3 i własny silnik filtrów.
 
-## Instalacja (rozpakowane rozszerzenie)
+> **Status:** stabilne wydanie. Źródłem numeru wersji jest `manifest.json`.
 
-1. Pobierz repozytorium: `git clone https://github.com/Bonziuu/Chromeblock.git` (albo **Code → Download ZIP** i rozpakuj).
-2. Otwórz w Chrome `chrome://extensions` i włącz **Tryb dewelopera**.
-3. Kliknij **Załaduj rozpakowane** i wskaż folder repozytorium (ten, w którym jest `manifest.json`).
-4. Przypnij ikonę ChromeBlock na pasku.
+## Najważniejsze funkcje
 
-Chrome ładuje rozszerzenie bezpośrednio z tego folderu – nie przenoś go po instalacji.
+- blokowanie żądań sieciowych przez `declarativeNetRequest`,
+- filtry kosmetyczne i proceduralne,
+- własna warstwa zgodności scriptletów uBO z zasadą *fail closed*,
+- YouTube Protection z kontrolą zgodności filtrów podczas buildu,
+- wyłączanie ochrony per strona i opcjonalne automatyczne odświeżenie,
+- „Ukryj element” i własne filtry użytkownika,
+- lokalna diagnostyka bez telemetrii, kont i backendu,
+- jasny i ciemny motyw interfejsu.
 
-## Co robi
+ChromeBlock używa jednego stałego zestawu ochrony: reklamy, prywatność/śledzenie i bezpieczeństwo. Produkt nie ma płatnych funkcji, kont ani subskrypcji.
 
-| Mechanizm | Opis |
+## Instalacja lokalna
+
+```bash
+git clone https://github.com/Bonziuu/Chromeblock.git
+```
+
+Następnie:
+
+1. otwórz `chrome://extensions`,
+2. włącz **Tryb dewelopera**,
+3. wybierz **Załaduj rozpakowane**,
+4. wskaż katalog repozytorium zawierający `manifest.json`.
+
+Po `git pull` przy wersji rozpakowanej trzeba kliknąć **Odśwież** przy ChromeBlock w `chrome://extensions`, aby przeładować również service workera.
+
+## Jak to działa
+
+| Warstwa | Rola |
 |---|---|
-| Blokowanie sieciowe | Filtry z EasyList, EasyPrivacy, uBlock filters i Polskich Filtrów kompilowane do reguł `declarativeNetRequest` |
-| Ukrywanie elementów | Filtry kosmetyczne z aktywnych list wstrzykiwane jako arkusz stylów użytkownika |
-| Filtry proceduralne | `:has-text()`, `:upward()`, `:remove()`, `:style()`, `:matches-path()`, `:min-text-length()` |
-| Scriptlety | Własne implementacje scriptletów uBO (lista i warianty – sekcja Compatibility) |
-| YouTube Protection | Domyślnie włączona; kontrola zgodności filtrów YouTube przy buildzie i lokalna diagnostyka odtwarzacza |
-| Przycisk zasilania | Wyłącza ochronę na bieżącej stronie |
-| Ukryj element | Tworzy własny filtr kosmetyczny po wskazaniu elementu |
-| Moje filtry | Własne reguły w składni ABP/uBO (bez scriptletów) |
-| Diagnostyka | Stan silników, wyniki synchronizacji, dziennik błędów, pomiary wydajności (opcje → Diagnostyka) |
+| `background.js`, `background/` | service worker, stan ochrony, DNR, rejestracja scriptletów, diagnostyka |
+| `shared/parser.js` | parser obsługiwanego podzbioru składni ABP/uBO |
+| `content/cosmetic.js` | ukrywanie elementów i filtry proceduralne |
+| `content/picker.js` | interaktywny tryb „Ukryj element” |
+| `youtube/` | zgodność filtrów i lokalna diagnostyka odtwarzacza |
+| `rules/`, `data/`, `scriptlets/` | wygenerowane artefakty wykorzystywane przez rozszerzenie |
+| `tools/` | build, audyty, aktualizacja list i packaging |
+| `tests/` | testy jednostkowe, integracyjne, Chromium i E2E |
 
-Ochrona ma **jeden stały zestaw list**: Reklamy (`ads`), Śledzenie i prywatność (`privacy`), Złośliwe strony (`security`) – `shared/core-lists.js`. Nie ma trybów ochrony ani wyboru list; listy komunikatów o cookies i „annoyances” nie są częścią produktu i nie trafiają do paczki. Użytkownik ustawia tylko wyłączone strony i własne filtry (także przez „Ukryj element”).
+Bardziej szczegółowy opis architektury i ograniczeń: [docs/technical-overview.md](docs/technical-overview.md).
 
-## Compatibility
+## Jakość i testy
 
-ChromeBlock **nie jest** uBlock Origin i **nie ma pełnej zgodności** z uBO.
+Projekt ma automatyczny pipeline GitHub Actions oraz testy uruchamiane w Node.js i prawdziwym Chromium.
 
-- Używa **własnego silnika** (parser, generator reguł DNR, silnik kosmetyczny, biblioteka scriptletów, silnik JSONPath). Kod uBO nie jest kopiowany.
-- Obsługuje **określony podzbiór** składni ABP/uBO. Filtrów, których nie da się poprawnie wyrazić, ChromeBlock nie wykonuje – zasada **fail closed**:
-  - scriptlet jest wykonywany tylko wtedy, gdy ChromeBlock zna jego semantykę **dla dokładnie tego wariantu argumentów**,
-  - nieznany scriptlet, nieznany parametr, niesparowany vararg albo nieobsługiwana wartość oznaczają, że filtr jest pomijany (nie „częściowo wykonywany”).
-- **Build kontroluje zgodność kluczowych filtrów YouTube** (youtube.com, www/m/music.youtube.com, youtube-nocookie.com) w stałym zestawie list. Jeśli pojawi się filtr YouTube, którego ChromeBlock nie obsługuje, `npm run build` kończy się błędem `CRITICAL YOUTUBE COMPATIBILITY FAILURE`. Wyjątkiem są braki świadomie wpisane do `youtube/known-gaps.json`.
-
-Filtry scriptletów dzielą się na w pełni obsługiwane, częściowo obsługiwane (znany scriptlet, nieobsługiwany wariant – **niewykonywane**) i nieobsługiwane (**niewykonywane**). Liczby zależą od bieżących snapshotów list, dlatego nie są tu wpisane na sztywno. Aktualny raport zgodności (liczby, pełna lista nieobsługiwanych scriptletów z liczbą wystąpień, przykładowymi domenami i powodem) generuje:
-
-```
-npm run audit:scriptlets
+```bash
+npm test
+npm run check
+npm run package:dev
 ```
 
-Krótkie podsumowanie pokazuje też `npm run check` (sekcja „Audyt scriptletów”). Krytyczne reguły YouTube są sprawdzane osobno przy każdym buildzie (zob. wyżej).
+`npm run check` sprawdza m.in. aktualność wygenerowanych artefaktów, zgodność krytycznych filtrów YouTube, audyt scriptletów, testy oraz smoke test rozszerzenia w Chromium.
 
-Przykłady scriptletów bez implementacji: `abort-on-stack-trace` (ChromeBlock nie odtwarza normalizacji stosu wywołań uBO), `trusted-replace-argument`, `href-sanitizer`, `trusted-suppress-native-method`, `nobab`, `nofab`, `trusted-create-html`, `xml-prune`, `m3u-prune`, `trusted-replace-outbound-text`, `refresh-defuser`, `prevent-innerHTML`, `spoof-css`.
+Dodatkowe materiały:
 
-Inne ograniczenia:
-- Manifest V3 nie pozwala na filtrowanie HTML (`##^`), modyfikację nagłówków CSP ani blokowanie popupów filtrami `$popup`; ok. 3% filtrów sieciowych i 1% kosmetycznych jest pomijanych.
-- Zagnieżdżone operatory proceduralne (np. `:has(... :has-text())`) nie są obsługiwane.
-- `trusted-click-element` z `>>>` (zamknięty shadow DOM) i warunkiem `localStorage:` nie jest wykonywany.
-- Wyjątki `#@#+js(...)` działają tylko w obrębie własnej listy. Build zlicza wyjątki wskazujące scriptlety innej listy – przy obecnych listach jest ich 0.
-- **ChromeBlock nie obiecuje niewykrywalności.** Strony mogą wykryć, że reklamy są blokowane.
-
-Znane problemy na konkretnych stronach:
-- `Wykop.pl` może wykrywać blokowanie i wyświetlać własne reklamy zastępcze (first-party); mechanizm po stronie serwisu zmienia się w czasie.
-- `Kafeteria.pl` może wyświetlać dynamiczne reklamy first-party z infrastruktury WP, których bieżące filtry nie zawsze identyfikują kosmetycznie.
-
-## YouTube Protection
-
-YouTube korzysta ze wspólnego silnika (DNR, kosmetyka, scriptlety). Moduł `youtube/` odpowiada za:
-
-- `youtube/compatibility.js` – które filtry są krytyczne i czy są obsługiwane (build, audyt, testy, aktualizacja list),
-- `youtube/protection.js` – ocenę stanu ochrony w service workerze: lista „Reklamy” włączona, scriptlety YouTube zarejestrowane, zgodność filtrów, stan odtwarzacza,
-- `youtube/health.js` – lekką, lokalną diagnostykę odtwarzacza: czy istnieje `movie_player` i element `video`, czy odtwarzacz pokazuje błąd, czy ładowanie trwa podejrzanie długo, czy odtwarzanie może się rozpocząć. Statusy: `healthy`, `degraded`, `error`, `unknown`. Diagnostyka nie zapisuje adresów filmów i niczego nie naprawia automatycznie.
-- `youtube/player-reports.js` – model raportów `tabId → frameId → raport` w service workerze: raport ramki głównej ma pierwszeństwo, iframe nie może go nadpisać, YouTube osadzony na innej stronie (brak raportu top) korzysta z raportu iframe, raporty wygasają po ok. 60 s, a zamknięcie karty i główna nawigacja je usuwają.
-
-### Raport diagnostyczny
-
-Opcje → Diagnostyka → **Kopiuj raport diagnostyczny** kopiuje do schowka lokalny raport tekstowy + JSON: wersja, manifest, czas, włączone listy, stan silników i synchronizacji, zgodność YouTube i scriptletów, zagregowany stan odtwarzacza, ostatnie błędy ChromeBlock, flaga diagnostyki wydajności. Raport **nie zawiera** adresów stron, historii, ID filmów, cookies, tokenów, loginów, danych konta ani treści stron (`background/diagnostics-report.js`). Nic nie jest wysyłane automatycznie.
+- [baseline wydajności](docs/perf-baseline.md),
+- [tester prawdziwych stron](docs/single-blocker-sites-test.md),
+- [ręczny test YouTube](docs/manual-youtube-test.md),
+- [pochodzenie i licencje list filtrów](docs/filter-provenance.md).
 
 ## Prywatność
 
-Brak telemetrii, analityki, kont i backendu. Diagnostyka (stan silników, dziennik błędów, pomiary wydajności) jest przechowywana wyłącznie lokalnie w `chrome.storage`. Rozszerzenie nie pobiera ani nie wykonuje zdalnego kodu. Scriptlety pochodzą z list wbudowanych podczas buildu. Zaufane filtry uBlock filters mogą zawierać fragmenty kodu wstrzykiwane do stron, tak jak w uBO.
+ChromeBlock nie ma telemetrii, analityki, kont ani własnego backendu. Ustawienia i diagnostyka są przechowywane lokalnie. Rozszerzenie nie pobiera ani nie wykonuje zdalnego kodu.
+
+Raport diagnostyczny jest sanityzowany i nie powinien zawierać historii, pełnych URL-i, identyfikatorów filmów, cookies, tokenów ani danych logowania.
+
+## AI-assisted development
+
+Projekt był rozwijany w workflow **AI-assisted**. Korzystałem z narzędzi AI, w tym Claude Code i ChatGPT, przy implementacji, refaktoryzacji, analizie błędów i tworzeniu testów.
+
+Po mojej stronie pozostawały wymagania produktu, decyzje funkcjonalne i architektoniczne, testy ręczne, ocena rezultatów oraz decyzje o przyjmowaniu zmian. Użycia AI nie traktuję jako czegoś do ukrywania — jest ono częścią procesu tworzenia tego projektu.
+
+## Ograniczenia
+
+ChromeBlock nie jest uBlock Origin i nie implementuje całej składni uBO/ABP. Nieobsługiwane konstrukcje są pomijane zamiast wykonywane częściowo. Manifest V3 nakłada też ograniczenia, których rozszerzenie nie próbuje obchodzić.
+
+Strony mogą wykrywać blokowanie reklam, a skuteczność filtrów zależy również od zmian po stronie serwisów i aktualności upstreamowych list.
+
+## Źródła filtrów i licencje
+
+Wbudowane listy filtrów pochodzą m.in. z EasyList/EasyPrivacy, uAssets oraz Polskich Filtrów i zachowują własne warunki licencyjne. Szczegóły, źródła i stan audytu znajdują się w [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) i [docs/filter-provenance.md](docs/filter-provenance.md).
+
+Repozytorium nie deklaruje obecnie jednej licencji obejmującej cały projekt i wszystkie dane third-party.
 
 ## Development
 
-```bash
-npm install          # tylko Playwright do testów E2E; npm test nie wymaga zależności
-npm test             # testy jednostkowe i integracyjne (node:test), BEZ E2E
-npm run check        # walidacja buildu + zgodność YouTube (strict) + audyt + testy
-```
-
-| Komenda | Działanie |
-|---|---|
-| `npm run build` | Buduje `rules/`, `data/`, `scriptlets/` z `tools/lists/`; strict dla YouTube |
-| `npm run audit:scriptlets` | Raport zgodności scriptletów (supported / partial / unsupported, YouTube) |
-| `npm run update-lists` | Pobiera listy i od razu pokazuje zmiany filtrów YouTube i nowe nieobsługiwane scriptlety |
-| `npm run check` | Wszystkie kontrole; kod ≠ 0 przy błędzie. Jeśli dostępny jest Playwright + Chromium, dodatkowo ładuje rozszerzenie w Chromium (tymczasowy profil, bez stron zewnętrznych); inaczej `SKIP: Chromium smoke test unavailable`. `CHROMEBLOCK_SMOKE=0` pomija ten krok |
-| `npm run package:dev` | Czysta paczka rozszerzenia w `dist/` (lokalnie, nie commitowana): `dist/ChromeBlock/` – tylko pliki rozszerzenia, `dist/ChromeBlock-dev.zip` – te same pliki w ZIP-ie; bez instalatora i testera. Test paczki: `node tools/chromium-smoke.mjs --dir dist/ChromeBlock` |
-| `test-chromeblock.cmd`, `test-sites.cmd` | Lokalne testy w Windows (z folderu repozytorium, Node.js 20+): test regresyjny w tymczasowym profilu Chromium oraz porównanie stron bez / z ChromeBlock ([docs/single-blocker-sites-test.md](docs/single-blocker-sites-test.md)). Wyniki w `tests/local/results/` |
-| `npm run test:e2e` | Testy E2E YouTube w prawdziwym Chromium (wymagają `npx playwright install chromium`) |
-
-Aktualizacja list:
-
-```bash
-npm run update-lists   # pokaże: "YouTube filters changed" / "New unsupported scriptlet detected"
-npm run build
-npm run check
-```
-
-Jeśli nowy filtr YouTube nie jest obsługiwany, masz dwie drogi: zaimplementować semantykę (rejestr `shared/scriptlet-specs.js` + `tools/scriptlets-lib.js` + test) albo świadomie zaakceptować brak: `node tools/audit-scriptlets.mjs --update-youtube-baseline`.
-
-Testy są wyszukiwane przez `tools/run-tests.mjs` (jawna lista plików, bez globów – działa w Node 20+). `npm test` uruchamia `tests/**/*.test.mjs` z pominięciem `tests/e2e/`; E2E uruchamia się wyłącznie przez `npm run test:e2e`.
-
-### Testy E2E YouTube
+Wymagany Node.js 20+.
 
 ```bash
 npm install
-npx playwright install chromium
-npm run test:e2e
+npm test
+npm run check
+npm run audit:scriptlets
+npm run update-lists
+npm run build
 ```
 
-Chromium startuje z jednorazowym profilem i załadowanym rozszerzeniem. Przypadki: 3 filmy `/watch` (w tym jeden dłuższy, z testem seek +15 s), playlista (przejście do kolejnego filmu przez API odtwarzacza), embed (adres `/embed/` i iframe na stronie testowej), `music.youtube.com/watch`, Shorts (tylko z `YOUTUBE_SHORTS_URL`). Stan odtwarzacza jest próbkowany co 1 s.
+`npm run package:dev` tworzy czystą paczkę rozszerzenia w `dist/`; narzędzia developerskie i testy nie są do niej kopiowane.
 
-Wyniki: `PLAYBACK_OK`, `AD_BLOCKING_OBSERVED` (jest dowód: surowa odpowiedź zawierała dane reklam, a odpowiedź widoczna dla strony – nie), `INCONCLUSIVE — no ad opportunity observed`, `AD_VISIBLE_FAILURE` (stan reklamy ≥ 3 kolejne sekundy), `PLAYER_FAILURE`. Test nie klika „Pomiń reklamę”, nie modyfikuje obiektów odtwarzacza i nie obchodzi CAPTCHA, `/sorry/` ani logowania – takie przypadki są pomijane (SKIP). Wyniki zapisują się w `tests/e2e/results/last-run.json`.
+---
 
-| Zmienna | Znaczenie |
-|---|---|
-| `YOUTUBE_WATCH_URLS` | adresy `/watch` rozdzielone przecinkami |
-| `YOUTUBE_PLAYLIST_URL` | adres playlisty |
-| `YOUTUBE_SHORTS_URL` | adres Shorts (bez niej: `SKIP — no stable Shorts URL configured`) |
-| `YOUTUBE_EMBED_URL`, `YOUTUBE_MUSIC_URL` | własne adresy embed / YouTube Music |
-| `E2E_HANDLE_CONSENT=1` | zwykła interakcja z ekranem zgody w jednorazowym profilu (domyślnie test nic nie klika) |
-| `E2E_HEADLESS=1` | tryb headless |
-| `E2E_SAMPLE_SECONDS` | długość próbkowania (domyślnie 20 s) |
-
-Ręczny test w prawdziwym Chrome: [docs/manual-youtube-test.md](docs/manual-youtube-test.md).
-
-### Struktura
-
-```
-manifest.json              definicja rozszerzenia (MV3)
-background.js              service worker: listy, własne filtry, scriptlety, CSS, diagnostyka
-background/health.js       stan zdrowia silników i dziennik błędów
-background/diagnostics-report.js  lokalny raport diagnostyczny (sanityzacja)
-shared/parser.js           parser filtrów ABP/uBO → reguły DNR, filtry kosmetyczne
-shared/scriptlet-specs.js  rejestr scriptletów i walidacja argumentów (fail closed)
-shared/jsonpath.js         silnik JSONPath (dialekt uBO, także legacy)
-content/cosmetic.js        ukrywanie elementów, filtry ogólne i proceduralne, pomiary
-content/picker.js          tryb „Ukryj element”
-youtube/                   YouTube Protection (zgodność, ocena, diagnostyka odtwarzacza, known-gaps.json)
-popup/, options/           interfejs (opcje → Diagnostyka)
-rules/ data/ scriptlets/   pliki generowane przez build (commitowane)
-tools/                     build, audyt, check, runner testów, aktualizacja list, biblioteka scriptletów, listy źródłowe
-tests/                     parser, network, cosmetic, scriptlets, build, youtube, health, tools, e2e
-docs/                      ręczny test YouTube
-```
-
-## Kierunek produktu
-
-ChromeBlock jest w 100% darmowy – bez wersji Pro, płatnych funkcji, paywalla, kont, subskrypcji, systemu płatnych licencji i kluczy aktywacyjnych; żadna funkcja nie jest ograniczana licencją. Warunki licencyjne kodu i list filtrów stron trzecich obowiązują bez zmian (zob. „Źródła list i licencje”). Szczegóły: [docs/product-direction.md](docs/product-direction.md).
-
-## Źródła list i licencje
-
-EasyList, EasyPrivacy © The EasyList authors (GPLv3 / CC BY-SA 3.0) · uBlock filters © Raymond Hill i współtwórcy (GPLv3) · Polskie Filtry Reklamowe © MajkiIT (CC BY-NC-SA 4.0). Listy są wbudowane w repozytorium (`tools/lists/`). Pochodzenie, wersje snapshotów, licencje i otwarte kwestie licencyjne: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) (plik jest też dołączany do paczki rozszerzenia) i [docs/filter-provenance.md](docs/filter-provenance.md) (audyt dokumentacyjny, nie opinia prawna).
+ChromeBlock jest projektem niezależnym i nie jest powiązany z Google, uBlock Origin ani autorami upstreamowych list filtrów.
