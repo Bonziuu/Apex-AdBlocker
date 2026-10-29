@@ -41,7 +41,7 @@ export function startHereText(version) {
     'AKTUALIZACJA\r\n\r\n' +
     'Pobierz nowszą paczkę, zastąp pliki w tym samym folderze ChromeBlock,\r\n' +
     'a następnie kliknij „Odśwież” przy ChromeBlock w chrome://extensions.\r\n\r\n' +
-    'Szczegółowa instrukcja: https://github.com/Bonziuu/Chromeblock/blob/main/docs/INSTALLATION.md\r\n`;
+    'Szczegółowa instrukcja: https://github.com/Bonziuu/Chromeblock/blob/main/docs/INSTALLATION.md\r\n';
 }
 
 /** Buduje gotową paczkę do publikacji w GitHub Releases. */
