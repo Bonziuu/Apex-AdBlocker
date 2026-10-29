@@ -1,14 +1,10 @@
 @echo off
-rem ChromeBlock - lokalny test regresyjny (Windows). Uruchom dwuklikiem w folderze repozytorium.
+rem LEGACY ALIAS: zachowany tylko dla starych skryptow developerskich. Marka produktu to Apex AdBlocker.
+rem Ten plik wykonuje ten sam lokalny test co test-apex-adblocker.cmd.
 rem Wymaga Node.js 20+.
-rem Startuje Playwright Chromium z ChromeBlock w TYMCZASOWYM profilu
-rem (nie uzywa Twojego profilu Chrome, nie zapisuje historii, loginow ani cookies).
-rem Opcje (z wiersza polecen): --headless  --no-youtube
-rem Test stron (bez / z ChromeBlock, ok. 30-45 min): test-chromeblock.cmd --sites  (albo test-sites.cmd)
-rem Kod wyjscia: 0 PASS, 1 FAIL, 2 blad uruchomienia, 3 INCONCLUSIVE.
 setlocal
 chcp 65001 >nul
-title ChromeBlock - test lokalny
+title Apex AdBlocker - test lokalny
 set "RC=2"
 set "BASE=%~dp0"
 set "RES=%BASE%tests\local\results"
@@ -63,7 +59,7 @@ goto :end
 echo.
 echo ============================================================
 if "%RC%"=="0" echo   Test stron zakonczony. Wynik automatyczny to tylko WSKAZOWKA.
-if "%RC%"=="0" echo   Otworz raport i ocen strony recznie ^(zrzuty BEZ / Z ChromeBlock obok siebie^).
+if "%RC%"=="0" echo   Otworz raport i ocen strony recznie ^(zrzuty BEZ / Z Apex AdBlocker obok siebie^).
 if not "%RC%"=="0" echo   WYNIK: BLAD URUCHOMIENIA - test stron nie mogl sie wykonac.
 echo ============================================================
 echo.

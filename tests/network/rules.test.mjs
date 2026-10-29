@@ -17,7 +17,7 @@ test('manifest: MV3, wersja z pola version, wymagane pliki istnieją', () => {
   assert.equal(manifest.manifest_version, 3);
   assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
   assert.equal(manifest.version_name, undefined);
-  assert.equal(manifest.name, 'ChromeBlock');
+  assert.equal(manifest.name, 'Apex AdBlocker');
   const files = [manifest.background.service_worker, manifest.action.default_popup, manifest.options_page,
     ...manifest.content_scripts.flatMap((c) => c.js), ...Object.values(manifest.icons)];
   for (const f of files) assert.ok(fs.existsSync(path.join(ROOT, f)), f);

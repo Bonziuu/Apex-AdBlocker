@@ -38,36 +38,36 @@ function readZip(buf) {
 }
 
 test('package:release: gotowy ZIP użytkownika + stała nazwa + SHA256', () => {
-  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-release-'));
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-release-'));
   try {
     const r = packageRelease({ outDir });
     const versioned = fs.readFileSync(r.versionedZipPath);
     const latest = fs.readFileSync(r.latestZipPath);
 
-    assert.equal(r.versionedZipName, `ChromeBlock-${r.version}.zip`);
+    assert.equal(r.versionedZipName, `Apex-AdBlocker-${r.version}.zip`);
     assert.equal(path.basename(r.latestZipPath), LATEST_ZIP_NAME);
-    assert.ok(versioned.equals(latest), 'wersjonowany ZIP i ChromeBlock.zip są identyczne');
-    assert.ok(!fs.existsSync(path.join(outDir, 'ChromeBlock-dev.zip')), 'brak deweloperskiego ZIP-a');
+    assert.ok(versioned.equals(latest), 'wersjonowany ZIP i Apex-AdBlocker.zip są identyczne');
+    assert.ok(!fs.existsSync(path.join(outDir, 'Apex-AdBlocker-dev.zip')), 'brak deweloperskiego ZIP-a');
 
     const zip = readZip(versioned);
     assert.ok(zip.has('START-HERE.txt'));
-    assert.ok(zip.has('ChromeBlock/manifest.json'));
-    assert.ok(zip.has('ChromeBlock/THIRD_PARTY_NOTICES.md'));
+    assert.ok(zip.has('Apex-AdBlocker/manifest.json'));
+    assert.ok(zip.has('Apex-AdBlocker/THIRD_PARTY_NOTICES.md'));
     assert.match(zip.get('START-HERE.txt').toString('utf8'), /chrome:\/\/extensions/);
-    assert.match(zip.get('START-HERE.txt').toString('utf8'), /nie usuwaj ani nie przenoś folderu ChromeBlock/i);
+    assert.match(zip.get('START-HERE.txt').toString('utf8'), /nie usuwaj ani nie przenoś folderu Apex-AdBlocker/i);
     assert.equal(zip.get('START-HERE.txt').toString('utf8'), startHereText(r.version));
 
     for (const name of zip.keys()) {
       if (name === 'START-HERE.txt') continue;
-      assert.ok(name.startsWith('ChromeBlock/'), name);
+      assert.ok(name.startsWith('Apex-AdBlocker/'), name);
       assert.doesNotMatch(name, /(^|\/)(tools|tests|docs|node_modules|\.git)(\/|$)/, name);
     }
 
     const digest = crypto.createHash('sha256').update(versioned).digest('hex');
     assert.equal(r.sha256, digest);
     const sums = fs.readFileSync(path.join(outDir, CHECKSUMS_NAME), 'utf8');
-    assert.match(sums, new RegExp(`^${digest}  ChromeBlock-${r.version.replace(/\./g, '\\.') }\\.zip$`, 'm'));
-    assert.match(sums, new RegExp(`^${digest}  ChromeBlock\\.zip$`, 'm'));
+    assert.match(sums, new RegExp(`^${digest}  Apex-AdBlocker-${r.version.replace(/\./g, '\\.') }\\.zip$`, 'm'));
+    assert.match(sums, new RegExp(`^${digest}  Apex-AdBlocker\\.zip$`, 'm'));
   } finally {
     fs.rmSync(outDir, { recursive: true, force: true });
   }
@@ -80,6 +80,6 @@ test('README prowadzi użytkownika do Releases, a szczegóły są w docs/INSTALL
   assert.match(readme, /releases\/latest/);
   assert.match(readme, /Załaduj rozpakowane/);
   assert.match(readme, /docs\/INSTALLATION\.md/);
-  assert.match(install, /nie usuwaj ani nie przenoś folderu `ChromeBlock`/i);
+  assert.match(install, /nie usuwaj ani nie przenoś folderu `Apex-AdBlocker`/i);
   assert.match(install, /SHA256SUMS\.txt/);
 });

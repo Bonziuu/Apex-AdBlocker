@@ -32,24 +32,25 @@ function readZip(buf) {
 }
 
 test('package:store: ZIP ma manifest.json w root i tylko pliki rozszerzenia', () => {
-  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-store-'));
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-store-'));
   try {
     const r = packageStore({ outDir });
-    assert.equal(r.zipName, `ChromeBlock-WebStore-${r.version}.zip`);
+    assert.equal(r.zipName, `Apex-AdBlocker-WebStore-${r.version}.zip`);
     assert.ok(fs.existsSync(r.zipPath));
-    assert.ok(!fs.existsSync(path.join(outDir, 'ChromeBlock-dev.zip')));
+    assert.ok(!fs.existsSync(path.join(outDir, 'Apex-AdBlocker-dev.zip')));
 
     const zip = readZip(fs.readFileSync(r.zipPath));
     assert.ok(zip.has('manifest.json'), 'manifest.json musi być w katalogu głównym ZIP-a');
     assert.ok(zip.has('THIRD_PARTY_NOTICES.md'));
     assert.ok(!zip.has('START-HERE.txt'));
-    assert.ok(![...zip.keys()].some((name) => name.startsWith('ChromeBlock/')));
+    assert.ok(![...zip.keys()].some((name) => name.startsWith('Apex-AdBlocker/')));
 
     for (const name of zip.keys()) {
       assert.doesNotMatch(name, /(^|\/)(tools|tests|docs|node_modules|\.git|dist)(\/|$)/, name);
     }
 
     const manifest = JSON.parse(zip.get('manifest.json').toString('utf8'));
+    assert.equal(manifest.name, 'Apex AdBlocker');
     assert.equal(manifest.version, r.version);
     assert.equal(manifest.manifest_version, 3);
   } finally {
@@ -58,8 +59,8 @@ test('package:store: ZIP ma manifest.json w root i tylko pliki rozszerzenia', ()
 });
 
 test('package:store: build jest deterministyczny', () => {
-  const a = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-store-a-'));
-  const b = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-store-b-'));
+  const a = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-store-a-'));
+  const b = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-store-b-'));
   try {
     const ra = packageStore({ outDir: a });
     const rb = packageStore({ outDir: b });

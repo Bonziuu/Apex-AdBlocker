@@ -64,7 +64,6 @@ test('instalacja: strona powitalna nie zmienia stałego zestawu list', async () 
 
 test('brak nowych uprawnień; strona w paczce; bez telemetrii i bez dodatkowego profilu użytkownika', () => {
   const m = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
-  // onboarding nie dodaje uprawnień: zestaw jest stały (późniejsze zmiany: declarativeNetRequestFeedback → activeTab, bez webNavigation)
   assert.deepEqual(m.permissions, ['activeTab', 'declarativeNetRequest', 'scripting', 'storage']);
   assert.deepEqual(m.host_permissions, ['<all_urls>']);
   assert.equal(m.optional_permissions, undefined);
@@ -73,8 +72,8 @@ test('brak nowych uprawnień; strona w paczce; bez telemetrii i bez dodatkowego 
   assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|sendBeacon|WebSocket|chrome\.storage/);
   const html = fs.readFileSync(path.join(ROOT, 'welcome/welcome.html'), 'utf8');
   assert.doesNotMatch(html, /<script[^>]+src="https?:|<link[^>]+href="https?:/, 'bez zasobów z sieci');
-  for (const t of ['ChromeBlock', 'lokalnie', 'Zacznij korzystać', 'Otwórz ustawienia', 'wyłącz na niej ochronę']) assert.match(html, new RegExp(t), t);
-  assert.match(html, /ChromeBlock nie wysyła Twoich danych ani telemetrii\./, 'precyzyjne sformułowanie o danych');
+  for (const t of ['Apex AdBlocker', 'lokalnie', 'Zacznij korzystać', 'Otwórz ustawienia', 'wyłącz na niej ochronę']) assert.match(html, new RegExp(t), t);
+  assert.match(html, /Apex AdBlocker nie wysyła Twoich danych ani telemetrii\./, 'precyzyjne sformułowanie o danych');
   assert.doesNotMatch(html, /niczego nie wysyła|żadnych danych/, 'bez zbyt absolutnych sformułowań');
   assert.doesNotMatch(html, /\b(Pro|Premium|subskrypcj|licencj|zaloguj|konto)\b/i, 'bez płatnych funkcji i kont');
 });

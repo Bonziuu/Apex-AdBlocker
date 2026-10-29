@@ -1,10 +1,10 @@
-# ChromeBlock — technical overview
+# Apex AdBlocker — technical overview
 
-Ten dokument opisuje techniczne założenia ChromeBlocka bez wchodzenia w historię kolejnych eksperymentów produktu.
+Ten dokument opisuje techniczne założenia Apex AdBlocker bez wchodzenia w historię kolejnych eksperymentów produktu.
 
 ## Architektura
 
-ChromeBlock jest rozszerzeniem Manifest V3. Główne warstwy:
+Apex AdBlocker jest rozszerzeniem Manifest V3. Główne warstwy:
 
 - `background.js`, `background/` — service worker, stan rozszerzenia, synchronizacja reguł i diagnostyka,
 - `shared/parser.js` — parser obsługiwanego podzbioru składni ABP/uBO,
@@ -18,7 +18,7 @@ ChromeBlock jest rozszerzeniem Manifest V3. Główne warstwy:
 
 Filtry sieciowe są kompilowane do reguł `declarativeNetRequest`.
 
-Parser obsługuje tylko semantykę, którą ChromeBlock potrafi odwzorować poprawnie w MV3. Konstrukcje nieobsługiwane są pomijane zamiast wykonywane częściowo.
+Parser obsługuje tylko semantykę, którą Apex AdBlocker potrafi odwzorować poprawnie w MV3. Konstrukcje nieobsługiwane są pomijane zamiast wykonywane częściowo.
 
 To samo podejście jest stosowane w scriptletach: nieznany scriptlet albo nieobsługiwany wariant argumentów nie jest uruchamiany.
 
@@ -37,7 +37,7 @@ Ogólne selektory są dobierane na podstawie tokenów z aktualnego DOM, zamiast 
 
 ## Scriptlety
 
-ChromeBlock ma własne implementacje wybranych scriptletów używanych przez upstreamowe listy filtrów.
+Apex AdBlocker ma własne implementacje wybranych scriptletów używanych przez upstreamowe listy filtrów.
 
 Build generuje raport zgodności:
 
@@ -65,11 +65,11 @@ Dodatkowa warstwa `youtube/` odpowiada za:
 - lokalną diagnostykę odtwarzacza,
 - raporty per karta/ramka z wygasaniem i czyszczeniem po nawigacji.
 
-Jeżeli po aktualizacji list pojawi się nowy krytyczny filtr YouTube, którego ChromeBlock nie rozumie, build może zostać zatrzymany zamiast wypuścić niezweryfikowaną zmianę.
+Jeżeli po aktualizacji list pojawi się nowy krytyczny filtr YouTube, którego Apex AdBlocker nie rozumie, build może zostać zatrzymany zamiast wypuścić niezweryfikowaną zmianę.
 
 ## Prywatność i diagnostyka
 
-ChromeBlock nie ma telemetrii ani backendu.
+Apex AdBlocker nie ma telemetrii ani backendu.
 
 Stan diagnostyczny jest lokalny. Raport eksportowany przez użytkownika jest sanityzowany z danych takich jak pełne URL-e, cookies, tokeny, adresy e-mail i identyfikatory filmów.
 
@@ -81,6 +81,7 @@ Główne komendy:
 npm test
 npm run check
 npm run package:dev
+npm run package:store
 ```
 
 Projekt korzysta z:
@@ -103,10 +104,12 @@ Szczegóły:
 
 `npm run package:dev` tworzy paczkę zawierającą wyłącznie pliki potrzebne przez rozszerzenie. Testy, dokumentacja developerska, lokalne wrappery i inne narzędzia nie trafiają do ZIP-a.
 
+`npm run package:store` tworzy osobny ZIP pod Chrome Web Store z `manifest.json` w katalogu głównym.
+
 ## Znane ograniczenia
 
 - Manifest V3 nie daje tych samych możliwości co klasyczne rozszerzenia oparte o `webRequest` blocking.
-- ChromeBlock nie implementuje całego uBO/ABP.
+- Apex AdBlocker nie implementuje całego uBO/ABP.
 - część zaawansowanych filtrów proceduralnych i scriptletów nie jest wspierana,
 - filtrowanie HTML i niektóre modyfikacje nagłówków nie są dostępne w obecnej architekturze,
 - strony mogą wykrywać obecność blokera,

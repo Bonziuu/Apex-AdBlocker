@@ -1,4 +1,4 @@
-// Kopia ustawień w prawdziwym Chromium z ChromeBlock: eksport do pliku przez UI, import przez UI,
+// Kopia ustawień w prawdziwym Chromium z Apex AdBlocker: eksport do pliku przez UI, import przez UI,
 // podsumowanie, odświeżenie UI Opcji, uszkodzony plik bez zmian. Bez sieci. Brak Playwright/Chromium → SKIP.
 
 import test from 'node:test';
@@ -15,7 +15,7 @@ try { exe = chromium ? chromium.executablePath() : ''; } catch { /* */ }
 const skip = !chromium || !exe || !fs.existsSync(exe) ? 'Playwright/Chromium niedostępne' : false;
 
 test('UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez zmian', { skip, timeout: 240_000 }, async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-backup-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-adblocker-backup-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });
@@ -43,7 +43,7 @@ test('UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez
 
     // eksport przez UI → plik
     const [download] = await Promise.all([opt.waitForEvent('download'), opt.click('#exportSettings')]);
-    assert.match(download.suggestedFilename(), /^chromeblock-ustawienia-\d{4}-\d{2}-\d{2}\.json$/);
+    assert.match(download.suggestedFilename(), /^apex-adblocker-ustawienia-\d{4}-\d{2}-\d{2}\.json$/);
     const file = path.join(tmp, 'kopia.json');
     await download.saveAs(file);
     const backup = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -88,7 +88,7 @@ test('UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez
 });
 
 test('UI: niepełny rollback nie twierdzi, że przywrócono ustawienia; pokazuje ostrzeżenie i prowadzi do Diagnostyki', { skip, timeout: 120_000 }, async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-backup-ui-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-adblocker-backup-ui-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ChromeBlock – ustawienia</title>
+  <title>Apex AdBlocker – ustawienia</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
     <header>
       <img src="../icons/icon48.png" alt="" width="36" height="36">
       <div>
-        <h1>ChromeBlock</h1>
+        <h1>Apex AdBlocker</h1>
         <div class="muted">Bloker reklam dla Chrome · wersja <span id="version"></span></div>
       </div>
     </header>
@@ -25,7 +25,7 @@
 
     <section id="protection" class="panel">
       <h2 class="mode-h">Ochrona</h2>
-      <p class="muted">ChromeBlock blokuje reklamy, śledzenie i złośliwe strony – zawsze tym samym zestawem list, bez wybierania poziomu ochrony. YouTube Protection działa razem z listą reklam. Na wybranych stronach ochronę wyłączysz przyciskiem w okienku wtyczki albo w zakładce „Wyłączone strony”.</p>
+      <p class="muted">Apex AdBlocker blokuje reklamy, śledzenie i złośliwe strony – zawsze tym samym zestawem list, bez wybierania poziomu ochrony. YouTube Protection działa razem z listą reklam. Na wybranych stronach ochronę wyłączysz przyciskiem w okienku wtyczki albo w zakładce „Wyłączone strony”.</p>
       <div id="listContainer" class="cards"></div>
     </section>
 
@@ -50,7 +50,7 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
     </section>
 
     <section id="sites" class="panel" hidden>
-      <p class="muted">Na tych stronach (i ich subdomenach) ChromeBlock nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki.</p>
+      <p class="muted">Na tych stronach (i ich subdomenach) Apex AdBlocker nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki.</p>
       <textarea id="disabledSites" spellcheck="false" placeholder="np. example.com"></textarea>
       <div class="bar">
         <button id="saveSites" class="primary">Zapisz</button>
@@ -62,7 +62,7 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       <details id="backup" class="more-section">
         <summary><h2>Kopia ustawień</h2></summary>
         <div class="more-body">
-          <p class="muted">Zapisz ustawienia ChromeBlock do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: wyłączone strony (same nazwy domen) i Moje filtry – listy ochrony są stałe. Kopie ze starszych wersji ChromeBlock też da się zaimportować. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
+          <p class="muted">Zapisz ustawienia Apex AdBlocker do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: wyłączone strony (same nazwy domen) i Moje filtry – listy ochrony są stałe. Kopie ze starszych wersji ChromeBlock też da się zaimportować. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
           <div class="bar">
             <button id="exportSettings" class="primary">Eksportuj ustawienia</button>
             <button id="importSettings" class="secondary">Importuj ustawienia</button>
@@ -81,7 +81,7 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       <details id="diag" class="more-section">
         <summary><h2>Diagnostyka</h2></summary>
         <div class="more-body">
-          <p class="muted">Stan silników ChromeBlock. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce. Raport diagnostyczny nie zawiera adresów stron, identyfikatorów filmów, ciasteczek ani danych konta – możesz go bezpiecznie wkleić do rozmowy.</p>
+          <p class="muted">Stan silników Apex AdBlocker. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce. Raport diagnostyczny nie zawiera adresów stron, identyfikatorów filmów, ciasteczek ani danych konta – możesz go bezpiecznie wkleić do rozmowy.</p>
           <textarea id="reportPreview" class="report" readonly hidden></textarea>
           <div class="bar">
             <button id="refreshDiag" class="primary">Odśwież</button>
@@ -109,12 +109,12 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
             <div id="scriptletCompat" class="diag-block muted"></div>
 
             <h3>Start rozszerzenia</h3>
-            <p class="muted small">Czas etapów ostatniej instalacji, aktualizacji lub przeładowania ChromeBlock (od uruchomienia service workera).</p>
+            <p class="muted small">Czas etapów ostatniej instalacji, aktualizacji lub przeładowania Apex AdBlocker (od uruchomienia service workera).</p>
             <table class="diag" id="startupProfile"></table>
 
             <h3>Pomiary wydajności</h3>
             <label class="check"><input type="checkbox" id="devPerf"> Mierz pracę filtrów kosmetycznych i scriptletów na stronach (domyślnie wyłączone)</label>
-            <p class="muted small">Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu ChromeBlock (bez czasu oryginalnej funkcji strony). Bez adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty.</p>
+            <p class="muted small">Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu Apex AdBlocker (bez czasu oryginalnej funkcji strony). Bez adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty.</p>
             <div class="bar"><button id="resetPerf" class="secondary">Resetuj pomiary</button></div>
             <table class="diag" id="perf"></table>
             <h3>Najdroższe scriptlety</h3>
@@ -126,14 +126,14 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       <details id="about" class="more-section">
         <summary><h2>O wtyczce</h2></summary>
         <div class="more-body">
-          <p>ChromeBlock działa w Manifest V3 (MV3) i blokuje na trzech poziomach:</p>
+          <p>Apex AdBlocker działa w Manifest V3 (MV3) i blokuje na trzech poziomach:</p>
           <ul>
             <li><b>Sieć</b> – żądania reklam i skryptów śledzących są blokowane regułami declarativeNetRequest.</li>
             <li><b>Ukrywanie elementów</b> – puste ramki i kontenery po reklamach są ukrywane kosmetycznie (arkusze stylów).</li>
-            <li><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, ChromeBlock wykonuje tylko obsługiwane warianty scriptletów; pozostałe pomija.</li>
+            <li><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, Apex AdBlocker wykonuje tylko obsługiwane warianty scriptletów; pozostałe pomija.</li>
           </ul>
           <h3>Ograniczenia</h3>
-          <p>ChromeBlock obsługuje podzbiór składni filtrów uBO/ABP. Części filtrów nie da się wyrazić w MV3 (np. filtrowanie HTML, nagłówki CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma implementacji, więc na niektórych stronach skuteczność może być niższa niż w uBlock Origin. ChromeBlock nie obiecuje niewykrywalności przez strony.</p>
+          <p>Apex AdBlocker obsługuje podzbiór składni filtrów uBO/ABP. Części filtrów nie da się wyrazić w MV3 (np. filtrowanie HTML, nagłówki CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma implementacji, więc na niektórych stronach skuteczność może być niższa niż w uBlock Origin. Apex AdBlocker nie obiecuje niewykrywalności przez strony.</p>
           <h3>Listy filtrów</h3>
           <p>EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.</p>
           <div id="stats" class="muted"></div>

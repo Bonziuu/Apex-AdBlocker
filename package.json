@@ -1,7 +1,7 @@
 {
-  "name": "chromeblock",
+  "name": "apex-adblocker",
   "private": true,
-  "description": "ChromeBlock – bloker reklam dla Chrome (Manifest V3). Narzędzia deweloperskie: build reguł, audyt scriptletów, testy.",
+  "description": "Apex AdBlocker – lekki bloker reklam dla Chrome (Manifest V3). Narzędzia deweloperskie: build reguł, audyt scriptletów, testy.",
   "type": "module",
   "engines": {
     "node": ">=20"

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// ChromeBlock – czysta paczka rozszerzenia (lokalnie, nie commitowana).
+// Apex AdBlocker – czysta paczka rozszerzenia (lokalnie, nie commitowana).
 //
 //   npm run package:dev
 //
 // Tworzy:
-//   dist/ChromeBlock/        dokładnie pliki rozszerzenia (EXTENSION_ENTRIES) – do „Załaduj rozpakowane”
-//   dist/ChromeBlock-dev.zip te same pliki (folder ChromeBlock/) w deterministycznym ZIP-ie
+//   dist/Apex-AdBlocker/        dokładnie pliki rozszerzenia (EXTENSION_ENTRIES) – do „Załaduj rozpakowane”
+//   dist/Apex-AdBlocker-dev.zip te same pliki (folder Apex-AdBlocker/) w deterministycznym ZIP-ie
 //
 // Bez instalatora, testera i dokumentacji. Bez zależności: ZIP jest zapisywany przez node:zlib.
 // Z packageDev() korzysta też tools/perf-baseline.mjs (rozmiar paczki).
@@ -17,8 +17,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { EXTENSION_ENTRIES } from './chromium-smoke.mjs';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const PACKAGE_NAME = 'ChromeBlock';
-export const ZIP_NAME = 'ChromeBlock-dev.zip';
+export const PACKAGE_NAME = 'Apex-AdBlocker';
+export const ZIP_NAME = 'Apex-AdBlocker-dev.zip';
 
 // stała data w ZIP → powtarzalna paczka
 const ZIP_DATE = new Date(Date.UTC(2026, 0, 1, 0, 0, 0));
@@ -112,8 +112,8 @@ export function createZip(entries) {
     const crc = crc32(e.data);
     const local = Buffer.alloc(30);
     local.writeUInt32LE(0x04034b50, 0);
-    local.writeUInt16LE(20, 4);              // wersja do rozpakowania
-    local.writeUInt16LE(0x0800, 6);          // flaga: nazwy w UTF-8
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(0x0800, 6);
     local.writeUInt16LE(useDeflate ? 8 : 0, 8);
     local.writeUInt16LE(time, 10);
     local.writeUInt16LE(date, 12);
@@ -149,8 +149,6 @@ export function createZip(entries) {
   return Buffer.concat([...locals, ...centrals, end]);
 }
 
-// --- Paczka -------------------------------------------------------------------
-
 /** Buduje dist/ (czysty): katalog rozszerzenia i ZIP z samym rozszerzeniem. Zwraca opis paczki. */
 export function packageDev({ root = ROOT, outDir = path.join(root, 'dist') } = {}) {
   fs.rmSync(outDir, { recursive: true, force: true });
@@ -174,10 +172,10 @@ export function packageDev({ root = ROOT, outDir = path.join(root, 'dist') } = {
 function main() {
   const r = packageDev();
   const rel = (p) => path.relative(ROOT, p).split(path.sep).join('/');
-  console.log(`✓ ChromeBlock ${r.version}: ${r.files} plików rozszerzenia`);
+  console.log(`✓ Apex AdBlocker ${r.version}: ${r.files} plików rozszerzenia`);
   console.log(`  ${rel(r.extDir)}/`);
   console.log(`  ${rel(r.zipPath)} (${(r.zipBytes / 1024 / 1024).toFixed(1)} MB, tylko rozszerzenie)`);
-  console.log('Sprawdzenie w Chromium: node tools/chromium-smoke.mjs --dir dist/ChromeBlock');
+  console.log('Sprawdzenie w Chromium: node tools/chromium-smoke.mjs --dir dist/Apex-AdBlocker');
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main();

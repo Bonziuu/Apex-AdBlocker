@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ChromeBlock – pełna kontrola przed commitem / po aktualizacji list:
+// Apex AdBlocker – pełna kontrola przed commitem / po aktualizacji list:
 //   1. walidacja buildu: czy wygenerowane pliki (rules/, data/, scriptlets/,
 //      manifest) odpowiadają aktualnym listom i kodowi,
 //   2. walidacja zgodności YouTube (strict),
@@ -21,7 +21,7 @@ const step = (name) => console.log(`\n━━ ${name} ${'━'.repeat(Math.max(0, 
 
 // 1. Build w katalogu tymczasowym i porównanie z repozytorium
 step('Walidacja buildu');
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-check-'));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-adblocker-check-'));
 fs.copyFileSync(path.join(ROOT, 'manifest.json'), path.join(tmp, 'manifest.json'));
 buildAll({ outDir: tmp });
 validateCompatibility({ outDir: tmp });
@@ -72,7 +72,7 @@ if (process.env.CHROMEBLOCK_SMOKE === '0') {
 } else {
   const smoke = await runSmoke();
   if (smoke.status === 'SKIP') console.log(`${SKIP_MESSAGE} (${smoke.reasons.join('; ')})`);
-  else if (smoke.status === 'PASS') console.log('✓ ChromeBlock załadowany w Chromium: service worker działa, health bez ERROR');
+  else if (smoke.status === 'PASS') console.log('✓ Apex AdBlocker załadowany w Chromium: service worker działa, health bez ERROR');
   else {
     failures.push('chromium-smoke');
     console.log('✗ Chromium smoke test: FAIL');

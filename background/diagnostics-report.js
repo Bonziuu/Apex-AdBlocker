@@ -1,4 +1,4 @@
-// ChromeBlock – raport diagnostyczny do skopiowania (opcje → Diagnostyka).
+// Apex AdBlocker – raport diagnostyczny do skopiowania (opcje → Diagnostyka).
 //
 // Raport jest budowany lokalnie i NIGDZIE nie jest wysyłany. Celowo NIE zawiera:
 // adresów stron, historii, identyfikatorów filmów, ciasteczek, tokenów, loginów,
@@ -31,19 +31,7 @@ const STATUS_LABEL = { ok: 'OK', warning: 'WARNING', error: 'ERROR', unknown: 'U
 const COMPONENT_LABEL = { network: 'Network', cosmetic: 'Cosmetic', scriptlets: 'Scriptlets', filters: 'Filters', youtube: 'YouTube' };
 const iso = (t) => (typeof t === 'number' && Number.isFinite(t) ? new Date(t).toISOString() : null);
 
-/**
- * Buduje raport (obiekt + tekst).
- * @param {object} input
- * @param {string} input.version        wersja z manifestu (manifest.version)
- * @param {number} input.manifestVersion
- * @param {number} input.now
- * @param {string[]} input.enabledLists
- * @param {{components:object, sync:object, errors:Array}} input.health
- * @param {object|null} input.youtubeCompat   data/youtube-compat.json
- * @param {object|null} input.scriptletCompat data/scriptlet-compat.json
- * @param {object|null} input.player          zagregowany raport odtwarzacza
- * @param {boolean} input.devPerf
- */
+/** Buduje raport (obiekt + tekst). */
 export function buildDiagnosticsReport(input) {
   const h = input.health || { components: {}, sync: {}, errors: [] };
   const components = {};
@@ -75,7 +63,7 @@ export function buildDiagnosticsReport(input) {
   } : null;
 
   const data = {
-    product: 'ChromeBlock',
+    product: 'Apex AdBlocker',
     version: String(input.version || ''),
     manifestVersion: input.manifestVersion,
     generatedAt: iso(input.now),
@@ -96,7 +84,7 @@ export function buildDiagnosticsReport(input) {
   };
 
   const lines = [];
-  lines.push('ChromeBlock Diagnostics');
+  lines.push('Apex AdBlocker Diagnostics');
   lines.push(`Version: ${data.version} (manifest v${data.manifestVersion})`);
   lines.push(`Generated: ${data.generatedAt}`);
   lines.push(`Enabled lists: ${data.enabledLists.join(', ') || 'none'}`);
@@ -121,7 +109,7 @@ export function buildDiagnosticsReport(input) {
   lines.push('Player:');
   lines.push(player ? `  ${player.status}${player.page ? ` (${player.page}, ${player.frame})` : ''}${player.reasons.length ? ` – ${player.reasons.join('; ')}` : ''}` : '  no recent report');
   lines.push('');
-  lines.push('Recent ChromeBlock errors:');
+  lines.push('Recent Apex AdBlocker errors:');
   if (!errors.length) lines.push('  none');
   for (const e of errors) lines.push(`  ${e.at} [${e.component}] ${e.message}`);
   lines.push('');
