@@ -1,5 +1,6 @@
 // CI (GitHub Actions): workflow uruchamia się na każdy push i PR, instaluje zależności
-// i Chromium, uruchamia `npm test` i `npm run check` oraz nie dopuszcza pominiętych testów.
+// i Chromium, uruchamia `npm test` i `npm run check`, buduje paczkę Web Store oraz
+// udostępnia ją wyłącznie jako artefakt joba (bez automatycznej publikacji wydania/sklepu).
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,7 +16,7 @@ test('CI: push + pull_request, tylko odczyt repo, limit czasu', () => {
   assert.match(t, /^permissions:\n {2}contents: read$/m);
   assert.match(t, /timeout-minutes: \d+/);
   assert.doesNotMatch(t, /secrets\./, 'bez sekretów');
-  assert.doesNotMatch(t, /git push|gh release|upload-artifact|package:dev/, 'CI nic nie publikuje');
+  assert.doesNotMatch(t, /git push|gh release|chromewebstore|webstore.*publish/i, 'CI nie publikuje wydania ani rozszerzenia');
 });
 
 test('CI: zależności, Chromium, npm test i npm run check w tej kolejności; Node zgodny z engines', () => {
@@ -37,4 +38,13 @@ test('CI: pominięte testy i brak smoke testu w Chromium kończą job błędem',
   const smoke = fs.readFileSync(path.join(ROOT, 'tools/chromium-smoke.mjs'), 'utf8');
   const msg = /SKIP_MESSAGE = '([^']+)'/.exec(smoke)[1];
   assert.ok(t.includes(`grep -q '${msg}' check.log`), 'CI szuka dokładnego komunikatu SKIP smoke testu');
+});
+
+test('CI: po testach buduje i zachowuje wyłącznie paczkę Apex do Chrome Web Store', () => {
+  const t = fs.readFileSync(FILE, 'utf8');
+  assert.match(t, /- name: Paczka Chrome Web Store\n\s+run: npm run package:store/);
+  assert.match(t, /uses: actions\/upload-artifact@v4/);
+  assert.match(t, /name: Apex-AdBlocker-WebStore/);
+  assert.match(t, /path: dist\/Apex-AdBlocker-WebStore-\*\.zip/);
+  assert.match(t, /if-no-files-found: error/);
 });
