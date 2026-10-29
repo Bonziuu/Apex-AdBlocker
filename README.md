@@ -1,26 +1,28 @@
-# ChromeBlock
+# Apex AdBlocker
 
-<img src="icons/icon128.png" alt="ChromeBlock" width="96">
+<img src="icons/icon128.png" alt="Apex AdBlocker" width="96">
 
-**ChromeBlock** to bloker reklam i śledzenia dla Google Chrome oparty o Manifest V3 i własny silnik filtrów.
+**Apex AdBlocker** to lekki bloker reklam i śledzenia dla Google Chrome oparty o Manifest V3 i własny silnik filtrów.
 
 > **Status:** stabilne wydanie. Źródłem numeru wersji jest `manifest.json`.
 
 ## Instalacja
 
-Najprościej zainstalować ChromeBlock z gotowej paczki:
+Najprościej zainstalować Apex AdBlocker z gotowej paczki:
 
-**[Pobierz najnowsze wydanie ChromeBlock](https://github.com/Bonziuu/Chromeblock/releases/latest)**
+**[Pobierz najnowsze wydanie Apex AdBlocker](https://github.com/Bonziuu/Chromeblock/releases/latest)**
 
-1. w sekcji **Assets** pobierz `ChromeBlock-<wersja>.zip`,
+1. w sekcji **Assets** pobierz `Apex-AdBlocker-<wersja>.zip`,
 2. rozpakuj ZIP do stałego miejsca na dysku,
 3. otwórz `chrome://extensions`,
 4. włącz **Tryb dewelopera**,
-5. kliknij **Załaduj rozpakowane** i wskaż folder `ChromeBlock` z paczki.
+5. kliknij **Załaduj rozpakowane** i wskaż folder `Apex-AdBlocker` z paczki.
 
-> Po instalacji nie usuwaj ani nie przenoś folderu `ChromeBlock` — Chrome korzysta z niego podczas działania rozszerzenia.
+> Po instalacji nie usuwaj ani nie przenoś folderu `Apex-AdBlocker` — Chrome korzysta z niego podczas działania rozszerzenia.
 
 Pełna instrukcja instalacji, aktualizacji i usuwania: [docs/INSTALLATION.md](docs/INSTALLATION.md).
+
+Docelowa dystrybucja przez Chrome Web Store korzysta z osobnej paczki generowanej komendą `npm run package:store`.
 
 ## Najważniejsze funkcje
 
@@ -33,7 +35,7 @@ Pełna instrukcja instalacji, aktualizacji i usuwania: [docs/INSTALLATION.md](do
 - lokalna diagnostyka bez telemetrii, kont i backendu,
 - jasny i ciemny motyw interfejsu.
 
-ChromeBlock używa jednego stałego zestawu ochrony: reklamy, prywatność/śledzenie i bezpieczeństwo. Produkt nie ma płatnych funkcji, kont ani subskrypcji.
+Apex AdBlocker używa jednego stałego zestawu ochrony: reklamy, prywatność/śledzenie i bezpieczeństwo. Produkt nie ma płatnych funkcji, kont ani subskrypcji.
 
 ## Jak to działa
 
@@ -64,9 +66,9 @@ npm run package:store
 
 `npm run check` sprawdza m.in. aktualność wygenerowanych artefaktów, zgodność krytycznych filtrów YouTube, audyt scriptletów, testy oraz smoke test rozszerzenia w Chromium.
 
-`npm run package:release` tworzy paczkę dla użytkownika z plikiem `START-HERE.txt`, wersjonowanym ZIP-em, stałą kopią `ChromeBlock.zip` i sumami SHA-256.
+`npm run package:release` tworzy paczkę dla użytkownika z plikiem `START-HERE.txt`, wersjonowanym ZIP-em, stałą kopią `Apex-AdBlocker.zip` i sumami SHA-256.
 
-`npm run package:store` tworzy osobny ZIP gotowy do uploadu w Chrome Web Store: `manifest.json` znajduje się bezpośrednio w katalogu głównym archiwum, bez folderu nadrzędnego i bez plików instalacyjnych.
+`npm run package:store` tworzy osobny `Apex-AdBlocker-WebStore-<wersja>.zip` gotowy do uploadu w Chrome Web Store: `manifest.json` znajduje się bezpośrednio w katalogu głównym archiwum, bez folderu nadrzędnego i bez plików instalacyjnych.
 
 Dodatkowe materiały:
 
@@ -78,7 +80,7 @@ Dodatkowe materiały:
 
 ## Prywatność
 
-ChromeBlock nie ma telemetrii, analityki, kont ani własnego backendu. Ustawienia i diagnostyka są przechowywane lokalnie. Rozszerzenie nie pobiera ani nie wykonuje zdalnego kodu.
+Apex AdBlocker nie ma telemetrii, analityki, kont ani własnego backendu. Ustawienia i diagnostyka są przechowywane lokalnie. Rozszerzenie nie pobiera ani nie wykonuje zdalnego kodu.
 
 Raport diagnostyczny jest sanityzowany i nie powinien zawierać historii, pełnych URL-i, identyfikatorów filmów, cookies, tokenów ani danych logowania.
 
@@ -90,13 +92,13 @@ Po mojej stronie pozostawały wymagania produktu, decyzje funkcjonalne i archite
 
 ## Ograniczenia
 
-ChromeBlock nie jest uBlock Origin i nie implementuje całej składni uBO/ABP. Nieobsługiwane konstrukcje są pomijane zamiast wykonywane częściowo. Manifest V3 nakłada też ograniczenia, których rozszerzenie nie próbuje obchodzić.
+Apex AdBlocker nie jest uBlock Origin i nie implementuje całej składni uBO/ABP. Nieobsługiwane konstrukcje są pomijane zamiast wykonywane częściowo. Manifest V3 nakłada też ograniczenia, których rozszerzenie nie próbuje obchodzić.
 
 Strony mogą wykrywać blokowanie reklam, a skuteczność filtrów zależy również od zmian po stronie serwisów i aktualności upstreamowych list.
 
 ## Źródła filtrów i licencje
 
-Wbudowane listy filtrów pochodzą m.in. z EasyList/EasyPrivacy, uAssets oraz Polskich Filtrów i zachowują własne warunki licencyjne. Szczegóły, źródła i stan audytu znajdują się w [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) i [docs/filter-provenance.md](docs/filter-provenance.md).
+Wbudowane listy filtrów pochodzą m.in. z EasyList/EasyPrivacy, uAssets oraz Polskich Filtrów i zachowują własne warunki licencyjne. Szczegóły i źródła znajdują się w [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) i [docs/filter-provenance.md](docs/filter-provenance.md).
 
 Repozytorium nie deklaruje obecnie jednej licencji obejmującej cały projekt i wszystkie dane third-party.
 
@@ -115,10 +117,10 @@ npm run update-lists
 npm run build
 ```
 
-Do lokalnego testowania jako rozszerzenie rozpakowane można wskazać katalog repozytorium zawierający `manifest.json`. Po `git pull` trzeba kliknąć **Odśwież** przy ChromeBlock w `chrome://extensions`, aby przeładować również service workera.
+Do lokalnego testowania jako rozszerzenie rozpakowane można wskazać katalog repozytorium zawierający `manifest.json`. Po `git pull` trzeba kliknąć **Odśwież** przy Apex AdBlocker w `chrome://extensions`, aby przeładować również service workera.
 
 `npm run package:dev` tworzy czystą paczkę developerską w `dist/`. `npm run package:release` tworzy gotowy bundle dla użytkownika, a `npm run package:store` tworzy ZIP do Chrome Web Store; narzędzia developerskie i testy nie trafiają do dystrybucji.
 
 ---
 
-ChromeBlock jest projektem niezależnym i nie jest powiązany z Google, uBlock Origin ani autorami upstreamowych list filtrów.
+Apex AdBlocker jest projektem niezależnym i nie jest powiązany z Google, uBlock Origin ani autorami upstreamowych list filtrów.
