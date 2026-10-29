@@ -1,14 +1,11 @@
 #!/usr/bin/env node
-// Ikony ChromeBlock: tarcza przecięta białym skosem, gradient „morski” (#22b8a8 → #0f7f8c).
+// Apex AdBlocker – ikony marki „Apex A”, gradient morski (#22b8a8 → #0f7f8c).
 // Jedno źródło (iconSvg) → tools/icons/*.svg (podgląd/edycja) i icons/icon{16,32,48,128}[-off].png.
 //
 //   npm run icons        generuje SVG i PNG (render w Chromium z Playwright, przezroczyste tło)
 //
-// Rozmiary:
-//   128 px – grafika ok. 96 px z przezroczystym marginesem (zalecenie Chrome Web Store),
-//   48 px  – grafika ok. 46 px,
-//   32/16 px – grafika prawie na cały kwadrat i grubszy skos, żeby był czytelny na pasku narzędzi.
-// Stan „wyłączony” (ochrona wyłączona na stronie): ta sama tarcza w szarym gradiencie.
+// Concept 1: stylizowane A / szczyt + czytelny symbol blokowania.
+// Stan „wyłączony” zachowuje ten sam znak w szarym gradiencie.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -17,42 +14,27 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const SIZES = Object.freeze([16, 32, 48, 128]);
 export const PALETTE = Object.freeze({
-  on: ['#22b8a8', '#0f7f8c'], // paleta 4 („morski”)
+  on: ['#22b8a8', '#0f7f8c'],
   off: ['#b3b5bd', '#8d9099'],
 });
 
-// tarcza w układzie 128 (x 18–110, y 8–120)
-const SHIELD = 'M64 8 L110 24 V60 C110 88 90 108 64 120 C38 108 18 88 18 60 V24 Z';
-const SHIELD_BOX = { x: 18, y: 8, w: 92, h: 112 };
-// wysokość grafiki w pikselach dla danego rozmiaru ikony
-const ART_HEIGHT = { 16: 15.5, 32: 31, 48: 46, 128: 96 };
-
-/** Skos: pas o kierunku (1,-1); `shift` = przesunięcie drugiej krawędzi (szerokość pasa ≈ shift·√2). */
-function cut(shift) {
-  return `M14 112 L106 20 L${106 + shift} ${20 + shift} L${14 + shift} ${112 + shift} Z`;
-}
-
-/** SVG ikony w danym rozmiarze. */
+/** SVG ikony „Apex A” w danym rozmiarze. */
 export function iconSvg(size, off = false) {
-  const art = ART_HEIGHT[size] || size * 0.75;
-  const units = (SHIELD_BOX.h * size) / art; // bok kwadratu w jednostkach układu tarczy
-  const x0 = SHIELD_BOX.x - (units - SHIELD_BOX.w) / 2;
-  const y0 = SHIELD_BOX.y - (units - SHIELD_BOX.h) / 2;
   const [c1, c2] = off ? PALETTE.off : PALETTE.on;
-  const shift = size <= 32 ? 15 : 12; // w małych rozmiarach szerszy skos
   const id = off ? 'off' : 'on';
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${round(x0)} ${round(y0)} ${round(units)} ${round(units)}">
+  const border = off ? '#dddddf' : '#d6ece9';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="g-${id}" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient>
-    <clipPath id="c-${id}"><path d="${SHIELD}"/></clipPath>
   </defs>
-  <path d="${SHIELD}" fill="url(#g-${id})"/>
-  <g clip-path="url(#c-${id})"><path d="${cut(shift)}" fill="#fff"/></g>
+  <rect x="7" y="7" width="114" height="114" rx="27" fill="#fff" stroke="${border}" stroke-width="2"/>
+  <path fill="url(#g-${id})" fill-rule="evenodd" d="M64 17 108 103H87L64 57 40 103H19L64 17Zm0 31-10 21h20L64 48Z"/>
+  <path d="M34 94C50 78 72 70 96 76" fill="none" stroke="url(#g-${id})" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="92" cy="84" r="18" fill="${c2}" fill-opacity="0.94" stroke="#fff" stroke-width="7"/>
+  <path d="M79 71 105 97" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
 </svg>
 `;
 }
-
-const round = (n) => Math.round(n * 100) / 100;
 
 /** Generuje SVG (tools/icons) i PNG (icons/). */
 export async function buildIcons({ outDir = path.join(ROOT, 'icons'), svgDir = path.join(ROOT, 'tools', 'icons') } = {}) {
@@ -80,6 +62,6 @@ export async function buildIcons({ outDir = path.join(ROOT, 'icons'), svgDir = p
 
 if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {
   const files = await buildIcons();
-  console.log(`✓ ikony: ${files.join(', ')}`);
+  console.log(`✓ ikony Apex AdBlocker: ${files.join(', ')}`);
   console.log('✓ źródła SVG: tools/icons/icon.svg, tools/icons/icon-off.svg');
 }
