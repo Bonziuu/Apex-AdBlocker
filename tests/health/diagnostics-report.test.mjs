@@ -59,7 +59,7 @@ const fullInput = () => ({
 
 test('buildDiagnosticsReport: zawiera dozwolone dane', () => {
   const { data, text } = buildDiagnosticsReport(fullInput());
-  assert.match(text, /^ChromeBlock Diagnostics/);
+  assert.match(text, /^Apex AdBlocker Diagnostics/);
   assert.match(text, /Version: 0\.2\.1 \(manifest v3\)/);
   assert.match(text, /Network: OK/);
   assert.match(text, /Cosmetic: WARNING/);
@@ -67,6 +67,7 @@ test('buildDiagnosticsReport: zawiera dozwolone dane', () => {
   assert.match(text, /Scriptlet compatibility:\n {2}90 \/ 100/);
   assert.match(text, /Player:\n {2}healthy \(watch, top\)/);
   assert.match(text, /Perf diagnostics: disabled/);
+  assert.equal(data.product, 'Apex AdBlocker');
   assert.deepEqual(data.enabledLists, ['ads', 'privacy', 'evilx']);
   assert.equal(data.recentErrors.length, 10, 'tylko 10 ostatnich błędów');
   assert.equal(data.generatedAt, '2026-10-21T12:00:00.000Z');
@@ -88,7 +89,7 @@ test('buildDiagnosticsReport: nieznany typ strony odtwarzacza → "other"; brak 
   const { text } = buildDiagnosticsReport({ version: '0.2.1', manifestVersion: 3, now: 0 });
   assert.match(text, /YouTube compatibility:\n {2}unknown/);
   assert.match(text, /Player:\n {2}no recent report/);
-  assert.match(text, /Recent ChromeBlock errors:\n {2}none/);
+  assert.match(text, /Recent Apex AdBlocker errors:\n {2}none/);
 });
 
 test('buildDiagnosticsReport: profil startu (tylko nazwy etapów i czasy)', () => {
