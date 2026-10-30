@@ -1,135 +1,77 @@
-# Apex AdBlocker
+<p align="center">
+  <img src="brand/apex-logo-512.png" alt="Apex AdBlocker" width="110">
+</p>
 
-<img src="brand/apex-logo-512.png" alt="Apex AdBlocker" width="96">
+<h1 align="center">Apex AdBlocker</h1>
 
-**Apex AdBlocker** to lekki bloker reklam i śledzenia dla Google Chrome oparty o Manifest V3 i własny silnik filtrów.
+<p align="center">
+  Lekki bloker reklam i śledzenia dla Chrome · bez konfiguracji · bez telemetrii<br>
+  <a href="#eng">ENG ↓</a>
+</p>
 
-> **Status:** stabilne wydanie. Źródłem numeru wersji jest `manifest.json`.
+<p align="center">
+  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest"><b>⬇ Pobierz najnowsze wydanie</b></a>
+</p>
 
-> **English:** Apex AdBlocker is a lightweight ad and tracker blocker for Chrome (Manifest V3) with its own filter engine. It works with no setup, has no telemetry, accounts or backend, and its interface is available in English and Polish. To install, download `Apex-AdBlocker-<version>.zip` from the [latest release](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest), extract it, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and select the `Apex-AdBlocker` folder. Privacy policy: [PRIVACY.md](PRIVACY.md).
+<p align="center">
+  <img src="store/screenshots/pl/1-ads-blocked.png" alt="Strona bez rozszerzenia i z Apex AdBlocker" width="820">
+</p>
+
+> **Status:** stabilne wydanie.
+
+## Co robi
+
+- 🛡️ **Blokuje reklamy, śledzenie i złośliwe strony** – od razu po instalacji
+- ▶️ **YouTube Protection** – z kontrolą zgodności filtrów przy każdym wydaniu
+- 🖱️ **Pełna kontrola** – wyłączanie ochrony na stronie jednym kliknięciem, „Ukryj element”, własne filtry
+- 🔒 **Prywatność** – bez telemetrii, kont i serwera ([polityka prywatności](PRIVACY.md))
+- 🌍 **Po polsku i po angielsku** – język według przeglądarki
+
+<table>
+  <tr>
+    <td><img src="store/screenshots/pl/2-popup.png" alt="Okienko rozszerzenia ze stanem ochrony" width="400"></td>
+    <td><img src="store/screenshots/pl/3-hide-element.png" alt="Narzędzie Ukryj element" width="400"></td>
+  </tr>
+</table>
 
 ## Instalacja
 
-Najprościej zainstalować Apex AdBlocker z gotowej paczki:
+1. Pobierz `Apex-AdBlocker-<wersja>.zip` z [najnowszego wydania](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) i rozpakuj go w stałym miejscu na dysku.
+2. Otwórz `chrome://extensions` i włącz **Tryb dewelopera**.
+3. Kliknij **Załaduj rozpakowane** i wskaż folder `Apex-AdBlocker`.
 
-**[Pobierz najnowsze wydanie Apex AdBlocker](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest)**
+Aktualizacja i usuwanie: [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
-1. w sekcji **Assets** pobierz `Apex-AdBlocker-<wersja>.zip`,
-2. rozpakuj ZIP do stałego miejsca na dysku,
-3. otwórz `chrome://extensions`,
-4. włącz **Tryb dewelopera**,
-5. kliknij **Załaduj rozpakowane** i wskaż folder `Apex-AdBlocker` z paczki.
-
-> Po instalacji nie usuwaj ani nie przenoś folderu `Apex-AdBlocker` — Chrome korzysta z niego podczas działania rozszerzenia.
-
-Pełna instrukcja instalacji, aktualizacji i usuwania: [docs/INSTALLATION.md](docs/INSTALLATION.md).
-
-Docelowa dystrybucja przez Chrome Web Store korzysta z osobnej paczki generowanej komendą `npm run package:store`.
-
-## Najważniejsze funkcje
-
-- blokowanie żądań sieciowych przez `declarativeNetRequest`,
-- filtry kosmetyczne i proceduralne,
-- własna warstwa zgodności scriptletów uBO z zasadą *fail closed*,
-- YouTube Protection z kontrolą zgodności filtrów podczas buildu,
-- wyłączanie ochrony per strona i opcjonalne automatyczne odświeżenie,
-- „Ukryj element” i własne filtry użytkownika,
-- lokalna diagnostyka bez telemetrii, kont i backendu,
-- interfejs po polsku i po angielsku (język według przeglądarki),
-- ochrona przed wykrywaniem rozszerzenia przez strony (pliki zastępcze tylko pod losowym adresem sesji),
-- jasny i ciemny motyw interfejsu.
-
-Apex AdBlocker używa jednego stałego zestawu ochrony: reklamy, prywatność/śledzenie i bezpieczeństwo. Produkt nie ma płatnych funkcji, kont ani subskrypcji.
-
-## Jak to działa
-
-| Warstwa | Rola |
-|---|---|
-| `background.js`, `background/` | service worker, stan ochrony, DNR, rejestracja scriptletów, diagnostyka |
-| `shared/parser.js` | parser obsługiwanego podzbioru składni ABP/uBO |
-| `content/cosmetic.js` | ukrywanie elementów i filtry proceduralne |
-| `content/picker.js` | interaktywny tryb „Ukryj element” |
-| `_locales/`, `shared/i18n.js` | tłumaczenia interfejsu (pl, en); źródło tekstów: `tools/i18n-messages.mjs` |
-| `youtube/` | zgodność filtrów i lokalna diagnostyka odtwarzacza |
-| `rules/`, `data/`, `scriptlets/` | wygenerowane artefakty wykorzystywane przez rozszerzenie |
-| `tools/` | build, audyty, aktualizacja list i packaging |
-| `tests/` | testy jednostkowe, integracyjne, Chromium i E2E |
-
-Bardziej szczegółowy opis architektury i ograniczeń: [docs/technical-overview.md](docs/technical-overview.md).
-
-Logo marki: [brand/](brand/README.md). Materiały do Chrome Web Store (teksty, uzasadnienia uprawnień, zrzuty ekranu): [store/](store/README.md).
-
-## Jakość i testy
-
-Projekt ma automatyczny pipeline GitHub Actions oraz testy uruchamiane w Node.js i prawdziwym Chromium.
+## Dla programistów
 
 ```bash
-npm test
-npm run check
-npm run package:dev
-npm run package:release
-npm run package:store
+npm install && npm test   # testy (Node.js 20+)
+npm run check             # pełna kontrola, w tym test w Chromium
+npm run package:release   # paczka dla użytkownika
 ```
 
-`npm run check` sprawdza m.in. aktualność wygenerowanych artefaktów, zgodność krytycznych filtrów YouTube, audyt scriptletów, testy oraz smoke test rozszerzenia w Chromium.
+Architektura, testy, packaging i ograniczenia: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) · [opis techniczny](docs/technical-overview.md) · [materiały do Chrome Web Store](store/README.md)
 
-`npm run package:release` tworzy paczkę dla użytkownika z plikiem `START-HERE.txt`, wersjonowanym ZIP-em, stałą kopią `Apex-AdBlocker.zip` i sumami SHA-256.
+## Listy filtrów
 
-`npm run package:store` tworzy osobny `Apex-AdBlocker-WebStore-<wersja>.zip` gotowy do uploadu w Chrome Web Store: `manifest.json` znajduje się bezpośrednio w katalogu głównym archiwum, bez folderu nadrzędnego i bez plików instalacyjnych.
-
-Dodatkowe materiały:
-
-- [instrukcja instalacji](docs/INSTALLATION.md),
-- [baseline wydajności](docs/perf-baseline.md),
-- [tester prawdziwych stron](docs/single-blocker-sites-test.md),
-- [ręczny test YouTube](docs/manual-youtube-test.md),
-- [pochodzenie i licencje list filtrów](docs/filter-provenance.md).
-
-## Prywatność
-
-Apex AdBlocker nie ma telemetrii, analityki, kont ani własnego backendu. Ustawienia i diagnostyka są przechowywane lokalnie. Rozszerzenie nie pobiera ani nie wykonuje zdalnego kodu.
-
-Raport diagnostyczny jest sanityzowany i nie powinien zawierać historii, pełnych URL-i, identyfikatorów filmów, cookies, tokenów ani danych logowania.
-
-Pełna polityka prywatności (EN/PL): [PRIVACY.md](PRIVACY.md).
-
-## AI-assisted development
-
-Projekt był rozwijany w workflow **AI-assisted**. Korzystałem z narzędzi AI, w tym Claude Code i ChatGPT, przy implementacji, refaktoryzacji, analizie błędów i tworzeniu testów.
-
-Po mojej stronie pozostawały wymagania produktu, decyzje funkcjonalne i architektoniczne, testy ręczne, ocena rezultatów oraz decyzje o przyjmowaniu zmian. Użycia AI nie traktuję jako czegoś do ukrywania — jest ono częścią procesu tworzenia tego projektu.
-
-## Ograniczenia
-
-Apex AdBlocker nie jest uBlock Origin i nie implementuje całej składni uBO/ABP. Nieobsługiwane konstrukcje są pomijane zamiast wykonywane częściowo. Manifest V3 nakłada też ograniczenia, których rozszerzenie nie próbuje obchodzić.
-
-Strony mogą wykrywać blokowanie reklam, a skuteczność filtrów zależy również od zmian po stronie serwisów i aktualności upstreamowych list.
-
-## Źródła filtrów i licencje
-
-Wbudowane listy filtrów pochodzą m.in. z EasyList/EasyPrivacy, uAssets oraz Polskich Filtrów i zachowują własne warunki licencyjne. Szczegóły i źródła znajdują się w [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) i [docs/filter-provenance.md](docs/filter-provenance.md).
-
-Repozytorium nie deklaruje obecnie jednej licencji obejmującej cały projekt i wszystkie dane third-party.
-
-## Development
-
-Wymagany Node.js 20+.
-
-```bash
-git clone https://github.com/Bonziuu/Apex-AdBlocker.git
-cd Apex-AdBlocker
-npm install
-npm test
-npm run check
-npm run audit:scriptlets
-npm run update-lists
-npm run build
-```
-
-Do lokalnego testowania jako rozszerzenie rozpakowane można wskazać katalog repozytorium zawierający `manifest.json`. Po `git pull` trzeba kliknąć **Odśwież** przy Apex AdBlocker w `chrome://extensions`, aby przeładować również service workera.
-
-`npm run package:dev` tworzy czystą paczkę developerską w `dist/`. `npm run package:release` tworzy gotowy bundle dla użytkownika, a `npm run package:store` tworzy ZIP do Chrome Web Store; narzędzia developerskie i testy nie trafiają do dystrybucji.
+EasyList, EasyPrivacy, uBlock filters i Polskie Filtry – na warunkach ich licencji ([THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)). Apex AdBlocker jest projektem niezależnym, niepowiązanym z Google, uBlock Origin ani autorami list.
 
 ---
 
-Apex AdBlocker jest projektem niezależnym i nie jest powiązany z Google, uBlock Origin ani autorami upstreamowych list filtrów.
+<a id="eng"></a>
+
+## ENG
+
+<p align="center">
+  <img src="store/screenshots/en/1-ads-blocked.png" alt="A page without and with Apex AdBlocker" width="820">
+</p>
+
+**Lightweight ad and tracker blocker for Chrome – no setup, no telemetry.**
+
+- 🛡️ Blocks ads, trackers and malicious sites right after installation
+- ▶️ YouTube Protection
+- 🖱️ Turn protection off for a site with one click, “Hide element”, your own filters
+- 🔒 No telemetry, accounts or servers ([privacy policy](PRIVACY.md))
+- 🌍 English and Polish interface
+
+**Install:** download `Apex-AdBlocker-<version>.zip` from the [latest release](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest), extract it, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and select the `Apex-AdBlocker` folder.
