@@ -13,6 +13,7 @@ import { PlayerReportStore } from './youtube/player-reports.js';
 import { buildDiagnosticsReport } from './background/diagnostics-report.js';
 import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js';
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
+import { handlerFor, senderAllowed } from './background/message-policy.js';
 import { CORE_LISTS } from './shared/core-lists.js';
 import { buildBackup, backupFileName, parseBackup, summarizeSettings } from './shared/settings-backup.js';
 
@@ -1081,8 +1082,14 @@ function runHandler(h, msg, sender) {
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  const h = msg && handlers[msg.type];
+  const h = handlerFor(handlers, msg);
   if (!h) return false;
+  const type = msg.type;
+  if (!senderAllowed(type, sender, chrome.runtime.getURL(''))) {
+    health.error('filters', `${type}: odrzucono wiadomość spoza stron rozszerzenia`).catch(() => {});
+    sendResponse({ ok: false, error: 'forbidden' });
+    return false;
+  }
   runHandler(h, msg, sender).then(sendResponse, async (e) => {
     const component = msg.type.startsWith('cosmetic') ? 'cosmetic' : msg.type.startsWith('youtube') ? 'youtube' : 'filters';
     await health.error(component, `${msg.type}: ${e && e.message || e}`).catch(() => {});

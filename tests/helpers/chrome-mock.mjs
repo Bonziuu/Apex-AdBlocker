@@ -144,9 +144,13 @@ export async function loadBackground(opts = {}) {
   console.error = () => {};
   console.info = () => {};
   const mod = await import(pathToFileURL(path.join(ROOT, 'background.js')).href + `?test=${++counter}`);
-  const send = (msg, sender = {}) => new Promise((resolve) => state.listeners.message(msg, sender, resolve));
+  // domyślny nadawca: strona rozszerzenia (popup/Opcje); skrypty treści – helper sender()
+  const send = (msg, sender = extensionSender()) => new Promise((resolve) => state.listeners.message(msg, sender, resolve));
   const restore = () => { console.error = origError; console.info = origInfo; };
   return { mod, state, store, session, send, restore, install: () => state.listeners.installed() };
 }
 
 export const sender = (url, frameId = 0, tabUrl = url) => ({ tab: { id: 7, url: tabUrl }, frameId, url });
+
+/** Nadawca będący stroną rozszerzenia (zgodny z runtime.getURL z mocka). */
+export const extensionSender = (page = 'options/options.html') => ({ id: 'apex-test', url: 'ext://' + page });
