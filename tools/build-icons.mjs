@@ -56,6 +56,35 @@ export function iconSvg(size, off = false) {
 `;
 }
 
+/** Rozmiary dużego logo marki (brand/, poza paczką rozszerzenia). */
+export const LOGO_SIZES = Object.freeze([512, 1024]);
+
+/**
+ * Duże logo marki: sam znak „Apex A” bez badge'a stanu (Chrome Web Store, strona, materiały).
+ * `padding` = przezroczysty margines w jednostkach viewBox 128 (16 = wytyczne ikony 128 px w Chrome Web Store).
+ */
+export function logoSvg(size, { padding = 0 } = {}) {
+  const k = (128 - 2 * padding) / 128;
+  const mark = '<path fill="url(#g-logo)" fill-rule="evenodd" d="M64 7 116 112H91L64 59 37 112H12L64 7Zm0 34-12 25h24L64 41Z"/>';
+  // znak zajmuje y 7–112 (środek 59,5) – przesuwamy o 4,5, żeby był wyśrodkowany w pionie
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 128 128">
+  <defs>
+    ${gradient('logo', ...PALETTE.on)}
+  </defs>
+  <g transform="translate(${padding} ${padding + 4.5 * k}) scale(${k})">${mark}</g>
+</svg>
+`;
+}
+
+/** Pliki logo: [ścieżka względna w brand/, SVG]. */
+export function logoFiles() {
+  return [
+    ['apex-logo.svg', logoSvg(1024)],
+    ...LOGO_SIZES.map((s) => [`apex-logo-${s}.png`, logoSvg(s)]),
+    ['apex-store-icon-128.png', logoSvg(128, { padding: 16 })],
+  ];
+}
+
 /** Generuje SVG (tools/icons) i PNG (icons/). */
 export async function buildIcons({ outDir = path.join(ROOT, 'icons'), svgDir = path.join(ROOT, 'tools', 'icons') } = {}) {
   const { loadPlaywright } = await import(pathToFileURL(path.join(ROOT, 'tools', 'chromium-smoke.mjs')).href);
@@ -75,6 +104,18 @@ export async function buildIcons({ outDir = path.join(ROOT, 'icons'), svgDir = p
         await page.screenshot({ path: file, clip: { x: 0, y: 0, width: size, height: size }, omitBackground: true });
         written.push(path.relative(ROOT, file));
       }
+    }
+    // duże logo marki (brand/): PNG renderowane w rozmiarze docelowym
+    const brandDir = path.join(ROOT, 'brand');
+    fs.mkdirSync(brandDir, { recursive: true });
+    for (const [name, svg] of logoFiles()) {
+      const file = path.join(brandDir, name);
+      if (name.endsWith('.svg')) { fs.writeFileSync(file, svg); written.push(path.relative(ROOT, file)); continue; }
+      const size = Number(/(\d+)\.png$/.exec(name)[1]);
+      await page.setViewportSize({ width: size, height: size });
+      await page.setContent(`<!doctype html><html><body style="margin:0;background:transparent">${svg}</body></html>`);
+      await page.screenshot({ path: file, clip: { x: 0, y: 0, width: size, height: size }, omitBackground: true });
+      written.push(path.relative(ROOT, file));
     }
   } finally { await browser.close(); }
   return written;

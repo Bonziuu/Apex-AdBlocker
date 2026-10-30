@@ -52,6 +52,8 @@ Apex AdBlocker używa jednego stałego zestawu ochrony: reklamy, prywatność/ś
 
 Bardziej szczegółowy opis architektury i ograniczeń: [docs/technical-overview.md](docs/technical-overview.md).
 
+Logo marki (np. do Chrome Web Store): [brand/](brand/README.md).
+
 ## Jakość i testy
 
 Projekt ma automatyczny pipeline GitHub Actions oraz testy uruchamiane w Node.js i prawdziwym Chromium.

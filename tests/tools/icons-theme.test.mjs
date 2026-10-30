@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, SIZES, PALETTE, iconSvg } from '../../tools/build-icons.mjs';
+import { ROOT, SIZES, PALETTE, iconSvg, logoFiles } from '../../tools/build-icons.mjs';
 
 /** Wymiary z nagłówka IHDR pliku PNG. */
 function pngSize(file) {
@@ -37,6 +37,18 @@ test('ikony: źródło SVG w repozytorium (poza paczką) i paleta „morski”',
     for (const c of PALETTE.on) { assert.ok(on.includes(c), `${size}: ${c}`); assert.ok(!off.includes(c), `${size} off: bez ${c}`); }
     for (const c of PALETTE.off) assert.ok(off.includes(c), `${size} off: ${c}`);
   }
+});
+
+test('logo marki (brand/): sam znak bez badge\'a, pliki aktualne i poza paczką rozszerzenia', async () => {
+  for (const [name, svg] of logoFiles()) {
+    const file = path.join(ROOT, 'brand', name);
+    assert.ok(fs.existsSync(file), `brand/${name} (npm run icons)`);
+    assert.doesNotMatch(svg, /<circle|<rect/, `${name}: bez badge'a stanu`);
+    if (name.endsWith('.svg')) assert.equal(fs.readFileSync(file, 'utf8'), svg, `brand/${name} aktualny`);
+    else { const n = Number(/(\d+)\.png$/.exec(name)[1]); assert.deepEqual(pngSize(file), [n, n], name); }
+  }
+  const { EXTENSION_ENTRIES } = await import('../../tools/chromium-smoke.mjs');
+  assert.ok(!EXTENSION_ENTRIES.includes('brand'), 'logo nie trafia do paczki rozszerzenia');
 });
 
 test('kolorystyka: ten sam akcent w popupie, Opcjach i ekranie powitalnym (jasny i ciemny motyw)', () => {
