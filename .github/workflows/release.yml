@@ -1,0 +1,80 @@
+# Apex AdBlocker – automatyczne wydanie po utworzeniu tagu vX.Y.Z.
+# Sprawdza zgodność tagu z manifest.json, uruchamia pełną kontrolę (npm run check), buduje
+# paczki (npm run package:release) i publikuje wydanie na GitHubie z opisem z tools/release-notes.mjs
+# (sekcja „Co nowego” z CHANGELOG.md). Chrome Web Store nie jest dotykany.
+#
+# Jak wydać nową wersję:
+#   1. podbij "version" w manifest.json i dopisz sekcję do CHANGELOG.md, wypchnij na main,
+#   2. utwórz tag:  git tag v1.0.1 && git push origin v1.0.1
+
+name: Wydanie
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Kontrola, paczki i wydanie
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Zgodność tagu z wersją w manifest.json
+        shell: bash
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          version="$(node -p "require('./manifest.json').version")"
+          if [ "v$version" != "$tag" ]; then
+            echo "::error::Tag $tag nie zgadza się z wersją w manifest.json ($version)."
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Instalacja zależności
+        run: npm install --no-audit --no-fund
+
+      - name: Instalacja Chromium (Playwright)
+        run: npx playwright install --with-deps chromium
+
+      - name: Pełna kontrola (npm run check)
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run check | tee check.log
+          if grep -q 'SKIP: Chromium smoke test unavailable' check.log; then
+            echo '::error::Smoke test w Chromium nie został uruchomiony.'; exit 1
+          fi
+
+      - name: Paczki dla użytkownika
+        run: npm run package:release
+
+      - name: Opis wydania
+        run: node tools/release-notes.mjs "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
+
+      - name: Publikacja wydania
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/Apex-AdBlocker-$VERSION.zip" \
+            dist/Apex-AdBlocker.zip \
+            dist/SHA256SUMS.txt \
+            --title "Apex AdBlocker $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            --verify-tag \
+            --latest

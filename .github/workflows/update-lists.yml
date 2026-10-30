@@ -1,0 +1,107 @@
+# Apex AdBlocker – cotygodniowa aktualizacja list filtrów.
+# Pobiera najnowsze listy (tools/update-lists.mjs), buduje reguły, uruchamia pełną kontrolę
+# (npm run check) i otwiera albo aktualizuje Pull Request do ręcznej akceptacji.
+# Nic nie trafia na main ani do wydania bez zatwierdzenia PR.
+#
+# Wymagane ustawienie repo (jednorazowo): Settings → Actions → General → Workflow permissions →
+# „Allow GitHub Actions to create and approve pull requests”.
+
+name: Aktualizacja list filtrów
+
+on:
+  schedule:
+    - cron: '17 4 * * 1' # poniedziałek 04:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-lists
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Pobranie list, build, kontrola, Pull Request
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      BRANCH: auto/update-lists
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalacja zależności
+        run: npm install --no-audit --no-fund
+
+      - name: Pobranie list filtrów
+        id: lists
+        shell: bash
+        run: |
+          set +e
+          node tools/update-lists.mjs 2>&1 | tee "$RUNNER_TEMP/update.log"
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Czy listy się zmieniły
+        id: diff
+        shell: bash
+        run: |
+          if git diff --quiet -- tools/lists; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo 'Listy bez zmian – PR nie jest potrzebny.'
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat -- tools/lists | tail -1
+          fi
+
+      - name: Build reguł
+        if: steps.diff.outputs.changed == 'true'
+        id: build
+        shell: bash
+        run: |
+          set +e
+          node tools/build.mjs 2>&1 | tee "$RUNNER_TEMP/build.log"
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Instalacja Chromium (Playwright)
+        if: steps.diff.outputs.changed == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Pełna kontrola (npm run check)
+        if: steps.diff.outputs.changed == 'true'
+        id: check
+        shell: bash
+        run: |
+          set +e
+          npm run check 2>&1 | tee "$RUNNER_TEMP/check.log"
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Pull Request
+        if: steps.diff.outputs.changed == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LISTS_CODE: ${{ steps.lists.outputs.code }}
+          BUILD_CODE: ${{ steps.build.outputs.code }}
+          CHECK_CODE: ${{ steps.check.outputs.code }}
+        run: |
+          set -e
+          node tools/update-lists-pr.mjs "$RUNNER_TEMP" > "$RUNNER_TEMP/pr-body.md"
+          title="$(head -1 "$RUNNER_TEMP/pr-body.md" | sed 's/^# //')"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898283+github-actions[bot]@users.noreply.github.com'
+          git checkout -B "$BRANCH"
+          git add -A tools/lists rules data scriptlets manifest.json youtube/known-gaps.json
+          git commit -m "$title"
+          git push --force origin "$BRANCH"
+          draft=()
+          if [ "$BUILD_CODE" != "0" ] || [ "$CHECK_CODE" != "0" ]; then draft=(--draft); fi
+          if gh pr view "$BRANCH" --json state --jq .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$BRANCH" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md"
+          else
+            gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md" "${draft[@]}"
+          fi

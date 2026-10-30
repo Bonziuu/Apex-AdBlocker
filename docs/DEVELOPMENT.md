@@ -94,3 +94,19 @@ Do lokalnego testowania jako rozszerzenie rozpakowane można wskazać katalog re
 ---
 
 Apex AdBlocker jest projektem niezależnym i nie jest powiązany z Google, uBlock Origin ani autorami upstreamowych list filtrów.
+
+## Automaty na GitHubie
+
+| Workflow | Kiedy | Co robi |
+|---|---|---|
+| `ci.yml` | każdy push i PR | testy, `npm run check`, paczka do Chrome Web Store jako artefakt |
+| `update-lists.yml` | co poniedziałek (i ręcznie: Actions → *Aktualizacja list filtrów* → *Run workflow*) | pobiera listy, buduje reguły, `npm run check`, otwiera PR `auto/update-lists` do akceptacji (szkic, gdy kontrola nie przeszła) |
+| `release.yml` | tag `vX.Y.Z` | sprawdza zgodność z `manifest.json`, `npm run check`, buduje paczki i publikuje wydanie z opisem z `tools/release-notes.mjs` |
+
+**Nowe wydanie:** podbij `version` w `manifest.json`, dopisz sekcję `## X.Y.Z` (z `### PL` i `### ENG`) do [CHANGELOG.md](../CHANGELOG.md), wypchnij na `main`, a potem:
+
+```bash
+git tag v1.0.1 && git push origin v1.0.1
+```
+
+**Jednorazowe ustawienie repo** (dla PR z aktualizacją list): Settings → Actions → General → Workflow permissions → zaznacz *Allow GitHub Actions to create and approve pull requests*.
