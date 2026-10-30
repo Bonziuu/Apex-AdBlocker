@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import { loadPlaywright } from '../../tools/chromium-smoke.mjs';
 import {
   openYouTube, dismissConsentModal, findConsentModal, findRejectButton, formatReport, CONSENT_HEADING_RE, CONSENT_REJECT_RE, CONSENT_ACCEPT_RE,
-} from '../local/chromeblock-local-test.mjs';
+} from '../local/apex-local-test.mjs';
 import { ensurePlaying, samplePlayer } from '../e2e/lib/youtube-page.mjs';
 import { progressOf } from '../e2e/lib/classify.mjs';
 
@@ -154,7 +154,7 @@ test('okno zgody jako zwykły div (bez roli dialog) – rozpoznane po nagłówku
   } finally { await context.close(); }
 });
 
-test('okna zgody nie da się zamknąć → INCONCLUSIVE (nie FAIL ChromeBlock)', { skip }, async () => {
+test('okna zgody nie da się zamknąć → INCONCLUSIVE (nie FAIL Apex AdBlocker)', { skip }, async () => {
   const { context, page } = await pageWith({ broken: true, delayMs: 300 });
   try {
     await page.goto(WATCH);
@@ -164,7 +164,7 @@ test('okna zgody nie da się zamknąć → INCONCLUSIVE (nie FAIL ChromeBlock)',
     const { context: c2, page: p2 } = await pageWith({ broken: true, delayMs: 300 });
     try {
       const reason = await openYouTube(p2, WATCH, true);
-      assert.match(reason, /^INCONCLUSIVE – okno zgody nie zniknęło.*nie jest błąd ChromeBlock/);
+      assert.match(reason, /^INCONCLUSIVE – okno zgody nie zniknęło.*nie jest błąd Apex AdBlocker/);
     } finally { await c2.close(); }
   } finally { await context.close(); }
 });

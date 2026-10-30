@@ -55,6 +55,6 @@ test('provenance: licencje i statusy są w dokumentach; NonCommercial wyraźnie 
   assert.match(NOTICES, /CC BY-NC-SA 4\.0/);
   assert.match(NOTICES, /NonCommercial/);
   assert.match(DOC, /NEEDS LEGAL REVIEW/);
-  // każda lista ChromeBlock ma wiersz w tabeli łączenia źródeł
+  // każda lista Apex AdBlocker ma wiersz w tabeli łączenia źródeł
   for (const l of LISTS) assert.match(DOC, new RegExp(`\\| \`${l.id}\` \\|`), l.id);
 });

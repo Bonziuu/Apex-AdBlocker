@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// ChromeBlock – lokalny tester regresyjny (Windows: test-chromeblock.cmd, wszędzie: npm run test:local).
+// Apex AdBlocker – lokalny tester regresyjny (Windows: test-apex-adblocker.cmd, wszędzie: npm run test:local).
 //
-// Uruchamia Playwright Chromium z bieżącą wersją ChromeBlock w JEDNORAZOWYM profilu (katalog
+// Uruchamia Playwright Chromium z bieżącą wersją Apex AdBlocker w JEDNORAZOWYM profilu (katalog
 // tymczasowy, usuwany po teście – bez historii, loginów, cookies i danych konta; prywatny profil
 // Chrome nie jest używany) i sprawdza: ładowanie, service worker, health, start, rejestrację
 // scriptletów, popup i stały zestaw list ochrony, zwykłą stronę oraz YouTube (watch, odtwarzanie, seek, Shorts).
@@ -11,7 +11,7 @@
 // Blokowanie reklam NIE jest ogłaszane jako PASS bez dowodu (patrz tests/e2e/lib/classify.mjs).
 //
 // Opcje:
-//   --dir <katalog>   testuj gotową paczkę (np. dist/ChromeBlock) zamiast repozytorium
+//   --dir <katalog>   testuj gotową paczkę (np. dist/Apex AdBlocker) zamiast repozytorium
 //   --headless        bez okna przeglądarki (domyślnie okno na Windows/macOS)
 //   --video <id>      film do testu watch/seek (domyślnie Big Buck Bunny)
 //   --shorts <url>    konkretny adres Shorts (domyślnie https://www.youtube.com/shorts/)
@@ -67,10 +67,10 @@ export function counts(checks) {
   return n;
 }
 
-/** Czy błąd z konsoli / strony pochodzi z ChromeBlock (kod rozszerzenia lub jego komunikaty). */
-export function isChromeBlockError({ text = '', url = '', stack = '' }, extensionId) {
+/** Czy błąd z konsoli / strony pochodzi z Apex AdBlocker (kod rozszerzenia lub jego komunikaty). */
+export function isApexError({ text = '', url = '', stack = '' }, extensionId) {
   const own = extensionId ? `chrome-extension://${extensionId}/` : '\0';
-  return String(url).startsWith(own) || String(stack).includes(own) || /chromeblock/i.test(String(text));
+  return String(url).startsWith(own) || String(stack).includes(own) || /apex\s?adblocker/i.test(String(text));
 }
 
 /** Błąd nawigacji wynikający z braku sieci / niedostępności strony (→ SKIP, nie FAIL). */
@@ -173,13 +173,13 @@ export function seekFailureKinds(f) {
 
 export const AB = Object.freeze({
   CONTROL_ALSO_FAILS: 'CONTROL ALSO FAILS',
-  CHROMEBLOCK_SPECIFIC: 'CHROMEBLOCK-SPECIFIC FAIL',
+  APEX_SPECIFIC: 'APEX-SPECIFIC FAIL',
   INCONCLUSIVE: 'INCONCLUSIVE',
 });
 
 /**
- * Porównanie A/B: przebieg Z ChromeBlock vs kontrola BEZ ChromeBlock (świeży profil, ten sam film).
- * @param {object} withF    seekFacts() z ChromeBlock
+ * Porównanie A/B: przebieg Z Apex AdBlocker vs kontrola BEZ Apex AdBlocker (świeży profil, ten sam film).
+ * @param {object} withF    seekFacts() z Apex AdBlocker
  * @param {object|{skipped:string}|null} controlF seekFacts() kontroli albo {skipped: powód}
  */
 export const HARD_SEEK_FAILURES = Object.freeze(['no-jump', 'video-error', 'ytp-error', 'fell-back']);
@@ -191,29 +191,29 @@ export function hardSeekFailures(f) {
 
 export function classifyAB(withF, controlF) {
   if (!controlF || controlF.skipped) {
-    return { verdict: AB.INCONCLUSIVE, detail: `kontrola bez ChromeBlock nie wykonała się${controlF && controlF.skipped ? `: ${controlF.skipped}` : ''}` };
+    return { verdict: AB.INCONCLUSIVE, detail: `kontrola bez Apex AdBlocker nie wykonała się${controlF && controlF.skipped ? `: ${controlF.skipped}` : ''}` };
   }
   const w = hardSeekFailures(withF);
   const c = hardSeekFailures(controlF);
   const wAll = seekFailureKinds(withF);
   const cAll = seekFailureKinds(controlF);
-  if (!wAll.length) return { verdict: AB.INCONCLUSIVE, detail: 'przebieg z ChromeBlock nie ma awarii seek – porównanie niepotrzebne' };
+  if (!wAll.length) return { verdict: AB.INCONCLUSIVE, detail: 'przebieg z Apex AdBlocker nie ma awarii seek – porównanie niepotrzebne' };
   // kontrola czysta: seek działa, odtwarzanie się wznawia, brak twardych awarii
   const controlClean = !cAll.length;
   if (w.length) {
     const missing = w.filter((k) => !c.includes(k));
-    if (!missing.length) return { verdict: AB.CONTROL_ALSO_FAILS, detail: `kontrola bez ChromeBlock odtwarza wszystkie twarde błędy (${w.join(', ')}) – nie obwiniać ChromeBlock` };
-    if (controlClean) return { verdict: AB.CHROMEBLOCK_SPECIFIC, detail: `bez ChromeBlock seek i odtwarzanie działają; z ChromeBlock: ${w.join(', ')}` };
+    if (!missing.length) return { verdict: AB.CONTROL_ALSO_FAILS, detail: `kontrola bez Apex AdBlocker odtwarza wszystkie twarde błędy (${w.join(', ')}) – nie obwiniać Apex AdBlocker` };
+    if (controlClean) return { verdict: AB.APEX_SPECIFIC, detail: `bez Apex AdBlocker seek i odtwarzanie działają; z Apex AdBlocker: ${w.join(', ')}` };
     if (c.some((k) => w.includes(k))) {
       return { verdict: AB.INCONCLUSIVE, detail: `kontrola odtwarza tylko część błędów: ${w.filter((k) => c.includes(k)).join(', ')}; brak w kontroli: ${missing.join(', ')}` };
     }
-    if (!c.length) return { verdict: AB.INCONCLUSIVE, detail: `kontrola bez twardych błędów, ale odtwarzanie się nie wznowiło; z ChromeBlock: ${w.join(', ')}` };
-    return { verdict: AB.INCONCLUSIVE, detail: `kontrola ma inne błędy (${c.join(', ')}) niż przebieg z ChromeBlock (${w.join(', ')})` };
+    if (!c.length) return { verdict: AB.INCONCLUSIVE, detail: `kontrola bez twardych błędów, ale odtwarzanie się nie wznowiło; z Apex AdBlocker: ${w.join(', ')}` };
+    return { verdict: AB.INCONCLUSIVE, detail: `kontrola ma inne błędy (${c.join(', ')}) niż przebieg z Apex AdBlocker (${w.join(', ')})` };
   }
-  // z ChromeBlock tylko brak wznowienia (bez twardych błędów)
-  if (controlClean) return { verdict: AB.CHROMEBLOCK_SPECIFIC, detail: 'bez ChromeBlock odtwarzanie po seek się wznawia; z ChromeBlock: not-resumed' };
-  if (!c.length) return { verdict: AB.CONTROL_ALSO_FAILS, detail: 'kontrola bez ChromeBlock również nie wznawia odtwarzania po seek – nie obwiniać ChromeBlock' };
-  return { verdict: AB.INCONCLUSIVE, detail: `kontrola ma twarde błędy (${c.join(', ')}), których nie ma z ChromeBlock` };
+  // z Apex AdBlocker tylko brak wznowienia (bez twardych błędów)
+  if (controlClean) return { verdict: AB.APEX_SPECIFIC, detail: 'bez Apex AdBlocker odtwarzanie po seek się wznawia; z Apex AdBlocker: not-resumed' };
+  if (!c.length) return { verdict: AB.CONTROL_ALSO_FAILS, detail: 'kontrola bez Apex AdBlocker również nie wznawia odtwarzania po seek – nie obwiniać Apex AdBlocker' };
+  return { verdict: AB.INCONCLUSIVE, detail: `kontrola ma twarde błędy (${c.join(', ')}), których nie ma z Apex AdBlocker` };
 }
 
 /** Wiersze tabeli A/B do raportu. */
@@ -231,7 +231,7 @@ export function formatSeekAB(ab) {
   };
   const rows = [['before', 'before'], ['seek target', 'target'], ['currentTime po seek', 'afterSeek'], ['currentTime na końcu', 'lastTime'],
     ['.ytp-error', 'ytp'], ['video.error.code', 'video'], ['pozycja się cofnęła', 'fellBack'], ['odtwarzanie wznowione', 'resumed'], ['końcowy URL', 'url']];
-  const L = [`Diagnostyka A/B seek: ${ab.verdict}`, `  ${ab.detail}`, `  ${''.padEnd(22)}  ${'Z ChromeBlock'.padEnd(26)}  BEZ ChromeBlock (kontrola)`];
+  const L = [`Diagnostyka A/B seek: ${ab.verdict}`, `  ${ab.detail}`, `  ${''.padEnd(22)}  ${'Z Apex AdBlocker'.padEnd(26)}  BEZ Apex AdBlocker (kontrola)`];
   for (const [label, key] of rows) L.push(`  ${label.padEnd(22)}  ${String(col(ab.with, key)).padEnd(26)}  ${col(ab.without, key)}`);
   return L;
 }
@@ -240,7 +240,7 @@ export function formatSeekAB(ab) {
 export function formatReport(r) {
   const n = counts(r.checks);
   const L = [];
-  L.push('ChromeBlock – lokalny test regresyjny');
+  L.push('Apex AdBlocker – lokalny test regresyjny');
   L.push('='.repeat(44));
   L.push(`WYNIK:        ${r.overall}   (PASS ${n.PASS} · FAIL ${n.FAIL} · SKIP ${n.SKIP})`);
   L.push(`Wersja:       ${r.version || '?'}`);
@@ -288,8 +288,8 @@ export function formatReport(r) {
 
 /** Lokalna „zwykła strona” (127.0.0.1) – do popupu, działa bez internetu. */
 function startLocalSite() {
-  const html = '<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>ChromeBlock – strona testowa</title></head>'
-    + '<body><h1 id="ok">Strona testowa ChromeBlock</h1><p>Zwykła treść strony.</p></body></html>';
+  const html = '<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Apex AdBlocker – strona testowa</title></head>'
+    + '<body><h1 id="ok">Strona testowa Apex AdBlocker</h1><p>Zwykła treść strony.</p></body></html>';
   const server = http.createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(html); });
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({ server, url: `http://127.0.0.1:${server.address().port}/` })));
 }
@@ -354,7 +354,7 @@ export async function runLocalTests(opts = {}) {
   if (!exe || !fs.existsSync(exe)) { result.fatal = 'Chromium dla Playwright nie jest zainstalowany (npx playwright install chromium)'; return finish(); }
   result.browser = path.basename(path.dirname(path.dirname(exe))) || 'chromium';
 
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-local-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-local-'));
   const extDir = path.join(tmp, 'extension');
   fs.mkdirSync(extDir);
   copyExtension(extDir, extensionDir);
@@ -364,10 +364,10 @@ export async function runLocalTests(opts = {}) {
   let context = null;
   let extId = null;
   const cbErrors = [];
-  const noteError = (src, e) => { if (isChromeBlockError(e, extId)) cbErrors.push(`${src}: ${String(e.text).split('\n')[0].slice(0, 300)}`); };
+  const noteError = (src, e) => { if (isApexError(e, extId)) cbErrors.push(`${src}: ${String(e.text).split('\n')[0].slice(0, 300)}`); };
 
   try {
-    log(`Uruchamiam Chromium z ChromeBlock ${result.version || ''}…`);
+    log(`Uruchamiam Chromium z Apex AdBlocker ${result.version || ''}…`);
     context = await chromium.launchPersistentContext(path.join(tmp, 'profile'), {
       headless,
       acceptDownloads: true, // eksport kopii ustawień (plik trafia do katalogu tymczasowego)
@@ -396,11 +396,11 @@ export async function runLocalTests(opts = {}) {
     await ext.goto('chrome://extensions');
     const info = await ext.evaluate(async () => {
       try { await chrome.developerPrivate.updateProfileConfiguration({ inDeveloperMode: true }); } catch { /* */ }
-      const e = (await chrome.developerPrivate.getExtensionsInfo()).find((x) => x.name === 'ChromeBlock');
+      const e = (await chrome.developerPrivate.getExtensionsInfo()).find((x) => x.name === 'Apex AdBlocker');
       return e ? { state: e.state, manifestErrors: (e.manifestErrors || []).map((m) => m.message) } : null;
     }).catch(() => null);
     if (info && info.state === 'ENABLED' && !info.manifestErrors.length) await add('load', 'Rozszerzenie się ładuje', 'PASS', 'ENABLED');
-    else await add('load', 'Rozszerzenie się ładuje', 'FAIL', info ? `stan ${info.state}; ${info.manifestErrors.join('; ')}` : 'brak ChromeBlock w chrome://extensions');
+    else await add('load', 'Rozszerzenie się ładuje', 'FAIL', info ? `stan ${info.state}; ${info.manifestErrors.join('; ')}` : 'brak Apex AdBlocker w chrome://extensions');
     if (!extId) {
       await add('sw', 'Service worker działa', 'FAIL', 'brak service workera');
       throw new Error('brak service workera – dalsze testy niemożliwe');
@@ -539,16 +539,16 @@ export async function runLocalTests(opts = {}) {
     }
     await add('health-after', 'Health po wszystkich testach', errs.length ? 'FAIL' : 'PASS', errs.join('; ') || 'bez ERROR');
 
-    // 8. błędy JS ChromeBlock (strony + service worker z chrome://extensions)
+    // 8. błędy JS Apex AdBlocker (strony + service worker z chrome://extensions)
     current = null; // screenshot chrome://extensions nic nie wnosi
     await ext.goto('chrome://extensions');
     const rt = await ext.evaluate(async () => {
-      const e = (await chrome.developerPrivate.getExtensionsInfo()).find((x) => x.name === 'ChromeBlock');
+      const e = (await chrome.developerPrivate.getExtensionsInfo()).find((x) => x.name === 'Apex AdBlocker');
       return e ? (e.runtimeErrors || []).map((m) => `${m.source || ''}: ${m.message}`) : [];
     }).catch(() => []);
     const all = [...new Set([...rt.map((x) => `service worker/rozszerzenie – ${x}`), ...cbErrors, ...popupErrors.map((x) => `popup: ${x}`)])];
     if (all.length) errors.push(...all.slice(0, 20));
-    await add('js-errors', 'Brak błędów JS ChromeBlock w konsoli', all.length ? 'FAIL' : 'PASS', all.length ? `liczba błędów: ${all.length} (lista w „Błędy”)` : '0 błędów');
+    await add('js-errors', 'Brak błędów JS Apex AdBlocker w konsoli', all.length ? 'FAIL' : 'PASS', all.length ? `liczba błędów: ${all.length} (lista w „Błędy”)` : '0 błędów');
   } catch (e) {
     result.fatal = String((e && e.message) || e).split('\n')[0];
     errors.push(`przerwano: ${result.fatal}`);
@@ -770,7 +770,7 @@ export const BACKUP_CHECKS = Object.freeze([
 ]);
 const BACKUP_KEYS = ['disabledSites', 'userFilters'];
 const BACKUP_VERSION = 2;
-const BACKUP_TEST_HOST = 'chromeblock-backup-test.example';
+const BACKUP_TEST_HOST = 'apex-backup-test.example';
 // w kopii nie może być: health, diagnostyki, danych sesji, statystyk, kart, adresów
 const BACKUP_FORBIDDEN = ['"health"', 'startupProfile', 'devPerf', 'scriptletPerf', 'statsTabs', 'statsRt', 'sessionScriptletsOk', 'tabId', '"errors"', 'http://', 'https://'];
 
@@ -838,7 +838,7 @@ async function runBackup({ context, add, extId, opt, dir, setCurrent }) {
     await download.saveAs(file);
     const name = download.suggestedFilename();
     const chk = checkBackupFile(fs.readFileSync(file, 'utf8'), snapshot);
-    if (!/^chromeblock-ustawienia-\d{4}-\d{2}-\d{2}\.json$/.test(name)) chk.export.push(`nazwa pliku: ${name}`);
+    if (!/^apex-ustawienia-\d{4}-\d{2}-\d{2}\.json$/.test(name)) chk.export.push(`nazwa pliku: ${name}`);
     await report('backup-export', chk.export.length ? 'FAIL' : 'PASS', chk.export.join('; ') || `${name}: format chromeblock-settings v2, 2 pola zgodne z ustawieniami`);
     await report('backup-privacy', chk.privacy.length ? 'FAIL' : 'PASS', chk.privacy.join('; ') || 'bez health, diagnostyki, sesji, statystyk, kart i adresów');
     if (chk.export.length) throw new Error('eksport niepoprawny – import pominięty');
@@ -953,14 +953,14 @@ export async function openYouTube(page, url, consent, { onConsentDiagnostics = n
   // okno zgody bezpośrednio na youtube.com (pojawia się po chwili – czekamy, zamykamy i potwierdzamy)
   const c = await dismissConsentModal(page, { click: consent });
   if (c.diagnostics && onConsentDiagnostics) onConsentDiagnostics(c.diagnostics);
-  if (c.state === 'present' || c.state === 'failed') return `INCONCLUSIVE – ${c.reason}; nie da się wiarygodnie sprawdzić odtwarzania (to nie jest błąd ChromeBlock)`;
+  if (c.state === 'present' || c.state === 'failed') return `INCONCLUSIVE – ${c.reason}; nie da się wiarygodnie sprawdzić odtwarzania (to nie jest błąd Apex AdBlocker)`;
   if (/\/sorry\//.test(page.url())) return 'INCONCLUSIVE – Google wymaga weryfikacji (CAPTCHA) – bez obchodzenia';
   return null;
 }
 
 const readVideoError = (page) => page.evaluate(() => { const v = document.querySelector('#movie_player video'); return v && v.error ? v.error.code : 0; }).catch(() => 0);
 
-/** Seek o SEEK_DELTA_S i próbkowanie do SEEK_RESUME_WAIT_S (wspólne dla przebiegu z ChromeBlock i kontroli). */
+/** Seek o SEEK_DELTA_S i próbkowanie do SEEK_RESUME_WAIT_S (wspólne dla przebiegu z Apex AdBlocker i kontroli). */
 async function probeSeek(page) {
   const before = await seekForward(page, SEEK_DELTA_S);
   const after = [];
@@ -975,14 +975,14 @@ async function probeSeek(page) {
 }
 
 /**
- * Kontrola A/B: ten sam film i ten sam seek w ŚWIEŻYM tymczasowym profilu BEZ ChromeBlock.
+ * Kontrola A/B: ten sam film i ten sam seek w ŚWIEŻYM tymczasowym profilu BEZ Apex AdBlocker.
  * Zwraca seekFacts() albo {skipped: powód}. Profil jest usuwany po teście.
  */
 async function runControlSeek({ chromium, headless, video, consent, onContext, log }) {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-control-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-control-'));
   let context = null;
   try {
-    log('  Kontrola A/B: ten sam seek w świeżym profilu BEZ ChromeBlock…');
+    log('  Kontrola A/B: ten sam seek w świeżym profilu BEZ Apex AdBlocker…');
     context = await chromium.launchPersistentContext(path.join(tmp, 'profile'), { headless, channel: 'chromium', viewport: { width: 1280, height: 800 }, args: browserArgs(null) });
     if (onContext) await onContext(context);
     const page = await context.newPage();
@@ -1025,7 +1025,7 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
   const playback = analyzePlayback(samples);
   const adState = analyzeAdState(samples);
   if (!playback.ok && await findConsentModal(page)) {
-    const why = 'INCONCLUSIVE – okno zgody YouTube zasłania odtwarzacz i nie zostało zamknięte (to nie jest błąd ChromeBlock)';
+    const why = 'INCONCLUSIVE – okno zgody YouTube zasłania odtwarzacz i nie zostało zamknięte (to nie jest błąd Apex AdBlocker)';
     await skipRest(YT.filter(([id]) => !['yt-watch', 'yt-video'].includes(id)), why);
     await page.close();
     return null;
@@ -1038,7 +1038,7 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
   if (playback.ok) {
     const probe = await probeSeek(page);
     let { seek, resume } = probe.result;
-    // FAIL seek → kontrola A/B bez ChromeBlock (bez obejść, tylko diagnostyka)
+    // FAIL seek → kontrola A/B bez Apex AdBlocker (bez obejść, tylko diagnostyka)
     if ((seek.status === 'FAIL' || resume.status === 'FAIL') && runControl) {
       const control = await runControl();
       const ab = classifyAB(probe.facts, control);
@@ -1046,7 +1046,7 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
       log(`  A/B seek: ${ab.verdict} – ${ab.detail}`);
       if (ab.verdict === AB.CONTROL_ALSO_FAILS) {
         controlAlsoFails = true;
-        const pre = 'CONTROL ALSO FAILS (ten sam błąd bez ChromeBlock) – ';
+        const pre = 'CONTROL ALSO FAILS (ten sam błąd bez Apex AdBlocker) – ';
         if (seek.status === 'FAIL') seek = { status: 'SKIP', detail: pre + seek.detail };
         if (resume.status === 'FAIL') resume = { status: 'SKIP', detail: pre + resume.detail };
       }
@@ -1054,8 +1054,8 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
     await add('yt-seek', 'YouTube: seek', seek.status, seek.detail);
     await add('yt-seek-resume', 'YouTube: odtwarzanie po seek', resume.status, resume.detail);
     if (seekAB) {
-      const st = seekAB.verdict === AB.CHROMEBLOCK_SPECIFIC ? 'FAIL' : 'SKIP';
-      await add('yt-seek-ab', 'YouTube: seek A/B (kontrola bez ChromeBlock)', st, `${seekAB.verdict} – ${seekAB.detail}`);
+      const st = seekAB.verdict === AB.APEX_SPECIFIC ? 'FAIL' : 'SKIP';
+      await add('yt-seek-ab', 'YouTube: seek A/B (kontrola bez Apex AdBlocker)', st, `${seekAB.verdict} – ${seekAB.detail}`);
     }
     samples.push(...probe.after);
   } else {
@@ -1068,7 +1068,7 @@ async function runYouTube({ context, add, skipRest, YT, video, shortsUrl, consen
   const antiAdblock = samples.some((x) => x.antiAdblock);
   const errDetail = [playerErr && `błąd odtwarzacza${videoError ? ` (video.error ${videoError})` : ''}`, antiAdblock && 'ostrzeżenie anti-adblock'].filter(Boolean).join('; ');
   if (!playerErr && !antiAdblock) await add('yt-player-error', 'YouTube: brak błędu playera', 'PASS', 'brak .ytp-error, brak video.error');
-  else if (controlAlsoFails && !preSeekError && !antiAdblock) await add('yt-player-error', 'YouTube: brak błędu playera', 'SKIP', `CONTROL ALSO FAILS (ten sam błąd po seek bez ChromeBlock) – ${errDetail}`);
+  else if (controlAlsoFails && !preSeekError && !antiAdblock) await add('yt-player-error', 'YouTube: brak błędu playera', 'SKIP', `CONTROL ALSO FAILS (ten sam błąd po seek bez Apex AdBlocker) – ${errDetail}`);
   else await add('yt-player-error', 'YouTube: brak błędu playera', 'FAIL', errDetail);
 
   const visibleSummary = await page.evaluate(pagePlayerResponseSummary).catch(() => null);
@@ -1129,7 +1129,7 @@ async function main() {
   }
   fs.mkdirSync(o.resultsDir, { recursive: true });
   for (const f of fs.readdirSync(o.resultsDir)) if (/^fail-.*\.png$/.test(f)) fs.rmSync(path.join(o.resultsDir, f));
-  console.log('ChromeBlock – lokalny test regresyjny (tymczasowy profil, bez Twoich danych)\n');
+  console.log('Apex AdBlocker – lokalny test regresyjny (tymczasowy profil, bez Twoich danych)\n');
   const r = await withTimeout(runLocalTests({ ...o, screenshotDir: o.resultsDir }), 20 * 60_000, 'cały test');
   r.exitCode = exitCodeFor(r);
   const files = writeResults(r, o.resultsDir);

@@ -1,4 +1,4 @@
-// ChromeBlock 1.0: jeden stały zestaw list (ads, privacy, security) – bez trybów ochrony i bez
+// Apex AdBlocker 1.0: jeden stały zestaw list (ads, privacy, security) – bez trybów ochrony i bez
 // list cookies / annoyances. Instalacja, migracja starszych konfiguracji, dane użytkownika, paczka.
 
 import test from 'node:test';

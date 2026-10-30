@@ -1,4 +1,4 @@
-// ChromeBlock – pomiar etapów uruchomienia service workera (instalacja, aktualizacja, przeładowanie,
+// Apex AdBlocker – pomiar etapów uruchomienia service workera (instalacja, aktualizacja, przeładowanie,
 // start przeglądarki). Tylko czasy i nazwy etapów – bez adresów ani danych użytkownika.
 // Wynik ostatniego startu: Opcje → Diagnostyka → „Start rozszerzenia” i raport diagnostyczny.
 

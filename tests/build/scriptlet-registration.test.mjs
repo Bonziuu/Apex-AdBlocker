@@ -93,7 +93,7 @@ test('YouTube: wszystkie wzorce YouTube w części utrwalanej (ochrona od razu p
 
 test('strony niezwiązane z filtrami nie dostają żadnego pliku scriptletów', () => {
   const all = DEFAULT_LISTS.flatMap((id) => meta(id).flatMap((f) => [...f.matches, ...f.sessionMatches]));
-  for (const h of ['example.org', 'www.wikipedia.org', 'en.wikipedia.org', 'docs.python.org', 'chromeblock-unrelated-test.dev']) {
+  for (const h of ['example.org', 'www.wikipedia.org', 'en.wikipedia.org', 'docs.python.org', 'apex-unrelated-test.dev']) {
     assert.ok(!all.some((p) => hostMatches(p, h)), h);
   }
 });

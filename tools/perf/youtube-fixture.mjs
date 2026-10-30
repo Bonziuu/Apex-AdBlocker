@@ -1,6 +1,6 @@
-// ChromeBlock – syntetyczna strona „YouTube” do pomiarów wydajności (tools/perf/youtube-perf.mjs).
+// Apex AdBlocker – syntetyczna strona „YouTube” do pomiarów wydajności (tools/perf/youtube-perf.mjs).
 //
-// Strona jest serwowana przez Playwright pod https://www.youtube.com/watch?v=…, więc ChromeBlock
+// Strona jest serwowana przez Playwright pod https://www.youtube.com/watch?v=…, więc Apex AdBlocker
 // wstrzykuje do niej te same skrypty (cosmetic, health, scriptlety), co na prawdziwym YouTube.
 // Obciążenie naśladuje wzorce YouTube: render Polymer (appendChild), timery, logowanie
 // (JSON.stringify), parsowanie odpowiedzi (JSON.parse), fetch/XHR do /youtubei/v1/*,

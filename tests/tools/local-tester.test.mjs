@@ -1,5 +1,5 @@
-// Lokalny tester (tests/local/chromeblock-local-test.mjs) – czysta logika, bez przeglądarki.
-// Sam tester uruchamia się tylko przez `npm run test:local` / test-chromeblock.cmd.
+// Lokalny tester (tests/local/apex-local-test.mjs) – czysta logika, bez przeglądarki.
+// Sam tester uruchamia się tylko przez `npm run test:local` / test-apex-adblocker.cmd.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,10 +7,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {
-  overallStatus, counts, isChromeBlockError, networkErrorOf, formatReport, parseArgs, writeResults, ROOT, exitCodeFor, EXIT, classifySeek, SEEK_RESUME_WAIT_S,
+  overallStatus, counts, isApexError, networkErrorOf, formatReport, parseArgs, writeResults, ROOT, exitCodeFor, EXIT, classifySeek, SEEK_RESUME_WAIT_S,
   seekFacts, seekFailureKinds, classifyAB, formatSeekAB, browserArgs, AB, hardSeekFailures,
   BACKUP_CHECKS, checkBackupFile, settingsView, settingsDiff, ONBOARDING_CHECKS, CORE_LISTS,
-} from '../local/chromeblock-local-test.mjs';
+} from '../local/apex-local-test.mjs';
 
 const c = (status, name = 'x') => ({ id: name, name, status, detail: '' });
 
@@ -22,13 +22,13 @@ test('wynik zbiorczy: FAIL > INCONCLUSIVE (SKIP) > PASS; SKIP nigdy nie daje PAS
   assert.deepEqual(counts([c('PASS'), c('SKIP'), c('SKIP'), c('FAIL')]), { PASS: 1, FAIL: 1, SKIP: 2 });
 });
 
-test('błędy JS: tylko pochodzące z ChromeBlock', () => {
+test('błędy JS: tylko pochodzące z Apex AdBlocker', () => {
   const id = 'abcdefghijklmnopabcdefghijklmnop';
-  assert.ok(isChromeBlockError({ text: 'x', url: `chrome-extension://${id}/popup/popup.js` }, id));
-  assert.ok(isChromeBlockError({ text: 'TypeError', stack: `at f (chrome-extension://${id}/scriptlets/ads-1.js:3:1)` }, id));
-  assert.ok(isChromeBlockError({ text: '[ChromeBlock] scriptlet failed' }, id));
-  assert.ok(!isChromeBlockError({ text: 'Uncaught TypeError', url: 'https://www.youtube.com/s/player/base.js' }, id));
-  assert.ok(!isChromeBlockError({ text: 'x', url: 'chrome-extension://innerozszerzenie/x.js' }, id));
+  assert.ok(isApexError({ text: 'x', url: `chrome-extension://${id}/popup/popup.js` }, id));
+  assert.ok(isApexError({ text: 'TypeError', stack: `at f (chrome-extension://${id}/scriptlets/ads-1.js:3:1)` }, id));
+  assert.ok(isApexError({ text: '[Apex AdBlocker] scriptlet failed' }, id));
+  assert.ok(!isApexError({ text: 'Uncaught TypeError', url: 'https://www.youtube.com/s/player/base.js' }, id));
+  assert.ok(!isApexError({ text: 'x', url: 'chrome-extension://innerozszerzenie/x.js' }, id));
 });
 
 test('brak sieci → kod net::ERR (SKIP), inne błędy → null', () => {
@@ -42,7 +42,7 @@ test('raport: wersja, startup, wyniki, błędy, oznaczenie SKIP jako INCONCLUSIV
     startup: { totalMs: 750, reason: 'onStartup', registerMs: 640, registerCalls: 1 },
     checks: [{ ...c('PASS', 'Popup otwiera się bez błędów'), detail: 'ok' }, { ...c('SKIP', 'YouTube: seek'), detail: 'INCONCLUSIVE – brak sieci' },
       { ...c('FAIL', 'Tryb Basic → Balanced'), detail: 'backend: basic', screenshot: 'tests/local/results/fail-mode.png' }],
-    errors: ['konsola: ChromeBlock: x'], notes: [],
+    errors: ['konsola: Apex AdBlocker: x'], notes: [],
   };
   const t = formatReport(r);
   assert.match(t, /WYNIK:\s+INCONCLUSIVE\s+\(PASS 1 · FAIL 1 · SKIP 1\)/);
@@ -51,7 +51,7 @@ test('raport: wersja, startup, wyniki, błędy, oznaczenie SKIP jako INCONCLUSIV
   assert.match(t, /\[SKIP\*\] YouTube: seek/);
   assert.match(t, /SKIP = INCONCLUSIVE/);
   assert.match(t, /- Tryb Basic → Balanced: backend: basic\s+\[screenshot: tests\/local\/results\/fail-mode\.png\]/);
-  assert.match(t, /- konsola: ChromeBlock: x/);
+  assert.match(t, /- konsola: Apex AdBlocker: x/);
   assert.doesNotMatch(t, /ad blocking PASS|reklamy zablokowane/i);
 });
 
@@ -70,11 +70,11 @@ test('opcje, npm run test:local, .cmd i izolacja od npm test', () => {
   assert.equal(o.youtube, false);
   assert.equal(o.video, 'abc');
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  assert.equal(pkg.scripts['test:local'], 'node tests/local/chromeblock-local-test.mjs');
+  assert.equal(pkg.scripts['test:local'], 'node tests/local/apex-local-test.mjs');
   assert.doesNotMatch(pkg.scripts.test, /local/);
-  const cmd = fs.readFileSync(path.join(ROOT, 'test-chromeblock.cmd'), 'utf8');
+  const cmd = fs.readFileSync(path.join(ROOT, 'test-apex-adblocker.cmd'), 'utf8');
   assert.match(cmd, /\r\n/, 'CRLF');
-  assert.match(cmd, /set "SCRIPT=tests\\local\\chromeblock-local-test\.mjs"/, 'domyślnie test regresyjny');
+  assert.match(cmd, /set "SCRIPT=tests\\local\\apex-local-test\.mjs"/, 'domyślnie test regresyjny');
   assert.match(cmd, /node %SCRIPT% /);
   assert.match(cmd, /latest\.txt/);
   assert.match(cmd, /\r\npause\r\n/, 'okno zostaje otwarte');
@@ -90,16 +90,16 @@ test('kody wyjścia: PASS 0, FAIL 1, błąd uruchomienia 2, INCONCLUSIVE 3', () 
   assert.equal(exitCodeFor({ overall: 'SKIP', checks: [], fatal: 'Playwright nie jest zainstalowany' }), 2);
   assert.equal(exitCodeFor(null), 2);
   assert.equal(exitCodeFor({ overall: 'FAIL', checks: [c('PASS'), c('FAIL')], fatal: 'przerwano' }), 1, 'przerwany test z wynikami → FAIL');
-  const cmd = fs.readFileSync(path.join(ROOT, 'test-chromeblock.cmd'), 'utf8');
+  const cmd = fs.readFileSync(path.join(ROOT, 'test-apex-adblocker.cmd'), 'utf8');
   for (const [code, word] of [[0, 'PASS'], [1, 'FAIL'], [2, 'BLAD URUCHOMIENIA'], [3, 'INCONCLUSIVE']]) {
     assert.match(cmd, new RegExp(`if "%RC%"=="${code}" echo\\s+WYNIK: ${word}`), `.cmd opisuje kod ${code} słownie`);
   }
   assert.equal(parseArgs(['--results', 'x']).resultsDir, path.resolve('x'));
 });
 
-test('test-chromeblock.cmd działa tylko z repozytorium (bez trybu paczki i folderu tester/)', () => {
-  const cmd = fs.readFileSync(path.join(ROOT, 'test-chromeblock.cmd'), 'utf8');
-  assert.doesNotMatch(cmd, /tester\\|wyniki-testu|ChromeBlock-dev\.zip|--dir/);
+test('test-apex-adblocker.cmd działa tylko z repozytorium (bez trybu paczki i folderu tester/)', () => {
+  const cmd = fs.readFileSync(path.join(ROOT, 'test-apex-adblocker.cmd'), 'utf8');
+  assert.doesNotMatch(cmd, /tester\\|wyniki-testu|Apex-AdBlocker-dev\.zip|--dir/);
   assert.match(cmd, /set "RES=%BASE%tests\\local\\results"/);
 });
 
@@ -161,7 +161,7 @@ test('seek: przeskok widoczny dopiero po chwili (pozycja aktualizuje się z opó
   assert.equal(r.resume.status, 'PASS');
 });
 
-// --- A/B seek (kontrola bez ChromeBlock) --------------------------------------
+// --- A/B seek (kontrola bez Apex AdBlocker) --------------------------------------
 const URL_W = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ';
 // prawdziwy przypadek z Windows: 16 s → 76 s, potem trwały .ytp-error i cofnięcie pozycji
 const brokenSeek = () => seekFacts({ before: 16, samples: S([[76], [76, true], [76, false, true], [0, false, true], [0, false, true], [0, false, true]]), videoError: 0, finalUrl: URL_W });
@@ -182,11 +182,11 @@ test('A/B: fakty seek do raportu (przypadek z Windows)', () => {
   assert.deepEqual(seekFailureKinds(goodSeek()), []);
 });
 
-test('A/B: ten sam błąd także bez ChromeBlock → CONTROL ALSO FAILS (nie obwiniamy ChromeBlock)', () => {
+test('A/B: ten sam błąd także bez Apex AdBlocker → CONTROL ALSO FAILS (nie obwiniamy Apex AdBlocker)', () => {
   const r = classifyAB(brokenSeek(), brokenSeek());
   assert.equal(r.verdict, AB.CONTROL_ALSO_FAILS);
   assert.match(r.detail, /ytp-error, fell-back/);
-  // kontrola z dodatkowym błędem (ponad wszystkie błędy z ChromeBlock) – nadal reprodukuje wszystkie
+  // kontrola z dodatkowym błędem (ponad wszystkie błędy z Apex AdBlocker) – nadal reprodukuje wszystkie
   const more = seekFacts({ before: 15, samples: S([[75], [75, false, true], [0, false, true], [0, false, true], [0, false, true]]), videoError: 2, finalUrl: URL_W });
   assert.deepEqual(hardSeekFailures(more), ['video-error', 'ytp-error', 'fell-back']);
   assert.equal(classifyAB(brokenSeek(), more).verdict, AB.CONTROL_ALSO_FAILS);
@@ -195,7 +195,7 @@ test('A/B: ten sam błąd także bez ChromeBlock → CONTROL ALSO FAILS (nie obw
 // kontrola: trwały .ytp-error, ale pozycja się NIE cofa
 const ytpOnly = () => seekFacts({ before: 15, samples: S([[75], [75, false, true], [75, false, true], [75, false, true]]), finalUrl: URL_W });
 
-test('REGRESJA A/B: ChromeBlock ytp-error + fell-back, kontrola tylko ytp-error → INCONCLUSIVE (nie CONTROL ALSO FAILS)', () => {
+test('REGRESJA A/B: Apex AdBlocker ytp-error + fell-back, kontrola tylko ytp-error → INCONCLUSIVE (nie CONTROL ALSO FAILS)', () => {
   assert.deepEqual(hardSeekFailures(brokenSeek()), ['ytp-error', 'fell-back']);
   assert.deepEqual(hardSeekFailures(ytpOnly()), ['ytp-error']);
   const r = classifyAB(brokenSeek(), ytpOnly());
@@ -206,15 +206,15 @@ test('REGRESJA A/B: ChromeBlock ytp-error + fell-back, kontrola tylko ytp-error 
   assert.equal(classifyAB(brokenSeek(), partial).verdict, AB.INCONCLUSIVE);
 });
 
-test('REGRESJA A/B: ChromeBlock ytp-error + fell-back, kontrola ytp-error + fell-back → CONTROL ALSO FAILS', () => {
+test('REGRESJA A/B: Apex AdBlocker ytp-error + fell-back, kontrola ytp-error + fell-back → CONTROL ALSO FAILS', () => {
   const r = classifyAB(brokenSeek(), brokenSeek());
   assert.deepEqual(hardSeekFailures(brokenSeek()), ['ytp-error', 'fell-back']);
   assert.equal(r.verdict, AB.CONTROL_ALSO_FAILS);
   assert.match(r.detail, /wszystkie twarde błędy \(ytp-error, fell-back\)/);
 });
 
-test('A/B: CHROMEBLOCK-SPECIFIC tylko przy czystej kontroli (seek działa, wznowienie, brak twardych błędów)', () => {
-  assert.equal(classifyAB(brokenSeek(), goodSeek()).verdict, AB.CHROMEBLOCK_SPECIFIC);
+test('A/B: APEX-SPECIFIC tylko przy czystej kontroli (seek działa, wznowienie, brak twardych błędów)', () => {
+  assert.equal(classifyAB(brokenSeek(), goodSeek()).verdict, AB.APEX_SPECIFIC);
   // kontrola: seek działa, brak twardych błędów, ale odtwarzanie się nie wznowiło → nie jest czysta
   const stalled = seekFacts({ before: 14, samples: S(Array.from({ length: 25 }, () => [74, true])), finalUrl: URL_W });
   assert.deepEqual(hardSeekFailures(stalled), []);
@@ -223,10 +223,10 @@ test('A/B: CHROMEBLOCK-SPECIFIC tylko przy czystej kontroli (seek działa, wznow
   assert.ok(!hardSeekFailures(stalled).includes('not-resumed'));
 });
 
-test('A/B: bez ChromeBlock działa, z ChromeBlock nie → CHROMEBLOCK-SPECIFIC FAIL', () => {
+test('A/B: bez Apex AdBlocker działa, z Apex AdBlocker nie → APEX-SPECIFIC FAIL', () => {
   const r = classifyAB(brokenSeek(), goodSeek());
-  assert.equal(r.verdict, AB.CHROMEBLOCK_SPECIFIC);
-  assert.match(r.detail, /bez ChromeBlock seek i odtwarzanie działają/);
+  assert.equal(r.verdict, AB.APEX_SPECIFIC);
+  assert.match(r.detail, /bez Apex AdBlocker seek i odtwarzanie działają/);
 });
 
 test('A/B: kontrola nie może się wykonać → INCONCLUSIVE', () => {
@@ -248,9 +248,9 @@ test('A/B: kontrola z innym błędem albo tylko bez wznowienia → INCONCLUSIVE'
 test('A/B: raport zawiera before / target / po seek / .ytp-error / video.error.code / cofnięcie / wznowienie / URL dla obu przebiegów', () => {
   const ab = { ...classifyAB(brokenSeek(), goodSeek()), with: brokenSeek(), without: goodSeek() };
   const t = formatSeekAB(ab).join('\n');
-  assert.match(t, /Diagnostyka A\/B seek: CHROMEBLOCK-SPECIFIC FAIL/);
+  assert.match(t, /Diagnostyka A\/B seek: APEX-SPECIFIC FAIL/);
   for (const row of ['before', 'seek target', 'currentTime po seek', '.ytp-error', 'video.error.code', 'pozycja się cofnęła', 'odtwarzanie wznowione', 'końcowy URL']) assert.match(t, new RegExp(row.replace('.', '\\.')));
-  assert.match(t, /Z ChromeBlock\s+BEZ ChromeBlock/);
+  assert.match(t, /Z Apex AdBlocker\s+BEZ Apex AdBlocker/);
   assert.match(t, /\.ytp-error\s+TAK \(trwały\)\s+nie/);
   assert.match(t, /pozycja się cofnęła\s+TAK\s+nie/);
   assert.match(t, /odtwarzanie wznowione\s+nie\s+TAK/);
@@ -258,7 +258,7 @@ test('A/B: raport zawiera before / target / po seek / .ytp-error / video.error.c
   assert.match(skipped, /INCONCLUSIVE/);
   assert.match(skipped, /nie wykonano: brak sieci/);
   // sekcja w pełnym raporcie
-  const full = formatReport({ overall: 'FAIL', version: 'v', checks: [c('FAIL', 'YouTube: seek A/B (kontrola bez ChromeBlock)')], errors: [], notes: [], finishedAt: 'x', durationMs: 1, seekAB: ab });
+  const full = formatReport({ overall: 'FAIL', version: 'v', checks: [c('FAIL', 'YouTube: seek A/B (kontrola bez Apex AdBlocker)')], errors: [], notes: [], finishedAt: 'x', durationMs: 1, seekAB: ab });
   assert.match(full, /Diagnostyka A\/B seek/);
 });
 
@@ -312,7 +312,7 @@ test('Backup w testerze: porównanie ustawień (kolejność domen bez znaczenia;
 
 test('Onboarding i popup w testerze: pozycje raportu; bez trybów; stały zestaw list sprawdzany', () => {
   assert.deepEqual(ONBOARDING_CHECKS.map(([, n]) => n), ['Onboarding: otwarcie', 'Onboarding: ochrona od razu (bez wyboru trybu)', 'Onboarding: start', 'Onboarding: bez błędów']);
-  const src = fs.readFileSync(path.join(ROOT, 'tests/local/chromeblock-local-test.mjs'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'tests/local/apex-local-test.mjs'), 'utf8');
   const body = src.slice(src.indexOf('export async function runLocalTests'));
   assert.ok(body.indexOf('await runOnboarding(') < body.indexOf("add('popup'"), 'onboarding przed testami popupu');
   assert.match(body, /add\('core-lists', 'Ochrona: stały zestaw list'/);

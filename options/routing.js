@@ -1,4 +1,4 @@
-// ChromeBlock – routing Opcji (czysta funkcja, testowana offline).
+// Apex AdBlocker – routing Opcji (czysta funkcja, testowana offline).
 // Główne zakładki: protection, filters, sites, more. Sekcje „Więcej” (zwijane): backup, diag, about.
 // Stare deep linki (#diag z popupu, #backup, #about) otwierają zakładkę „Więcej” z rozwiniętą sekcją.
 

@@ -10,7 +10,7 @@
 // Wynik: PASS / FAIL / SKIP (brak Playwright lub Chromium → SKIP, kod 0).
 //   node tools/chromium-smoke.mjs
 //   node tools/chromium-smoke.mjs --dir dist/Apex-AdBlocker   (gotowa paczka)
-//   CHROMEBLOCK_SMOKE=0 – legacy zmienna pomijająca test
+//   APEX_SMOKE=0 – legacy zmienna pomijająca test
 
 import fs from 'node:fs';
 import os from 'node:os';
@@ -147,7 +147,7 @@ export async function runSmoke({ log = console.log, syncTimeoutMs = 180_000, ext
   let launched = false;
   try {
     context = await chromium.launchPersistentContext(profileDir, {
-      headless: process.env.CHROMEBLOCK_SMOKE_HEADED !== '1',
+      headless: process.env.APEX_SMOKE_HEADED !== '1',
       channel: 'chromium', // rozszerzenia wymagają pełnego Chromium (nowy headless)
       args: [
         `--disable-extensions-except=${extDir}`, `--load-extension=${extDir}`,
@@ -201,7 +201,7 @@ export async function runSmoke({ log = console.log, syncTimeoutMs = 180_000, ext
 }
 
 async function main() {
-  if (process.env.CHROMEBLOCK_SMOKE === '0') { console.log(`${SKIP_MESSAGE} (CHROMEBLOCK_SMOKE=0)`); return; }
+  if (process.env.APEX_SMOKE === '0') { console.log(`${SKIP_MESSAGE} (APEX_SMOKE=0)`); return; }
   // --dir <katalog>: test gotowej paczki (np. dist/Apex-AdBlocker) zamiast repozytorium
   const i = process.argv.indexOf('--dir');
   const extensionDir = i > 0 && process.argv[i + 1] ? path.resolve(process.argv[i + 1]) : null;

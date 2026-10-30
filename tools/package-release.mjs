@@ -41,7 +41,7 @@ export function startHereText(version) {
     'AKTUALIZACJA\r\n\r\n' +
     'Pobierz nowszą paczkę, zastąp pliki w tym samym folderze Apex-AdBlocker,\r\n' +
     'a następnie kliknij „Odśwież” przy Apex AdBlocker w chrome://extensions.\r\n\r\n' +
-    'Szczegółowa instrukcja: https://github.com/Bonziuu/Chromeblock/blob/main/docs/INSTALLATION.md\r\n';
+    'Szczegółowa instrukcja: https://github.com/Bonziuu/Apex-AdBlocker/blob/main/docs/INSTALLATION.md\r\n';
 }
 
 /** Buduje gotową paczkę do publikacji w GitHub Releases. */

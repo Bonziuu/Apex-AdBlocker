@@ -80,7 +80,7 @@ try { exe = chromium ? chromium.executablePath() : ''; } catch { /* */ }
 const skip = !chromium || !exe || !fs.existsSync(exe) ? 'Playwright/Chromium niedostępne' : false;
 
 test('Opcje w Chromium: health:get tylko po otwarciu Diagnostyki; deep linki #diag/#backup/#about', { skip, timeout: 180_000 }, async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-options-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-options-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });

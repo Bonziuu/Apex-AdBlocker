@@ -10,7 +10,7 @@
 
 Najprościej zainstalować Apex AdBlocker z gotowej paczki:
 
-**[Pobierz najnowsze wydanie Apex AdBlocker](https://github.com/Bonziuu/Chromeblock/releases/latest)**
+**[Pobierz najnowsze wydanie Apex AdBlocker](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest)**
 
 1. w sekcji **Assets** pobierz `Apex-AdBlocker-<wersja>.zip`,
 2. rozpakuj ZIP do stałego miejsca na dysku,
@@ -107,8 +107,8 @@ Repozytorium nie deklaruje obecnie jednej licencji obejmującej cały projekt i 
 Wymagany Node.js 20+.
 
 ```bash
-git clone https://github.com/Bonziuu/Chromeblock.git
-cd Chromeblock
+git clone https://github.com/Bonziuu/Apex-AdBlocker.git
+cd Apex-AdBlocker
 npm install
 npm test
 npm run check

@@ -1,8 +1,8 @@
-// ChromeBlock – YouTube Protection: zgodność filtrów.
+// Apex AdBlocker – YouTube Protection: zgodność filtrów.
 //
 // YouTube nie ma osobnego silnika: korzysta ze wspólnego DNR, silnika
 // kosmetycznego i scriptletów. Ten moduł określa, które filtry są KRYTYCZNE
-// dla YouTube, i sprawdza, czy ChromeBlock potrafi je poprawnie wykonać.
+// dla YouTube, i sprawdza, czy Apex AdBlocker potrafi je poprawnie wykonać.
 // Używany przez build (tryb strict), audyt, testy i aktualizację list.
 
 import { hostKeys } from '../shared/parser.js';

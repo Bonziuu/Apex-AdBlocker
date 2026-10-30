@@ -28,7 +28,7 @@ test('README: status bez wpisanego numeru wersji', () => {
 });
 
 test('wersja w UI, diagnostyce, kopii ustawień i paczce pochodzi z manifest.version', () => {
-  for (const f of ['background.js', 'background/diagnostics-report.js', 'popup/popup.js', 'options/options.js', 'tools/package-dev.mjs', 'tests/local/chromeblock-local-test.mjs']) {
+  for (const f of ['background.js', 'background/diagnostics-report.js', 'popup/popup.js', 'options/options.js', 'tools/package-dev.mjs', 'tests/local/apex-local-test.mjs']) {
     assert.doesNotMatch(read(f), /version_name|versionName/, f);
   }
   assert.match(read('popup/popup.js'), /chrome\.runtime\.getManifest\(\)\.version\b/);

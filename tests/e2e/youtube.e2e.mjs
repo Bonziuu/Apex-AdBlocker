@@ -1,4 +1,4 @@
-// ChromeBlock – testy E2E YouTube w prawdziwej przeglądarce (Playwright + Chromium
+// Apex AdBlocker – testy E2E YouTube w prawdziwej przeglądarce (Playwright + Chromium
 // z załadowanym rozszerzeniem). Uruchamiane WYŁĄCZNIE przez `npm run test:e2e`.
 //
 //   npm install
@@ -72,7 +72,7 @@ const results = [];
 let diagnostics = null;
 
 async function launch() {
-  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-e2e-')); // jednorazowy profil
+  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-e2e-')); // jednorazowy profil
   const context = await chromium.launchPersistentContext(userDataDir, {
     headless: env.E2E_HEADLESS === '1',
     // rozszerzenia działają tylko w pełnym Chromium (nowy headless), nie w chromium-headless-shell
@@ -158,7 +158,7 @@ async function runCase(context, c, t) {
     }
 
     const verdict = classifyCase({ playback, ads: classifyAds(adState, metadata), seek, next });
-    const extErrors = pageErrors.filter((e) => /chromeblock|scriptlet/i.test(e));
+    const extErrors = pageErrors.filter((e) => /apex|scriptlet/i.test(e));
     if (extErrors.length) { verdict.failed = true; verdict.outcome = OUTCOME.PLAYER_FAILURE; verdict.reasons.push(`błędy rozszerzenia na stronie: ${extErrors.length}`); }
 
     Object.assign(record, {
@@ -189,11 +189,11 @@ async function runIframeEmbed(context, t) {
   const record = { name: 'embed (iframe)', kind: 'embed-iframe' };
   try {
     const src = EMBED_URL;
-    await page.route('https://chromeblock-e2e.test/**', (route) => route.fulfill({
+    await page.route('https://apex-e2e.test/**', (route) => route.fulfill({
       contentType: 'text/html',
       body: `<!doctype html><title>embed</title><iframe id="yt" width="640" height="360" allow="autoplay; encrypted-media" src="${src}"></iframe>`,
     }));
-    await page.goto('https://chromeblock-e2e.test/', { waitUntil: 'domcontentloaded' });
+    await page.goto('https://apex-e2e.test/', { waitUntil: 'domcontentloaded' });
     const handle = await page.waitForSelector('#yt', { timeout: 15000 });
     const frame = await handle.contentFrame();
     try {
@@ -226,7 +226,7 @@ async function runIframeEmbed(context, t) {
   }
 }
 
-test('ChromeBlock E2E – YouTube (prawdziwa przeglądarka)', { skip: skipAll, timeout: 30 * 60 * 1000 }, async (t) => {
+test('Apex AdBlocker E2E – YouTube (prawdziwa przeglądarka)', { skip: skipAll, timeout: 30 * 60 * 1000 }, async (t) => {
   const { context, userDataDir, extensionId } = await launch();
   try {
     // instalacja: czekamy, aż pierwsza synchronizacja zapisze wynik każdego kroku
@@ -246,7 +246,7 @@ test('ChromeBlock E2E – YouTube (prawdziwa przeglądarka)', { skip: skipAll, t
       for (const c of ['network', 'cosmetic', 'scriptlets', 'filters', 'youtube']) {
         assert.equal(h0.components[c].status, 'ok', `${c}: ${h0.components[c].detail}`);
       }
-      assert.deepEqual(h0.errors, [], 'brak błędów ChromeBlock po instalacji');
+      assert.deepEqual(h0.errors, [], 'brak błędów Apex AdBlocker po instalacji');
     });
 
     for (const c of CASES) {
@@ -281,7 +281,7 @@ test('ChromeBlock E2E – YouTube (prawdziwa przeglądarka)', { skip: skipAll, t
     const out = path.join(ROOT, 'tests', 'e2e', 'results');
     fs.mkdirSync(out, { recursive: true });
     fs.writeFileSync(path.join(out, 'last-run.json'), JSON.stringify({ at: new Date().toISOString(), summary, results, diagnostics }, null, 2));
-    console.log('\nChromeBlock E2E – podsumowanie');
+    console.log('\nApex AdBlocker E2E – podsumowanie');
     console.log(`  przypadki: ${summary.total} · PASS ${summary.PASS} · FAIL ${summary.FAIL} · SKIP ${summary.SKIP} · INCONCLUSIVE (reklamy) ${summary.INCONCLUSIVE} · AD_BLOCKING_OBSERVED ${summary.AD_BLOCKING_OBSERVED}`);
     console.log(`  widoczna reklama: ${summary.adSeen ? 'TAK' : 'nie'} · ostrzeżenie anti-adblock: ${summary.antiAdblockSeen ? 'TAK' : 'nie'}`);
     for (const r of results) console.log(`  - ${r.name}: ${r.skipped ? r.skipped : `${r.outcome} (playback ${r.playback}, reklama: ${r.adVerdict})`}`);

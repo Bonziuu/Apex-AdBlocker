@@ -1,4 +1,4 @@
-// ChromeBlock – skrypt treści (świat izolowany, document_start, wszystkie ramki).
+// Apex AdBlocker – skrypt treści (świat izolowany, document_start, wszystkie ramki).
 // 1) prosi service worker o CSS dla tej strony (filtry kosmetyczne),
 // 2) zbiera klasy/identyfikatory elementów i dociąga pasujące ogólne filtry,
 // 3) stosuje filtry proceduralne (:has-text, :upward, :remove, ...).
@@ -7,11 +7,11 @@
 // włączona, liczniki są wysyłane wyłącznie do service workera tego rozszerzenia.
 
 (() => {
-  if (window.__chromeblockCosmetic) return;
-  window.__chromeblockCosmetic = true;
+  if (window.__apexCosmetic) return;
+  window.__apexCosmetic = true;
 
   const url = location.href;
-  let hideAttr = 'data-chromeblock-hide';
+  let hideAttr = 'data-apex-hide';
 
   const send = (msg) => {
     try { return chrome.runtime.sendMessage(msg); } catch { return Promise.resolve(null); }
@@ -38,7 +38,7 @@
       perf.enabled = true;
       // Pomiary scriptletów ze świata MAIN (patrz tools/scriptlets-lib.js, „Profiler scriptletów”).
       // Przekazujemy surowy tekst – service worker go waliduje (tylko nazwy i liczby).
-      document.addEventListener('chromeblock:scriptlet-perf', (e) => {
+      document.addEventListener('apex:scriptlet-perf', (e) => {
         if (typeof e.detail === 'string' && e.detail.length <= 50000) send({ type: 'perf:scriptlets', data: e.detail });
       });
       perf.timer = setInterval(() => {

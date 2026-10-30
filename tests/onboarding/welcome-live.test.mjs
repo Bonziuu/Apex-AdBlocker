@@ -1,4 +1,4 @@
-// Onboarding w prawdziwym Chromium z ChromeBlock (bez sieci). Brak Playwright/Chromium → SKIP.
+// Onboarding w prawdziwym Chromium z Apex AdBlocker (bez sieci). Brak Playwright/Chromium → SKIP.
 // Świeża instalacja → strona powitalna sama się otwiera; ochrona działa od razu (stały zestaw list,
 // bez wyboru trybu); „Zacznij korzystać” zamyka kartę; przeładowanie rozszerzenia (onInstalled:
 // update) jej nie otwiera i migruje zapisane tryby/listy starszej wersji; „Otwórz ustawienia” nic nie zmienia.
@@ -19,7 +19,7 @@ const CORE = ['ads', 'privacy', 'security'];
 const enabledOf = (o) => o.lists.filter((l) => l.enabled).map((l) => l.id).sort();
 
 test('onboarding w Chromium: instalacja → ochrona od razu → zamknięcie; przeładowanie: bez strony + migracja starych trybów; ustawienia', { skip, timeout: 240_000 }, async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-welcome-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-welcome-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });

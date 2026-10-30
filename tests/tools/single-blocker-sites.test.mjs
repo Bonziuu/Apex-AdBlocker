@@ -1,7 +1,7 @@
 // Tester jednego blockera na stronach (tests/local/single-blocker-sites.mjs).
 // 1) czysta logika: argumenty, corpus, ocena strony (priorytety, challenge, consent, błędy JS ≠ breakage), YouTube, podsumowanie;
 // 2) w prawdziwym Chromium, BEZ internetu: lokalne atrapy stron (ctx.route) przechodzą przez cały przebieg
-//    none vs chromeblock – reklama, pusty slot, promo, CMP (odrzucenie / tylko akceptacja), anti-adblock,
+//    none vs apex – reklama, pusty slot, promo, CMP (odrzucenie / tylko akceptacja), anti-adblock,
 //    pusta strona, menu i wyszukiwarka, main content, challenge, błąd strony, raport HTML/TXT/JSON i zrzuty.
 //    Brak Playwright/Chromium → SKIP.
 
@@ -30,7 +30,7 @@ test('argumenty i corpus: 53 strony z historycznego testera, znane przypadki, Yo
   const p = parseSitesArgs(['--sites', '--limit', '4', '--only', 'www.Onet.pl,edition.cnn.com', '--no-youtube', '--no-screenshots', '--headless', '--results', 'x']);
   assert.deepEqual([p.limit, p.only, p.youtube, p.screenshots, p.headless], [4, ['onet.pl', 'cnn.com'], false, false, true]);
   assert.equal(p.resultsDir, path.resolve('x'));
-  assert.deepEqual([...CONFIGS], ['none', 'chromeblock']);
+  assert.deepEqual([...CONFIGS], ['none', 'apex']);
 
   const { sites, youtube } = loadSites();
   assert.equal(sites.length, 53);
@@ -112,12 +112,12 @@ test('ocena strony: priorytety, challenge vs kontrola, consent, błędy JS nie s
   assert.equal(classifySite(m(), m({ textLength: 100, antiAdblock: 'adblock', ads: ads({ REAL_AD: 3 }) })).status, STATUS.BREAKAGE);
   assert.equal(classifySite(m(), m({ antiAdblock: 'Wyłącz AdBlock', ads: ads({ REAL_AD: 3 }) })).status, STATUS.ANTI_ADBLOCK);
   assert.notEqual(classifySite(m({ antiAdblock: 'adblock' }), m({ antiAdblock: 'adblock' })).status, STATUS.ANTI_ADBLOCK, 'ten sam tekst bez rozszerzenia');
-  // challenge: Allegro (oba) vs Forbes (tylko z ChromeBlock)
+  // challenge: Allegro (oba) vs Forbes (tylko z Apex AdBlocker)
   const both = classifySite(m({ challenge: 'captcha' }), m({ challenge: 'captcha' }));
   assert.deepEqual([both.status, both.scope], [STATUS.BOT_CHALLENGE, 'both']);
-  assert.match(both.reasons.join(), /także BEZ ChromeBlock – nie przypisujemy/);
+  assert.match(both.reasons.join(), /także BEZ Apex AdBlocker – nie przypisujemy/);
   const cbOnly = classifySite(m(), m({ challenge: 'nie jestem robotem' }));
-  assert.deepEqual([cbOnly.status, cbOnly.scope], [STATUS.BOT_CHALLENGE, 'chromeblock']);
+  assert.deepEqual([cbOnly.status, cbOnly.scope], [STATUS.BOT_CHALLENGE, 'apex']);
   assert.equal(classifySite(m({ challenge: 'captcha' }), m()).status, STATUS.MANUAL_REVIEW);
   // błędy ładowania
   assert.equal(classifySite({ error: 'ERR_NAME_NOT_RESOLVED' }, { error: 'ERR_NAME_NOT_RESOLVED' }).status, STATUS.SITE_ERROR);
@@ -153,9 +153,9 @@ test('consent: do porównania reklam tylko ten sam stan (none+none, rejected+rej
   assert.equal(consentComparable({ error: 'x' }, m()), false);
   // strona z różnym stanem zgody nie wchodzi do zbiorczych metryk reklam
   const rows = [[c('none'), m({ ads: ads({ REAL_AD: 2 }) }), m({ ads: ads({ REAL_AD: 1 }) })], [null, { ...c('none'), ads: ads({ REAL_AD: 5 }) }, { ...c('rejected'), ads: ads() }]]
-    .map(([, a, b]) => ({ results: { none: a, chromeblock: b }, verdict: classifySite(a, b), diff: diffOf(a, b) }));
+    .map(([, a, b]) => ({ results: { none: a, apex: b }, verdict: classifySite(a, b), diff: diffOf(a, b) }));
   const s = summarize(rows);
-  assert.deepEqual([s.comparableSites, s.ads.REAL_AD.none, s.ads.REAL_AD.chromeblock, s.realAdReductionPct], [1, 2, 1, 50]);
+  assert.deepEqual([s.comparableSites, s.ads.REAL_AD.none, s.ads.REAL_AD.apex, s.realAdReductionPct], [1, 2, 1, 50]);
 });
 
 test('domena rejestrowalna: obca domena z tym samym sufiksem publicznym nie jest „własna”', () => {
@@ -182,7 +182,7 @@ test('YouTube: brak okazji reklamowej = INCONCLUSIVE; seek A/B z kontrolą; Prot
   const by = (checks) => Object.fromEntries(checks.map((c) => [c.id, c.status]));
   const ok = by(classifyYouTube(play(), play({ protection: { status: 'ok', compat: '30/30', gate: true } })));
   assert.deepEqual(ok, { 'yt-player': 'PASS', 'yt-seek': 'PASS', 'yt-shorts': 'PASS', 'yt-ads': 'INCONCLUSIVE', 'yt-antiadblock': 'PASS', 'yt-protection': 'PASS' });
-  assert.equal(by(classifyYouTube(play({ adSeen: true }), play()))['yt-ads'], 'PASS', 'reklama w kontroli, z ChromeBlock brak');
+  assert.equal(by(classifyYouTube(play({ adSeen: true }), play()))['yt-ads'], 'PASS', 'reklama w kontroli, z Apex AdBlocker brak');
   assert.equal(by(classifyYouTube(play(), play({ adSeen: true })))['yt-ads'], 'REAL_AD');
   assert.equal(by(classifyYouTube(play({ seek: { ok: false } }), play({ seek: { ok: false } })))['yt-seek'], 'INCONCLUSIVE', 'seek zepsuty także bez rozszerzenia');
   assert.equal(by(classifyYouTube(play(), play({ seek: { ok: false } })))['yt-seek'], 'BREAKAGE');
@@ -192,15 +192,15 @@ test('YouTube: brak okazji reklamowej = INCONCLUSIVE; seek A/B z kontrolą; Prot
   assert.equal(classifyYouTube(play(), { skip: 'INCONCLUSIVE – CAPTCHA' })[0].status, 'INCONCLUSIVE');
 });
 
-test('podsumowanie i raporty: różnica none → ChromeBlock, zrzuty obok siebie, ręczna ocena, eksport JSON', () => {
+test('podsumowanie i raporty: różnica none → Apex AdBlocker, zrzuty obok siebie, ręczna ocena, eksport JSON', () => {
   const rows = [
-    { url: 'https://a.pl/', host: 'a.pl', category: 'x', knownCase: 'sprawdź baner', results: { none: m({ ads: ads({ REAL_AD: 4 }) }), chromeblock: m({ ads: ads({ REAL_AD: 1 }), requests: { total: 50, blocked: 30, failed: 0, adHostRequests: 0, adHostLoaded: 0, adHosts: {} } }) } },
-    { url: 'https://b.pl/', host: 'b.pl', category: 'x', knownCase: null, results: { none: m({ ads: ads({ REAL_AD: 2 }), consent: { state: 'unresolved', clicked: [], reason: 'r' } }), chromeblock: m() } },
-    { url: 'https://c.pl/', host: 'c.pl', category: 'x', knownCase: null, results: { none: m({ challenge: 'captcha' }), chromeblock: m({ challenge: 'captcha' }) } },
-  ].map((r) => ({ ...r, verdict: classifySite(r.results.none, r.results.chromeblock), diff: diffOf(r.results.none, r.results.chromeblock) }));
+    { url: 'https://a.pl/', host: 'a.pl', category: 'x', knownCase: 'sprawdź baner', results: { none: m({ ads: ads({ REAL_AD: 4 }) }), apex: m({ ads: ads({ REAL_AD: 1 }), requests: { total: 50, blocked: 30, failed: 0, adHostRequests: 0, adHostLoaded: 0, adHosts: {} } }) } },
+    { url: 'https://b.pl/', host: 'b.pl', category: 'x', knownCase: null, results: { none: m({ ads: ads({ REAL_AD: 2 }), consent: { state: 'unresolved', clicked: [], reason: 'r' } }), apex: m() } },
+    { url: 'https://c.pl/', host: 'c.pl', category: 'x', knownCase: null, results: { none: m({ challenge: 'captcha' }), apex: m({ challenge: 'captcha' }) } },
+  ].map((r) => ({ ...r, verdict: classifySite(r.results.none, r.results.apex), diff: diffOf(r.results.none, r.results.apex) }));
   const s = summarize(rows);
   assert.equal(s.comparableSites, 2, 'strona bez porównywalnej zgody nie liczy się do reklam');
-  assert.deepEqual(s.ads.REAL_AD, { none: 4, chromeblock: 1 });
+  assert.deepEqual(s.ads.REAL_AD, { none: 4, apex: 1 });
   assert.equal(s.realAdReductionPct, 75);
   assert.deepEqual([s.status.REAL_AD, s.status.CONSENT_INCONCLUSIVE, s.status.BOT_CHALLENGE, s.challenge.both], [1, 1, 1, 1]);
   assert.equal(s.blockedRequests, 30);
@@ -210,7 +210,7 @@ test('podsumowanie i raporty: różnica none → ChromeBlock, zrzuty obok siebie
   assert.match(txt, /Redukcja REAL_AD: 75%/);
   assert.match(txt, /znany przypadek: sprawdź baner/);
   const html = formatHtml(report, '/tmp');
-  for (const re of [/BEZ ChromeBlock/, /Z ChromeBlock/, /Eksportuj oceny/, /<select data-key="https:\/\/a\.pl\/">/, /Znany przypadek: sprawdź baner/, /localStorage/]) assert.match(html, re);
+  for (const re of [/BEZ Apex AdBlocker/, /Z Apex AdBlocker/, /Eksportuj oceny/, /<select data-key="https:\/\/a\.pl\/">/, /Znany przypadek: sprawdź baner/, /localStorage/]) assert.match(html, re);
   assert.equal((html.match(/<section class="site/g) || []).length, 3);
   for (const st of Object.values(STATUS)) assert.match(html, new RegExp(`<option>${st}</option>`));
   assert.deepEqual(AD_CLASSES, ['REAL_AD', 'EMPTY_AD_SLOT', 'LABEL_ONLY', 'SITE_PROMO', 'UNKNOWN']);
@@ -222,13 +222,13 @@ test('tester nie dotyka produktu: brak zmian zachowania, osobny plik', () => {
   assert.doesNotMatch(src, /protectionMode|basic|balanced|strict/i, 'bez trybów');
 });
 
-test('uruchomienie: test-sites.cmd → test-chromeblock.cmd --sites, npm run test:sites', () => {
-  const cmd = fs.readFileSync(path.join(ROOT, 'test-chromeblock.cmd'), 'utf8');
+test('uruchomienie: test-sites.cmd → test-apex-adblocker.cmd --sites, npm run test:sites', () => {
+  const cmd = fs.readFileSync(path.join(ROOT, 'test-apex-adblocker.cmd'), 'utf8');
   assert.match(cmd, /if \/i "%~1"=="--sites" set "SCRIPT=tests\\local\\single-blocker-sites\.mjs"/);
   assert.match(cmd, /sites\\latest\.html/);
   const sites = fs.readFileSync(path.join(ROOT, 'test-sites.cmd'), 'utf8');
   assert.match(sites, /\r\n/, 'CRLF');
-  assert.match(sites, /call "%~dp0test-chromeblock\.cmd" --sites %\*/);
+  assert.match(sites, /call "%~dp0test-apex-adblocker\.cmd" --sites %\*/);
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   assert.equal(pkg.scripts['test:sites'], 'node tests/local/single-blocker-sites.mjs');
   assert.doesNotMatch(pkg.scripts.test, /sites/);
@@ -248,7 +248,7 @@ const NAV = '<header><nav><a href="/kraj">Kraj</a> <a href="/swiat">Świat</a> <
 const page = (body, head = '') => `<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Atrapa</title>${head}</head><body style="margin:0;font:16px sans-serif">${NAV}<main>${body}</main><footer><a href="/reklama">Reklama</a> · <a href="/kontakt">Kontakt</a></footer></body></html>`;
 const AD_IMG = 'https://securepubads.g.doubleclick.net/pagead/banner-300x250.png';
 const AD_FRAME = 'https://securepubads.g.doubleclick.net/pagead/ad.html';
-// skrypt blokowany bez zastępnika (adsbygoogle.js/gpt.js ChromeBlock podmienia na neutralny surrogate → onload, nie onerror)
+// skrypt blokowany bez zastępnika (adsbygoogle.js/gpt.js Apex AdBlocker podmienia na neutralny surrogate → onload, nie onerror)
 const AD_JS = 'https://static.criteo.net/js/ld/publishertag.js';
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 
@@ -271,7 +271,7 @@ const PHOTOS = Array.from({ length: 4 }, (_, i) => `<figure><img src="/img/foto-
 const FIXTURES = {
   // reklama: obrazek z hosta reklamowego w kontenerze z etykietą, w żadnym znanym selektorze kosmetycznym
   'ad.cb-fixture.pl': page(`${ARTICLE}<div class="box-x7" style="width:300px;margin:20px"><span>Reklama</span><a href="https://advertiser.example/"><img src="${AD_IMG}" width="300" height="250" alt=""></a></div>`),
-  // reklama w iframe (zablokowana przez ChromeBlock → slot pusty albo ukryty)
+  // reklama w iframe (zablokowana przez Apex AdBlocker → slot pusty albo ukryty)
   'frame.cb-fixture.pl': page(`${ARTICLE}<div id="div-gpt-ad-1" style="width:300px;height:250px"><iframe src="${AD_FRAME}" width="300" height="250" style="border:0"></iframe></div>`),
   // pusty slot z etykietą w obu konfiguracjach
   // etykieta „REKLAMA” luzem w <main> z dużą ilością zwykłych zdjęć (Fakt.pl) – main nie jest slotem
@@ -312,7 +312,7 @@ document.head.appendChild(s);</script></body></html>`,
   'www.dailymail.co.uk': multiSuffix('https://example.co.uk', 'https://news.dailymail.co.uk'),
   // challenge w obu konfiguracjach (jak Allegro)
   'challenge.cb-fixture.pl': '<!doctype html><html><head><meta charset="utf-8"><title>Just a moment...</title></head><body><h1>Verify you are human</h1><p>Potwierdź, że nie jesteś robotem.</p></body></html>',
-  // challenge tylko z ChromeBlock (jak Forbes): pojawia się, gdy skrypt z hosta reklamowego się nie wczyta
+  // challenge tylko z Apex AdBlocker (jak Forbes): pojawia się, gdy skrypt z hosta reklamowego się nie wczyta
   'cbchallenge.cb-fixture.pl': page(`${ARTICLE}<script>const s = document.createElement('script'); s.src = '${AD_JS}';
 s.onerror = () => { document.body.innerHTML = '<h1>Nie jestem robotem</h1><p>Potwierdź, że jesteś człowiekiem.</p>'; };
 document.head.appendChild(s);</script>`),
@@ -336,12 +336,12 @@ async function installFixtures(ctx, hits) {
   });
 }
 
-test('atrapy stron w Chromium (bez internetu): none vs ChromeBlock, consent, statusy, raport i zrzuty', { skip, timeout: 600_000 }, async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-sites-fixture-'));
+test('atrapy stron w Chromium (bez internetu): none vs Apex AdBlocker, consent, statusy, raport i zrzuty', { skip, timeout: 600_000 }, async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-sites-fixture-'));
   try {
     const hosts = [...Object.keys(FIXTURES), 'error.cb-fixture.pl'];
     const sitesFile = path.join(tmp, 'sites.json');
-    fs.writeFileSync(sitesFile, JSON.stringify({ categories: { atrapy: hosts.map((h) => `https://${h}/`) }, knownCases: { 'cbchallenge.cb-fixture.pl': 'challenge tylko z ChromeBlock – sprawdź powtarzalność' } }));
+    fs.writeFileSync(sitesFile, JSON.stringify({ categories: { atrapy: hosts.map((h) => `https://${h}/`) }, knownCases: { 'cbchallenge.cb-fixture.pl': 'challenge tylko z Apex AdBlocker – sprawdź powtarzalność' } }));
     const hits = { accepted: [], outside: [] };
     const { report, outDir } = await runSitesTest({
       sitesFile, resultsDir: path.join(tmp, 'results'), headless: true, screenshots: true, youtube: false, settleMs: 300, limit: 0, only: [],
@@ -351,20 +351,20 @@ test('atrapy stron w Chromium (bez internetu): none vs ChromeBlock, consent, sta
     const byHost = Object.fromEntries(report.sites.map((r) => [r.host, r]));
     const st = (k) => by[k].verdict.status;
     const res = (k, c) => by[k].results[c];
-    const dump = (k) => JSON.stringify({ verdict: by[k].verdict, none: res(k, 'none').ads?.counts, cb: res(k, 'chromeblock').ads?.counts, consent: [res(k, 'none').consent, res(k, 'chromeblock').consent] });
+    const dump = (k) => JSON.stringify({ verdict: by[k].verdict, none: res(k, 'none').ads?.counts, cb: res(k, 'apex').ads?.counts, consent: [res(k, 'none').consent, res(k, 'apex').consent] });
 
     assert.deepEqual(report.extension.lists, ['ads', 'privacy', 'security']);
-    // reklama: widoczna bez rozszerzenia, ChromeBlock blokuje host reklamowy
+    // reklama: widoczna bez rozszerzenia, Apex AdBlocker blokuje host reklamowy
     assert.ok(res('ad', 'none').ads.counts.REAL_AD >= 1, dump('ad'));
-    assert.ok(res('ad', 'chromeblock').requests.blocked >= 1, dump('ad'));
+    assert.ok(res('ad', 'apex').requests.blocked >= 1, dump('ad'));
     assert.ok(res('ad', 'none').requests.adHostLoaded >= 1);
-    assert.ok(by.ad.diff.ads.REAL_AD.chromeblock < by.ad.diff.ads.REAL_AD.none, dump('ad'));
+    assert.ok(by.ad.diff.ads.REAL_AD.apex < by.ad.diff.ads.REAL_AD.none, dump('ad'));
     assert.ok(res('frame', 'none').ads.counts.REAL_AD >= 1, dump('frame'));
-    assert.equal(res('frame', 'chromeblock').ads.counts.REAL_AD, 0, dump('frame'));
+    assert.equal(res('frame', 'apex').ads.counts.REAL_AD, 0, dump('frame'));
     // pusty slot (w obu) i materiał promocyjny strony
     assert.equal(st('empty'), STATUS.EMPTY_AD_SLOT, dump('empty'));
     assert.equal(res('empty', 'none').ads.counts.EMPTY_AD_SLOT, 1);
-    assert.equal(res('promo', 'chromeblock').ads.counts.SITE_PROMO, 1, dump('promo'));
+    assert.equal(res('promo', 'apex').ads.counts.SITE_PROMO, 1, dump('promo'));
     // etykieta w <main>/wysokim wrapperze: nie REAL_AD, najwyżej LABEL_ONLY; zwykłe zdjęcia nie zmieniają wyniku
     for (const k of ['mainlabel', 'wraplabel']) {
       for (const c of CONFIGS) {
@@ -374,7 +374,7 @@ test('atrapy stron w Chromium (bez internetu): none vs ChromeBlock, consent, sta
       }
       assert.equal(st(k), STATUS.PASS, dump(k));
     }
-    // kontrola: prawdziwy .ad-container z etykietą i obrazem = REAL_AD (bez rozszerzenia; ChromeBlock ukrywa .ad-container)
+    // kontrola: prawdziwy .ad-container z etykietą i obrazem = REAL_AD (bez rozszerzenia; Apex AdBlocker ukrywa .ad-container)
     assert.equal(res('adcontainer', 'none').ads.counts.REAL_AD, 1, dump('adcontainer'));
     assert.match(res('adcontainer', 'none').ads.samples.REAL_AD[0], /^div\.ad-container 300x\d+ „REKLAMA”/);
     // billboard i halfpage z etykietą (bez selektora, lokalne obrazy) nadal REAL_AD w obu konfiguracjach
@@ -422,15 +422,15 @@ test('atrapy stron w Chromium (bez internetu): none vs ChromeBlock, consent, sta
     assert.deepEqual([st('cmpcustom'), st('cmptwostep'), st('cmpnoreject'), st('cmpoutside')], [STATUS.PASS, STATUS.PASS, STATUS.CONSENT_INCONCLUSIVE, STATUS.CONSENT_INCONCLUSIVE]);
     assert.deepEqual(hits.accepted, [], 'nigdy nie kliknięto akceptacji');
     assert.deepEqual(hits.outside, [], 'przycisk ustawień poza CMP nie został kliknięty');
-    // anti-adblock tylko z ChromeBlock
+    // anti-adblock tylko z Apex AdBlocker
     assert.equal(st('anti'), STATUS.ANTI_ADBLOCK, dump('anti'));
     assert.equal(res('anti', 'none').antiAdblock, '');
-    // pusta strona tylko z ChromeBlock
+    // pusta strona tylko z Apex AdBlocker
     assert.equal(st('blank'), STATUS.BREAKAGE, dump('blank'));
     assert.match(by.blank.verdict.reasons.join(), /pusta strona/);
-    // challenge: w obu (nie obwiniamy) i tylko z ChromeBlock (do ręcznej weryfikacji)
+    // challenge: w obu (nie obwiniamy) i tylko z Apex AdBlocker (do ręcznej weryfikacji)
     assert.deepEqual([st('challenge'), by.challenge.verdict.scope], [STATUS.BOT_CHALLENGE, 'both']);
-    assert.deepEqual([st('cbchallenge'), by.cbchallenge.verdict.scope], [STATUS.BOT_CHALLENGE, 'chromeblock']);
+    assert.deepEqual([st('cbchallenge'), by.cbchallenge.verdict.scope], [STATUS.BOT_CHALLENGE, 'apex']);
     assert.match(by.cbchallenge.knownCase, /powtarzalność/);
     // błąd strony w obu
     assert.equal(st('error'), STATUS.SITE_ERROR);
@@ -445,14 +445,14 @@ test('atrapy stron w Chromium (bez internetu): none vs ChromeBlock, consent, sta
     // raporty i zrzuty (ta sama rozdzielczość obok siebie)
     for (const f of ['latest.json', 'latest.txt', 'latest.html']) assert.ok(fs.existsSync(path.join(outDir, f)), f);
     const html = fs.readFileSync(path.join(outDir, 'latest.html'), 'utf8');
-    assert.match(html, /BEZ ChromeBlock[\s\S]*Z ChromeBlock/);
+    assert.match(html, /BEZ Apex AdBlocker[\s\S]*Z Apex AdBlocker/);
     const shots = [...html.matchAll(/<img src="([^"]+)"/g)].map((x) => x[1]);
-    assert.equal(shots.length, hosts.length * 2 - 0, 'zrzut none i chromeblock dla każdej strony');
+    assert.equal(shots.length, hosts.length * 2 - 0, 'zrzut none i apex dla każdej strony');
     for (const s of shots) assert.ok(fs.existsSync(path.join(outDir, s)), s);
     const sizes = new Set(shots.map((s) => { const b = fs.readFileSync(path.join(outDir, s)); for (let i = 2; i < b.length;) { const len = b.readUInt16BE(i + 2); if (b[i + 1] >= 0xc0 && b[i + 1] <= 0xc2) return `${b.readUInt16BE(i + 7)}x${b.readUInt16BE(i + 5)}`; i += 2 + len; } return '?'; }));
     assert.deepEqual([...sizes], ['1366x800']);
     const json = JSON.parse(fs.readFileSync(path.join(outDir, 'latest.json'), 'utf8'));
-    assert.equal(json.kind, 'chromeblock-single-blocker-sites');
+    assert.equal(json.kind, 'apex-single-blocker-sites');
     assert.equal(json.sites.length, hosts.length);
     assert.match(fs.readFileSync(path.join(outDir, 'latest.txt'), 'utf8'), /bez → z/);
   } finally {

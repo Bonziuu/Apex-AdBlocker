@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ChromeBlock – powtarzalny baseline rozmiaru i wydajności (narzędzie developerskie, NIE trafia do paczki).
+// Apex AdBlocker – powtarzalny baseline rozmiaru i wydajności (narzędzie developerskie, NIE trafia do paczki).
 //
 //   npm run perf:baseline                     pełny pomiar (rozmiar + startup + runtime), raport w perf/results/
 //   npm run perf:baseline -- --size-only      tylko rozmiar paczki (deterministyczny, bez Chromium)
@@ -7,7 +7,7 @@
 //   npm run perf:baseline -- --write-baseline zapisuje mały plik perf/baseline.json (świadomie, do commita)
 //
 // Metryki (szczegóły: docs/perf-baseline.md):
-//   1. Rozmiar: dokładnie pliki z paczki rozszerzenia (packageDev → <tmp>/ChromeBlock), ZIP samego
+//   1. Rozmiar: dokładnie pliki z paczki rozszerzenia (packageDev → <tmp>/Apex AdBlocker), ZIP samego
 //      rozszerzenia tą samą metodą co paczka (deflate poziom 9, stała data).
 //   2A. Internal SW init: profiler z background.js (performance.now() w service workerze, czyli od
 //       timeOrigin workera) do finishStartupProfile() przy świeżej instalacji (onInstalled: install,
@@ -284,7 +284,7 @@ const PLIK = ['plik', 'pliki', 'plików'];
 
 export function formatReport(r) {
   const L = [];
-  L.push('ChromeBlock – baseline rozmiaru i wydajności', '='.repeat(64));
+  L.push('Apex AdBlocker – baseline rozmiaru i wydajności', '='.repeat(64));
   L.push(`Data: ${r.date}`, `Commit: ${r.env.commit}${r.env.workingTreeDirty ? ' (+ niezacommitowane zmiany)' : ''}`,
     `Środowisko: ${r.env.os}; ${r.env.cpu}; ${r.env.memGB} GB RAM; Node ${r.env.node}; Chromium ${r.env.chromium || 'nie uruchamiany'}; headless${r.env.ci ? '; CI' : ''}`);
   const s = r.size;
@@ -452,7 +452,7 @@ async function chromiumVersion(chromium) {
 }
 
 export async function run({ runs = DEFAULT_RUNS, sizeOnly = false, log = console.log } = {}) {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-perf-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-perf-'));
   try {
     // paczka budowana tą samą funkcją co npm run package:dev, ale w katalogu tymczasowym
     const pkg = packageDev({ outDir: path.join(tmp, 'dist') });

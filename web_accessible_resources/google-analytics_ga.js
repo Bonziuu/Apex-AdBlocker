@@ -1,4 +1,4 @@
-// ChromeBlock – atrapa starego Google Analytics (ga.js)
+// Apex AdBlocker – atrapa starego Google Analytics (ga.js)
 (function () {
   'use strict';
   const noop = function () {};

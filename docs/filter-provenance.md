@@ -9,25 +9,25 @@ Statusy:
 - `UNKNOWN` – nie da się ustalić z dostępnych danych;
 - `NEEDS LEGAL REVIEW` – fakty są znane, ale skutki prawne (np. utwór zależny, share-alike, NonCommercial) wymagają oceny prawnika.
 
-## 1. Jak listy trafiają do ChromeBlock
+## 1. Jak listy trafiają do Apex AdBlocker
 
 1. `tools/update-lists.mjs` pobiera listy (tekst) z URL-i upstreamu do `tools/lists/` (snapshoty są w repozytorium).
 2. `tools/build.mjs` wczytuje źródła z `tools/lists-config.mjs` (`LISTS`), rozwija `!#include` i `!#if` (środowisko jak uBO Lite / MV3: `ext_ublock`, `ext_ubol` = prawda; `env_mobile`, `adguard` = fałsz) i kompiluje je do plików rozszerzenia.
 3. Paczka (`tools/package-dev.mjs`) zawiera **tylko wygenerowane pliki**, nie surowe listy (`tools/` nie wchodzi do paczki).
 
-Wygenerowane pliki na listę ChromeBlock (`<id>` = `ads`, `privacy`, `security`):
+Wygenerowane pliki na listę Apex AdBlocker (`<id>` = `ads`, `privacy`, `security`):
 
 | Plik | Zawartość |
 |---|---|
 | `rules/<id>.json` | reguły `declarativeNetRequest` z filtrów sieciowych |
 | `data/<id>.json` | filtry kosmetyczne (selektory, procedury) |
 | `data/<id>.allow.json` | wyjątki |
-| `data/<id>.scriptlets.json` + `scriptlets/<id>-N.js` | scriptlety: własna biblioteka ChromeBlock (`tools/scriptlets-lib.js`) + argumenty filtrów `##+js(...)` z list |
+| `data/<id>.scriptlets.json` + `scriptlets/<id>-N.js` | scriptlety: własna biblioteka Apex AdBlocker (`tools/scriptlets-lib.js`) + argumenty filtrów `##+js(...)` z list |
 | `data/lists.json`, `data/badfilter-cross.json`, `data/scriptlet-compat.json`, `data/youtube-compat.json` | statystyki i metadane kompilacji (liczby, ID reguł; bez treści filtrów) |
 
 **Łączenie źródeł w jednym artefakcie** (każdy plik powyżej dla danej listy zawiera wszystkie jej źródła razem):
 
-| Lista ChromeBlock | Źródła połączone w jednym zestawie plików | Licencje w jednym artefakcie |
+| Lista Apex AdBlocker | Źródła połączone w jednym zestawie plików | Licencje w jednym artefakcie |
 |---|---|---|
 | `ads` | EasyList + uBlock filters (filters, quick-fixes, unbreak) + Polskie Filtry | GPL-3.0+ / CC BY-SA 3.0+ (wybór) + GPL-3.0 + **CC BY-NC-SA 4.0** |
 | `privacy` | EasyPrivacy + uBlock filters – Privacy (z Resource abuse) | GPL-3.0+ / CC BY-SA 3.0+ (wybór) + GPL-3.0 |
@@ -42,7 +42,7 @@ Wygenerowane pliki na listę ChromeBlock (`<id>` = `ads`, `privacy`, `security`)
 | Projekt upstream | EasyList (https://easylist.to/, https://github.com/easylist/easylist) | jw. |
 | URL źródłowy (`tools/update-lists.mjs`) | `https://easylist.to/easylist/easylist.txt` | `https://easylist.to/easylist/easyprivacy.txt` |
 | Snapshot w repo | `tools/lists/easylist/easylist.txt` | `tools/lists/easylist/easyprivacy.txt` |
-| Lista ChromeBlock | `ads` | `privacy` |
+| Lista Apex AdBlocker | `ads` | `privacy` |
 | Wersja (nagłówek pliku) | `Version: 202610211530`, `Last modified: 21 Oct 2026 15:30 UTC`, `Commit: 9f43d878caa40512c8ad2fd1bd6a64163f3dc4db` | identycznie |
 | Revision upstream | commit `9f43d878caa40512c8ad2fd1bd6a64163f3dc4db` istnieje w `easylist/easylist` (2026-10-22 04:29:42 +1300 = 2026-10-21 15:29 UTC, „M: Update”) | jw. |
 | SHA-256 snapshotu | `5750a60c7af11a209d09d0b2a989c1a3cc9309758b556ee41b0703e43256b808` | `f2a2aeea3b1dac02a95a04e17e9b360a346836d3c4ffc66a92df4db00dd140fb` |
@@ -63,12 +63,12 @@ Dowody:
 | URL źródłowy | `https://ublockorigin.github.io/uAssets/filters/<nazwa>.txt` |
 | Licencja | GPL-3.0 (plik `LICENSE` w repozytorium: „GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007”) |
 | Źródło licencji | nagłówek każdej listy: `License: https://github.com/uBlockOrigin/uAssets/blob/master/LICENSE`; blob `LICENSE` = `9cecc1d4669ee8af2ca727a5d8cde10cd8b2d7cc`, identyczny w commicie snapshotu i w `master` z 2026-10-26 |
-| Uznanie autorstwa | upstream nie podaje formuły; nagłówki list nie zawierają linii Copyright. README/Opcje ChromeBlock piszą „© Raymond Hill i współtwórcy” – to opis ChromeBlock, nie tekst upstreamu |
-| Obowiązki licencji | GPL-3.0 zawiera obowiązki dotyczące conveyance covered works, w tym warunki dotyczące licencji i Corresponding Source. Czy i w jakim zakresie dotyczą one wygenerowanych artefaktów ChromeBlock, pozostaje `NEEDS LEGAL REVIEW` (zob. sekcja 5). |
+| Uznanie autorstwa | upstream nie podaje formuły; nagłówki list nie zawierają linii Copyright. README/Opcje Apex AdBlocker piszą „© Raymond Hill i współtwórcy” – to opis Apex AdBlocker, nie tekst upstreamu |
+| Obowiązki licencji | GPL-3.0 zawiera obowiązki dotyczące conveyance covered works, w tym warunki dotyczące licencji i Corresponding Source. Czy i w jakim zakresie dotyczą one wygenerowanych artefaktów Apex AdBlocker, pozostaje `NEEDS LEGAL REVIEW` (zob. sekcja 5). |
 
 Nagłówki `Last modified: %timestamp%` nie zawierają daty. Wersję ustalono porównaniem hashy: `git hash-object` każdego snapshotu jest **bajtowo identyczny** z blobem w historii `uBlockOrigin/uAssets` (`master`, ścieżka `filters/<nazwa>.txt`). Kolumna „commit” = najstarszy commit, w którym ta treść pojawiła się w upstreamie.
 
-| Snapshot (`tools/lists/ubo/`) | Rola w buildzie | Lista ChromeBlock | Git blob | Commit upstream (treść identyczna od) | SHA-256 |
+| Snapshot (`tools/lists/ubo/`) | Rola w buildzie | Lista Apex AdBlocker | Git blob | Commit upstream (treść identyczna od) | SHA-256 |
 |---|---|---|---|---|---|
 | `filters.txt` | źródło | `ads` | `febbadee85966cfae5409bb5125defe3c93f9a6d` | `794263c7392c4edc54afda88af7b56e853750562` (2026-10-20) | `758e1160aa051f1a0b095a5e8a899f4d66aef9d2f7ac9e3b00241d3074f4b852` |
 | `filters-general.txt` | `!#include` z `filters.txt` | `ads` | `ea9e1970323739a73138d86ed0309cc4e131ba4f` | `61c6653485766202845083aaa3706f88e0be88d3` (2026-10-21) | `9ea476e66140b8bb7d24a3dfb7dd4f732f0a60c122da5998765d0efe1f7603ef` |
@@ -104,7 +104,7 @@ Uwagi:
 | Linia copyright (nagłówek `adblock.txt`) | `Copyright © 2026 Certyficate IT` |
 | Wymagane informacje (CC BY-NC-SA 4.0, §3) | identyfikacja twórcy, informacja o prawach autorskich, o licencji i o wyłączeniu gwarancji, URI materiału; wskazanie modyfikacji; materiał adaptowany pod tą samą lub zgodną licencją (BY-NC-SA) |
 
-| Snapshot (`tools/lists/pl/`) | Rola w buildzie | Lista ChromeBlock | Wersja (nagłówek) | Git blob | Commit upstream (treść identyczna od) | SHA-256 |
+| Snapshot (`tools/lists/pl/`) | Rola w buildzie | Lista Apex AdBlocker | Wersja (nagłówek) | Git blob | Commit upstream (treść identyczna od) | SHA-256 |
 |---|---|---|---|---|---|---|
 | `adblock.txt` | źródło | `ads` | `Version: 20261012001`; `Last modified: 20 November 2026` (sic) | `a87d2107f8e615a046d45c3e3357e7c6262c6356` | `b5eb4000fb6b0d297d7abd05203db07e9877b2fe` (2026-10-20) | `15a72737099f9335c4129f6b36318ce18ebd02a41ce27e65d5ead1de953880ad` |
 | `adblock_suplement.txt` | `!#include` (bezwarunkowo) | `ads` | `Version: 2026041301` | `4e9923b178f10aaa86b8284caf4947bf066c9f8f` | `9d42f99a95eb13e2c525d0f2284f9c4dd89b8f3d` (2026-07-20) | `8744c5ba3e8587ef0ab7c1c4a09eec2ec7bbf2dd1724a2900b9936fc4d067ea5` |
@@ -113,7 +113,7 @@ Uwagi:
 
 Uwagi:
 - Nagłówek `adblock.txt` podaje `Last modified: 20 November 2026`, a `Version: 20261012001` i linia „aktualizacja: wt, 20 pazdziernika 2026”. Daty są niespójne w samym upstreamie; zapisane dosłownie.
-- README i strona Opcji ChromeBlock piszą „© MajkiIT”, a nagłówek listy „Copyright © 2026 Certyficate IT”. Do ujednolicenia po przeglądzie prawnym (zmiana tekstu UI nie jest częścią tego audytu).
+- README i strona Opcji Apex AdBlocker piszą „© MajkiIT”, a nagłówek listy „Copyright © 2026 Certyficate IT”. Do ujednolicenia po przeglądzie prawnym (zmiana tekstu UI nie jest częścią tego audytu).
 - W ramach tego audytu nie analizowano treści reguł Polskich Filtrów; sprawdzono wyłącznie metadane, nagłówki, dokumenty licencyjne i hashe.
 
 ## 3. Snapshoty w repozytorium, których build nie używa
@@ -130,20 +130,20 @@ Te pliki są nadal redystrybuowane w repozytorium (obecnie prywatnym).
 
 ## 4. Elementy niebędące listami (dla pełności)
 
-- `tools/scriptlets-lib.js`, `shared/jsonpath.js`, `web_accessible_resources/*.js` (atrapy `adsbygoogle`, `gpt`, `apstag`, Google Analytics) – w nagłówkach oznaczone jako implementacja własna ChromeBlock; nazwy plików odpowiadają nazwom zasobów `redirect=` z list uBO (zgodność składni). W repozytorium nie znaleziono nagłówków copyright ani licencji osób trzecich. Pochodzenie kodu nie było przedmiotem tego audytu (dotyczy list).
+- `tools/scriptlets-lib.js`, `shared/jsonpath.js`, `web_accessible_resources/*.js` (atrapy `adsbygoogle`, `gpt`, `apstag`, Google Analytics) – w nagłówkach oznaczone jako implementacja własna Apex AdBlocker; nazwy plików odpowiadają nazwom zasobów `redirect=` z list uBO (zgodność składni). W repozytorium nie znaleziono nagłówków copyright ani licencji osób trzecich. Pochodzenie kodu nie było przedmiotem tego audytu (dotyczy list).
 - Testy (`tests/**`) zawierają pojedyncze linie filtrów jako dane testowe; nie ustalono, które pochodzą z list upstream – `UNKNOWN` (nie trafiają do paczki).
 
 ## 5. Pozycje `UNKNOWN` i `NEEDS LEGAL REVIEW`
 
 `NEEDS LEGAL REVIEW`:
-1. **Polskie Filtry – CC BY-NC-SA 4.0 (NonCommercial + ShareAlike).** Czy darmowa dystrybucja ChromeBlock (ewentualnie w Chrome Web Store) mieści się w „NonCommercial”, oraz czy skompilowane reguły DNR / kosmetyka / argumenty scriptletów to „Adapted Material” podlegający share-alike.
+1. **Polskie Filtry – CC BY-NC-SA 4.0 (NonCommercial + ShareAlike).** Czy darmowa dystrybucja Apex AdBlocker (ewentualnie w Chrome Web Store) mieści się w „NonCommercial”, oraz czy skompilowane reguły DNR / kosmetyka / argumenty scriptletów to „Adapted Material” podlegający share-alike.
 2. **Mieszanie licencji w jednym artefakcie listy `ads`:** EasyList (GPL-3.0+ albo CC BY-SA 3.0+), uBlock filters (GPL-3.0) i Polskie Filtry (CC BY-NC-SA 4.0) w tych samych plikach `rules/ads.json`, `data/ads*.json`, `scriptlets/ads-*.js`. Creative Commons obecnie nie wskazuje żadnej licencji spoza CC jako BY-NC-SA Compatible License dla BY-NC-SA 4.0 (https://creativecommons.org/share-your-work/licensing-considerations/compatible-licenses). Skutki dla mieszanych artefaktów: `NEEDS LEGAL REVIEW`.
 3. **GPL-3.0 / CC BY-SA a dystrybucja paczki.**
    - *Treść licencji (fakt):* GPL-3.0 zawiera obowiązki dotyczące conveyance covered works, w tym warunki dotyczące licencji i Corresponding Source; CC BY-SA zawiera warunki uznania autorstwa i share-alike.
    - *Stan paczki (fakt):* od wydania 1.0.0 paczka zawiera `THIRD_PARTY_NOTICES.md` (autorzy, źródła, licencje z adresami, informacja o zmianach i odesłanie do postanowień licencji o wyłączeniu gwarancji); uznanie autorstwa jest też w zakładce „O wtyczce” w Opcjach. Paczka nie zawiera pełnych tekstów licencji.
-   - *Pytanie otwarte (`NEEDS LEGAL REVIEW`):* czy wygenerowane artefakty ChromeBlock (reguły DNR, dane kosmetyczne, pliki scriptletów) są covered / modified work w rozumieniu tych licencji i jakie obowiązki z tego wynikają. Ten dokument tego nie rozstrzyga.
-4. **Licencja kodu ChromeBlock:** repozytorium nie ma pliku licencji (fakt). Audyt niczego nie dodaje. Czy połączenie własnego kodu z treściami GPL-3.0 (scriptlety łączą bibliotekę ChromeBlock z argumentami filtrów w jednym pliku) tworzy covered work i jakie ma to skutki – `NEEDS LEGAL REVIEW`.
-5. ~~Commitowana paczka `download/ChromeBlock-dev.zip` była nieaktualna~~ (0.3.4-dev z 2026-10-25, z artefaktami list `cookies` i `annoyances`) – usunięta z repozytorium; ZIP tworzy się tylko lokalnie przez `npm run package:dev` (ignorowany przez Git).
+   - *Pytanie otwarte (`NEEDS LEGAL REVIEW`):* czy wygenerowane artefakty Apex AdBlocker (reguły DNR, dane kosmetyczne, pliki scriptletów) są covered / modified work w rozumieniu tych licencji i jakie obowiązki z tego wynikają. Ten dokument tego nie rozstrzyga.
+4. **Licencja kodu Apex AdBlocker:** repozytorium nie ma pliku licencji (fakt). Audyt niczego nie dodaje. Czy połączenie własnego kodu z treściami GPL-3.0 (scriptlety łączą bibliotekę Apex AdBlocker z argumentami filtrów w jednym pliku) tworzy covered work i jakie ma to skutki – `NEEDS LEGAL REVIEW`.
+5. ~~Commitowana paczka `download/Apex-AdBlocker-dev.zip` była nieaktualna~~ (0.3.4-dev z 2026-10-25, z artefaktami list `cookies` i `annoyances`) – usunięta z repozytorium; ZIP tworzy się tylko lokalnie przez `npm run package:dev` (ignorowany przez Git).
 
 `UNKNOWN`:
 1. Dokładna wersja EasyList/EasyPrivacy jako pliku: commit źródłowy znany (`9f43d878…`), ale bajtowej zgodności pliku zbudowanego przez EasyList nie da się sprawdzić (plik nie jest przechowywany w repo upstreamu).

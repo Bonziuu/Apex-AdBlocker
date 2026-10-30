@@ -15,14 +15,14 @@ Narzędzie (`tools/perf-baseline.mjs`) nie trafia do paczki rozszerzenia: paczka
 
 ## 1. Rozmiar
 
-- Pliki: dokładnie te, które buduje `npm run package:dev` (`packageDev()` → katalog `ChromeBlock/`), budowane w katalogu tymczasowym. `dist/` nie jest ruszany.
+- Pliki: dokładnie te, które buduje `npm run package:dev` (`packageDev()` → katalog `Apex AdBlocker/`), budowane w katalogu tymczasowym. `dist/` nie jest ruszany.
 - ZIP: tylko pliki rozszerzenia, ta sama metoda co paczka (`createZip`: deflate raw poziom 9, stała data), więc wynik jest powtarzalny. Uwaga: wcześniejsze liczby z `zip -9` (narzędzie systemowe) różnią się o kilkadziesiąt KB, bo to inna implementacja deflate.
 - Kategorie są rozłączne (suma = cała paczka): `rules/`, `data/`, `scriptlets/`, JS rozszerzenia (`background*`, `shared/`, `content/`, `youtube/`), UI (`popup/`, `options/`, `welcome/`), ikony/zasoby/manifest. Dla każdej: bajty rozpakowane i po deflate.
 - Hash SHA-256 zawartości paczki (ścieżki + treść): identyczny hash = identyczny produkt.
 
 ## 2. Startup – trzy różne metryki
 
-**2A. Internal service-worker init** (najważniejsza dla kodu ChromeBlock)
+**2A. Internal service-worker init** (najważniejsza dla kodu Apex AdBlocker)
 Profiler z `background.js`: `performance.now()` w service workerze, czyli czas od `timeOrigin` workera, do `finishStartupProfile()`. Odczyt z `chrome.storage.session` przez `worker.evaluate` (bez otwierania stron). Scenariusz: świeża instalacja (`onInstalled: install`), czyli razem z pierwszą synchronizacją rulesetów, reguł dynamicznych i scriptletów. Raport pokazuje znaczniki (ms od startu SW) i etapy profilera.
 - `syncRulesets`, `syncDynamicRules` i `syncScriptlets` startują równolegle (`Promise.allSettled`), więc ich czasy się nakładają i nie wolno ich sumować.
 - Restart przeglądarki (`onStartup`) nie jest tu mierzalny: Chromium z `--load-extension` instaluje rozszerzenie od nowa przy każdym uruchomieniu.

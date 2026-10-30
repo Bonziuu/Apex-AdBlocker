@@ -1,4 +1,4 @@
-// ChromeBlock – atrapa Google Publisher Tag (gpt.js)
+// Apex AdBlocker – atrapa Google Publisher Tag (gpt.js)
 (function () {
   'use strict';
   const noop = function () {};

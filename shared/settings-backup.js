@@ -7,7 +7,7 @@
 //
 // Import: najpierw walidacja CAŁEGO pliku – jeśli cokolwiek jest niepoprawne, nic nie jest zapisywane.
 // Nieznane pola są ignorowane (nie trafiają do storage).
-// Kopie wersji 1 (starsze wersje ChromeBlock) nadal się importują: przywracane są disabledSites
+// Kopie wersji 1 (starsze wersje Apex AdBlocker) nadal się importują: przywracane są disabledSites
 // i userFilters, a enabledLists, protectionMode i youtubeFocus są ignorowane (nie są walidowane
 // i nie wpływają na stały zestaw list).
 // Identyfikator formatu `chromeblock-settings` pozostaje celowo bez zmian, żeby stare kopie

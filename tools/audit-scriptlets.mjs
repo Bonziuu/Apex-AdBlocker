@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ChromeBlock – audyt zgodności scriptletów (+js) z aktualnymi listami filtrów.
+// Apex AdBlocker – audyt zgodności scriptletów (+js) z aktualnymi listami filtrów.
 //
 //   node tools/audit-scriptlets.mjs                 raport tekstowy
 //   node tools/audit-scriptlets.mjs --json          raport JSON (stdout)
@@ -199,7 +199,7 @@ async function main() {
   if (args.includes('--update-youtube-baseline')) {
     const gaps = report.youtube.unsupported.map((e) => ({ filter: e.line, scriptlet: e.name, status: e.status, reason: e.reason }));
     fs.writeFileSync(BASELINE_PATH, JSON.stringify({
-      note: 'Krytyczne filtry YouTube, o których wiadomo, że ChromeBlock ich NIE wykonuje. Build i testy zgłaszają błąd tylko dla braków spoza tej listy. Aktualizuj świadomie: node tools/audit-scriptlets.mjs --update-youtube-baseline',
+      note: 'Krytyczne filtry YouTube, o których wiadomo, że Apex AdBlocker ich NIE wykonuje. Build i testy zgłaszają błąd tylko dla braków spoza tej listy. Aktualizuj świadomie: node tools/audit-scriptlets.mjs --update-youtube-baseline',
       gaps,
     }, null, 2) + '\n');
     console.log(`Zapisano ${gaps.length} znanych braków do youtube/known-gaps.json`);

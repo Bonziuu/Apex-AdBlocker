@@ -54,8 +54,8 @@ test('niechciane pliki: narzędzia, testy, raporty, ZIP-y, dokumentacja, package
   assert.deepEqual(unwantedFiles(['manifest.json', 'background.js', 'rules/ads.json', 'icons/a.png']), []);
   // notices w katalogu głównym – dozwolone; ten sam plik głębiej albo inne .md – nie
   assert.deepEqual(unwantedFiles(['THIRD_PARTY_NOTICES.md', 'docs/THIRD_PARTY_NOTICES.md', 'x/THIRD_PARTY_NOTICES.md', 'NOTES.md']), ['docs/THIRD_PARTY_NOTICES.md', 'x/THIRD_PARTY_NOTICES.md', 'NOTES.md']);
-  assert.deepEqual(unwantedFiles(['tools/perf-baseline.mjs', 'tests/x.test.mjs', 'perf/baseline.json', 'perf/results/latest.txt', 'download/ChromeBlock-dev.zip', 'README.md', 'package.json', 'node_modules/a.js', 'x/report.log']),
-    ['tools/perf-baseline.mjs', 'tests/x.test.mjs', 'perf/baseline.json', 'perf/results/latest.txt', 'download/ChromeBlock-dev.zip', 'README.md', 'package.json', 'node_modules/a.js', 'x/report.log']);
+  assert.deepEqual(unwantedFiles(['tools/perf-baseline.mjs', 'tests/x.test.mjs', 'perf/baseline.json', 'perf/results/latest.txt', 'download/Apex-AdBlocker-dev.zip', 'README.md', 'package.json', 'node_modules/a.js', 'x/report.log']),
+    ['tools/perf-baseline.mjs', 'tests/x.test.mjs', 'perf/baseline.json', 'perf/results/latest.txt', 'download/Apex-AdBlocker-dev.zip', 'README.md', 'package.json', 'node_modules/a.js', 'x/report.log']);
 });
 
 test('raport rozmiaru: sumy kategorii = całość, top N malejąco, procenty, powtarzalny hash i ZIP', () => {

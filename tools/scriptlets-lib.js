@@ -1,4 +1,4 @@
-// ChromeBlock – biblioteka scriptletów (implementacja własna).
+// Apex AdBlocker – biblioteka scriptletów (implementacja własna).
 //
 // Wklejana przez tools/build.mjs do scriptlets/<lista>-<n>.js i uruchamiana
 // w świecie MAIN strony na document_start. Wszystko jest zamknięte w IIFE.
@@ -7,7 +7,7 @@
 // Które warianty argumentów są obsługiwane, decyduje shared/scriptlet-specs.js
 // (filtry z nieobsługiwanymi wariantami w ogóle nie trafiają do tego pliku).
 //
-// Przed tym kodem build wkleja klasę ChromeBlockJSONPath (shared/jsonpath.js).
+// Przed tym kodem build wkleja klasę ApexJSONPath (shared/jsonpath.js).
 
 const win = window;
 const doc = document;
@@ -30,11 +30,11 @@ const nativeJSONStringify = JSON.stringify;
 // scriptletów TYLKO przy włączonych pomiarach. Flaga jest sprawdzana raz, tutaj: przy
 // wyłączonym profilerze żaden wrapper nie jest owijany pomiarem (te same ścieżki kodu).
 // Zbierane wyłącznie: nazwa scriptletu, przechwycona funkcja, liczba wywołań i czasy (ms).
-// Mierzony jest czas własny ChromeBlock – bez czasu oryginalnej funkcji strony.
-const PERF_EVENT = 'chromeblock:scriptlet-perf';
+// Mierzony jest czas własny Apex AdBlocker – bez czasu oryginalnej funkcji strony.
+const PERF_EVENT = 'apex:scriptlet-perf';
 const perf = (() => {
   let on = false;
-  try { on = win[Symbol.for('chromeblock.scriptletPerf')] === true; } catch { /* */ }
+  try { on = win[Symbol.for('apex.scriptletPerf')] === true; } catch { /* */ }
   if (!on) return null;
   const now = performance.now.bind(performance);
   const nativeSetTimeout = win.setTimeout.bind(win);
@@ -504,7 +504,7 @@ function setConstantImpl(trusted, chain = '', rawValue = '', ...varargs) {
     const checked = validateConstant(trusted, rawValue, extra);
     if (!checked.ok) return;
     let normalValue = checked.value;
-    // Odczyty z kodu samego scriptletu (nigdy nie zachodzą w ChromeBlock) – wartownik.
+    // Odczyty z kodu samego scriptletu (nigdy nie zachodzą w Apex AdBlocker) – wartownik.
     const thisScript = doc.currentScript || {};
     let aborted = false;
     // Wersja niezaufana: jeśli strona przypisze wartość innego typu, pułapka się wycofuje.
@@ -576,7 +576,7 @@ function replaceNodeTextImpl(nodeName = '', pattern = '', replacement = '', ...v
     try {
       if (tt instanceof Object && typeof tt.getPropertyType === 'function'
           && tt.getPropertyType('script', 'textContent') === 'TrustedScript') {
-        return tt.createPolicy('chromeblock-' + Math.random().toString(36).slice(2), plain);
+        return tt.createPolicy('apex-' + Math.random().toString(36).slice(2), plain);
       }
     } catch { /* */ }
     return plain;
@@ -1596,7 +1596,7 @@ function trustedSetCookie(name, value, offset, path, options) {
 }
 
 function compileJsonPath(trusted, q) {
-  const jsonp = ChromeBlockJSONPath.compileQuery(q);
+  const jsonp = ApexJSONPath.compileQuery(q);
   if (!jsonp.valid) return null;
   if (jsonp.hasAssignment && !trusted) return null;
   return jsonp;

@@ -1,4 +1,4 @@
-// ChromeBlock – kompilacja własnych filtrów użytkownika („Moje filtry”).
+// Apex AdBlocker – kompilacja własnych filtrów użytkownika („Moje filtry”).
 // Czysty moduł: bez Chrome API, bez I/O i bez stanu – tekst filtrów → reguły DNR, kosmetyka, błędy, liczba.
 // Wynik trafia do background.js (reguły dynamiczne, dane kosmetyczne, komunikaty w Opcjach).
 

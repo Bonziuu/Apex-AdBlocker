@@ -1,4 +1,4 @@
-// ChromeBlock – czysta logika rejestracji scriptletów: opis rejestracji dla chrome.scripting
+// Apex AdBlocker – czysta logika rejestracji scriptletów: opis rejestracji dla chrome.scripting
 // i porównanie z zestawem już zarejestrowanym. Bez Chrome API, I/O i stanu – synchronizacja
 // (kolejka, wywołania chrome.scripting, cache, health, profil startu) zostaje w background.js.
 

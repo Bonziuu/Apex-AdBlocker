@@ -1,4 +1,4 @@
-// ChromeBlock – magazyn raportów YouTube Playback Health (service worker).
+// Apex AdBlocker – magazyn raportów YouTube Playback Health (service worker).
 //
 // Model: tabId → frameId → raport. Raport z ramki (iframe) NIE nadpisuje
 // raportu głównego dokumentu. Zasady agregacji dla karty:

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ChromeBlock – przenośny runner testów (Node 20+).
+// Apex AdBlocker – przenośny runner testów (Node 20+).
 //
 // Node 20 nie rozwija wzorców glob w `node --test`, więc pliki są wyszukiwane
 // tutaj (deterministycznie, posortowane) i przekazywane jako jawne ścieżki.

@@ -104,7 +104,7 @@ test('narzędzie oznaczone jako historyczne: bez uruchomienia, bez wrappera i po
   assert.deepEqual(logs, [LEGACY_NOTICE]);
   assert.match(LEGACY_NOTICE, /legacy\/protection-modes-tester/);
   assert.ok(!fs.existsSync(path.join(ROOT, 'test-protection-modes.cmd')));
-  assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'test-chromeblock.cmd'), 'utf8'), /--modes|MODES/);
-  assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'tests/local/chromeblock-local-test.mjs'), 'utf8'), /protection-modes-sites/);
+  assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'test-apex-adblocker.cmd'), 'utf8'), /--modes|MODES/);
+  assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'tests/local/apex-local-test.mjs'), 'utf8'), /protection-modes-sites/);
   assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'tools/package-dev.mjs'), 'utf8'), /protection-modes/);
 });

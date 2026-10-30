@@ -67,8 +67,8 @@ if (r.status !== 0) failures.push('tests');
 
 // 5. Chromium smoke test (opcjonalny; bez stron zewnętrznych)
 step('Chromium smoke test');
-if (process.env.CHROMEBLOCK_SMOKE === '0') {
-  console.log(`${SKIP_MESSAGE} (CHROMEBLOCK_SMOKE=0)`);
+if (process.env.APEX_SMOKE === '0') {
+  console.log(`${SKIP_MESSAGE} (APEX_SMOKE=0)`);
 } else {
   const smoke = await runSmoke();
   if (smoke.status === 'SKIP') console.log(`${SKIP_MESSAGE} (${smoke.reasons.join('; ')})`);

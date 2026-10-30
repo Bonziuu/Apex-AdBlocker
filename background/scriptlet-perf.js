@@ -1,4 +1,4 @@
-// ChromeBlock – agregacja pomiarów scriptletów (Opcje → Diagnostyka → „Najdroższe scriptlety”).
+// Apex AdBlocker – agregacja pomiarów scriptletów (Opcje → Diagnostyka → „Najdroższe scriptlety”).
 //
 // Dane przychodzą ze stron (świat MAIN → content/cosmetic.js → service worker) tylko przy
 // włączonych „Pomiarach wydajności”. Ponieważ strona może wysłać dowolne zdarzenie, wejście jest
@@ -9,7 +9,7 @@
 import { SCRIPTLET_SPECS } from '../shared/scriptlet-specs.js';
 
 export const LABEL_RE = /^[a-z][A-Za-z0-9-]{1,60} · [A-Za-z][A-Za-z0-9._:]{0,60}$/;
-// Etykieta musi zaczynać się od nazwy scriptletu z rejestru ChromeBlock (nie od dowolnego tekstu strony).
+// Etykieta musi zaczynać się od nazwy scriptletu z rejestru Apex AdBlocker (nie od dowolnego tekstu strony).
 const KNOWN = new Set(Object.keys(SCRIPTLET_SPECS));
 export const validLabel = (label) => typeof label === 'string' && LABEL_RE.test(label) && KNOWN.has(label.slice(0, label.indexOf(' · ')));
 export const MAX_LABELS = 200;

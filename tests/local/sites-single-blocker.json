@@ -1,5 +1,5 @@
 {
-  "description": "Strony do testu jednego ChromeBlocka: porównanie bez rozszerzenia (none) i z ChromeBlock. Tylko adresy stron głównych – bez reguł, bez logowania. YouTube ma osobny test (sekcja youtube). Corpus przejęty z historycznego testera trybów (legacy/protection-modes-tester).",
+  "description": "Strony do testu jednego Apex AdBlocker: porównanie bez rozszerzenia (none) i z Apex AdBlocker. Tylko adresy stron głównych – bez reguł, bez logowania. YouTube ma osobny test (sekcja youtube). Corpus przejęty z historycznego testera trybów (legacy/protection-modes-tester).",
   "categories": {
     "portale i news (PL)": [
       "https://www.onet.pl/",
@@ -76,11 +76,11 @@
     ]
   },
   "knownCases": {
-    "wykop.pl": "Wcześniej z ChromeBlock widoczny duży baner reklamowy – możliwy realny ad leak. Sprawdź zrzut z ChromeBlock.",
-    "forbes.com": "Wcześniej z ChromeBlock challenge „nie jestem robotem”, bez rozszerzenia zwykła treść. Sprawdź, czy się powtarza i czy występuje także w kontroli.",
+    "wykop.pl": "Wcześniej z Apex AdBlocker widoczny duży baner reklamowy – możliwy realny ad leak. Sprawdź zrzut z Apex AdBlocker.",
+    "forbes.com": "Wcześniej z Apex AdBlocker challenge „nie jestem robotem”, bez rozszerzenia zwykła treść. Sprawdź, czy się powtarza i czy występuje także w kontroli.",
     "filmweb.pl": "Stary automat zgłaszał dużo błędów JS, a zrzut wyglądał poprawnie. Błędy JS same w sobie nie są breakage.",
     "theguardian.com": "Podobnie jak Filmweb: oceniaj działanie wizualne, nie liczbę błędów JS.",
-    "allegro.pl": "Challenge występował także bez rozszerzenia – nie jest to błąd ChromeBlock, jeśli kontrola też go ma."
+    "allegro.pl": "Challenge występował także bez rozszerzenia – nie jest to błąd Apex AdBlocker, jeśli kontrola też go ma."
   },
   "youtube": {
     "watch": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",

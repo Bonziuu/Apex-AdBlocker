@@ -1,10 +1,10 @@
-// ChromeBlock E2E – klasyfikacja wyników testów YouTube (czysta logika, bez przeglądarki).
+// Apex AdBlocker E2E – klasyfikacja wyników testów YouTube (czysta logika, bez przeglądarki).
 // Testowana jednostkowo w tests/youtube/e2e-classify.test.mjs.
 //
 // Kategorie wyniku przypadku:
 //   PLAYBACK_OK          – odtwarzanie działa; reklama: brak okazji (INCONCLUSIVE)
 //   AD_BLOCKING_OBSERVED – odtwarzanie działa i jest DOWÓD, że reklama była przydzielona,
-//                          a ChromeBlock ją usunął (np. surowa odpowiedź miała pola reklam,
+//                          a Apex AdBlocker ją usunął (np. surowa odpowiedź miała pola reklam,
 //                          a odpowiedź widoczna dla strony już nie)
 //   INCONCLUSIVE         – werdykt reklamowy: brak okazji reklamowej (nie „reklamy zablokowane”)
 //   AD_VISIBLE_FAILURE   – odtwarzacz był w stanie reklamy przez ≥ progu kolejnych sekund (FAIL)

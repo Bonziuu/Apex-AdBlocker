@@ -1,18 +1,18 @@
 #!/usr/bin/env node
-// ChromeBlock – pomiar kosztu wydajności na (syntetycznym) YouTube w prawdziwym Chromium.
+// Apex AdBlocker – pomiar kosztu wydajności na (syntetycznym) YouTube w prawdziwym Chromium.
 //
 //   node tools/perf/youtube-perf.mjs [--runs 3] [--seconds 20] [--out wynik.json] [--dev-perf]
 //
 // Konfiguracje (każda w świeżym, tymczasowym profilu):
 //   baseline      – Chromium bez rozszerzenia
-//   chromeblock   – ChromeBlock (domyślne listy)
-//   no-scriptlets – ChromeBlock z wyrejestrowanymi scriptletami (izoluje ich koszt)
+//   apex   – Apex AdBlocker (domyślne listy)
+//   no-scriptlets – Apex AdBlocker z wyrejestrowanymi scriptletami (izoluje ich koszt)
 //
 // Strona testowa jest serwowana lokalnie przez Playwright pod adresem www.youtube.com
 // (bez dostępu do sieci; każde inne żądanie jest przerywane). Mierzone:
 //   - Performance.getMetrics: ScriptDuration, TaskDuration, RecalcStyle, Layout,
 //   - profil CPU (CDP) z przypisaniem czasu do: scriptlety / cosmetic.js / health.js / strona,
-//   - liczniki diagnostyki ChromeBlock (MutationObserver, przebiegi filtrów proceduralnych),
+//   - liczniki diagnostyki Apex AdBlocker (MutationObserver, przebiegi filtrów proceduralnych),
 //   - mikropomiar kosztu jednego wywołania: appendChild, setTimeout, JSON.stringify, JSON.parse.
 
 import fs from 'node:fs';
@@ -25,8 +25,8 @@ const arg = (name, def) => { const i = process.argv.indexOf(name); return i > 0 
 const RUNS = Number(arg('--runs', 3));
 const SECONDS = Number(arg('--seconds', 20));
 const OUT = arg('--out', '');
-const CONFIGS = (arg('--configs', 'baseline,chromeblock,no-scriptlets')).split(',');
-// --dev-perf: włącza „Pomiary wydajności” ChromeBlock (liczniki cosmetic + profiler scriptletów).
+const CONFIGS = (arg('--configs', 'baseline,apex,no-scriptlets')).split(',');
+// --dev-perf: włącza „Pomiary wydajności” Apex AdBlocker (liczniki cosmetic + profiler scriptletów).
 // Domyślnie wyłączone, bo profiler sam dodaje narzut i zaburzyłby porównanie.
 const DEV_PERF = process.argv.includes('--dev-perf');
 
@@ -125,7 +125,7 @@ async function launch(chromium, config, tmp) {
 }
 
 async function runOnce(chromium, config) {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-perf-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-perf-'));
   const { context, options } = await launch(chromium, config, tmp);
   try {
     const page = await context.newPage();

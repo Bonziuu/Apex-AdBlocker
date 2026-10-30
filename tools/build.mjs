@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ChromeBlock – budowanie reguł z list filtrów (tools/lists/).
+// Apex AdBlocker – budowanie reguł z list filtrów (tools/lists/).
 //
 //   node tools/build.mjs              pełny build + walidacja YouTube (strict)
 //   node tools/build.mjs --no-strict  build bez przerywania przy nowych brakach YouTube
@@ -302,7 +302,7 @@ export function shardScriptlets(listId, listName, compiled, scriptletLib) {
     if (!shardHosts.length) return;
     const { matches, sessionMatches } = splitShardMatches(shardHosts);
     const file = `scriptlets/${listId}-${n}.js`;
-    const js = `/* ChromeBlock – scriptlety listy "${listName}" (część ${n + 1}/${shardCount}). Plik generowany przez tools/build.mjs. */
+    const js = `/* Apex AdBlocker – scriptlety listy "${listName}" (część ${n + 1}/${shardCount}). Plik generowany przez tools/build.mjs. */
 (function () {
 'use strict';
 const CALLS = ${JSON.stringify(shard.calls)};

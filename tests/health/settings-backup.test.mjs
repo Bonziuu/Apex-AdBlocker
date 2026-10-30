@@ -27,7 +27,7 @@ function backupText(settings = {}, extra = {}) {
     ...extra,
   });
 }
-/** Kopia v1 ze starszej wersji ChromeBlock (z listami, trybem i Focus Mode). */
+/** Kopia v1 ze starszej wersji Apex AdBlocker (z listami, trybem i Focus Mode). */
 function backupV1(enabledLists, protectionMode, more = {}) {
   return JSON.stringify({
     format: BACKUP_FORMAT, version: 1, exportedAt: '2026-10-20T12:00:00.000Z', extensionVersion: '0.3.2-dev',

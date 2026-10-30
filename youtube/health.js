@@ -1,4 +1,4 @@
-// ChromeBlock – YouTube Playback Health (skrypt treści, świat izolowany).
+// Apex AdBlocker – YouTube Playback Health (skrypt treści, świat izolowany).
 //
 // Lekka diagnostyka odtwarzacza YouTube. Działa lokalnie: sprawdza tylko DOM
 // odtwarzacza co kilka sekund i wysyła do service workera status
@@ -44,9 +44,9 @@
     },
   };
 
-  if (typeof globalThis.__chromeblockTest === 'object') { globalThis.__chromeblockTest.youtubeHealth = NS; return; }
-  if (window.__chromeblockYouTubeHealth) return;
-  window.__chromeblockYouTubeHealth = true;
+  if (typeof globalThis.__apexTest === 'object') { globalThis.__apexTest.youtubeHealth = NS; return; }
+  if (window.__apexYouTubeHealth) return;
+  window.__apexYouTubeHealth = true;
 
   const visible = (el) => !!el && (typeof el.checkVisibility === 'function'
     ? el.checkVisibility({ opacityProperty: true, visibilityProperty: true })

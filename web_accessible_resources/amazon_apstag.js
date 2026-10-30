@@ -1,4 +1,4 @@
-// ChromeBlock – atrapa Amazon Publisher Services (apstag)
+// Apex AdBlocker – atrapa Amazon Publisher Services (apstag)
 (function () {
   'use strict';
   const noop = function () {};

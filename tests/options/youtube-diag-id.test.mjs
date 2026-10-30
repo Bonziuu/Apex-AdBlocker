@@ -48,7 +48,7 @@ try { exe = chromium ? chromium.executablePath() : ''; } catch { /* */ }
 const skip = !chromium || !exe || !fs.existsSync(exe) ? 'Playwright/Chromium niedostępne' : false;
 
 test('Opcje w Chromium: diagnostyka YouTube w #youtubeDiag; każda zakładka ma niepusty panel; brak martwych kontrolek', { skip, timeout: 180_000 }, async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-ytdiag-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-ytdiag-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });

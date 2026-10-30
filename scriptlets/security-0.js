@@ -1,12 +1,12 @@
-/* ChromeBlock – scriptlety listy "Złośliwe strony" (część 1/1). Plik generowany przez tools/build.mjs. */
+/* Apex AdBlocker – scriptlety listy "Złośliwe strony" (część 1/1). Plik generowany przez tools/build.mjs. */
 (function () {
 'use strict';
 const CALLS = [["prevent-addEventListener","DOMContentLoaded","fullscreenEnabled"],["prevent-addEventListener","beforeunload","/[Ww]orker/"],["prevent-addEventListener","mousemove","loadSecret"],["remove-node-text","script","TextDecoder"],["remove-node-text","script","/document\\.currentScript\\.remove|0x0/"],["remove-node-text","script","String.fromCharCode"],["abort-current-script","fetch","_0x","/^data:/"],["abort-on-property-write","ai_front"],["abort-current-script","document.createElement",".onerror"],["abort-current-script","String.prototype.toLowerCase","Contract"],["remove-node-text","script","randomUUID"],["abort-current-script","atob","Uint8Array"],["remove-node-text","script","(self);"],["abort-current-script","atob","new"],["noeval-if","tigervip2"],["abort-current-script","atob","new Function(atob("],["abort-current-script","WebSocket","event.data"],["abort-current-script","open","executeCode"],["noeval-if","_0x"]];
 const HOSTS = {"z13.web.core.windows.net":[0],"web.core.windows.net":[1],"ondigitalocean.app":[2],"gemfellowship.org":[3],"longhall.consulting":[4],"casabasics.es":[5],"abogadosrosarinos.com":[6,7],"aptisweb.com":[6,7],"avene-hebergement.com":[6,7],"caesarjaco.co.id":[6,7],"https-xhamster.com":[6,7],"skybap.shop":[6,7],"strand-co.com":[8],"igualdad.iaa.csic.es":[9],"cizitensports.com":[10],"webrick.com":[11],"aspireatlas.com":[5],"pentest.blog":[12,13],"www.cambe.pr.gov.br":[14],"crimsonav.com":[15],"ngsingleissues.nationalgeographic.com":[15],"adrissa.com.co":[16],"americansoda.co.uk":[16],"casteloforte.com.br":[16],"centerfabril.com.br":[16],"forqueen.cz":[16],"joinusonline.net":[16],"jollibee.com.vn":[16],"kitapsan.com.tr":[16],"mebelinovdom.com":[16],"ojworld.it":[16],"qualityrental.com":[16],"szaszmotorshop.hu":[16],"tvojstyl.sk":[16],"up-shop.org":[16],"yairalon.com.br":[16],"weightlossdiet.top":[17],"msm-wroclaw.pl":[18]};
 const EXCEPT = {};
-class ChromeBlockJSONPath {
+class ApexJSONPath {
 static compileQuery(query) {
-const p = new ChromeBlockJSONPath();
+const p = new ApexJSONPath();
 p.compile(query);
 return p;
 }
@@ -394,10 +394,10 @@ const getOwnDesc = Object.getOwnPropertyDescriptor;
 const textContentGetter = getOwnDesc(Node.prototype, 'textContent').get;
 const nativeJSONParse = JSON.parse;
 const nativeJSONStringify = JSON.stringify;
-const PERF_EVENT = 'chromeblock:scriptlet-perf';
+const PERF_EVENT = 'apex:scriptlet-perf';
 const perf = (() => {
 let on = false;
-try { on = win[Symbol.for('chromeblock.scriptletPerf')] === true; } catch { /* */ }
+try { on = win[Symbol.for('apex.scriptletPerf')] === true; } catch { /* */ }
 if (!on) return null;
 const now = performance.now.bind(performance);
 const nativeSetTimeout = win.setTimeout.bind(win);
@@ -896,7 +896,7 @@ const tt = win.trustedTypes;
 try {
 if (tt instanceof Object && typeof tt.getPropertyType === 'function'
 && tt.getPropertyType('script', 'textContent') === 'TrustedScript') {
-return tt.createPolicy('chromeblock-' + Math.random().toString(36).slice(2), plain);
+return tt.createPolicy('apex-' + Math.random().toString(36).slice(2), plain);
 }
 } catch { /* */ }
 return plain;
@@ -1864,7 +1864,7 @@ expires = time.toUTCString();
 setCookieImpl(true, name, v, expires, path, options);
 }
 function compileJsonPath(trusted, q) {
-const jsonp = ChromeBlockJSONPath.compileQuery(q);
+const jsonp = ApexJSONPath.compileQuery(q);
 if (!jsonp.valid) return null;
 if (jsonp.hasAssignment && !trusted) return null;
 return jsonp;

@@ -1,4 +1,4 @@
-// ChromeBlock – stan zdrowia silników (wyłącznie lokalnie, bez telemetrii).
+// Apex AdBlocker – stan zdrowia silników (wyłącznie lokalnie, bez telemetrii).
 //
 // Komponenty: network, cosmetic, scriptlets, filters, youtube.
 // Statusy: ok | warning | error | unknown | disabled.
@@ -58,7 +58,7 @@ export function createHealth(store, opts = {}) {
     const entry = { timestamp: now(), component, message };
     state.errors.push(entry);
     if (state.errors.length > MAX_ERRORS) state.errors.splice(0, state.errors.length - MAX_ERRORS);
-    log(`ChromeBlock [${component}]`, message);
+    log(`Apex AdBlocker [${component}]`, message);
     return persist();
   }
 

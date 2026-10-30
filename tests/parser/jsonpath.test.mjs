@@ -2,7 +2,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ChromeBlockJSONPath as JP } from '../../shared/jsonpath.js';
+import { ApexJSONPath as JP } from '../../shared/jsonpath.js';
 
 const apply = (q, obj) => JP.compileQuery(q).apply(obj);
 

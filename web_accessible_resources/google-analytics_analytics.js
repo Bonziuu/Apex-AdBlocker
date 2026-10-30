@@ -1,4 +1,4 @@
-// ChromeBlock – atrapa Google Analytics (analytics.js / gtm.js): wywołuje callbacki, nic nie wysyła
+// Apex AdBlocker – atrapa Google Analytics (analytics.js / gtm.js): wywołuje callbacki, nic nie wysyła
 (function () {
   'use strict';
   const noop = function () {};

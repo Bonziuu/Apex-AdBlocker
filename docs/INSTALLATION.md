@@ -4,7 +4,7 @@ Apex AdBlocker nie jest jeszcze publikowany w Chrome Web Store, dlatego obecnie 
 
 ## Najprostsza instalacja
 
-1. Wejdź na stronę [Releases](https://github.com/Bonziuu/Chromeblock/releases/latest).
+1. Wejdź na stronę [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest).
 2. W sekcji **Assets** pobierz plik `Apex-AdBlocker-<wersja>.zip`.
 3. Rozpakuj ZIP do **stałego miejsca na dysku**, np. `Dokumenty/Apex-AdBlocker`.
 4. Otwórz w Chrome adres `chrome://extensions`.
@@ -49,7 +49,7 @@ Wartość powinna być zgodna z odpowiednim wpisem w `SHA256SUMS.txt` dołączon
 Jeżeli rozwijasz Apex AdBlocker lokalnie, zamiast paczki Release możesz sklonować repozytorium:
 
 ```bash
-git clone https://github.com/Bonziuu/Chromeblock.git
+git clone https://github.com/Bonziuu/Apex-AdBlocker.git
 ```
 
 Następnie wskaż katalog repozytorium w **Załaduj rozpakowane**. Po `git pull` kliknij **Odśwież** przy rozszerzeniu w `chrome://extensions`, aby Chrome przeładował także service workera.

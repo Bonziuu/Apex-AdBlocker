@@ -1,4 +1,4 @@
-// ChromeBlock – YouTube Protection: ocena stanu ochrony (service worker).
+// Apex AdBlocker – YouTube Protection: ocena stanu ochrony (service worker).
 //
 // Nie duplikuje silnika filtrów. Sprawdza, czy wspólne mechanizmy (DNR,
 // kosmetyka, scriptlety) są gotowe do ochrony YouTube, i łączy to z lokalną

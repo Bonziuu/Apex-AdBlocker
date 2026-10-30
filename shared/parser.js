@@ -1,4 +1,4 @@
-// ChromeBlock – parser filtrów w składni Adblock Plus / uBlock Origin.
+// Apex AdBlocker – parser filtrów w składni Adblock Plus / uBlock Origin.
 // Wspólny moduł: używany przez tools/build.mjs (Node) i przez service worker
 // (własne filtry użytkownika). Nie zależy od żadnych API Node ani przeglądarki
 // poza standardowym URL.
@@ -796,7 +796,7 @@ export function parseCosmeticFilter(c, opts = {}) {
     const rawName = parts[0];
     const args = parts.slice(1);
     if (!include.length) {
-      // Ogólne scriptlety (bez domeny) nie są wykonywane przez ChromeBlock.
+      // Ogólne scriptlety (bez domeny) nie są wykonywane przez Apex AdBlocker.
       return { type: 'scriptlet-rejected', include, exclude, rawName, args,
         support: { status: 'unsupported', name: rawName, canonical: canonicalScriptletName(rawName), reason: 'scriptlet ogólny (bez domeny) nie jest obsługiwany' } };
     }

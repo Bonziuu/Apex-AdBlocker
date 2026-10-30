@@ -1,9 +1,9 @@
-// ChromeBlock – tryb wskazywania elementu do ukrycia (wstrzykiwany na żądanie z okienka).
+// Apex AdBlocker – tryb wskazywania elementu do ukrycia (wstrzykiwany na żądanie z okienka).
 
 (() => {
-  if (window.__chromeblockPicker) { window.__chromeblockPicker.focus(); return; }
+  if (window.__apexPicker) { window.__apexPicker.focus(); return; }
 
-  const host = document.createElement('chromeblock-picker');
+  const host = document.createElement('apex-picker');
   host.style.cssText = 'all:initial;position:fixed;inset:0;z-index:2147483647;pointer-events:none;';
   const root = host.attachShadow({ mode: 'closed' });
   root.innerHTML = `
@@ -172,7 +172,7 @@
     for (const t of ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup']) window.removeEventListener(t, onClick, true);
     window.removeEventListener('keydown', onKey, true);
     host.remove();
-    delete window.__chromeblockPicker;
+    delete window.__apexPicker;
   }
 
   window.addEventListener('mousemove', onMove, true);
@@ -202,5 +202,5 @@
     countEl.textContent = 'Nie udało się zapisać filtra.';
   });
 
-  window.__chromeblockPicker = { focus() { input.focus(); } };
+  window.__apexPicker = { focus() { input.focus(); } };
 })();

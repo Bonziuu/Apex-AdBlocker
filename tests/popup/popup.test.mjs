@@ -81,7 +81,7 @@ test('popup: bez zewnętrznych zasobów, z dostępnością (switch, aria), szero
   assert.match(css, /prefers-color-scheme: dark/);
   const w = Number(/body\s*{[^}]*width:\s*(\d+)px/.exec(css)[1]);
   assert.ok(w >= 330 && w <= 350, `szerokość ${w}`);
-  assert.match(css, /--accent: #0f7f8c/, 'kolor przewodni ChromeBlock (paleta „morski”)');
+  assert.match(css, /--accent: #0f7f8c/, 'kolor przewodni Apex AdBlocker (paleta „morski”)');
 });
 
 test('manifest: brak nowych uprawnień', () => {

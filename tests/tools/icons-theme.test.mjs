@@ -1,4 +1,4 @@
-// Ikony i kolorystyka ChromeBlock: paleta „morski” (#22b8a8 → #0f7f8c) w ikonach (źródło: tools/build-icons.mjs)
+// Ikony i kolorystyka Apex AdBlocker: paleta „morski” (#22b8a8 → #0f7f8c) w ikonach (źródło: tools/build-icons.mjs)
 // i ten sam akcent w popupie, Opcjach i ekranie powitalnym. Offline, bez renderowania.
 
 import test from 'node:test';

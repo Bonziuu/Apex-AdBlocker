@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// ChromeBlock – pobiera najnowsze wersje list filtrów do tools/lists/ i od razu
+// Apex AdBlocker – pobiera najnowsze wersje list filtrów do tools/lists/ i od razu
 // sprawdza, czy zmieniły się filtry YouTube oraz czy pojawiły się scriptlety
-// (lub warianty parametrów), których ChromeBlock nie obsługuje.
+// (lub warianty parametrów), których Apex AdBlocker nie obsługuje.
 //
 //   node tools/update-lists.mjs && npm run build && npm run check
 //

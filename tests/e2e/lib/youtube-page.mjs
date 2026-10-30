@@ -1,4 +1,4 @@
-// ChromeBlock E2E – sondy strony YouTube (Playwright). Tylko OBSERWACJA:
+// Apex AdBlocker E2E – sondy strony YouTube (Playwright). Tylko OBSERWACJA:
 // test nie modyfikuje obiektów odtwarzacza ani odpowiedzi, nie klika „Pomiń reklamę”.
 // Dozwolone interakcje: zwykłe uruchomienie filmu (przycisk play / video.play()),
 // seek, przejście do kolejnego filmu playlisty przez API odtwarzacza.

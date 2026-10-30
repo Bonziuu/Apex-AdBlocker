@@ -1,4 +1,4 @@
-# ChromeBlock – ręczny test YouTube
+# Apex AdBlocker – ręczny test YouTube
 
 Cel: potwierdzić w prawdziwym Chrome, że ochrona YouTube działa i nie psuje odtwarzania.
 Test **nie** polega na klikaniu „Pomiń reklamę” ani na obchodzeniu CAPTCHA czy logowania.
@@ -13,13 +13,13 @@ Czas: ok. 15–20 minut.
 1. Zamknij inne blokery reklam (uBlock Origin Lite, AdGuard, Adblock Plus itp.) albo użyj **nowego profilu Chrome** (Menu → Profil → Dodaj). Inne blokery zafałszują wynik.
 2. Pobierz repozytorium (najnowsza wersja jest na gałęzi `main`):
    ```bash
-   git clone https://github.com/Bonziuu/Chromeblock.git
-   cd Chromeblock
+   git clone https://github.com/Bonziuu/Apex-AdBlocker.git
+   cd Apex-AdBlocker
    git checkout main
    ```
 3. Otwórz `chrome://extensions`, włącz **Tryb dewelopera**, kliknij **Załaduj rozpakowane** i wskaż katalog repozytorium.
-4. Sprawdź, czy karta rozszerzenia pokazuje **ChromeBlock** w bieżącej wersji (numer z `manifest.json`) i nie ma przycisku „Błędy”.
-5. Otwórz opcje ChromeBlock → **Diagnostyka**. Wszystkie komponenty (Network, Cosmetic, Scriptlets, Filters, YouTube) powinny mieć status **OK**. Jeśli któryś ma ERROR – zanotuj to i przejdź do części E.
+4. Sprawdź, czy karta rozszerzenia pokazuje **Apex AdBlocker** w bieżącej wersji (numer z `manifest.json`) i nie ma przycisku „Błędy”.
+5. Otwórz opcje Apex AdBlocker → **Diagnostyka**. Wszystkie komponenty (Network, Cosmetic, Scriptlets, Filters, YouTube) powinny mieć status **OK**. Jeśli któryś ma ERROR – zanotuj to i przejdź do części E.
 6. Zalecane: test wykonaj **bez logowania** do YouTube (okno w nowym profilu). Jeśli jesteś zalogowany, zaznacz to w uwagach – reklamy zależą od konta, regionu i testów A/B.
 
 ## B. Filmy /watch
@@ -45,7 +45,7 @@ Wykonaj dla co najmniej **3 różnych filmów**, w tym jednego dłuższego (> 10
 
 ## D. Diagnostyka
 
-1. Po teście **na otwartej karcie z filmem** otwórz opcje ChromeBlock → **Diagnostyka** → odśwież.
+1. Po teście **na otwartej karcie z filmem** otwórz opcje Apex AdBlocker → **Diagnostyka** → odśwież.
 2. Zanotuj status komponentu **YouTube** i stan odtwarzacza (`healthy` / `degraded` / `error` / `unknown`).
 3. Kliknij **Kopiuj raport diagnostyczny**. Wklej raport do notatnika i sprawdź, że **nie zawiera** adresów stron, ID filmów, nazwy konta ani e-maila. Jeśli coś takiego zawiera – to błąd, zgłoś go (bez wklejania tych danych).
 4. Raport dołącz do formularza w części E.
@@ -53,11 +53,11 @@ Wykonaj dla co najmniej **3 różnych filmów**, w tym jednego dłuższego (> 10
 ## E. Gdy coś nie działa
 
 1. Zanotuj dokładnie, co widzisz (reklama / spinner / czarny ekran / komunikat anti-adblock / błąd odtwarzacza) i na jakim typie strony (watch / playlista / Shorts / embed / Music).
-2. Sprawdź, czy problem znika po **wyłączeniu ChromeBlock na youtube.com** (popup → przycisk zasilania) i odświeżeniu strony:
-   - znika → problem prawdopodobnie po stronie ChromeBlock,
+2. Sprawdź, czy problem znika po **wyłączeniu Apex AdBlocker na youtube.com** (popup → przycisk zasilania) i odświeżeniu strony:
+   - znika → problem prawdopodobnie po stronie Apex AdBlocker,
    - nie znika → problem po stronie YouTube / sieci / konta.
 3. Włącz ochronę z powrotem.
-4. W `chrome://extensions` sprawdź, czy przy ChromeBlock pojawił się przycisk **Błędy** – jeśli tak, przepisz komunikat (bez adresów stron).
+4. W `chrome://extensions` sprawdź, czy przy Apex AdBlocker pojawił się przycisk **Błędy** – jeśli tak, przepisz komunikat (bez adresów stron).
 5. Skopiuj raport diagnostyczny (część D) i wypełnij formularz poniżej.
 6. Nie próbuj obchodzić CAPTCHA ani komunikatów YouTube – zapisz je w uwagach.
 
@@ -68,7 +68,7 @@ Wykonaj dla co najmniej **3 różnych filmów**, w tym jednego dłuższego (> 10
 Wypełnij jeden formularz na każdy testowany typ strony.
 
 ```
-ChromeBlock:            (wersja z chrome://extensions)
+Apex AdBlocker:            (wersja z chrome://extensions)
 Chrome:                 (chrome://version, np. 141.0.xxxx.xx)
 OS:                     (np. Windows 11 / macOS 15 / Ubuntu 24.04)
 URL type:               watch / playlist / shorts / embed / music

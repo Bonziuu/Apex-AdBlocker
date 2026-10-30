@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ChromeBlock – benchmark startu rozszerzenia w prawdziwym Chromium.
+// Apex AdBlocker – benchmark startu rozszerzenia w prawdziwym Chromium.
 //
 //   node tools/perf/startup-perf.mjs [--runs 3] [--tabs 4] [--out wynik.json] [--root katalog-rozszerzenia]
 //
@@ -11,7 +11,7 @@
 // Mierzone:
 //   - czas do uruchomienia service workera,
 //   - czas do aktywnego DNR (karta-sonda co 50 ms wysyła żądanie do domeny reklamowej;
-//     „gotowy” = żądanie zablokowane przez ChromeBlock),
+//     „gotowy” = żądanie zablokowane przez Apex AdBlocker),
 //   - czas do pełnego health OK i całkowity czas startu (profil etapów z service workera),
 //   - wpływ na przeglądarkę: maks. i łączne opóźnienie pętli zdarzeń w otwartych kartach,
 //   - łączny czas CPU wszystkich procesów Chromium w oknie startu (Linux: /proc).
@@ -131,7 +131,7 @@ async function lagOf(tabs) {
 }
 
 async function scenario(chromium) {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-startup-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-startup-'));
   const marker = path.join(tmp, 'profile');
   const result = {};
   try {

@@ -1,7 +1,7 @@
-// ChromeBlock – rejestr scriptletów i walidacja ich argumentów.
+// Apex AdBlocker – rejestr scriptletów i walidacja ich argumentów.
 //
 // Zasada: FAIL CLOSED. Filtr +js(...) jest wykonywany tylko wtedy, gdy
-// ChromeBlock zna scriptlet ORAZ rozumie semantykę dokładnie tego wariantu
+// Apex AdBlocker zna scriptlet ORAZ rozumie semantykę dokładnie tego wariantu
 // argumentów, którego używa filtr. Każdy nieznany parametr, nieznany token
 // vararg albo nieobsługiwana wartość oznacza, że filtr NIE jest wykonywany.
 //
@@ -14,7 +14,7 @@
 //
 // Moduł jest używany przez parser, build, audyt i testy.
 
-import { ChromeBlockJSONPath } from './jsonpath.js';
+import { ApexJSONPath } from './jsonpath.js';
 
 // --------------------------------------------------------------------------
 // Aliasy (nazwy z list → nazwa kanoniczna)
@@ -78,7 +78,7 @@ for (const [canonical, aliases] of Object.entries(ALIAS_GROUPS)) {
   for (const a of aliases) SCRIPTLET_ALIASES[a] = canonical;
 }
 
-/** Nazwa kanoniczna albo null, jeśli ChromeBlock jej nie zna. */
+/** Nazwa kanoniczna albo null, jeśli Apex AdBlocker jej nie zna. */
 export function canonicalScriptletName(raw) {
   const name = String(raw || '').trim().replace(/\.js$/, '');
   return SCRIPTLET_ALIASES[name] || null;
@@ -199,14 +199,14 @@ function contentDirectiveError(d, trusted) {
   if (d.startsWith('war:') || d.startsWith('join:')) return `dyrektywa "${d.split(':')[0]}:" nie jest obsługiwana`;
   if (d.startsWith('length:')) return 'niepoprawna dyrektywa length:';
   if (trusted) return null; // zaufany scriptlet zwraca dowolny tekst
-  return null; // uBO zwraca wtedy pusty tekst – ChromeBlock robi to samo
+  return null; // uBO zwraca wtedy pusty tekst – Apex AdBlocker robi to samo
 }
 
 const RANGE_RE = /^!?(\d*)(-(\d*))?$/;
 
 function jsonPathError(q, trusted) {
   if (!q) return 'puste zapytanie JSONPath';
-  const p = ChromeBlockJSONPath.compileQuery(q);
+  const p = ApexJSONPath.compileQuery(q);
   if (!p.valid) return `zapytanie JSONPath: ${p.error}`;
   if (p.hasAssignment && !trusted) return 'przypisanie wartości wymaga zaufanego scriptletu';
   return null;
@@ -267,7 +267,7 @@ spec('abort-current-script', {
 });
 spec('abort-on-stack-trace', {
   implemented: false,
-  reason: 'ChromeBlock nie odtwarza normalizacji stosu wywołań uBO (inlineScript/injectedScript/stackDepth)',
+  reason: 'Apex AdBlocker nie odtwarza normalizacji stosu wywołań uBO (inlineScript/injectedScript/stackDepth)',
 });
 spec('prevent-addEventListener', {
   validate(a) {
@@ -550,7 +550,7 @@ spec('trusted-click-element', {
 
 export const SCRIPTLET_SPECS = S;
 
-/** Lista nazw kanonicznych zaimplementowanych w ChromeBlock. */
+/** Lista nazw kanonicznych zaimplementowanych w Apex AdBlocker. */
 export function implementedScriptlets() {
   return Object.values(S).filter((s) => s.implemented !== false).map((s) => s.name);
 }
@@ -566,11 +566,11 @@ export function analyzeScriptlet(rawName, args, ctx = {}) {
   const name = String(rawName || '').trim().replace(/\.js$/, '');
   const canonical = canonicalScriptletName(name);
   if (!canonical) {
-    return { status: 'unsupported', name, canonical: null, reason: 'brak implementacji w ChromeBlock' };
+    return { status: 'unsupported', name, canonical: null, reason: 'brak implementacji w Apex AdBlocker' };
   }
   const s = S[canonical];
   if (s.implemented === false) {
-    return { status: 'unsupported', name, canonical, reason: s.reason || 'brak implementacji w ChromeBlock' };
+    return { status: 'unsupported', name, canonical, reason: s.reason || 'brak implementacji w Apex AdBlocker' };
   }
   if (s.trusted && !ctx.trusted) {
     return { status: 'unsupported', name, canonical, reason: 'scriptlet zaufany użyty w niezaufanej liście' };

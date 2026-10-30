@@ -45,7 +45,7 @@ async function poll(fn, ok, timeout = 15000, step = 200) {
 }
 
 test('Chromium: history.pushState → tabs.onUpdated z url; YouTube SPA: stary raport usunięty, świeży raport nowego filmu', { skip, timeout: 240_000 }, async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-nav-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-nav-'));
   const ctx = await launch(tmp);
   const errors = [];
   ctx.on('weberror', (e) => errors.push(String(e.error())));
@@ -116,7 +116,7 @@ test('Chromium: history.pushState → tabs.onUpdated z url; YouTube SPA: stary r
 });
 
 test('Chromium: ochrona wyłączona dla strony – stan per karta po nawigacji (pełnej i SPA)', { skip, timeout: 180_000 }, async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-nav-off-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-nav-off-'));
   const ctx = await launch(tmp);
   try {
     await ctx.route(/^https?:/, (r) => r.fulfill({ contentType: 'text/html', body: PAGE }));

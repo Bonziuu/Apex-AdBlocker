@@ -1,4 +1,4 @@
-// ChromeBlock – strona powitalna (tylko po świeżej instalacji). Ochrona działa od razu
+// Apex AdBlocker – strona powitalna (tylko po świeżej instalacji). Ochrona działa od razu
 // (stały zestaw list) – strona tylko informuje. Bez telemetrii i bez zapisywania danych.
 
 const $ = (id) => document.getElementById(id);

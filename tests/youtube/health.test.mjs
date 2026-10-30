@@ -10,11 +10,11 @@ import { ROOT } from '../../tools/lists-config.mjs';
 import { evaluateYouTubeProtection, coversYouTube } from '../../youtube/protection.js';
 
 function loadHealth() {
-  const ctx = { __chromeblockTest: {} };
+  const ctx = { __apexTest: {} };
   ctx.globalThis = ctx;
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'youtube', 'health.js'), 'utf8'), ctx);
-  return ctx.__chromeblockTest.youtubeHealth;
+  return ctx.__apexTest.youtubeHealth;
 }
 const H = loadHealth();
 const base = { kind: 'watch', elapsedMs: 5000, hasPlayer: true, hasVideo: true, videoError: 0, errorVisible: false, spinnerMs: 0, readyState: 4, paused: false, advanced: true };

@@ -1,4 +1,4 @@
-// ChromeBlock – service worker.
+// Apex AdBlocker – service worker.
 // Odpowiada za: włączanie list (zestawy reguł DNR), wyłączanie ochrony na
 // wybranych stronach, własne filtry użytkownika, rejestrację scriptletów,
 // wstrzykiwanie CSS (filtry kosmetyczne), stan zdrowia silników i YouTube Protection.
@@ -34,7 +34,7 @@ async function lastStartupProfile() {
 const SITE_RULE_ID = 1;
 const USER_RULE_BASE = 1000;
 const MAX_USER_RULES = 5000;
-const HIDE_ATTR = 'data-chromeblock-hide';
+const HIDE_ATTR = 'data-apex-hide';
 
 // ---------------------------------------------------------------------------
 // Stan
@@ -189,7 +189,7 @@ export function isYouTubeHost(host) {
 
 // Klucze storage po usuniętych funkcjach – usuwane przy aktualizacji, żeby po starszej wersji nie
 // zostawały martwe dane: Focus Mode (gałąź experiment/focus-mode) oraz tryby ochrony i wybór list
-// (ChromeBlock 1.0 ma stały zestaw CORE_LISTS). Usunięcie jest idempotentne; nawet gdy się nie
+// (Apex AdBlocker 1.0 ma stały zestaw CORE_LISTS). Usunięcie jest idempotentne; nawet gdy się nie
 // powiedzie, getState() i tak ignoruje te klucze.
 export const LEGACY_STORAGE_KEYS = Object.freeze(['youtubeFocus', 'enabledLists', 'protectionMode']);
 
@@ -454,7 +454,7 @@ async function syncAll(reason = '', { initial = false } = {}) {
   await startup.time('checkCosmeticData', checkCosmeticData);
   await startup.time('refreshYouTubeStatus', refreshYouTubeStatus);
   startup.mark('health OK');
-  console.info('ChromeBlock sync', reason, results);
+  console.info('Apex AdBlocker sync', reason, results);
   return results;
 }
 

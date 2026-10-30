@@ -1,4 +1,4 @@
-// ChromeBlock – model widoku popupu (czysta logika; testy: tests/popup/popup.test.mjs).
+// Apex AdBlocker – model widoku popupu (czysta logika; testy: tests/popup/popup.test.mjs).
 
 export const COMPONENT_PL = { network: 'sieć', cosmetic: 'filtry kosmetyczne', scriptlets: 'scriptlety', filters: 'listy filtrów', youtube: 'YouTube' };
 export const STATUS_PL = { ok: 'Aktywna', warning: 'Ostrzeżenie', error: 'Błąd', disabled: 'Wyłączona', unknown: 'Nieznany' };

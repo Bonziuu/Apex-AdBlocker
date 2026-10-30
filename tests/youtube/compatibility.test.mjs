@@ -1,6 +1,6 @@
 // Zgodność AKTUALNYCH filtrów YouTube z tools/lists/ (uBlock filters itd.).
 // Ten test ma zadziałać jak alarm po `node tools/update-lists.mjs`: jeśli
-// listy dodadzą scriptlet lub wariant parametrów, którego ChromeBlock nie
+// listy dodadzą scriptlet lub wariant parametrów, którego Apex AdBlocker nie
 // obsługuje, test zakończy się błędem z czytelnym opisem.
 
 import test from 'node:test';

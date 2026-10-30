@@ -41,7 +41,7 @@ if errorlevel 1 (
 )
 
 echo.
-set "SCRIPT=tests\local\chromeblock-local-test.mjs"
+set "SCRIPT=tests\local\apex-local-test.mjs"
 if /i "%~1"=="--sites" set "SCRIPT=tests\local\single-blocker-sites.mjs"
 node %SCRIPT% --results "%RES%" %*
 set "RC=%ERRORLEVEL%"

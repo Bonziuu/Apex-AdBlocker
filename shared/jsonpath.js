@@ -1,6 +1,6 @@
-// ChromeBlock – silnik zapytań JSONPath w dialekcie używanym przez listy uBO.
+// Apex AdBlocker – silnik zapytań JSONPath w dialekcie używanym przez listy uBO.
 //
-// Implementacja własna ChromeBlock. Odwzorowuje zachowanie opisane w
+// Implementacja własna Apex AdBlocker. Odwzorowuje zachowanie opisane w
 // dokumentacji „uBO-flavored JSONPath” oraz zachowanie wariantu legacy
 // (bez prefiksu "v2:"), którego używają aktualne filtry YouTube.
 //
@@ -16,9 +16,9 @@
 // Plik jest modułem ES (testy, build) i jest też wklejany do scriptletów
 // (build usuwa słowo "export").
 
-export class ChromeBlockJSONPath {
+export class ApexJSONPath {
   static compileQuery(query) {
-    const p = new ChromeBlockJSONPath();
+    const p = new ApexJSONPath();
     p.compile(query);
     return p;
   }

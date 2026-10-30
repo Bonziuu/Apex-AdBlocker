@@ -1,4 +1,4 @@
-// ChromeBlock – konfiguracja list filtrów i ich wczytywanie (z obsługą !#include i !#if).
+// Apex AdBlocker – konfiguracja list filtrów i ich wczytywanie (z obsługą !#include i !#if).
 // Wspólne dla build.mjs, audit-scriptlets.mjs, update-lists.mjs i testów.
 
 import fs from 'node:fs';
@@ -9,7 +9,7 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const LISTS_DIR = path.join(ROOT, 'tools', 'lists');
 
 /**
- * Listy używane przez ChromeBlock – stały zestaw (shared/core-lists.js: CORE_LISTS). Bez list
+ * Listy używane przez Apex AdBlocker – stały zestaw (shared/core-lists.js: CORE_LISTS). Bez list
  * cookies / annoyances (nie są częścią produktu 1.0 i nie trafiają do paczki).
  * "trusted" = źródło uBlock filters (uAssets), któremu wolno używać scriptletów zaufanych
  * (trusted-*), tak jak w uBO.
@@ -47,7 +47,7 @@ export const LISTS = [
   },
 ];
 
-// Środowisko dla dyrektyw !#if – ChromeBlock zachowuje się jak uBO Lite (MV3) w Chromium.
+// Środowisko dla dyrektyw !#if – Apex AdBlocker zachowuje się jak uBO Lite (MV3) w Chromium.
 export const ENV = {
   env_chromium: true, env_mv3: true, ext_ubol: true, ext_ublock: true,
   cap_html_filtering: false, cap_user_stylesheet: true, cap_ipaddress: false,

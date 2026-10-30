@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// HISTORYCZNE NARZĘDZIE – nie rozwijamy go. ChromeBlock 1.0 nie ma trybów ochrony (stały zestaw
+// HISTORYCZNE NARZĘDZIE – nie rozwijamy go. Apex AdBlocker 1.0 nie ma trybów ochrony (stały zestaw
 // list: shared/core-lists.js), więc ten tester nie działa z obecnym produktem. Ostatnia wersja, z
 // którą działał: gałąź legacy/protection-modes-tester (commit 0e3fe92). Wyniki z tej wersji posłużyły
 // do decyzji o jednym stałym zestawie list. Zostaje tylko jako dokumentacja metody.
 //
 // (opis historyczny)
-// ChromeBlock – porównanie trybów ochrony na prawdziwych stronach (lokalnie, Windows/Chrome).
+// Apex AdBlocker – porównanie trybów ochrony na prawdziwych stronach (lokalnie, Windows/Chrome).
 //
-//   test-chromeblock.cmd --modes            (Windows, dwuklik: test-protection-modes.cmd)
+//   test-apex-adblocker.cmd --modes            (Windows, dwuklik: test-protection-modes.cmd)
 //   npm run test:local -- --modes           (repozytorium)
 //
 // Dla każdej konfiguracji (bez rozszerzenia = kontrola, Basic, Balanced, Strict) uruchamia Playwright
@@ -28,7 +28,7 @@
 //   --sites plik     inna lista stron (JSON jak sites-protection-modes.json)
 //   --no-youtube     bez testu YouTube               --no-screenshots    bez zrzutów
 //   --headless       bez okna (domyślnie z oknem na Windows/macOS)
-//   --dir / --results jak w chromeblock-local-test.mjs
+//   --dir / --results jak w apex-local-test.mjs
 // Wyniki: <results>/modes/latest.json, latest.txt, latest.html, shots/ (lokalnie, nie commitujemy).
 
 import fs from 'node:fs';
@@ -38,7 +38,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadPlaywright, EXTENSION_ENTRIES } from '../../tools/chromium-smoke.mjs';
 import { ensurePlaying, samplePlayer } from '../e2e/lib/youtube-page.mjs';
 import { progressOf } from '../e2e/lib/classify.mjs';
-import { RESULTS_DIR, browserArgs, openYouTube, networkErrorOf } from './chromeblock-local-test.mjs';
+import { RESULTS_DIR, browserArgs, openYouTube, networkErrorOf } from './apex-local-test.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(HERE, '..', '..');
@@ -252,7 +252,7 @@ async function evalIsolated(page, fn, arg) {
   const cdp = await page.context().newCDPSession(page);
   try {
     const { frameTree } = await cdp.send('Page.getFrameTree');
-    const { executionContextId } = await cdp.send('Page.createIsolatedWorld', { frameId: frameTree.frame.id, worldName: 'chromeblock-modes' });
+    const { executionContextId } = await cdp.send('Page.createIsolatedWorld', { frameId: frameTree.frame.id, worldName: 'apex-modes' });
     const r = await cdp.send('Runtime.evaluate', { expression: `(${fn})(${arg === undefined ? '' : JSON.stringify(arg)})`, contextId: executionContextId, returnByValue: true, awaitPromise: true });
     if (r.exceptionDetails) throw new Error((r.exceptionDetails.exception && r.exceptionDetails.exception.description) || r.exceptionDetails.text);
     return r.result.value;
@@ -402,7 +402,7 @@ export async function runModesSites(opts) {
   const shotsDir = opts.screenshots ? path.join(outDir, 'shots') : null;
   fs.rmSync(path.join(outDir, 'shots'), { recursive: true, force: true });
   if (shotsDir) fs.mkdirSync(shotsDir, { recursive: true });
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-modes-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-modes-'));
   const started = new Date();
   const configs = {};
   const raw = {};
@@ -422,7 +422,7 @@ export async function runModesSites(opts) {
     return { ...s, results, verdicts };
   });
   const report = {
-    kind: 'chromeblock-protection-modes-sites', version: 1,
+    kind: 'apex-protection-modes-sites', version: 1,
     startedAt: started.toISOString(), finishedAt: new Date().toISOString(),
     environment: { os: `${os.type()} ${os.release()}`, node: process.version, headless: opts.headless },
     configs, sites: rows,
@@ -442,7 +442,7 @@ export async function runModesSites(opts) {
 export function formatTxt(r) {
   const L = [];
   const cfgs = Object.keys(r.summary);
-  L.push('ChromeBlock – porównanie trybów ochrony na stronach', '='.repeat(64));
+  L.push('Apex AdBlocker – porównanie trybów ochrony na stronach', '='.repeat(64));
   L.push(`Start: ${r.startedAt} · koniec: ${r.finishedAt} · ${r.environment.os} · Node ${r.environment.node}`);
   L.push(r.note, '');
   L.push('Podsumowanie (automatycznie):');
@@ -487,7 +487,7 @@ export function formatHtml(r, outDir) {
   };
   const sumRows = cfgs.map((c) => { const s = r.summary[c]; return `<tr><th>${CONFIG_LABEL[c]}</th><td>${s.loaded}/${s.sites}</td><td>${s.blockedRequests}</td><td>${s.adSignals}</td><td>${s.adSignalsReductionPct === null ? '—' : s.adSignalsReductionPct + '%'}</td><td>${c === 'none' ? '—' : s.auto.ok}</td><td>${c === 'none' ? '—' : s.auto.ad}</td><td>${c === 'none' ? '—' : s.auto.breakage}</td><td>${c === 'none' ? '—' : s.auto.antiAdblock}</td><td>${s.cmpVisible}</td></tr>`; }).join('');
   const ytRows = cfgs.map((c) => { const y = r.configs[c] && r.configs[c].youtube; return `<tr><th>${CONFIG_LABEL[c]}</th><td>${y ? esc(y.skip || y.error || `${y.playing ? 'odtwarzanie działa' : 'odtwarzanie NIE startuje'} (+${y.progressS} s); reklama w playerze: ${y.adShowing ? 'tak' : 'nie'}; anti-adblock: ${y.antiAdblock ? 'tak' : 'nie'}`) : '—'}</td><td>${y && y.protection ? esc(`${y.protection.status}, zgodność ${y.protection.compat}`) : '—'}</td></tr>`; }).join('');
-  return `<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChromeBlock – tryby ochrony</title>
+  return `<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Apex AdBlocker – tryby ochrony</title>
 <style>
 :root{--bg:#fff;--fg:#1d1d22;--mut:#66666e;--line:#ddd;--ok:#e3f6e8;--ad:#fff4d6;--brk:#fde2e2;--anti:#efe3fd;--man:#eee}
 @media (prefers-color-scheme:dark){:root{--bg:#17171b;--fg:#ececf1;--mut:#a0a0aa;--line:#33333a;--ok:#16351f;--ad:#3a3214;--brk:#3d1d1d;--anti:#2c2140;--man:#2a2a30}}
@@ -496,7 +496,7 @@ table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid va
 td.ok{background:var(--ok)}td.ad{background:var(--ad)}td.brk{background:var(--brk)}td.anti{background:var(--anti)}td.man{background:var(--man)}
 .note{color:var(--mut)}button{font:inherit;padding:6px 12px;margin-right:8px}.wrap{overflow-x:auto}
 </style></head><body>
-<h1>ChromeBlock – porównanie trybów ochrony na stronach</h1>
+<h1>Apex AdBlocker – porównanie trybów ochrony na stronach</h1>
 <p class="note">${esc(r.startedAt)} – ${esc(r.finishedAt)} · ${esc(r.environment.os)}. ${esc(r.note)} Oceny zapisują się w tej przeglądarce; „Eksportuj oceny” zapisuje plik JSON.</p>
 <h2>Podsumowanie (automatycznie)</h2>
 <div class="wrap"><table><tr><th>Konfiguracja</th><th>Załadowane</th><th>Zablokowane żądania</th><th>Sygnały reklam</th><th>Redukcja vs bez rozszerzenia</th><th>OK (auto)</th><th>reklama?</th><th>breakage?</th><th>anti-adblock?</th><th>Nakładka cookies</th></tr>${sumRows}</table></div>
@@ -508,7 +508,7 @@ td.ok{background:var(--ok)}td.ad{background:var(--ad)}td.brk{background:var(--br
 ${r.sites.map((s) => `<tr><th><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.host)}</a><br><small>${esc(s.category)}</small></th>${cfgs.map((c) => cell(s, c)).join('')}</tr>`).join('\n')}
 </table></div>
 <script>
-const KEY = 'chromeblock-modes-' + ${JSON.stringify(r.startedAt)};
+const KEY = 'apex-modes-' + ${JSON.stringify(r.startedAt)};
 const MODES = ${JSON.stringify(modeCfgs)};
 const LABEL = ${JSON.stringify(CONFIG_LABEL)};
 const VERDICTS = ${JSON.stringify(MANUAL_VERDICTS)};
@@ -530,7 +530,7 @@ for (const s of document.querySelectorAll('select[data-key]')) {
 }
 renderSummary();
 document.getElementById('export').addEventListener('click', () => {
-  const data = { kind: 'chromeblock-protection-modes-manual', run: ${JSON.stringify(r.startedAt)}, verdicts: saved };
+  const data = { kind: 'apex-protection-modes-manual', run: ${JSON.stringify(r.startedAt)}, verdicts: saved };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
   a.download = 'oceny-trybow.json';
@@ -541,7 +541,7 @@ document.getElementById('clear').addEventListener('click', () => { saved = {}; p
 `;
 }
 
-export const LEGACY_NOTICE = 'Tester trybów ochrony jest historyczny: ChromeBlock nie ma już trybów (stały zestaw list). '
+export const LEGACY_NOTICE = 'Tester trybów ochrony jest historyczny: Apex AdBlocker nie ma już trybów (stały zestaw list). '
   + 'Ostatnia działająca wersja: git switch legacy/protection-modes-tester';
 
 export async function main(argv = process.argv.slice(2)) {
@@ -554,7 +554,7 @@ export async function main(argv = process.argv.slice(2)) {
     console.log(`Brak manifest.json w ${opts.extensionDir}`);
     return 2;
   }
-  console.log('ChromeBlock – porównanie trybów ochrony na prawdziwych stronach (tymczasowe profile, bez Twoich danych).');
+  console.log('Apex AdBlocker – porównanie trybów ochrony na prawdziwych stronach (tymczasowe profile, bez Twoich danych).');
   console.log(`Konfiguracje: ${opts.configs.map((c) => CONFIG_LABEL[c]).join(', ')}. To potrwa (ok. 15 s na stronę na konfigurację).`);
   const { report, outDir } = await runModesSites({ ...opts, log: console.log });
   console.log('\n' + formatTxt(report).split('\nStrony (automatycznie')[0]);

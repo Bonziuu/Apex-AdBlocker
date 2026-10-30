@@ -21,7 +21,7 @@ const PAGE = '<!doctype html><title>Strona</title><p>treść</p><script src="htt
 const YT = '<!doctype html><title>YouTube</title><ytd-watch-flexy><div id="secondary"><div id="related">proponowane</div></div></ytd-watch-flexy>';
 
 test('Chromium: bez activeTab getMatchedRules odmawia, popup:get działa przez fallback (zwykła strona i YouTube)', { skip, timeout: 180_000 }, async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-activetab-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-activetab-'));
   const ext = path.join(tmp, 'ext');
   fs.mkdirSync(ext);
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });

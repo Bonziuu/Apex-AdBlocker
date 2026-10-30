@@ -1,5 +1,5 @@
 // Profiler scriptletów (tools/scriptlets-lib.js): domyślnie wyłączony, bez wpływu na działanie filtrów,
-// bez adresów i treści w danych; czas własny ChromeBlock bez czasu oryginalnej funkcji strony.
+// bez adresów i treści w danych; czas własny Apex AdBlocker bez czasu oryginalnej funkcji strony.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,7 +16,7 @@ const ytCalls = () => allLines()
 
 /**
  * Środowisko z kontrolowanym zegarem: performance.now() zwraca __clock; natywne appendChild
- * i JSON.parse „trwają” 100 ms (przesuwają zegar), kod ChromeBlock – 0 ms.
+ * i JSON.parse „trwają” 100 ms (przesuwają zegar), kod Apex AdBlocker – 0 ms.
  */
 function env({ profiler }) {
   const ctx = createEnv('www.youtube.com');
@@ -24,14 +24,14 @@ function env({ profiler }) {
     globalThis.__clock = 0; globalThis.__nowCalls = 0; globalThis.__events = [];
     globalThis.performance = { now() { __nowCalls++; return __clock; } };
     globalThis.CustomEvent = class CustomEvent { constructor(type, init) { this.type = type; this.detail = init && init.detail; } };
-    document.addEventListener('chromeblock:scriptlet-perf', (e) => __events.push(e.detail));
+    document.addEventListener('apex:scriptlet-perf', (e) => __events.push(e.detail));
     const nativeAppend = Node.prototype.appendChild;
     Node.prototype.appendChild = function appendChild(c) { __clock += 100; return nativeAppend.call(this, c); };
     const np = JSON.parse;
     JSON.parse = function parse(...a) { __clock += 100; return np.apply(this, a); };
     Date.now = () => 1700000000000;
     globalThis.fetch = async (url) => new Response(JSON.stringify({ adPlacements: [1], adSlots: [2], videoDetails: { videoId: 'dQw4w9WgXcQ' } }));
-    ${profiler ? "Object.defineProperty(globalThis, Symbol.for('chromeblock.scriptletPerf'), { value: true });" : ''}
+    ${profiler ? "Object.defineProperty(globalThis, Symbol.for('apex.scriptletPerf'), { value: true });" : ''}
   `);
   runScriptlets(ctx, ytCalls());
   return ctx;
@@ -85,7 +85,7 @@ test('profiler włączony: liczba wywołań, łączny/średni/maks. czas dla ka�
   assert.ok(by['json-prune · JSON.parse'].count >= 1);
   assert.ok(Object.keys(by).some((l) => /^(json-prune-fetch-response|trusted-replace-fetch-response) · fetch$/.test(l)), 'przechwycenie fetch');
   assert.ok(Object.keys(by).some((l) => / · fetch:response$/.test(l)), 'przetwarzanie odpowiedzi fetch');
-  // edit-inbound klonuje argument natywnym JSON.parse (100 ms) – to jest koszt ChromeBlock
+  // edit-inbound klonuje argument natywnym JSON.parse (100 ms) – to jest koszt Apex AdBlocker
   assert.ok(by['trusted-edit-inbound-object · JSON.stringify'].total > 0);
   for (const r of Object.values(by)) assert.ok(r.max <= r.total);
 });

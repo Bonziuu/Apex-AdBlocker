@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// ChromeBlock 1.0 – test JEDNEGO blockera na prawdziwych stronach (lokalnie, Windows/Chrome).
+// Apex AdBlocker 1.0 – test JEDNEGO blockera na prawdziwych stronach (lokalnie, Windows/Chrome).
 //
-//   test-sites.cmd                     (Windows, dwuklik; skrót do: test-chromeblock.cmd --sites)
+//   test-sites.cmd                     (Windows, dwuklik; skrót do: test-apex-adblocker.cmd --sites)
 //   npm run test:local -- --sites      (repozytorium)
 //
 // Porównuje dwie konfiguracje, każda w jednorazowym profilu Playwright Chromium:
 //   none        – bez rozszerzenia (kontrola),
-//   chromeblock – aktualny ChromeBlock (stały zestaw list).
+//   apex – aktualny Apex AdBlocker (stały zestaw list).
 // Każda strona jest otwierana w obu konfiguracjach zaraz po sobie (ten sam moment, podobna rotacja reklam).
 //
 // Consent/CMP: przed pomiarem w OBU konfiguracjach ta sama procedura – wykryj widoczny baner zgody
@@ -31,13 +31,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadPlaywright, EXTENSION_ENTRIES } from '../../tools/chromium-smoke.mjs';
 import { ensurePlaying, samplePlayer, seekForward } from '../e2e/lib/youtube-page.mjs';
 import { progressOf } from '../e2e/lib/classify.mjs';
-import { RESULTS_DIR, DEFAULT_SHORTS, browserArgs, openYouTube, networkErrorOf } from './chromeblock-local-test.mjs';
+import { RESULTS_DIR, DEFAULT_SHORTS, browserArgs, openYouTube, networkErrorOf } from './apex-local-test.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(HERE, '..', '..');
 export const SITES_FILE = path.join(HERE, 'sites-single-blocker.json');
-export const CONFIGS = Object.freeze(['none', 'chromeblock']);
-export const CONFIG_LABEL = Object.freeze({ none: 'BEZ ChromeBlock', chromeblock: 'Z ChromeBlock' });
+export const CONFIGS = Object.freeze(['none', 'apex']);
+export const CONFIG_LABEL = Object.freeze({ none: 'BEZ Apex AdBlocker', apex: 'Z Apex AdBlocker' });
 export const STATUS = Object.freeze({
   PASS: 'PASS', REAL_AD: 'REAL_AD', EMPTY_AD_SLOT: 'EMPTY_AD_SLOT', BREAKAGE: 'BREAKAGE', ANTI_ADBLOCK: 'ANTI_ADBLOCK',
   BOT_CHALLENGE: 'BOT_CHALLENGE', SITE_ERROR: 'SITE_ERROR', CONSENT_INCONCLUSIVE: 'CONSENT_INCONCLUSIVE', MANUAL_REVIEW: 'MANUAL_REVIEW',
@@ -131,22 +131,22 @@ export function consentComparable(none, cb) {
   return a === b && (a === CONSENT_STATES.NONE || a === CONSENT_STATES.REJECTED);
 }
 
-/** Różnice none → ChromeBlock (do raportu). */
+/** Różnice none → Apex AdBlocker (do raportu). */
 export function diffOf(none, cb) {
   const ok = (m) => m && !m.error;
   const d = { ads: {}, comparable: consentComparable(none, cb) };
-  for (const c of AD_CLASSES) d.ads[c] = { none: adCount(none, c), chromeblock: adCount(cb, c) };
+  for (const c of AD_CLASSES) d.ads[c] = { none: adCount(none, c), apex: adCount(cb, c) };
   if (ok(none) && ok(cb)) {
     d.textRatio = none.textLength ? Math.round((cb.textLength / none.textLength) * 100) / 100 : null;
     d.blockedRequests = cb.requests.blocked - none.requests.blocked;
-    d.adHostLoaded = { none: none.requests.adHostLoaded, chromeblock: cb.requests.adHostLoaded };
-    d.pageErrors = { none: none.pageErrors, chromeblock: cb.pageErrors };
+    d.adHostLoaded = { none: none.requests.adHostLoaded, apex: cb.requests.adHostLoaded };
+    d.pageErrors = { none: none.pageErrors, apex: cb.pageErrors };
   }
   return d;
 }
 
 /**
- * Wskazówka automatyczna dla strony (none = kontrola, cb = ChromeBlock). Kolejność:
+ * Wskazówka automatyczna dla strony (none = kontrola, cb = Apex AdBlocker). Kolejność:
  * SITE_ERROR > BOT_CHALLENGE > BREAKAGE > ANTI_ADBLOCK > CONSENT_INCONCLUSIVE > REAL_AD > EMPTY_AD_SLOT > MANUAL_REVIEW > PASS.
  * Błędy JS nie są breakage (tylko informacja).
  */
@@ -159,11 +159,11 @@ export function classifySite(none, cb) {
   if (nErr) return r(STATUS.SITE_ERROR, [`kontrola bez rozszerzenia nie załadowała się (${errText(none)}) – brak porównania`]);
   // challenge
   if (cb.challenge || none.challenge) {
-    if (cb.challenge && none.challenge) return r(STATUS.BOT_CHALLENGE, [`challenge także BEZ ChromeBlock – nie przypisujemy rozszerzeniu („${cb.challenge}”)`], { scope: 'both' });
-    if (cb.challenge) return r(STATUS.BOT_CHALLENGE, [`challenge tylko Z ChromeBlock („${cb.challenge}”) – sprawdź ręcznie, czy się powtarza`], { scope: 'chromeblock' });
+    if (cb.challenge && none.challenge) return r(STATUS.BOT_CHALLENGE, [`challenge także BEZ Apex AdBlocker – nie przypisujemy rozszerzeniu („${cb.challenge}”)`], { scope: 'both' });
+    if (cb.challenge) return r(STATUS.BOT_CHALLENGE, [`challenge tylko Z Apex AdBlocker („${cb.challenge}”) – sprawdź ręcznie, czy się powtarza`], { scope: 'apex' });
     return r(STATUS.MANUAL_REVIEW, [`challenge tylko w kontroli („${none.challenge}”) – brak porównania`], { scope: 'none' });
   }
-  if (cErr) return r(STATUS.BREAKAGE, [`z ChromeBlock nie załadowała się (${errText(cb)}), bez rozszerzenia działa`]);
+  if (cErr) return r(STATUS.BREAKAGE, [`z Apex AdBlocker nie załadowała się (${errText(cb)}), bez rozszerzenia działa`]);
   // breakage (bez błędów JS)
   const brk = [];
   if (cb.blank && !none.blank) brk.push(`pusta strona (treść ${cb.textLength} znaków, bez ${none.textLength})`);
@@ -176,10 +176,10 @@ export function classifySite(none, cb) {
   if (cb.overflowX && !none.overflowX) brk.push('rozjechany układ (poziome przewijanie)');
   if (cb.scrollLocked && !none.scrollLocked && !(cb.consent && cb.consent.state === CONSENT_STATES.UNRESOLVED)) brk.push('zablokowane przewijanie strony');
   if (brk.length) return r(STATUS.BREAKAGE, brk);
-  if (cb.antiAdblock && !none.antiAdblock) return r(STATUS.ANTI_ADBLOCK, [`komunikat anti-adblock tylko z ChromeBlock („${cb.antiAdblock}”)`]);
+  if (cb.antiAdblock && !none.antiAdblock) return r(STATUS.ANTI_ADBLOCK, [`komunikat anti-adblock tylko z Apex AdBlocker („${cb.antiAdblock}”)`]);
   const info = [];
   if (cb.antiAdblock && none.antiAdblock) info.push('tekst podobny do anti-adblock także bez rozszerzenia');
-  if (cb.pageErrors > none.pageErrors + 5) info.push(`więcej błędów JS z ChromeBlock (${cb.pageErrors} vs ${none.pageErrors}) – tylko informacja, nie breakage`);
+  if (cb.pageErrors > none.pageErrors + 5) info.push(`więcej błędów JS z Apex AdBlocker (${cb.pageErrors} vs ${none.pageErrors}) – tylko informacja, nie breakage`);
   if (!consentComparable(none, cb)) {
     const st = (m) => (m.consent ? `${m.consent.state}${m.consent.reason ? ` – ${m.consent.reason}` : ''}` : '?');
     const a = consentState(none);
@@ -191,7 +191,7 @@ export function classifySite(none, cb) {
   }
   const ads = (c) => adCount(cb, c);
   const delta = (c) => `${adCount(none, c)} → ${ads(c)}`;
-  if (ads('REAL_AD')) return r(STATUS.REAL_AD, [`widoczne reklamy z ChromeBlock: ${delta('REAL_AD')} (bez → z)`, ...info]);
+  if (ads('REAL_AD')) return r(STATUS.REAL_AD, [`widoczne reklamy z Apex AdBlocker: ${delta('REAL_AD')} (bez → z)`, ...info]);
   if (ads('EMPTY_AD_SLOT')) return r(STATUS.EMPTY_AD_SLOT, [`puste sloty po reklamach: ${delta('EMPTY_AD_SLOT')}`, ...info]);
   if (ads('UNKNOWN')) return r(STATUS.MANUAL_REVIEW, [`elementy reklamowe nie do sklasyfikowania: ${delta('UNKNOWN')}`, ...info]);
   const extra = [];
@@ -207,16 +207,16 @@ export function summarize(rows) {
   for (const r of rows) by[r.verdict.status]++;
   const comparable = rows.filter((r) => r.diff.comparable);
   const ads = {};
-  for (const c of AD_CLASSES) ads[c] = { none: 0, chromeblock: 0 };
-  for (const r of comparable) for (const c of AD_CLASSES) { ads[c].none += r.diff.ads[c].none; ads[c].chromeblock += r.diff.ads[c].chromeblock; }
+  for (const c of AD_CLASSES) ads[c] = { none: 0, apex: 0 };
+  for (const r of comparable) for (const c of AD_CLASSES) { ads[c].none += r.diff.ads[c].none; ads[c].apex += r.diff.ads[c].apex; }
   const real = ads.REAL_AD;
   return {
     sites: rows.length, comparableSites: comparable.length, status: by,
-    challenge: { both: rows.filter((r) => r.verdict.scope === 'both').length, chromeblockOnly: rows.filter((r) => r.verdict.scope === 'chromeblock').length, controlOnly: rows.filter((r) => r.verdict.scope === 'none').length },
+    challenge: { both: rows.filter((r) => r.verdict.scope === 'both').length, apexOnly: rows.filter((r) => r.verdict.scope === 'apex').length, controlOnly: rows.filter((r) => r.verdict.scope === 'none').length },
     ads,
-    realAdReductionPct: real.none ? Math.round(((real.none - real.chromeblock) / real.none) * 1000) / 10 : null,
-    sitesWithRealAds: { none: comparable.filter((r) => r.diff.ads.REAL_AD.none > 0).length, chromeblock: comparable.filter((r) => r.diff.ads.REAL_AD.chromeblock > 0).length },
-    blockedRequests: rows.reduce((n, r) => n + (r.results.chromeblock && !r.results.chromeblock.error ? r.results.chromeblock.requests.blocked : 0), 0),
+    realAdReductionPct: real.none ? Math.round(((real.none - real.apex) / real.none) * 1000) / 10 : null,
+    sitesWithRealAds: { none: comparable.filter((r) => r.diff.ads.REAL_AD.none > 0).length, apex: comparable.filter((r) => r.diff.ads.REAL_AD.apex > 0).length },
+    blockedRequests: rows.reduce((n, r) => n + (r.results.apex && !r.results.apex.error ? r.results.apex.requests.blocked : 0), 0),
   };
 }
 
@@ -429,7 +429,7 @@ export async function evalIsolated(page, fn, arg) {
   const cdp = await page.context().newCDPSession(page);
   try {
     const { frameTree } = await cdp.send('Page.getFrameTree');
-    const { executionContextId } = await cdp.send('Page.createIsolatedWorld', { frameId: frameTree.frame.id, worldName: 'chromeblock-sites' });
+    const { executionContextId } = await cdp.send('Page.createIsolatedWorld', { frameId: frameTree.frame.id, worldName: 'apex-sites' });
     // pomocnicza siteOf jest wstrzykiwana do zakresu funkcji – jedna logika domeny w Node i w stronie
     const expression = `(() => { const siteOf = ${siteOf}; return (${fn})(${arg === undefined ? '' : JSON.stringify(arg)}); })()`;
     const r = await cdp.send('Runtime.evaluate', { expression, contextId: executionContextId, returnByValue: true, awaitPromise: true });
@@ -606,24 +606,24 @@ export function classifyYouTube(none, cb) {
   if (!cb || cb.skip || cb.error) { add('yt', 'INCONCLUSIVE', (cb && (cb.skip || cb.error)) || 'brak danych'); return res; }
   const ctrl = none && !none.skip && !none.error ? none : null;
   if (cb.playing) add('yt-player', 'PASS', `player i wideo, odtwarzanie +${cb.progressS} s`);
-  else if (ctrl && !ctrl.playing) add('yt-player', 'INCONCLUSIVE', `nie startuje także bez ChromeBlock (+${cb.progressS} s)`);
-  else add('yt-player', 'BREAKAGE', `odtwarzanie nie postępuje z ChromeBlock (+${cb.progressS} s)${ctrl ? `, bez: +${ctrl.progressS} s` : ''}`);
+  else if (ctrl && !ctrl.playing) add('yt-player', 'INCONCLUSIVE', `nie startuje także bez Apex AdBlocker (+${cb.progressS} s)`);
+  else add('yt-player', 'BREAKAGE', `odtwarzanie nie postępuje z Apex AdBlocker (+${cb.progressS} s)${ctrl ? `, bez: +${ctrl.progressS} s` : ''}`);
   const seekCb = cb.seek && cb.seek.ok;
   const seekCtrl = ctrl && ctrl.seek && ctrl.seek.ok;
   if (seekCb) add('yt-seek', 'PASS', 'seek +60 s i wznowienie');
-  else if (ctrl && !seekCtrl) add('yt-seek', 'INCONCLUSIVE', 'seek nie działa także bez ChromeBlock – nie przypisujemy rozszerzeniu');
+  else if (ctrl && !seekCtrl) add('yt-seek', 'INCONCLUSIVE', 'seek nie działa także bez Apex AdBlocker – nie przypisujemy rozszerzeniu');
   else if (!ctrl) add('yt-seek', 'INCONCLUSIVE', 'brak kontroli A/B');
-  else add('yt-seek', 'BREAKAGE', 'seek nie działa tylko z ChromeBlock');
+  else add('yt-seek', 'BREAKAGE', 'seek nie działa tylko z Apex AdBlocker');
   if (cb.shorts) {
     if (cb.shorts.ok) add('yt-shorts', 'PASS', `Shorts +${cb.shorts.progressS} s`);
-    else if (ctrl && ctrl.shorts && !ctrl.shorts.ok) add('yt-shorts', 'INCONCLUSIVE', 'Shorts nie działa także bez ChromeBlock');
-    else add('yt-shorts', 'BREAKAGE', `Shorts nie odtwarza z ChromeBlock${cb.shorts.error ? ` (${cb.shorts.error})` : ''}`);
+    else if (ctrl && ctrl.shorts && !ctrl.shorts.ok) add('yt-shorts', 'INCONCLUSIVE', 'Shorts nie działa także bez Apex AdBlocker');
+    else add('yt-shorts', 'BREAKAGE', `Shorts nie odtwarza z Apex AdBlocker${cb.shorts.error ? ` (${cb.shorts.error})` : ''}`);
   }
-  if (cb.adSeen) add('yt-ads', 'REAL_AD', 'reklama w playerze z ChromeBlock');
-  else if (ctrl && ctrl.adSeen) add('yt-ads', 'PASS', 'reklama była bez ChromeBlock, z ChromeBlock nie');
+  if (cb.adSeen) add('yt-ads', 'REAL_AD', 'reklama w playerze z Apex AdBlocker');
+  else if (ctrl && ctrl.adSeen) add('yt-ads', 'PASS', 'reklama była bez Apex AdBlocker, z Apex AdBlocker nie');
   else add('yt-ads', 'INCONCLUSIVE', 'brak okazji reklamowej w tym przebiegu (to nie jest PASS)');
-  if (cb.antiAdblock && !(ctrl && ctrl.antiAdblock)) add('yt-antiadblock', 'ANTI_ADBLOCK', 'komunikat anti-adblock YouTube tylko z ChromeBlock');
-  else if (cb.antiAdblock) add('yt-antiadblock', 'INCONCLUSIVE', 'komunikat anti-adblock także bez ChromeBlock');
+  if (cb.antiAdblock && !(ctrl && ctrl.antiAdblock)) add('yt-antiadblock', 'ANTI_ADBLOCK', 'komunikat anti-adblock YouTube tylko z Apex AdBlocker');
+  else if (cb.antiAdblock) add('yt-antiadblock', 'INCONCLUSIVE', 'komunikat anti-adblock także bez Apex AdBlocker');
   else add('yt-antiadblock', 'PASS', 'brak komunikatu anti-adblock');
   if (cb.protection) add('yt-protection', cb.protection.status === 'ok' && cb.protection.gate ? 'PASS' : 'MANUAL_REVIEW', `YouTube Protection: ${cb.protection.status}, zgodność ${cb.protection.compat}`);
   return res;
@@ -638,7 +638,7 @@ function copyExtension(dest, sourceDir) {
 }
 
 async function launch(chromium, tmp, config, opts) {
-  const ext = config === 'chromeblock' ? path.join(tmp, 'ext') : null;
+  const ext = config === 'apex' ? path.join(tmp, 'ext') : null;
   if (ext && !fs.existsSync(ext)) { fs.mkdirSync(ext); copyExtension(ext, opts.extensionDir); }
   const context = await chromium.launchPersistentContext(fs.mkdtempSync(path.join(tmp, `profile-${config}-`)), {
     headless: opts.headless, channel: 'chromium', viewport: { width: 1366, height: 800 }, locale: 'pl-PL', args: browserArgs(ext),
@@ -674,7 +674,7 @@ export async function runSitesTest(opts) {
   const shotsDir = opts.screenshots ? path.join(outDir, 'shots') : null;
   fs.rmSync(path.join(outDir, 'shots'), { recursive: true, force: true });
   if (shotsDir) fs.mkdirSync(shotsDir, { recursive: true });
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chromeblock-sites-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-sites-'));
   const started = new Date();
   const rows = [];
   const runs = {};
@@ -687,14 +687,14 @@ export async function runSitesTest(opts) {
         const shot = shotsDir ? path.join(shotsDir, `${String(i + 1).padStart(2, '0')}-${site.host.replace(/[^a-z0-9.-]/gi, '_')}-${c}.jpg`) : null;
         results[c] = await visitSite(runs[c].context, site, { shotPath: shot, settleMs: opts.settleMs });
       }
-      const verdict = classifySite(results.none, results.chromeblock);
-      rows.push({ ...site, results, verdict, diff: diffOf(results.none, results.chromeblock) });
+      const verdict = classifySite(results.none, results.apex);
+      rows.push({ ...site, results, verdict, diff: diffOf(results.none, results.apex) });
       log(`  ${String(i + 1).padStart(2)}/${sites.length} ${site.host.padEnd(28)} ${verdict.status.padEnd(20)} ${verdict.reasons[0] || ''}`);
     }
     if (youtube && opts.youtube) {
       const none = await youtubeRun(runs.none.context, youtube, null);
-      const cb = await youtubeRun(runs.chromeblock.context, youtube, runs.chromeblock.call);
-      yt = { none, chromeblock: cb, checks: classifyYouTube(none, cb) };
+      const cb = await youtubeRun(runs.apex.context, youtube, runs.apex.call);
+      yt = { none, apex: cb, checks: classifyYouTube(none, cb) };
       for (const c of yt.checks) log(`  YouTube ${c.id.padEnd(15)} ${c.status.padEnd(14)} ${c.detail}`);
     }
   } finally {
@@ -702,10 +702,10 @@ export async function runSitesTest(opts) {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
   const report = {
-    kind: 'chromeblock-single-blocker-sites', version: 1,
+    kind: 'apex-single-blocker-sites', version: 1,
     startedAt: started.toISOString(), finishedAt: new Date().toISOString(),
     environment: { os: `${os.type()} ${os.release()}`, node: process.version, headless: opts.headless },
-    extension: runs.chromeblock ? runs.chromeblock.info : null,
+    extension: runs.apex ? runs.apex.info : null,
     sites: rows, youtube: yt, summary: summarize(rows),
     note: 'Wynik automatyczny to wskazówka, nie ręczna ocena. Ostateczną ocenę wpisuje człowiek w latest.html.',
   };
@@ -724,15 +724,15 @@ const pct = (x) => (x === null || x === undefined ? '—' : `${String(x).replace
 export function formatTxt(r) {
   const s = r.summary;
   const L = [];
-  L.push('ChromeBlock – test jednego blockera na stronach (bez → z ChromeBlock)', '='.repeat(64));
+  L.push('Apex AdBlocker – test jednego blockera na stronach (bez → z Apex AdBlocker)', '='.repeat(64));
   L.push(`Start: ${r.startedAt} · koniec: ${r.finishedAt} · ${r.environment.os} · Node ${r.environment.node}`);
-  if (r.extension) L.push(`ChromeBlock ${r.extension.version || '?'} · listy: ${(r.extension.lists || []).join(', ')}`);
+  if (r.extension) L.push(`Apex AdBlocker ${r.extension.version || '?'} · listy: ${(r.extension.lists || []).join(', ')}`);
   L.push(r.note, '');
   L.push(`Strony: ${s.sites} · porównywalne (zgoda: brak banera albo odrzucona w obu): ${s.comparableSites}`);
   L.push('Wskazówki: ' + Object.entries(s.status).filter(([, n]) => n).map(([k, n]) => `${k} ${n}`).join(' · '));
-  L.push(`Reklamy (strony porównywalne, bez → z): ${AD_CLASSES.map((c) => `${c} ${s.ads[c].none} → ${s.ads[c].chromeblock}`).join(' · ')}`);
-  L.push(`Redukcja REAL_AD: ${pct(s.realAdReductionPct)} · strony z REAL_AD: ${s.sitesWithRealAds.none} → ${s.sitesWithRealAds.chromeblock} · zablokowane żądania (z ChromeBlock): ${s.blockedRequests}`);
-  L.push(`Challenge: także bez ChromeBlock ${s.challenge.both} · tylko z ChromeBlock ${s.challenge.chromeblockOnly} · tylko w kontroli ${s.challenge.controlOnly}`);
+  L.push(`Reklamy (strony porównywalne, bez → z): ${AD_CLASSES.map((c) => `${c} ${s.ads[c].none} → ${s.ads[c].apex}`).join(' · ')}`);
+  L.push(`Redukcja REAL_AD: ${pct(s.realAdReductionPct)} · strony z REAL_AD: ${s.sitesWithRealAds.none} → ${s.sitesWithRealAds.apex} · zablokowane żądania (z Apex AdBlocker): ${s.blockedRequests}`);
+  L.push(`Challenge: także bez Apex AdBlocker ${s.challenge.both} · tylko z Apex AdBlocker ${s.challenge.apexOnly} · tylko w kontroli ${s.challenge.controlOnly}`);
   if (r.youtube) {
     L.push('', 'YouTube:');
     for (const c of r.youtube.checks) L.push(`  ${c.id.padEnd(15)} ${c.status.padEnd(14)} ${c.detail}`);
@@ -769,12 +769,12 @@ export function formatHtml(r, outDir) {
 <select data-key="${key}"><option value="">ręczna ocena…</option>${statuses.map((x) => `<option>${x}</option>`).join('')}</select></header>
 <p class="why">${esc(row.verdict.reasons.join(' · '))}</p>${row.knownCase ? `<p class="known">Znany przypadek: ${esc(row.knownCase)}</p>` : ''}
 <div class="pair"><figure><figcaption>${CONFIG_LABEL.none}</figcaption>${shot(row.results.none)}<div class="facts">${facts(row.results.none)}</div></figure>
-<figure><figcaption>${CONFIG_LABEL.chromeblock}</figcaption>${shot(row.results.chromeblock)}<div class="facts">${facts(row.results.chromeblock)}</div></figure></div>
+<figure><figcaption>${CONFIG_LABEL.apex}</figcaption>${shot(row.results.apex)}<div class="facts">${facts(row.results.apex)}</div></figure></div>
 <input class="note" data-note="${key}" placeholder="notatka (opcjonalnie)">
 </section>`;
   }).join('\n');
   const yt = r.youtube ? `<table><tr><th>Sprawdzenie</th><th>Wskazówka</th><th>Szczegóły</th></tr>${r.youtube.checks.map((c) => `<tr><td>${esc(c.id)}</td><td>${esc(c.status)}</td><td>${esc(c.detail)}</td></tr>`).join('')}</table>` : '<p>Pominięto.</p>';
-  return `<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChromeBlock – test stron</title>
+  return `<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Apex AdBlocker – test stron</title>
 <style>
 :root{--bg:#fff;--fg:#1d1d22;--mut:#66666e;--line:#ddd;--card:#fafafa;--ok:#1f9d55;--bad:#d14343;--warn:#b7791f}
 @media (prefers-color-scheme:dark){:root{--bg:#17171b;--fg:#ececf1;--mut:#a0a0aa;--line:#33333a;--card:#1f1f25;--ok:#4cc785;--bad:#ff7a7a;--warn:#e0b050}}
@@ -786,20 +786,20 @@ table{border-collapse:collapse;margin:8px 0}th,td{border:1px solid var(--line);p
 figure{margin:0}figcaption{font-weight:600;margin-bottom:4px}img{width:100%;border:1px solid var(--line);border-radius:6px}.noshot{padding:40px;text-align:center;border:1px dashed var(--line)}
 .facts{font-size:12.5px;margin-top:4px}.note{width:100%;margin-top:6px;font:inherit;padding:4px}button,select{font:inherit}button{padding:6px 12px;margin-right:8px}
 </style></head><body>
-<h1>ChromeBlock – test jednego blockera na stronach</h1>
-<p class="mut">${esc(r.startedAt)} – ${esc(r.finishedAt)} · ${esc(r.environment.os)}${r.extension ? ` · ChromeBlock ${esc(r.extension.version)} (${esc((r.extension.lists || []).join(', '))})` : ''}. ${esc(r.note)} Oceny i notatki zapisują się w tej przeglądarce; „Eksportuj oceny” zapisuje plik JSON.</p>
-<h2>Podsumowanie (bez → z ChromeBlock)</h2>
+<h1>Apex AdBlocker – test jednego blockera na stronach</h1>
+<p class="mut">${esc(r.startedAt)} – ${esc(r.finishedAt)} · ${esc(r.environment.os)}${r.extension ? ` · Apex AdBlocker ${esc(r.extension.version)} (${esc((r.extension.lists || []).join(', '))})` : ''}. ${esc(r.note)} Oceny i notatki zapisują się w tej przeglądarce; „Eksportuj oceny” zapisuje plik JSON.</p>
+<h2>Podsumowanie (bez → z Apex AdBlocker)</h2>
 <table><tr><th>Strony</th><td>${s.sites} (porównywalne pod względem zgody: ${s.comparableSites})</td></tr>
 <tr><th>Wskazówki</th><td>${Object.entries(s.status).filter(([, n]) => n).map(([k, n]) => `${k}: ${n}`).join(' · ')}</td></tr>
-${AD_CLASSES.map((c) => `<tr><th>${c}</th><td>${s.ads[c].none} → ${s.ads[c].chromeblock}</td></tr>`).join('')}
-<tr><th>Redukcja REAL_AD</th><td>${pct(s.realAdReductionPct)} · strony z REAL_AD: ${s.sitesWithRealAds.none} → ${s.sitesWithRealAds.chromeblock}</td></tr>
-<tr><th>Challenge</th><td>także bez ChromeBlock: ${s.challenge.both} · tylko z ChromeBlock: ${s.challenge.chromeblockOnly} · tylko w kontroli: ${s.challenge.controlOnly}</td></tr></table>
+${AD_CLASSES.map((c) => `<tr><th>${c}</th><td>${s.ads[c].none} → ${s.ads[c].apex}</td></tr>`).join('')}
+<tr><th>Redukcja REAL_AD</th><td>${pct(s.realAdReductionPct)} · strony z REAL_AD: ${s.sitesWithRealAds.none} → ${s.sitesWithRealAds.apex}</td></tr>
+<tr><th>Challenge</th><td>także bez Apex AdBlocker: ${s.challenge.both} · tylko z Apex AdBlocker: ${s.challenge.apexOnly} · tylko w kontroli: ${s.challenge.controlOnly}</td></tr></table>
 <h2>Ręczna ocena</h2><div id="manual"></div><p><button id="export">Eksportuj oceny (JSON)</button><button id="clear">Wyczyść oceny</button></p>
 <h2>YouTube</h2>${yt}
 <h2>Strony</h2>
 ${rows}
 <script>
-const KEY = 'chromeblock-sites-' + ${JSON.stringify(r.startedAt)};
+const KEY = 'apex-sites-' + ${JSON.stringify(r.startedAt)};
 const STATUSES = ${JSON.stringify(statuses)};
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
@@ -814,7 +814,7 @@ for (const s of sels) { const v = (saved[s.dataset.key] || {}).verdict; if (v) s
 for (const i of notes) { const v = (saved[i.dataset.note] || {}).note; if (v) i.value = v; i.addEventListener('input', () => { (saved[i.dataset.note] ||= {}).note = i.value; persist(); }); }
 renderManual();
 document.getElementById('export').addEventListener('click', () => {
-  const data = { kind: 'chromeblock-sites-manual', run: ${JSON.stringify(r.startedAt)}, verdicts: saved };
+  const data = { kind: 'apex-sites-manual', run: ${JSON.stringify(r.startedAt)}, verdicts: saved };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
   a.download = 'oceny-stron.json';
@@ -831,7 +831,7 @@ export async function main(argv = process.argv.slice(2)) {
     console.log(`Brak manifest.json w ${opts.extensionDir}`);
     return 2;
   }
-  console.log('ChromeBlock – test jednego blockera na prawdziwych stronach (bez → z ChromeBlock; tymczasowe profile, bez Twoich danych).');
+  console.log('Apex AdBlocker – test jednego blockera na prawdziwych stronach (bez → z Apex AdBlocker; tymczasowe profile, bez Twoich danych).');
   console.log('To potrwa ok. 30–45 min (dwie przeglądarki, każda strona po kolei w obu).');
   const { report, outDir } = await runSitesTest({ ...opts, log: console.log });
   console.log('\n' + formatTxt(report).split('\nStrony (wskazówka')[0]);
