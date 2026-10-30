@@ -32,6 +32,7 @@ Brak telemetrii lub backendu nie oznacza braku lokalnego dostępu do danych. W f
 - ZIP rozszerzenia: `Apex-AdBlocker-WebStore-1.0.0.zip` wskazany przez najnowszy `docs/webstore/readiness-report.json` w `package.path`. Nie wybieraj ZIP-a użytkownika z plikiem `START-HERE.txt`, paczki `-dev.zip` ani całego zestawu materiałów.
 - Ikona sklepu: `icons/logo128.png`, zgodna z obecnym manifestem; ta sama grafika znajduje się w `brand/apex-store-icon-128.png`.
 - Grafika promocyjna: `docs/webstore/assets/promo-small-440x280.png` (440×280). To grafika marki, nie zrzut aplikacji.
+- Duża grafika promocyjna (marquee): `promo/marquee-1400x560-pl.png` (PL) i `promo/marquee-1400x560.png` (EN), 1400×560, PNG bez kanału alfa.
 - Zrzuty: aktualne PNG wskazane przez `docs/webstore/submission.json` i powiązane metadanymi z daną paczką. Procedura: [screenshots.md](../docs/webstore/screenshots.md).
 
 Zachowane `screenshots/en/`, `screenshots/pl/`, `promo/` i `github/` służą także prezentacji projektu. Dotychczasowe kompozycje pokazują lokalną stronę demonstracyjną, a `capture-metadata.json` określa, czy potwierdzono ich źródło dla bieżącej paczki. Przy statusie `pending` nie przedstawiaj ich jako aktualnych, zweryfikowanych przechwyceń. Nie dowodzą skuteczności na rzeczywistych portalach.
