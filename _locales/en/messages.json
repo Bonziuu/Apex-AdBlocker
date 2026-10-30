@@ -449,7 +449,7 @@
     "message": "uBlock filters – Badware risks (scams, malware)"
   },
   "list_counts": {
-    "message": "$P1$ network filters · $P2$ cosmetic · $P3$ scriptlet",
+    "message": "$P1$ network filters · $P2$ cosmetic · $P3$ scriptlets",
     "placeholders": {
       "p1": {
         "content": "$1"
@@ -1254,7 +1254,7 @@
     "message": "EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill and contributors, GPLv3), Polish Ad Filters (© MajkiIT, CC BY-NC-SA 4.0). The lists are built into the extension – to refresh them, see the README file."
   },
   "about_stats": {
-    "message": "Active: $P1$ network filters, $P2$ cosmetic, $P3$ scriptlet, $P4$ custom.",
+    "message": "Active: $P1$ network filters, $P2$ cosmetic, $P3$ scriptlets, $P4$ custom.",
     "placeholders": {
       "p1": {
         "content": "$1"

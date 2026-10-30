@@ -151,7 +151,7 @@ export const MESSAGES = {
   list_privacy_desc: { pl: 'EasyPrivacy i uBlock filters – Privacy', en: 'EasyPrivacy and uBlock filters – Privacy' },
   list_security_name: { pl: 'Złośliwe strony', en: 'Malicious sites' },
   list_security_desc: { pl: 'uBlock filters – Badware risks (oszustwa, malware)', en: 'uBlock filters – Badware risks (scams, malware)' },
-  list_counts: { pl: '$1 filtrów sieciowych · $2 kosmetycznych · $3 scriptletów', en: '$1 network filters · $2 cosmetic · $3 scriptlet' },
+  list_counts: { pl: '$1 filtrów sieciowych · $2 kosmetycznych · $3 scriptletów', en: '$1 network filters · $2 cosmetic · $3 scriptlets' },
 
   // ── Opcje: Moje filtry ──────────────────────────────────────────────────────
   filters_desc: {
@@ -402,6 +402,6 @@ export const MESSAGES = {
   },
   about_stats: {
     pl: 'Aktywne: $1 filtrów sieciowych, $2 kosmetycznych, $3 scriptletów, $4 własnych.',
-    en: 'Active: $1 network filters, $2 cosmetic, $3 scriptlet, $4 custom.',
+    en: 'Active: $1 network filters, $2 cosmetic, $3 scriptlets, $4 custom.',
   },
 };
