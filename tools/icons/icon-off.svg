@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><defs><clipPath id="sc"><path d="M64 6 L112 22 V60 C112 92 92 112 64 124 C36 112 16 92 16 60 V22 Z"/></clipPath></defs><g transform="translate(16 16) scale(0.75)"><path d="M64 6 L112 22 V60 C112 92 92 112 64 124 C36 112 16 92 16 60 V22 Z" fill="none" stroke="#7f848d" stroke-width="12" stroke-linejoin="round" clip-path="url(#sc)"/><g transform="translate(32 32) scale(0.5)"><path d="M64 8 L120 116 H92 L83 92 H45 L36 116 H8 Z M64 42 L75.4 72 H52.6 Z" fill-rule="evenodd" fill="#7f848d"/></g></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="g-off" x1="0" y1="0" x2="0.42" y2="1"><stop offset="0" stop-color="#c2c4ca"/><stop offset="1" stop-color="#777b85"/></linearGradient>
+  </defs>
+  <path fill="url(#g-off)" fill-rule="evenodd" d="M64 7 116 112H91L64 59 37 112H12L64 7Zm0 34-12 25h24L64 41Z"/>
+  <circle cx="94" cy="88" r="19" fill="#777b85" fill-opacity="0.98" stroke="#696d76" stroke-width="4"/>
+  <rect x="85.5" y="78" width="6" height="20" rx="2" fill="#fff"/><rect x="96.5" y="78" width="6" height="20" rx="2" fill="#fff"/>
+</svg>
