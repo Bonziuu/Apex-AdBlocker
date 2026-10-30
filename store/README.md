@@ -151,5 +151,5 @@ https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md
 ## 3. Uwagi do weryfikacji
 
 - Rozszerzenia z dostępem do wszystkich stron przechodzą dłuższą weryfikację – to normalne.
-- Zrzuty ekranu pokazują prawdziwe rozszerzenie na fikcyjnej stronie demo („Daily News”) z lokalnie podstawionymi reklamami. Liczba zablokowanych żądań w popupie to faktyczna liczba żądań zablokowanych na tej stronie (automat nie może kliknąć ikony, więc Chrome nie przyznaje uprawnienia `activeTab` – liczba pochodzi z dziennika sieci tej samej strony).
+- Zrzuty ekranu pokazują prawdziwe rozszerzenie na fikcyjnej stronie demo („Daily News”) z lokalnie podstawionymi reklamami – zrzuty z tą stroną mają o tym podpis. Ramka przeglądarki jest neutralną makietą (bez elementów konkretnego systemu), a nagłówki opisują tylko to, co rozszerzenie faktycznie robi (np. „Ukryj element” wymaga kilku kliknięć, więc nie obiecujemy „dwóch”). Liczba zablokowanych żądań w popupie to faktyczna liczba żądań zablokowanych na tej stronie (automat nie może kliknąć ikony, więc Chrome nie przyznaje uprawnienia `activeTab` – liczba pochodzi z dziennika sieci tej samej strony).
 - Zrzuty generuje `node store/generate.mjs` (wymaga Chrome i paczki `npm run package:dev`).

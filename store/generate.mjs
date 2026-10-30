@@ -29,7 +29,8 @@ const TEXT = {
     s1: ['Blocks ads and trackers.', 'No setup needed.', 'Protection starts the moment you install it – one trusted set of filter lists, nothing to configure.'],
     before: 'Without Apex AdBlocker', after: 'With Apex AdBlocker',
     s2: ['Protection status', 'at a glance.', 'See what was blocked on the current tab and turn protection off for a site with one click.'],
-    s3: ['Hide anything', 'in two clicks.', 'Point at a leftover banner or annoying box, click – and it stays hidden, even after reloading.'],
+    s3: ['Hide any element', 'on any page.', 'Start “Hide element” from the popup and click a leftover banner or annoying box – it stays hidden, even after reloading.'],
+    demo: 'Fictional demo page with sample ads. The extension and its blocking are real.',
     s4: ['Simple settings.', 'No accounts.', 'Ads, tracking and malicious sites are always covered. Add your own filters or back up your settings.'],
     s5: ['Private by design.', 'Everything stays local.', 'No servers, no telemetry, no remote code. Your settings never leave your browser.'],
     chips: ['No telemetry', 'No accounts', 'No remote code', 'Free'],
@@ -39,7 +40,8 @@ const TEXT = {
     s1: ['Blokuje reklamy i śledzenie.', 'Bez konfiguracji.', 'Ochrona działa od chwili instalacji – jeden zestaw sprawdzonych list, nic do ustawiania.'],
     before: 'Bez Apex AdBlocker', after: 'Z Apex AdBlocker',
     s2: ['Stan ochrony', 'w jednym spojrzeniu.', 'Zobacz, co zostało zablokowane na karcie, i jednym kliknięciem wyłącz ochronę na stronie.'],
-    s3: ['Ukryj wszystko', 'w dwa kliknięcia.', 'Wskaż pozostały baner albo irytujące okienko, kliknij – i zniknie na stałe, także po odświeżeniu.'],
+    s3: ['Ukryj dowolny element', 'na każdej stronie.', 'Włącz „Ukryj element” w okienku rozszerzenia i kliknij pozostały baner albo irytujące okienko – zniknie na stałe, także po odświeżeniu.'],
+    demo: 'Fikcyjna strona demonstracyjna z przykładowymi reklamami. Rozszerzenie i blokowanie są prawdziwe.',
     s4: ['Proste ustawienia.', 'Bez kont.', 'Reklamy, śledzenie i złośliwe strony są zawsze blokowane. Dodaj własne filtry albo zrób kopię ustawień.'],
     s5: ['Prywatność od podstaw.', 'Wszystko zostaje lokalnie.', 'Bez serwerów, telemetrii i zdalnego kodu. Twoje ustawienia nie opuszczają przeglądarki.'],
     chips: ['Bez telemetrii', 'Bez kont', 'Bez zdalnego kodu', 'Za darmo'],
@@ -55,7 +57,8 @@ background:radial-gradient(1200px 700px at 100% 0%,#d7f3ef 0%,rgba(215,243,239,0
 p.sub{margin:22px 0 0;font-size:19px;line-height:1.5;color:#3b5759}
 .frame{position:absolute;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 30px 70px rgba(13,43,46,.22),0 2px 6px rgba(13,43,46,.08)}
 .bar{height:38px;background:#eef1f3;display:flex;align-items:center;gap:7px;padding:0 14px;border-bottom:1px solid #dde3e6}
-.dot{width:11px;height:11px;border-radius:50%;background:#ff5f57}.dot:nth-child(2){background:#febc2e}.dot:nth-child(3){background:#28c840}
+.nav{width:16px;height:16px;flex:none;color:#7a878a}
+.note{position:absolute;left:72px;bottom:34px;width:420px;font-size:13px;line-height:1.45;color:#6b7f81}
 .url{margin-left:14px;flex:1;height:24px;border-radius:12px;background:#fff;font-size:12.5px;color:#56676a;display:flex;align-items:center;padding:0 12px}
 .ext{width:22px;height:22px;margin-left:8px;border-radius:6px;display:flex;align-items:center;justify-content:center}.ext.on{background:#d6efec}
 .ext img{width:16px;height:16px}.shot{display:block;width:100%}
@@ -64,6 +67,10 @@ p.sub{margin:22px 0 0;font-size:19px;line-height:1.5;color:#3b5759}
 .popup{position:absolute;border-radius:12px;overflow:hidden;box-shadow:0 22px 50px rgba(13,43,46,.35),0 0 0 1px rgba(13,43,46,.08);background:#fff}
 .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.chip{background:#fff;border:1.5px solid #bfe7e1;color:#0b6b5f;font-weight:700;font-size:15px;padding:8px 14px;border-radius:22px}
 `;
+// neutralny pasek przeglądarki: wstecz, dalej, odśwież – bez elementów konkretnego systemu (np. kropek macOS)
+const NAV = ['M10 3 5 8l5 5', 'M6 3l5 5-5 5', 'M13 8a5 5 0 1 1-1.5-3.6M13 2.5v2.4h-2.4']
+  .map((d) => `<svg class="nav" viewBox="0 0 16 16"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`).join('');
+
 // region: fragment zrzutu 1280×800 { sx, sy, sw } pokazany na całej szerokości ramki
 const frame = ({ x, y, w, src, url, label, cls, iconOn = true, cropH, region }) => {
   const k = region ? w / region.sw : w / 1280;
@@ -71,7 +78,7 @@ const frame = ({ x, y, w, src, url, label, cls, iconOn = true, cropH, region }) 
     ? `<img src="${src}" style="display:block;width:${1280 * k}px;margin:${-region.sy * k}px 0 0 ${-region.sx * k}px">`
     : `<img class="shot" src="${src}">`;
   return `<div class="frame" style="left:${x}px;top:${y}px;width:${w}px;overflow:visible">
-${label ? `<div class="label ${cls}">${label}</div>` : ''}<div style="border-radius:14px;overflow:hidden"><div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><div class="url">${url}</div>
+${label ? `<div class="label ${cls}">${label}</div>` : ''}<div style="border-radius:14px;overflow:hidden"><div class="bar">${NAV}<div class="url">${url}</div>
 <div class="ext ${iconOn ? 'on' : ''}"><img src="${icon32}"></div></div>
 <div style="${cropH ? `height:${cropH}px;overflow:hidden` : ''}">${img}</div></div></div>`;
 };
@@ -82,13 +89,13 @@ function screens(lang) {
   const T = TEXT[lang];
   const site = 'dailynews.example';
   return {
-    '1-ads-blocked': page(`${head(T.s1)}
+    '1-ads-blocked': page(`${head(T.s1)}<div class="note">${T.demo}</div>
       ${frame({ x: 545, y: 120, w: 640, src: raw(`demo-before-${lang}.png`), url: site, label: T.before, cls: 'bad', iconOn: false, cropH: 400 })}
       ${frame({ x: 600, y: 420, w: 640, src: raw(`demo-after-${lang}.png`), url: site, label: T.after, cls: 'good', cropH: 330 })}`),
-    '2-popup': page(`${head(T.s2)}
+    '2-popup': page(`${head(T.s2)}<div class="note">${T.demo}</div>
       ${frame({ x: 545, y: 80, w: 700, src: raw(`demo-after-${lang}.png`), url: site, cropH: 600, region: { sx: 40, sy: 0, sw: 780 } })}
       <div class="popup" style="left:880px;top:128px;width:340px"><img src="${raw(`popup-${lang}.png`)}" style="display:block;width:340px"></div>`),
-    '3-hide-element': page(`${head(T.s3)}
+    '3-hide-element': page(`${head(T.s3)}<div class="note">${T.demo}</div>
       ${frame({ x: 545, y: 80, w: 700, src: raw(`picker-${lang}.png`), url: site, cropH: 600, region: { sx: 400, sy: 45, sw: 880 } })}`),
     '4-settings': page(`${head(T.s4)}
       ${frame({ x: 545, y: 80, w: 700, src: raw(`options-${lang}.png`), url: 'Apex AdBlocker', cropH: 600, region: { sx: 250, sy: 0, sw: 780 } })}`),
