@@ -15,7 +15,7 @@ import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js'
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
 import { handlerFor, senderAllowed } from './background/message-policy.js';
 import { CORE_LISTS } from './shared/core-lists.js';
-import { buildBackup, backupFileName, parseBackup, summarizeSettings } from './shared/settings-backup.js';
+import { buildBackup, backupFileName, parseBackup, summarizeSettings, settingsCounts } from './shared/settings-backup.js';
 
 // Pomiar etapów startu (czas od uruchomienia service workera). Ostatni zakończony pomiar
 // trafia do chrome.storage.session i do Diagnostyki.
@@ -1024,7 +1024,7 @@ const handlers = {
     }
     await checkCosmeticData();
     await refreshYouTubeStatus();
-    return { ok: true, summary: summarizeSettings(next), ignored: parsed.ignored, userErrors: user.errors.length };
+    return { ok: true, summary: summarizeSettings(next), counts: settingsCounts(next), ignored: parsed.ignored, userErrors: user.errors.length };
   },
 
   async 'options:setUserFilters'(msg) {

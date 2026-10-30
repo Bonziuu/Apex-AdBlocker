@@ -19,7 +19,8 @@
     "package:store": "node tools/package-store.mjs",
     "icons": "node tools/build-icons.mjs",
     "test:local": "node tests/local/apex-local-test.mjs",
-    "test:sites": "node tests/local/single-blocker-sites.mjs"
+    "test:sites": "node tests/local/single-blocker-sites.mjs",
+    "i18n": "node tools/build-i18n.mjs"
   },
   "devDependencies": {
     "playwright": "^1.49.0"

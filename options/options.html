@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>Apex AdBlocker – ustawienia</title>
+  <title data-i18n="opt_pageTitle">Apex AdBlocker – ustawienia</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
@@ -13,28 +13,28 @@
       <img src="../icons/logo.svg" alt="" width="40" height="40">
       <div>
         <h1>Apex AdBlocker</h1>
-        <div class="muted">Bloker reklam dla Chrome · wersja <span id="version"></span></div>
+        <div class="muted"><span data-i18n="opt_tagline">Bloker reklam dla Chrome · wersja</span> <span id="version"></span></div>
       </div>
     </header>
 
     <nav>
-      <button class="tab" data-tab="protection" aria-selected="true">Ochrona</button>
-      <button class="tab" data-tab="filters">Moje filtry</button>
-      <button class="tab" data-tab="sites">Wyłączone strony</button>
-      <button class="tab" data-tab="more">Więcej</button>
+      <button class="tab" data-tab="protection" aria-selected="true" data-i18n="tab_protection">Ochrona</button>
+      <button class="tab" data-tab="filters" data-i18n="tab_filters">Moje filtry</button>
+      <button class="tab" data-tab="sites" data-i18n="tab_sites">Wyłączone strony</button>
+      <button class="tab" data-tab="more" data-i18n="tab_more">Więcej</button>
     </nav>
 
     <section id="protection" class="panel">
-      <h2 class="mode-h">Ochrona</h2>
-      <p class="muted">Apex AdBlocker blokuje reklamy, śledzenie i złośliwe strony – zawsze tym samym zestawem list, bez wybierania poziomu ochrony. YouTube Protection działa razem z listą reklam. Na wybranych stronach ochronę wyłączysz przyciskiem w okienku wtyczki albo w zakładce „Wyłączone strony”.</p>
+      <h2 class="mode-h" data-i18n="prot_title">Ochrona</h2>
+      <p class="muted" data-i18n="prot_desc">Apex AdBlocker blokuje reklamy, śledzenie i złośliwe strony – zawsze tym samym zestawem list, bez wybierania poziomu ochrony. YouTube Protection działa razem z listą reklam. Na wybranych stronach ochronę wyłączysz przyciskiem w okienku wtyczki albo w zakładce „Wyłączone strony”.</p>
       <div id="listContainer" class="cards"></div>
     </section>
 
     <section id="filters" class="panel" hidden>
-      <p class="muted">Własne filtry w składni uBlock Origin / Adblock Plus, po jednym w linii. Filtry dodane przyciskiem „Ukryj element” trafiają tutaj.</p>
+      <p class="muted" data-i18n="filters_desc">Własne filtry w składni uBlock Origin / Adblock Plus, po jednym w linii. Filtry dodane przyciskiem „Ukryj element” trafiają tutaj.</p>
       <details class="help">
-        <summary>Przykłady</summary>
-        <pre>! komentarz
+        <summary data-i18n="filters_examples">Przykłady</summary>
+        <pre data-i18n="filters_examplesBody">! komentarz
 ||reklamy.example.com^            blokuj domenę
 ||example.com/banner/*$image      blokuj obrazki z tej ścieżki
 @@||example.com^$script           zezwól na skrypty z domeny
@@ -42,37 +42,37 @@ example.com##.reklama              ukryj element na example.com
 ##.sponsorowane                    ukryj na wszystkich stronach
 example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       </details>
-      <textarea id="userFilters" spellcheck="false" placeholder="np. ||ads.example.com^"></textarea>
+      <textarea id="userFilters" spellcheck="false" placeholder="np. ||ads.example.com^" data-i18n-placeholder="filters_placeholder"></textarea>
       <div class="bar">
-        <button id="saveFilters" class="primary">Zapisz</button>
+        <button id="saveFilters" class="primary" data-i18n="common_save">Zapisz</button>
         <span id="filtersMsg" class="msg-inline"></span>
       </div>
       <ul id="filterErrors" class="errors"></ul>
     </section>
 
     <section id="sites" class="panel" hidden>
-      <p class="muted">Na tych stronach (i ich subdomenach) Apex AdBlocker nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki.</p>
-      <textarea id="disabledSites" spellcheck="false" placeholder="np. example.com"></textarea>
+      <p class="muted" data-i18n="sites_desc">Na tych stronach (i ich subdomenach) Apex AdBlocker nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki.</p>
+      <textarea id="disabledSites" spellcheck="false" placeholder="np. example.com" data-i18n-placeholder="sites_placeholder"></textarea>
       <div class="bar">
-        <button id="saveSites" class="primary">Zapisz</button>
+        <button id="saveSites" class="primary" data-i18n="common_save">Zapisz</button>
         <span id="sitesMsg" class="msg-inline"></span>
       </div>
     </section>
 
     <section id="more" class="panel" hidden>
       <details id="backup" class="more-section">
-        <summary><h2>Kopia ustawień</h2></summary>
+        <summary><h2 data-i18n="backup_title">Kopia ustawień</h2></summary>
         <div class="more-body">
-          <p class="muted">Zapisz ustawienia Apex AdBlocker do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: wyłączone strony (same nazwy domen) i Moje filtry – listy ochrony są stałe. Kopie ze starszych wersji Apex AdBlocker też da się zaimportować. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
+          <p class="muted" data-i18n="backup_desc">Zapisz ustawienia Apex AdBlocker do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: wyłączone strony (same nazwy domen) i Moje filtry – listy ochrony są stałe. Kopie ze starszych wersji Apex AdBlocker też da się zaimportować. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
           <div class="bar">
-            <button id="exportSettings" class="primary">Eksportuj ustawienia</button>
-            <button id="importSettings" class="secondary">Importuj ustawienia</button>
+            <button id="exportSettings" class="primary" data-i18n="backup_export">Eksportuj ustawienia</button>
+            <button id="importSettings" class="secondary" data-i18n="backup_import">Importuj ustawienia</button>
             <input type="file" id="importFile" accept="application/json,.json" hidden>
             <span id="backupMsg" class="msg-inline" role="status"></span>
           </div>
-          <p class="muted backup-note">Import zastępuje obecne ustawienia. Jeśli plik jest niepoprawny albo Chrome nie przyjmie zmian, ustawienia pozostaną bez zmian.</p>
+          <p class="muted backup-note" data-i18n="backup_note">Import zastępuje obecne ustawienia. Jeśli plik jest niepoprawny albo Chrome nie przyjmie zmian, ustawienia pozostaną bez zmian.</p>
           <div id="importSummary" class="backup-summary" hidden>
-            <strong>Przywrócono:</strong>
+            <strong data-i18n="backup_restored">Przywrócono:</strong>
             <ul id="importSummaryList"></ul>
           </div>
           <div id="importErrors" class="msg" role="alert" hidden></div>
@@ -80,63 +80,63 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       </details>
 
       <details id="diag" class="more-section">
-        <summary><h2>Diagnostyka</h2></summary>
+        <summary><h2 data-i18n="diag_title">Diagnostyka</h2></summary>
         <div class="more-body">
-          <p class="muted">Stan silników Apex AdBlocker. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce. Raport diagnostyczny nie zawiera adresów stron, identyfikatorów filmów, ciasteczek ani danych konta – możesz go bezpiecznie wkleić do rozmowy.</p>
+          <p class="muted" data-i18n="diag_desc">Stan silników Apex AdBlocker. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce. Raport diagnostyczny nie zawiera adresów stron, identyfikatorów filmów, ciasteczek ani danych konta – możesz go bezpiecznie wkleić do rozmowy.</p>
           <textarea id="reportPreview" class="report" readonly hidden></textarea>
           <div class="bar">
-            <button id="refreshDiag" class="primary">Odśwież</button>
-            <button id="resync" class="secondary">Synchronizuj ponownie</button>
-            <button id="copyReport" class="secondary">Kopiuj raport diagnostyczny</button>
+            <button id="refreshDiag" class="primary" data-i18n="diag_refresh">Odśwież</button>
+            <button id="resync" class="secondary" data-i18n="diag_resync">Synchronizuj ponownie</button>
+            <button id="copyReport" class="secondary" data-i18n="diag_copyReport">Kopiuj raport diagnostyczny</button>
             <span id="diagMsg" class="msg-inline"></span>
           </div>
 
-          <h3>Silniki</h3>
+          <h3 data-i18n="diag_engines">Silniki</h3>
           <table class="diag" id="components"></table>
 
-          <h3>Ostatnia synchronizacja</h3>
+          <h3 data-i18n="diag_lastSync">Ostatnia synchronizacja</h3>
           <table class="diag" id="sync"></table>
 
           <h3>YouTube Protection</h3>
           <div id="youtubeDiag" class="diag-block"></div>
 
-          <h3>Dziennik błędów</h3>
-          <div class="bar"><button id="clearErrors" class="secondary">Wyczyść dziennik</button></div>
+          <h3 data-i18n="diag_errorLog">Dziennik błędów</h3>
+          <div class="bar"><button id="clearErrors" class="secondary" data-i18n="diag_clearLog">Wyczyść dziennik</button></div>
           <table class="diag" id="errors"></table>
 
           <details id="devDiag" class="dev">
-            <summary>Dane deweloperskie</summary>
-            <h3>Zgodność scriptletów</h3>
+            <summary data-i18n="diag_devData">Dane deweloperskie</summary>
+            <h3 data-i18n="diag_scriptletCompat">Zgodność scriptletów</h3>
             <div id="scriptletCompat" class="diag-block muted"></div>
 
-            <h3>Start rozszerzenia</h3>
-            <p class="muted small">Czas etapów ostatniej instalacji, aktualizacji lub przeładowania Apex AdBlocker (od uruchomienia service workera).</p>
+            <h3 data-i18n="diag_startup">Start rozszerzenia</h3>
+            <p class="muted small" data-i18n="diag_startupDesc">Czas etapów ostatniej instalacji, aktualizacji lub przeładowania Apex AdBlocker (od uruchomienia service workera).</p>
             <table class="diag" id="startupProfile"></table>
 
-            <h3>Pomiary wydajności</h3>
-            <label class="check"><input type="checkbox" id="devPerf"> Mierz pracę filtrów kosmetycznych i scriptletów na stronach (domyślnie wyłączone)</label>
-            <p class="muted small">Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu Apex AdBlocker (bez czasu oryginalnej funkcji strony). Bez adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty.</p>
-            <div class="bar"><button id="resetPerf" class="secondary">Resetuj pomiary</button></div>
+            <h3 data-i18n="diag_perf">Pomiary wydajności</h3>
+            <label class="check"><input type="checkbox" id="devPerf"> <span data-i18n="diag_perfToggle">Mierz pracę filtrów kosmetycznych i scriptletów na stronach (domyślnie wyłączone)</span></label>
+            <p class="muted small" data-i18n="diag_perfDesc">Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu Apex AdBlocker (bez czasu oryginalnej funkcji strony). Bez adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty.</p>
+            <div class="bar"><button id="resetPerf" class="secondary" data-i18n="diag_resetPerf">Resetuj pomiary</button></div>
             <table class="diag" id="perf"></table>
-            <h3>Najdroższe scriptlety</h3>
+            <h3 data-i18n="diag_topScriptlets">Najdroższe scriptlety</h3>
             <table class="diag" id="scriptletPerf"></table>
           </details>
         </div>
       </details>
 
       <details id="about" class="more-section">
-        <summary><h2>O wtyczce</h2></summary>
+        <summary><h2 data-i18n="about_title">O wtyczce</h2></summary>
         <div class="more-body">
-          <p>Apex AdBlocker działa w Manifest V3 (MV3) i blokuje na trzech poziomach:</p>
+          <p data-i18n="about_intro">Apex AdBlocker działa w Manifest V3 (MV3) i blokuje na trzech poziomach:</p>
           <ul>
-            <li><b>Sieć</b> – żądania reklam i skryptów śledzących są blokowane regułami declarativeNetRequest.</li>
-            <li><b>Ukrywanie elementów</b> – puste ramki i kontenery po reklamach są ukrywane kosmetycznie (arkusze stylów).</li>
-            <li><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, Apex AdBlocker wykonuje tylko obsługiwane warianty scriptletów; pozostałe pomija.</li>
+            <li data-i18n-html="about_network"><b>Sieć</b> – żądania reklam i skryptów śledzących są blokowane regułami declarativeNetRequest.</li>
+            <li data-i18n-html="about_cosmetic"><b>Ukrywanie elementów</b> – puste ramki i kontenery po reklamach są ukrywane kosmetycznie (arkusze stylów).</li>
+            <li data-i18n-html="about_scriptlets"><b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, Apex AdBlocker wykonuje tylko obsługiwane warianty scriptletów; pozostałe pomija.</li>
           </ul>
-          <h3>Ograniczenia</h3>
-          <p>Apex AdBlocker obsługuje podzbiór składni filtrów uBO/ABP. Części filtrów nie da się wyrazić w MV3 (np. filtrowanie HTML, nagłówki CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma implementacji, więc na niektórych stronach skuteczność może być niższa niż w uBlock Origin. Apex AdBlocker nie obiecuje niewykrywalności przez strony.</p>
-          <h3>Listy filtrów</h3>
-          <p>EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.</p>
+          <h3 data-i18n="about_limitsTitle">Ograniczenia</h3>
+          <p data-i18n="about_limits">Apex AdBlocker obsługuje podzbiór składni filtrów uBO/ABP. Części filtrów nie da się wyrazić w MV3 (np. filtrowanie HTML, nagłówki CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma implementacji, więc na niektórych stronach skuteczność może być niższa niż w uBlock Origin. Apex AdBlocker nie obiecuje niewykrywalności przez strony.</p>
+          <h3 data-i18n="about_listsTitle">Listy filtrów</h3>
+          <p data-i18n="about_lists">EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.</p>
           <div id="stats" class="muted"></div>
         </div>
       </details>

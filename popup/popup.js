@@ -2,8 +2,11 @@
 // „Ukryj element”, ustawienia, diagnostyka. Ochrona ma jeden stały zestaw list (bez trybów).
 
 import { viewModel } from './view-model.js';
+import { t, localizeDocument } from '../shared/i18n.js';
 
 const $ = (id) => document.getElementById(id);
+
+localizeDocument();
 
 try { $('version').textContent = chrome.runtime.getManifest().version; } catch { /* */ }
 
@@ -32,9 +35,7 @@ function render(info) {
   const autoReload = info.autoReloadOnToggle !== false;
   $('autoReload').checked = autoReload;
   $('autoReload').disabled = false;
-  $('toggleHint').textContent = autoReload
-    ? 'Włącza lub wyłącza ochronę Apex AdBlocker na tej stronie. Karta zostanie przeładowana.'
-    : 'Włącza lub wyłącza ochronę Apex AdBlocker na tej stronie bez automatycznego przeładowania.';
+  $('toggleHint').textContent = t(autoReload ? 'popup_toggleHintReload' : 'popup_toggleHintNoReload');
 
   $('problems').hidden = !vm.problems;
   $('problemsText').textContent = vm.problems;

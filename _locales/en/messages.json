@@ -1,0 +1,658 @@
+{
+  "extDescription": {
+    "message": "Lightweight ad and tracker blocker for Chrome (Manifest V3) with its own filter engine and YouTube filter compatibility checks."
+  },
+  "common_save": {
+    "message": "Save"
+  },
+  "common_saved": {
+    "message": "Saved"
+  },
+  "common_error": {
+    "message": "Error: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "rules_one": {
+    "message": "rule"
+  },
+  "rules_few": {
+    "message": "rules"
+  },
+  "rules_many": {
+    "message": "rules"
+  },
+  "popup_checking": {
+    "message": "Checking…"
+  },
+  "popup_autoReload": {
+    "message": "Reload the page after changing protection"
+  },
+  "popup_reloadNotice": {
+    "message": "Reload the page to fully apply the change."
+  },
+  "popup_toggleHintReload": {
+    "message": "Turns Apex AdBlocker protection on or off for this site. The tab will reload."
+  },
+  "popup_toggleHintNoReload": {
+    "message": "Turns Apex AdBlocker protection on or off for this site without reloading the tab."
+  },
+  "popup_blocked_one": {
+    "message": "blocked request on this tab"
+  },
+  "popup_blocked_few": {
+    "message": "blocked requests on this tab"
+  },
+  "popup_blocked_many": {
+    "message": "blocked requests on this tab"
+  },
+  "popup_unsupportedTitle": {
+    "message": "This page isn’t supported"
+  },
+  "popup_unsupportedText": {
+    "message": "Apex AdBlocker doesn’t run on internal browser pages (such as chrome:// or the Chrome Web Store)."
+  },
+  "popup_picker": {
+    "message": "Hide element"
+  },
+  "popup_settings": {
+    "message": "Settings"
+  },
+  "popup_statusOn": {
+    "message": "Protection on"
+  },
+  "popup_statusOff": {
+    "message": "Protection off"
+  },
+  "popup_problems": {
+    "message": "Engine problem: $P1$ – open diagnostics",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "component_network": {
+    "message": "network"
+  },
+  "component_cosmetic": {
+    "message": "cosmetic filters"
+  },
+  "component_scriptlets": {
+    "message": "scriptlets"
+  },
+  "component_filters": {
+    "message": "filter lists"
+  },
+  "component_youtube": {
+    "message": "YouTube"
+  },
+  "ytStatus_ok": {
+    "message": "Active"
+  },
+  "ytStatus_warning": {
+    "message": "Warning"
+  },
+  "ytStatus_error": {
+    "message": "Error"
+  },
+  "ytStatus_disabled": {
+    "message": "Off"
+  },
+  "ytStatus_unknown": {
+    "message": "Unknown"
+  },
+  "picker_title": {
+    "message": "Hide element"
+  },
+  "picker_hint": {
+    "message": "Click the element on the page you want to hide. Esc – cancel."
+  },
+  "picker_placeholder": {
+    "message": "The CSS selector will appear after you click"
+  },
+  "picker_none": {
+    "message": "Nothing selected"
+  },
+  "picker_invalid": {
+    "message": "Invalid selector"
+  },
+  "picker_match_one": {
+    "message": "Matches: 1 element"
+  },
+  "picker_match_few": {
+    "message": "Matches: $P1$ elements",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "picker_match_many": {
+    "message": "Matches: $P1$ elements",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "picker_upTitle": {
+    "message": "Select the parent element"
+  },
+  "picker_up": {
+    "message": "↑ Wider"
+  },
+  "picker_downTitle": {
+    "message": "Go back to the narrower element"
+  },
+  "picker_down": {
+    "message": "↓ Narrower"
+  },
+  "picker_cancel": {
+    "message": "Cancel"
+  },
+  "picker_save": {
+    "message": "Hide permanently"
+  },
+  "picker_saved": {
+    "message": "Saved to “My filters”. The element will stay hidden after reloading too."
+  },
+  "picker_saveFailed": {
+    "message": "Couldn’t save the filter."
+  },
+  "welcome_pageTitle": {
+    "message": "Welcome to Apex AdBlocker"
+  },
+  "welcome_title": {
+    "message": "Welcome to Apex AdBlocker"
+  },
+  "welcome_tagline": {
+    "message": "Lightweight ad blocker for Chrome"
+  },
+  "welcome_lead": {
+    "message": "Apex AdBlocker works locally in your browser: it blocks ads, tracking and malicious sites using filter lists built into the extension. Apex AdBlocker doesn’t send your data or any telemetry."
+  },
+  "welcome_onTitle": {
+    "message": "Protection is already on"
+  },
+  "welcome_noSetup": {
+    "message": "There’s nothing to choose or set up."
+  },
+  "welcome_featAds": {
+    "message": "<strong>Ads</strong> – including YouTube Protection"
+  },
+  "welcome_featTracking": {
+    "message": "<strong>Tracking</strong> – tracking scripts and pixels"
+  },
+  "welcome_featMalware": {
+    "message": "<strong>Malicious sites</strong> – known scams and malware"
+  },
+  "welcome_brokenSite": {
+    "message": "If a site doesn’t work properly, turn protection off for it with the button in the extension popup."
+  },
+  "welcome_start": {
+    "message": "Get started"
+  },
+  "welcome_openOptions": {
+    "message": "Open settings"
+  },
+  "opt_pageTitle": {
+    "message": "Apex AdBlocker – settings"
+  },
+  "opt_tagline": {
+    "message": "Ad blocker for Chrome · version"
+  },
+  "tab_protection": {
+    "message": "Protection"
+  },
+  "tab_filters": {
+    "message": "My filters"
+  },
+  "tab_sites": {
+    "message": "Disabled sites"
+  },
+  "tab_more": {
+    "message": "More"
+  },
+  "prot_title": {
+    "message": "Protection"
+  },
+  "prot_desc": {
+    "message": "Apex AdBlocker blocks ads, tracking and malicious sites – always with the same set of lists, with no protection levels to choose from. YouTube Protection works together with the ads list. You can turn protection off for selected sites with the button in the extension popup or on the “Disabled sites” tab."
+  },
+  "list_ads_name": {
+    "message": "Ads"
+  },
+  "list_ads_desc": {
+    "message": "EasyList, uBlock filters and Polish Ad Filters"
+  },
+  "list_privacy_name": {
+    "message": "Tracking and privacy"
+  },
+  "list_privacy_desc": {
+    "message": "EasyPrivacy and uBlock filters – Privacy"
+  },
+  "list_security_name": {
+    "message": "Malicious sites"
+  },
+  "list_security_desc": {
+    "message": "uBlock filters – Badware risks (scams, malware)"
+  },
+  "list_counts": {
+    "message": "$P1$ network filters · $P2$ cosmetic · $P3$ scriptlet",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      }
+    }
+  },
+  "filters_desc": {
+    "message": "Your own filters in uBlock Origin / Adblock Plus syntax, one per line. Filters added with the “Hide element” button end up here."
+  },
+  "filters_examples": {
+    "message": "Examples"
+  },
+  "filters_examplesBody": {
+    "message": "! comment\n||ads.example.com^                block a domain\n||example.com/banner/*$image      block images from this path\n@@||example.com^$script           allow scripts from a domain\nexample.com##.ad                   hide an element on example.com\n##.sponsored                       hide on all sites\nexample.com##div:has-text(Advert)  hide an element containing text"
+  },
+  "filters_placeholder": {
+    "message": "e.g. ||ads.example.com^"
+  },
+  "filters_line": {
+    "message": "Line $P1$:",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "filters_saved": {
+    "message": "Saved · active filters: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_desc": {
+    "message": "Apex AdBlocker doesn’t block anything on these sites (or their subdomains). One domain per line. The easiest way to add them is the power button in the extension popup."
+  },
+  "sites_placeholder": {
+    "message": "e.g. example.com"
+  },
+  "backup_title": {
+    "message": "Settings backup"
+  },
+  "backup_desc": {
+    "message": "Save your Apex AdBlocker settings to a JSON file and restore them later (e.g. after reinstalling). The file contains only disabled sites (domain names only) and My filters – the protection lists are fixed. Backups from older Apex AdBlocker versions can be imported too. It contains no history, statistics or diagnostic data. Nothing is sent anywhere."
+  },
+  "backup_export": {
+    "message": "Export settings"
+  },
+  "backup_import": {
+    "message": "Import settings"
+  },
+  "backup_note": {
+    "message": "Importing replaces your current settings. If the file is invalid or Chrome doesn’t accept the changes, your settings stay as they were."
+  },
+  "backup_restored": {
+    "message": "Restored:"
+  },
+  "backup_exportFailed": {
+    "message": "Couldn’t prepare the backup"
+  },
+  "backup_savedFile": {
+    "message": "Saved file $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "backup_tooLarge": {
+    "message": "the file is too large (max 2 MB)"
+  },
+  "backup_importing": {
+    "message": "Importing…"
+  },
+  "backup_done": {
+    "message": "Settings restored"
+  },
+  "backup_summarySites": {
+    "message": "Disabled sites: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "backup_summaryFilters": {
+    "message": "My filters: $P1$ $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "import_invalid": {
+    "message": "Not imported – the file is invalid (settings unchanged):"
+  },
+  "import_rolledBack": {
+    "message": "Chrome didn’t accept the changes – your previous settings were restored:"
+  },
+  "import_incomplete": {
+    "message": "The import failed and the previous state couldn’t be fully restored. Open Diagnostics."
+  },
+  "import_openDiag": {
+    "message": "Open Diagnostics"
+  },
+  "diag_title": {
+    "message": "Diagnostics"
+  },
+  "diag_desc": {
+    "message": "Status of the Apex AdBlocker engines. All data is collected and stored only locally, in this browser. The diagnostic report contains no page addresses, video IDs, cookies or account data – you can safely paste it into a conversation."
+  },
+  "diag_refresh": {
+    "message": "Refresh"
+  },
+  "diag_resync": {
+    "message": "Resync"
+  },
+  "diag_copyReport": {
+    "message": "Copy diagnostic report"
+  },
+  "diag_engines": {
+    "message": "Engines"
+  },
+  "diag_lastSync": {
+    "message": "Last sync"
+  },
+  "diag_errorLog": {
+    "message": "Error log"
+  },
+  "diag_clearLog": {
+    "message": "Clear log"
+  },
+  "diag_devData": {
+    "message": "Developer data"
+  },
+  "diag_scriptletCompat": {
+    "message": "Scriptlet compatibility"
+  },
+  "diag_startup": {
+    "message": "Extension startup"
+  },
+  "diag_startupDesc": {
+    "message": "Timing of the stages of the last Apex AdBlocker install, update or reload (from service worker start)."
+  },
+  "diag_perf": {
+    "message": "Performance measurements"
+  },
+  "diag_perfToggle": {
+    "message": "Measure the work of cosmetic filters and scriptlets on pages (off by default)"
+  },
+  "diag_perfDesc": {
+    "message": "Collected: number of DOM mutation batches, generic and procedural filtering time, number of applied selectors and – for each scriptlet – number of calls and time spent in Apex AdBlocker code (excluding the page’s original function). No page addresses, video IDs or data contents. The data stays in this browser and is cleared when it closes. Reload your tabs after turning this on."
+  },
+  "diag_resetPerf": {
+    "message": "Reset measurements"
+  },
+  "diag_topScriptlets": {
+    "message": "Most expensive scriptlets"
+  },
+  "dstatus_ok": {
+    "message": "OK"
+  },
+  "dstatus_warning": {
+    "message": "warning"
+  },
+  "dstatus_error": {
+    "message": "ERROR"
+  },
+  "dstatus_unknown": {
+    "message": "unknown"
+  },
+  "dstatus_disabled": {
+    "message": "off"
+  },
+  "dstatus_healthy": {
+    "message": "healthy"
+  },
+  "dstatus_degraded": {
+    "message": "problem"
+  },
+  "dcomp_network": {
+    "message": "Network engine (DNR)"
+  },
+  "dcomp_cosmetic": {
+    "message": "Cosmetic engine"
+  },
+  "dcomp_scriptlets": {
+    "message": "Scriptlet engine"
+  },
+  "dcomp_filters": {
+    "message": "Filter lists"
+  },
+  "dcomp_youtube": {
+    "message": "YouTube Protection"
+  },
+  "dcol_component": {
+    "message": "Component"
+  },
+  "dcol_status": {
+    "message": "Status"
+  },
+  "dcol_details": {
+    "message": "Details"
+  },
+  "dcol_updated": {
+    "message": "Updated"
+  },
+  "dcol_step": {
+    "message": "Step"
+  },
+  "dcol_result": {
+    "message": "Result"
+  },
+  "dcol_message": {
+    "message": "Message"
+  },
+  "dcol_time": {
+    "message": "Time"
+  },
+  "dcol_host": {
+    "message": "Host"
+  },
+  "dcol_mutations": {
+    "message": "Mutation batches"
+  },
+  "dcol_generic": {
+    "message": "Generic [ms]"
+  },
+  "dcol_procedural": {
+    "message": "Procedural [ms] / runs"
+  },
+  "dcol_selectors": {
+    "message": "Selectors"
+  },
+  "dcol_stage": {
+    "message": "Stage"
+  },
+  "dcol_timeMs": {
+    "message": "Time [ms]"
+  },
+  "dcol_calls": {
+    "message": "Calls"
+  },
+  "dcol_scriptlet": {
+    "message": "Scriptlet"
+  },
+  "dcol_target": {
+    "message": "Intercepted function"
+  },
+  "dcol_totalMs": {
+    "message": "Total [ms]"
+  },
+  "dcol_avgMs": {
+    "message": "Average [ms]"
+  },
+  "dcol_maxMs": {
+    "message": "Max [ms]"
+  },
+  "diag_ytStatus": {
+    "message": "Status:"
+  },
+  "diag_ytCritical": {
+    "message": "Critical YouTube rules (scriptlets): <b>$P1$</b> · supported: <b>$P2$</b> · unsupported: <b>$P3$</b>",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      }
+    }
+  },
+  "diag_ytGaps": {
+    "message": "Rules not executed:"
+  },
+  "diag_ytPlayer": {
+    "message": "Last player state ($P1$):",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "diag_ytNoPlayer": {
+    "message": "No player report yet – open a video on YouTube."
+  },
+  "diag_compatLine": {
+    "message": "Scriptlet filters in the lists: $P1$ · fully supported: $P2$ · partial (not executed): $P3$ · unsupported: $P4$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      },
+      "p4": {
+        "content": "$4"
+      }
+    }
+  },
+  "diag_noCompat": {
+    "message": "No data (run the build)."
+  },
+  "diag_noErrors": {
+    "message": "No errors."
+  },
+  "diag_frame": {
+    "message": " (frame $P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "diag_noPerf": {
+    "message": "No measurements – reload a few pages."
+  },
+  "diag_perfOff": {
+    "message": "Measurements are off."
+  },
+  "diag_after": {
+    "message": "after $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "diag_noStartup": {
+    "message": "No measurement – it appears after the extension is installed, updated or reloaded."
+  },
+  "diag_noScriptletPerf": {
+    "message": "No scriptlet measurements – reload a tab (e.g. YouTube) and play a video."
+  },
+  "diag_syncOk": {
+    "message": "Sync finished"
+  },
+  "diag_syncErr": {
+    "message": "Sync finished with errors – see the table"
+  },
+  "diag_perfReset": {
+    "message": "Measurements reset"
+  },
+  "diag_reportFailed": {
+    "message": "Couldn’t build the report"
+  },
+  "diag_reportCopied": {
+    "message": "Report copied to the clipboard (nothing was sent)"
+  },
+  "diag_reportSelect": {
+    "message": "Report selected – copy it manually (Ctrl+C)"
+  },
+  "about_title": {
+    "message": "About"
+  },
+  "about_intro": {
+    "message": "Apex AdBlocker runs on Manifest V3 (MV3) and blocks on three levels:"
+  },
+  "about_network": {
+    "message": "<b>Network</b> – requests for ads and tracking scripts are blocked with declarativeNetRequest rules."
+  },
+  "about_cosmetic": {
+    "message": "<b>Element hiding</b> – empty frames and leftover ad containers are hidden cosmetically (style sheets)."
+  },
+  "about_scriptlets": {
+    "message": "<b>Scriptlets</b> – on sites that detect blockers or weave ads into the player, Apex AdBlocker runs only supported scriptlet variants and skips the rest."
+  },
+  "about_limitsTitle": {
+    "message": "Limitations"
+  },
+  "about_limits": {
+    "message": "Apex AdBlocker supports a subset of the uBO/ABP filter syntax. Some filters can’t be expressed in MV3 (e.g. HTML filtering, CSP headers, blocking pop-ups over the network) and some scriptlets aren’t implemented, so on some sites blocking may be less effective than in uBlock Origin. Apex AdBlocker doesn’t promise to be undetectable by sites."
+  },
+  "about_listsTitle": {
+    "message": "Filter lists"
+  },
+  "about_lists": {
+    "message": "EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill and contributors, GPLv3), Polish Ad Filters (© MajkiIT, CC BY-NC-SA 4.0). The lists are built into the extension – to refresh them, see the README file."
+  },
+  "about_stats": {
+    "message": "Active: $P1$ network filters, $P2$ cosmetic, $P3$ scriptlet, $P4$ custom.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      },
+      "p4": {
+        "content": "$4"
+      }
+    }
+  }
+}

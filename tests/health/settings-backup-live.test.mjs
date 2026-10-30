@@ -21,7 +21,8 @@ test('UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });
   const ctx = await chromium.launchPersistentContext(path.join(tmp, 'profile'), {
     headless: true, channel: 'chromium', acceptDownloads: true,
-    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update'],
+    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update', '--lang=pl'],
+    env: { ...process.env, LANGUAGE: 'pl', LANG: 'pl_PL.UTF-8' },
   });
   try {
     await ctx.route(/^https?:/, (r) => r.fulfill({ status: 204, body: '' }));
@@ -94,7 +95,8 @@ test('UI: niepełny rollback nie twierdzi, że przywrócono ustawienia; pokazuje
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });
   const ctx = await chromium.launchPersistentContext(path.join(tmp, 'profile'), {
     headless: true, channel: 'chromium',
-    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update'],
+    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update', '--lang=pl'],
+    env: { ...process.env, LANGUAGE: 'pl', LANG: 'pl_PL.UTF-8' },
   });
   try {
     let [sw] = ctx.serviceWorkers();

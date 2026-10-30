@@ -1,9 +1,12 @@
 import { importFailureMessage } from '../shared/settings-backup.js';
 import { resolveRoute, MORE_SECTIONS } from './routing.js';
+import { t, tPlural, localizeDocument, numberLocale } from '../shared/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const send = (msg) => chrome.runtime.sendMessage(msg);
-const fmt = (n) => Number(n || 0).toLocaleString('pl-PL');
+const fmt = (n) => Number(n || 0).toLocaleString(numberLocale());
+
+localizeDocument();
 
 // zakładki: Ochrona, Moje filtry, Wyłączone strony, Więcej (z sekcjami backup / diag / about)
 function selectTab(id) {
@@ -46,10 +49,10 @@ function renderLists() {
         <div class="desc"></div>
         <div class="count"></div>
       </div>`;
-    card.querySelector('.name').textContent = l.name;
-    card.querySelector('.desc').textContent = l.desc;
+    card.querySelector('.name').textContent = t(`list_${l.id}_name`, undefined, l.name);
+    card.querySelector('.desc').textContent = t(`list_${l.id}_desc`, undefined, l.desc);
     card.querySelector('.count').textContent =
-      `${fmt(l.networkFilters)} filtrów sieciowych · ${fmt(l.cosmeticFilters)} kosmetycznych · ${fmt(l.scriptletFilters)} scriptletów`;
+      t('list_counts', [fmt(l.networkFilters), fmt(l.cosmeticFilters), fmt(l.scriptletFilters)]);
     box.appendChild(card);
   }
 }
@@ -59,9 +62,10 @@ function renderErrors(errors) {
   ul.textContent = '';
   for (const e of errors || []) {
     const li = document.createElement('li');
-    li.innerHTML = `Linia ${e.line}: <code></code> – <span></span>`;
+    li.innerHTML = '<span class="line"></span> <code></code> – <span class="reason"></span>';
+    li.querySelector('.line').textContent = t('filters_line', e.line);
     li.querySelector('code').textContent = e.text;
-    li.querySelector('span').textContent = e.reason;
+    li.querySelector('.reason').textContent = e.reason;
     ul.appendChild(li);
   }
 }
@@ -74,7 +78,7 @@ function flash(el, text, cls) {
 // --- Kopia ustawień ------------------------------------------------------------
 $('exportSettings').addEventListener('click', async () => {
   const r = await send({ type: 'settings:export' }).catch(() => null);
-  if (!r || !r.ok) { flash($('backupMsg'), 'Nie udało się przygotować kopii', 'err'); return; }
+  if (!r || !r.ok) { flash($('backupMsg'), t('backup_exportFailed'), 'err'); return; }
   const blob = new Blob([JSON.stringify(r.backup, null, 2) + '\n'], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -84,7 +88,7 @@ $('exportSettings').addEventListener('click', async () => {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-  flash($('backupMsg'), `Zapisano plik ${r.fileName}`, 'ok');
+  flash($('backupMsg'), t('backup_savedFile', r.fileName), 'ok');
 });
 
 $('importSettings').addEventListener('click', () => { $('importFile').value = ''; $('importFile').click(); });
@@ -94,10 +98,10 @@ $('importFile').addEventListener('change', async () => {
   if (!file) return;
   $('importSummary').hidden = true;
   $('importErrors').hidden = true;
-  if (file.size > 2 * 1024 * 1024) { showImportErrors({ ok: false, errors: ['plik jest za duży (maks. 2 MB)'] }); return; }
+  if (file.size > 2 * 1024 * 1024) { showImportErrors({ ok: false, errors: [t('backup_tooLarge')] }); return; }
   $('importSettings').disabled = true;
   $('exportSettings').disabled = true;
-  flash($('backupMsg'), 'Importowanie…', '');
+  flash($('backupMsg'), t('backup_importing'), '');
   let r;
   try { r = await send({ type: 'settings:import', text: await file.text() }); } catch (e) { r = { ok: false, errors: [String(e)] }; }
   $('importSettings').disabled = false;
@@ -107,13 +111,20 @@ $('importFile').addEventListener('change', async () => {
     renderAll();
     const ul = $('importSummaryList');
     ul.textContent = '';
-    for (const line of r.summary) { const li = document.createElement('li'); li.textContent = line; ul.appendChild(li); }
+    for (const line of importSummary(r)) { const li = document.createElement('li'); li.textContent = line; ul.appendChild(li); }
     $('importSummary').hidden = false;
-    flash($('backupMsg'), 'Ustawienia przywrócone', 'ok');
+    flash($('backupMsg'), t('backup_done'), 'ok');
   } else {
     showImportErrors(r);
   }
 });
+
+/** Podsumowanie przywróconych ustawień w języku interfejsu (liczby z odpowiedzi tła). */
+function importSummary(r) {
+  if (!r.counts) return r.summary || [];
+  const n = r.counts.userFilterRules;
+  return [t('backup_summarySites', r.counts.disabledSites), t('backup_summaryFilters', [n, tPlural('rules', n)])];
+}
 
 function showImportErrors(result) {
   const m = importFailureMessage(result);
@@ -121,7 +132,7 @@ function showImportErrors(result) {
   box.textContent = '';
   const title = document.createElement('div');
   title.className = 'import-title';
-  title.textContent = m.title;
+  title.textContent = t(`import_${m.kind}`, undefined, m.title);
   box.appendChild(title);
   const ul = document.createElement('ul');
   for (const e of m.items) { const li = document.createElement('li'); li.textContent = e; ul.appendChild(li); }
@@ -130,7 +141,7 @@ function showImportErrors(result) {
     const b = document.createElement('button');
     b.className = 'secondary';
     b.id = 'openDiag';
-    b.textContent = 'Otwórz Diagnostykę';
+    b.textContent = t('import_openDiag');
     b.addEventListener('click', () => { route('diag'); history.replaceState(null, '', '#diag'); });
     box.appendChild(b);
   }
@@ -145,10 +156,12 @@ function renderAll() {
   renderErrors(data.userErrors);
   $('disabledSites').value = data.disabledSites.join('\n');
   const enabled = data.lists.filter((l) => l.enabled);
-  $('stats').textContent = `Aktywne: ${fmt(enabled.reduce((n, l) => n + l.networkFilters, 0))} filtrów sieciowych, `
-    + `${fmt(enabled.reduce((n, l) => n + l.cosmeticFilters, 0))} kosmetycznych, `
-    + `${fmt(enabled.reduce((n, l) => n + l.scriptletFilters, 0))} scriptletów, `
-    + `${fmt(data.userCount)} własnych.`;
+  $('stats').textContent = t('about_stats', [
+    fmt(enabled.reduce((n, l) => n + l.networkFilters, 0)),
+    fmt(enabled.reduce((n, l) => n + l.cosmeticFilters, 0)),
+    fmt(enabled.reduce((n, l) => n + l.scriptletFilters, 0)),
+    fmt(data.userCount),
+  ]);
 }
 renderAll();
 
@@ -157,8 +170,8 @@ $('saveFilters').addEventListener('click', async () => {
   const res = await send({ type: 'options:setUserFilters', text: $('userFilters').value });
   $('saveFilters').disabled = false;
   renderErrors(res.errors);
-  if (res.ok) flash($('filtersMsg'), `Zapisano · aktywnych filtrów: ${fmt(res.count)}`, 'ok');
-  else flash($('filtersMsg'), 'Błąd: ' + res.error, 'err');
+  if (res.ok) flash($('filtersMsg'), t('filters_saved', fmt(res.count)), 'ok');
+  else flash($('filtersMsg'), t('common_error', res.error), 'err');
 });
 
 $('saveSites').addEventListener('click', async () => {
@@ -169,8 +182,8 @@ $('saveSites').addEventListener('click', async () => {
   $('saveSites').disabled = false;
   if (res.ok) {
     $('disabledSites').value = res.disabledSites.join('\n');
-    flash($('sitesMsg'), 'Zapisano', 'ok');
-  } else flash($('sitesMsg'), 'Błąd: ' + res.error, 'err');
+    flash($('sitesMsg'), t('common_saved'), 'ok');
+  } else flash($('sitesMsg'), t('common_error', res.error), 'err');
 });
 
 // Ctrl+S zapisuje bieżącą zakładkę
@@ -184,70 +197,73 @@ document.addEventListener('keydown', (e) => {
 
 // ------------------------------------------------------------- diagnostyka
 
-const STATUS_PL = { ok: 'OK', warning: 'ostrzeżenie', error: 'BŁĄD', unknown: 'nieznany', disabled: 'wyłączone', healthy: 'sprawny', degraded: 'problem' };
-const COMPONENT_PL = { network: 'Silnik sieciowy (DNR)', cosmetic: 'Silnik kosmetyczny', scriptlets: 'Silnik scriptletów', filters: 'Listy filtrów', youtube: 'YouTube Protection' };
+const STATUSES = ['ok', 'warning', 'error', 'unknown', 'disabled', 'healthy', 'degraded'];
+const COMPONENTS = ['network', 'cosmetic', 'scriptlets', 'filters', 'youtube'];
+const statusLabel = (st) => (STATUSES.includes(st) ? t(`dstatus_${st}`) : st);
+const componentLabel = (c) => (COMPONENTS.includes(c) ? t(`dcomp_${c}`) : c);
+const th = (...keys) => `<tr>${keys.map((k) => `<th>${esc(t(`dcol_${k}`))}</th>`).join('')}</tr>`;
 const SYNC_PL = { rulesets: 'syncRulesets()', dynamicRules: 'syncDynamicRules()', scriptlets: 'syncScriptlets()' };
-const time = (t) => (t ? new Date(t).toLocaleString('pl-PL') : '—');
+const time = (ts) => (ts ? new Date(ts).toLocaleString(numberLocale()) : '—');
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const badge = (st) => `<span class="status ${esc(st)}">${esc(STATUS_PL[st] || st)}</span>`;
+const badge = (st) => `<span class="status ${esc(st)}">${esc(statusLabel(st))}</span>`;
 
 async function renderDiag() {
   const h = await send({ type: 'health:get' });
   if (!h) return;
-  $('components').innerHTML = '<tr><th>Komponent</th><th>Status</th><th>Szczegóły</th><th>Aktualizacja</th></tr>'
-    + Object.entries(h.components).map(([k, v]) => `<tr><td>${esc(COMPONENT_PL[k] || k)}</td><td>${badge(v.status)}</td><td>${esc(v.detail)}</td><td>${time(v.updatedAt)}</td></tr>`).join('');
-  $('sync').innerHTML = '<tr><th>Krok</th><th>Wynik</th><th>Komunikat</th><th>Czas</th></tr>'
+  $('components').innerHTML = th('component', 'status', 'details', 'updated')
+    + Object.entries(h.components).map(([k, v]) => `<tr><td>${esc(componentLabel(k))}</td><td>${badge(v.status)}</td><td>${esc(v.detail)}</td><td>${time(v.updatedAt)}</td></tr>`).join('');
+  $('sync').innerHTML = th('step', 'result', 'message', 'time')
     + Object.entries(h.sync).map(([k, v]) => `<tr><td class="mono">${esc(SYNC_PL[k] || k)}</td><td>${badge(v.status)}</td><td>${esc(v.message)}</td><td>${time(v.at)}</td></tr>`).join('');
 
   const y = h.youtube;
   if (y) {
     const c = y.compat;
     const lines = [];
-    lines.push(`<p>Status: ${badge(y.status)}</p><ul>`);
+    lines.push(`<p>${esc(t('diag_ytStatus'))} ${badge(y.status)}</p><ul>`);
     for (const ch of y.checks) lines.push(`<li>${ch.ok ? '✓' : '✗'} ${esc(ch.message)}</li>`);
     lines.push('</ul>');
     if (c) {
-      lines.push(`<p>Krytyczne reguły YouTube (scriptlety): <b>${c.total}</b> · obsługiwane: <b>${c.supported}</b> · nieobsługiwane: <b>${c.partial + c.unsupported}</b></p>`);
+      lines.push(`<p>${t('diag_ytCritical', [Number(c.total), Number(c.supported), Number(c.partial + c.unsupported)])}</p>`);
       const gaps = [...(c.knownGaps || []), ...(c.newGaps || [])];
       if (gaps.length) {
-        lines.push('<p>Niewykonywane reguły:</p><ul>');
+        lines.push(`<p>${esc(t('diag_ytGaps'))}</p><ul>`);
         for (const g of gaps) lines.push(`<li><b>${esc(g.scriptlet)}</b>: ${esc(g.reason)}<br><span class="mono">${esc(g.filter.slice(0, 220))}</span></li>`);
         lines.push('</ul>');
       }
     }
-    if (y.player) lines.push(`<p>Ostatni stan odtwarzacza (${esc(y.player.page || '?')}): ${badge(y.player.status)} ${esc((y.player.reasons || []).join(', '))} · ${time(y.player.at)}</p>`);
-    else lines.push('<p class="muted">Brak raportu odtwarzacza – otwórz film na YouTube.</p>');
+    if (y.player) lines.push(`<p>${esc(t('diag_ytPlayer', y.player.page || '?'))} ${badge(y.player.status)} ${esc((y.player.reasons || []).join(', '))} · ${time(y.player.at)}</p>`);
+    else lines.push(`<p class="muted">${esc(t('diag_ytNoPlayer'))}</p>`);
     $('youtubeDiag').innerHTML = lines.join('');
   }
 
   const sc = h.scriptletCompat;
   $('scriptletCompat').innerHTML = sc
-    ? `Filtry scriptletów w listach: ${fmt(sc.summary.total)} · w pełni obsługiwane: ${fmt(sc.summary.supported)} · częściowo (niewykonywane): ${fmt(sc.summary.partial)} · nieobsługiwane: ${fmt(sc.summary.unsupported)}`
-    : 'Brak danych (uruchom build).';
+    ? esc(t('diag_compatLine', [fmt(sc.summary.total), fmt(sc.summary.supported), fmt(sc.summary.partial), fmt(sc.summary.unsupported)]))
+    : esc(t('diag_noCompat'));
 
   $('errors').innerHTML = h.errors.length
-    ? '<tr><th>Czas</th><th>Komponent</th><th>Komunikat</th></tr>' + h.errors.slice().reverse().map((e) => `<tr><td>${time(e.timestamp)}</td><td>${esc(COMPONENT_PL[e.component] || e.component)}</td><td>${esc(e.message)}</td></tr>`).join('')
-    : '<tr><td class="muted">Brak błędów.</td></tr>';
+    ? th('time', 'component', 'message') + h.errors.slice().reverse().map((e) => `<tr><td>${time(e.timestamp)}</td><td>${esc(componentLabel(e.component))}</td><td>${esc(e.message)}</td></tr>`).join('')
+    : `<tr><td class="muted">${esc(t('diag_noErrors'))}</td></tr>`;
 
   $('devPerf').checked = h.devPerf;
   $('perf').innerHTML = h.devPerf && h.perf.length
-    ? '<tr><th>Czas</th><th>Host</th><th>Partie mutacji</th><th>Ogólne [ms]</th><th>Proceduralne [ms] / uruchomień</th><th>Selektory</th></tr>'
-      + h.perf.map((p) => `<tr><td>${time(p.at)}</td><td class="mono">${esc(p.host)}${p.frame ? ` (ramka ${p.frame})` : ''}</td><td>${p.stats.mutationBatches}</td><td>${p.stats.genericMs}</td><td>${p.stats.proceduralMs} / ${p.stats.proceduralRuns}</td><td>${p.stats.selectorsApplied}</td></tr>`).join('')
-    : `<tr><td class="muted">${h.devPerf ? 'Brak pomiarów – przeładuj kilka stron.' : 'Pomiary wyłączone.'}</td></tr>`;
+    ? th('time', 'host', 'mutations', 'generic', 'procedural', 'selectors')
+      + h.perf.map((p) => `<tr><td>${time(p.at)}</td><td class="mono">${esc(p.host)}${p.frame ? esc(t('diag_frame', p.frame)) : ''}</td><td>${p.stats.mutationBatches}</td><td>${p.stats.genericMs}</td><td>${p.stats.proceduralMs} / ${p.stats.proceduralRuns}</td><td>${p.stats.selectorsApplied}</td></tr>`).join('')
+    : `<tr><td class="muted">${esc(t(h.devPerf ? 'diag_noPerf' : 'diag_perfOff'))}</td></tr>`;
 
   const st = h.startupProfile;
   $('startupProfile').innerHTML = st && st.totalMs !== null
-    ? `<tr><th>Etap</th><th>Czas [ms]</th><th>Wywołania</th></tr><tr><td><b>Startup total</b> <span class="muted">(${esc(st.reason)})</span></td><td><b>${fmt(Math.round(st.totalMs))}</b></td><td></td></tr>`
-      + Object.entries(st.marks || {}).map(([k, v]) => `<tr><td class="muted">${esc(k)}</td><td class="muted">po ${fmt(Math.round(v))}</td><td></td></tr>`).join('')
+    ? `${th('stage', 'timeMs', 'calls')}<tr><td><b>Startup total</b> <span class="muted">(${esc(st.reason)})</span></td><td><b>${fmt(Math.round(st.totalMs))}</b></td><td></td></tr>`
+      + Object.entries(st.marks || {}).map(([k, v]) => `<tr><td class="muted">${esc(k)}</td><td class="muted">${esc(t('diag_after', fmt(Math.round(v))))}</td><td></td></tr>`).join('')
       + st.stages.slice().sort((a, b) => b.totalMs - a.totalMs).map((x) => `<tr><td class="mono">${esc(x.name)}</td><td>${fmt(Math.round(x.totalMs))}</td><td>${x.count}</td></tr>`).join('')
-    : '<tr><td class="muted">Brak pomiaru – pojawi się po instalacji, aktualizacji lub przeładowaniu rozszerzenia.</td></tr>';
+    : `<tr><td class="muted">${esc(t('diag_noStartup'))}</td></tr>`;
 
   const sp = h.scriptletPerf || [];
-  const ms = (v) => v.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const ms = (v) => v.toLocaleString(numberLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   $('scriptletPerf').innerHTML = h.devPerf && sp.length
-    ? '<tr><th>Scriptlet</th><th>Przechwycona funkcja</th><th>Wywołania</th><th>Łącznie [ms]</th><th>Średnio [ms]</th><th>Maks. [ms]</th></tr>'
+    ? th('scriptlet', 'target', 'calls', 'totalMs', 'avgMs', 'maxMs')
       + sp.map((r) => `<tr><td class="mono">${esc(r.scriptlet)}</td><td class="mono">${esc(r.target)}</td><td>${fmt(r.calls)}</td><td>${ms(r.totalMs)}</td><td>${ms(r.avgMs)}</td><td>${ms(r.maxMs)}</td></tr>`).join('')
-    : `<tr><td class="muted">${h.devPerf ? 'Brak pomiarów scriptletów – przeładuj kartę (np. YouTube) i odtwórz film.' : 'Pomiary wyłączone.'}</td></tr>`;
+    : `<tr><td class="muted">${esc(t(h.devPerf ? 'diag_noScriptletPerf' : 'diag_perfOff'))}</td></tr>`;
 }
 
 $('refreshDiag').addEventListener('click', renderDiag);
@@ -255,28 +271,28 @@ $('resync').addEventListener('click', async () => {
   $('resync').disabled = true;
   const r = await send({ type: 'health:resync' });
   $('resync').disabled = false;
-  flash($('diagMsg'), r && r.ok ? 'Synchronizacja zakończona' : 'Synchronizacja zakończona z błędami – zobacz tabelę', r && r.ok ? 'ok' : 'err');
+  flash($('diagMsg'), t(r && r.ok ? 'diag_syncOk' : 'diag_syncErr'), r && r.ok ? 'ok' : 'err');
   renderDiag();
 });
 $('clearErrors').addEventListener('click', async () => { await send({ type: 'health:clearErrors' }); renderDiag(); });
 $('devPerf').addEventListener('change', async () => { await send({ type: 'options:setDevPerf', enabled: $('devPerf').checked }); renderDiag(); });
-$('resetPerf').addEventListener('click', async () => { await send({ type: 'perf:reset' }); flash($('diagMsg'), 'Pomiary wyzerowane', 'ok'); renderDiag(); });
+$('resetPerf').addEventListener('click', async () => { await send({ type: 'perf:reset' }); flash($('diagMsg'), t('diag_perfReset'), 'ok'); renderDiag(); });
 // Diagnostyka ładowana leniwie: health:get dopiero po rozwinięciu sekcji (także z deep linku #diag),
 // przy każdym ponownym rozwinięciu odświeżana.
 $('diag').addEventListener('toggle', () => { if ($('diag').open) renderDiag(); });
 
 $('copyReport').addEventListener('click', async () => {
   const r = await send({ type: 'diagnostics:export' });
-  if (!r || !r.text) { flash($('diagMsg'), 'Nie udało się zbudować raportu', 'err'); return; }
+  if (!r || !r.text) { flash($('diagMsg'), t('diag_reportFailed'), 'err'); return; }
   const preview = $('reportPreview');
   preview.value = r.text;
   preview.hidden = false;
   try {
     await navigator.clipboard.writeText(r.text);
-    flash($('diagMsg'), 'Raport skopiowany do schowka (nic nie zostało wysłane)', 'ok');
+    flash($('diagMsg'), t('diag_reportCopied'), 'ok');
   } catch {
     preview.select();
-    flash($('diagMsg'), 'Zaznaczono raport – skopiuj go ręcznie (Ctrl+C)', '');
+    flash($('diagMsg'), t('diag_reportSelect'), '');
   }
 });
 

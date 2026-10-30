@@ -1,0 +1,658 @@
+{
+  "extDescription": {
+    "message": "Lekki bloker reklam i śledzenia dla Chrome (Manifest V3) z własnym silnikiem filtrów i kontrolą zgodności filtrów YouTube."
+  },
+  "common_save": {
+    "message": "Zapisz"
+  },
+  "common_saved": {
+    "message": "Zapisano"
+  },
+  "common_error": {
+    "message": "Błąd: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "rules_one": {
+    "message": "reguła"
+  },
+  "rules_few": {
+    "message": "reguły"
+  },
+  "rules_many": {
+    "message": "reguł"
+  },
+  "popup_checking": {
+    "message": "Sprawdzanie…"
+  },
+  "popup_autoReload": {
+    "message": "Odświeżaj stronę po zmianie ochrony"
+  },
+  "popup_reloadNotice": {
+    "message": "Odśwież stronę, aby w pełni zastosować zmianę."
+  },
+  "popup_toggleHintReload": {
+    "message": "Włącza lub wyłącza ochronę Apex AdBlocker na tej stronie. Karta zostanie przeładowana."
+  },
+  "popup_toggleHintNoReload": {
+    "message": "Włącza lub wyłącza ochronę Apex AdBlocker na tej stronie bez automatycznego przeładowania."
+  },
+  "popup_blocked_one": {
+    "message": "zablokowane żądanie na tej karcie"
+  },
+  "popup_blocked_few": {
+    "message": "zablokowane żądania na tej karcie"
+  },
+  "popup_blocked_many": {
+    "message": "zablokowanych żądań na tej karcie"
+  },
+  "popup_unsupportedTitle": {
+    "message": "Ta strona nie jest obsługiwana"
+  },
+  "popup_unsupportedText": {
+    "message": "Apex AdBlocker nie działa na stronach wewnętrznych przeglądarki (np. chrome://, Chrome Web Store)."
+  },
+  "popup_picker": {
+    "message": "Ukryj element"
+  },
+  "popup_settings": {
+    "message": "Ustawienia"
+  },
+  "popup_statusOn": {
+    "message": "Ochrona aktywna"
+  },
+  "popup_statusOff": {
+    "message": "Ochrona wyłączona"
+  },
+  "popup_problems": {
+    "message": "Problem z silnikiem: $P1$ – otwórz diagnostykę",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "component_network": {
+    "message": "sieć"
+  },
+  "component_cosmetic": {
+    "message": "filtry kosmetyczne"
+  },
+  "component_scriptlets": {
+    "message": "scriptlety"
+  },
+  "component_filters": {
+    "message": "listy filtrów"
+  },
+  "component_youtube": {
+    "message": "YouTube"
+  },
+  "ytStatus_ok": {
+    "message": "Aktywna"
+  },
+  "ytStatus_warning": {
+    "message": "Ostrzeżenie"
+  },
+  "ytStatus_error": {
+    "message": "Błąd"
+  },
+  "ytStatus_disabled": {
+    "message": "Wyłączona"
+  },
+  "ytStatus_unknown": {
+    "message": "Nieznany"
+  },
+  "picker_title": {
+    "message": "Ukryj element"
+  },
+  "picker_hint": {
+    "message": "Kliknij element na stronie, który chcesz ukryć. Esc – anuluj."
+  },
+  "picker_placeholder": {
+    "message": "Selektor CSS pojawi się po kliknięciu"
+  },
+  "picker_none": {
+    "message": "Nic nie wybrano"
+  },
+  "picker_invalid": {
+    "message": "Niepoprawny selektor"
+  },
+  "picker_match_one": {
+    "message": "Pasuje: 1 element"
+  },
+  "picker_match_few": {
+    "message": "Pasuje: $P1$ elementy",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "picker_match_many": {
+    "message": "Pasuje: $P1$ elementów",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "picker_upTitle": {
+    "message": "Zaznacz element nadrzędny"
+  },
+  "picker_up": {
+    "message": "↑ Szerzej"
+  },
+  "picker_downTitle": {
+    "message": "Wróć do węższego elementu"
+  },
+  "picker_down": {
+    "message": "↓ Węziej"
+  },
+  "picker_cancel": {
+    "message": "Anuluj"
+  },
+  "picker_save": {
+    "message": "Ukryj na stałe"
+  },
+  "picker_saved": {
+    "message": "Zapisano w „Moich filtrach”. Element zostanie ukryty także po odświeżeniu."
+  },
+  "picker_saveFailed": {
+    "message": "Nie udało się zapisać filtra."
+  },
+  "welcome_pageTitle": {
+    "message": "Witaj w Apex AdBlocker"
+  },
+  "welcome_title": {
+    "message": "Witaj w Apex AdBlocker"
+  },
+  "welcome_tagline": {
+    "message": "Lekki bloker reklam dla Chrome"
+  },
+  "welcome_lead": {
+    "message": "Apex AdBlocker działa lokalnie w Twojej przeglądarce: blokuje reklamy, śledzenie i złośliwe strony na podstawie list filtrów zapisanych w rozszerzeniu. Apex AdBlocker nie wysyła Twoich danych ani telemetrii."
+  },
+  "welcome_onTitle": {
+    "message": "Ochrona jest już włączona"
+  },
+  "welcome_noSetup": {
+    "message": "Nie musisz niczego wybierać ani konfigurować."
+  },
+  "welcome_featAds": {
+    "message": "<strong>Reklamy</strong> – w tym YouTube Protection"
+  },
+  "welcome_featTracking": {
+    "message": "<strong>Śledzenie</strong> – skrypty i piksele śledzące"
+  },
+  "welcome_featMalware": {
+    "message": "<strong>Złośliwe strony</strong> – znane oszustwa i malware"
+  },
+  "welcome_brokenSite": {
+    "message": "Jeśli jakaś strona działa źle, wyłącz na niej ochronę przyciskiem w okienku rozszerzenia."
+  },
+  "welcome_start": {
+    "message": "Zacznij korzystać"
+  },
+  "welcome_openOptions": {
+    "message": "Otwórz ustawienia"
+  },
+  "opt_pageTitle": {
+    "message": "Apex AdBlocker – ustawienia"
+  },
+  "opt_tagline": {
+    "message": "Bloker reklam dla Chrome · wersja"
+  },
+  "tab_protection": {
+    "message": "Ochrona"
+  },
+  "tab_filters": {
+    "message": "Moje filtry"
+  },
+  "tab_sites": {
+    "message": "Wyłączone strony"
+  },
+  "tab_more": {
+    "message": "Więcej"
+  },
+  "prot_title": {
+    "message": "Ochrona"
+  },
+  "prot_desc": {
+    "message": "Apex AdBlocker blokuje reklamy, śledzenie i złośliwe strony – zawsze tym samym zestawem list, bez wybierania poziomu ochrony. YouTube Protection działa razem z listą reklam. Na wybranych stronach ochronę wyłączysz przyciskiem w okienku wtyczki albo w zakładce „Wyłączone strony”."
+  },
+  "list_ads_name": {
+    "message": "Reklamy"
+  },
+  "list_ads_desc": {
+    "message": "EasyList, uBlock filters i Polskie Filtry Reklamowe"
+  },
+  "list_privacy_name": {
+    "message": "Śledzenie i prywatność"
+  },
+  "list_privacy_desc": {
+    "message": "EasyPrivacy i uBlock filters – Privacy"
+  },
+  "list_security_name": {
+    "message": "Złośliwe strony"
+  },
+  "list_security_desc": {
+    "message": "uBlock filters – Badware risks (oszustwa, malware)"
+  },
+  "list_counts": {
+    "message": "$P1$ filtrów sieciowych · $P2$ kosmetycznych · $P3$ scriptletów",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      }
+    }
+  },
+  "filters_desc": {
+    "message": "Własne filtry w składni uBlock Origin / Adblock Plus, po jednym w linii. Filtry dodane przyciskiem „Ukryj element” trafiają tutaj."
+  },
+  "filters_examples": {
+    "message": "Przykłady"
+  },
+  "filters_examplesBody": {
+    "message": "! komentarz\n||reklamy.example.com^            blokuj domenę\n||example.com/banner/*$image      blokuj obrazki z tej ścieżki\n@@||example.com^$script           zezwól na skrypty z domeny\nexample.com##.reklama              ukryj element na example.com\n##.sponsorowane                    ukryj na wszystkich stronach\nexample.com##div:has-text(Reklama) ukryj element zawierający tekst"
+  },
+  "filters_placeholder": {
+    "message": "np. ||ads.example.com^"
+  },
+  "filters_line": {
+    "message": "Linia $P1$:",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "filters_saved": {
+    "message": "Zapisano · aktywnych filtrów: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_desc": {
+    "message": "Na tych stronach (i ich subdomenach) Apex AdBlocker nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki."
+  },
+  "sites_placeholder": {
+    "message": "np. example.com"
+  },
+  "backup_title": {
+    "message": "Kopia ustawień"
+  },
+  "backup_desc": {
+    "message": "Zapisz ustawienia Apex AdBlocker do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: wyłączone strony (same nazwy domen) i Moje filtry – listy ochrony są stałe. Kopie ze starszych wersji Apex AdBlocker też da się zaimportować. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane."
+  },
+  "backup_export": {
+    "message": "Eksportuj ustawienia"
+  },
+  "backup_import": {
+    "message": "Importuj ustawienia"
+  },
+  "backup_note": {
+    "message": "Import zastępuje obecne ustawienia. Jeśli plik jest niepoprawny albo Chrome nie przyjmie zmian, ustawienia pozostaną bez zmian."
+  },
+  "backup_restored": {
+    "message": "Przywrócono:"
+  },
+  "backup_exportFailed": {
+    "message": "Nie udało się przygotować kopii"
+  },
+  "backup_savedFile": {
+    "message": "Zapisano plik $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "backup_tooLarge": {
+    "message": "plik jest za duży (maks. 2 MB)"
+  },
+  "backup_importing": {
+    "message": "Importowanie…"
+  },
+  "backup_done": {
+    "message": "Ustawienia przywrócone"
+  },
+  "backup_summarySites": {
+    "message": "Wyłączone strony: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "backup_summaryFilters": {
+    "message": "Moje filtry: $P1$ $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "import_invalid": {
+    "message": "Nie zaimportowano – plik jest niepoprawny (ustawienia bez zmian):"
+  },
+  "import_rolledBack": {
+    "message": "Chrome nie przyjął zmian – przywrócono poprzednie ustawienia:"
+  },
+  "import_incomplete": {
+    "message": "Import nie powiódł się i nie udało się w pełni przywrócić poprzedniego stanu. Otwórz Diagnostykę."
+  },
+  "import_openDiag": {
+    "message": "Otwórz Diagnostykę"
+  },
+  "diag_title": {
+    "message": "Diagnostyka"
+  },
+  "diag_desc": {
+    "message": "Stan silników Apex AdBlocker. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce. Raport diagnostyczny nie zawiera adresów stron, identyfikatorów filmów, ciasteczek ani danych konta – możesz go bezpiecznie wkleić do rozmowy."
+  },
+  "diag_refresh": {
+    "message": "Odśwież"
+  },
+  "diag_resync": {
+    "message": "Synchronizuj ponownie"
+  },
+  "diag_copyReport": {
+    "message": "Kopiuj raport diagnostyczny"
+  },
+  "diag_engines": {
+    "message": "Silniki"
+  },
+  "diag_lastSync": {
+    "message": "Ostatnia synchronizacja"
+  },
+  "diag_errorLog": {
+    "message": "Dziennik błędów"
+  },
+  "diag_clearLog": {
+    "message": "Wyczyść dziennik"
+  },
+  "diag_devData": {
+    "message": "Dane deweloperskie"
+  },
+  "diag_scriptletCompat": {
+    "message": "Zgodność scriptletów"
+  },
+  "diag_startup": {
+    "message": "Start rozszerzenia"
+  },
+  "diag_startupDesc": {
+    "message": "Czas etapów ostatniej instalacji, aktualizacji lub przeładowania Apex AdBlocker (od uruchomienia service workera)."
+  },
+  "diag_perf": {
+    "message": "Pomiary wydajności"
+  },
+  "diag_perfToggle": {
+    "message": "Mierz pracę filtrów kosmetycznych i scriptletów na stronach (domyślnie wyłączone)"
+  },
+  "diag_perfDesc": {
+    "message": "Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu Apex AdBlocker (bez czasu oryginalnej funkcji strony). Bez adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty."
+  },
+  "diag_resetPerf": {
+    "message": "Resetuj pomiary"
+  },
+  "diag_topScriptlets": {
+    "message": "Najdroższe scriptlety"
+  },
+  "dstatus_ok": {
+    "message": "OK"
+  },
+  "dstatus_warning": {
+    "message": "ostrzeżenie"
+  },
+  "dstatus_error": {
+    "message": "BŁĄD"
+  },
+  "dstatus_unknown": {
+    "message": "nieznany"
+  },
+  "dstatus_disabled": {
+    "message": "wyłączone"
+  },
+  "dstatus_healthy": {
+    "message": "sprawny"
+  },
+  "dstatus_degraded": {
+    "message": "problem"
+  },
+  "dcomp_network": {
+    "message": "Silnik sieciowy (DNR)"
+  },
+  "dcomp_cosmetic": {
+    "message": "Silnik kosmetyczny"
+  },
+  "dcomp_scriptlets": {
+    "message": "Silnik scriptletów"
+  },
+  "dcomp_filters": {
+    "message": "Listy filtrów"
+  },
+  "dcomp_youtube": {
+    "message": "YouTube Protection"
+  },
+  "dcol_component": {
+    "message": "Komponent"
+  },
+  "dcol_status": {
+    "message": "Status"
+  },
+  "dcol_details": {
+    "message": "Szczegóły"
+  },
+  "dcol_updated": {
+    "message": "Aktualizacja"
+  },
+  "dcol_step": {
+    "message": "Krok"
+  },
+  "dcol_result": {
+    "message": "Wynik"
+  },
+  "dcol_message": {
+    "message": "Komunikat"
+  },
+  "dcol_time": {
+    "message": "Czas"
+  },
+  "dcol_host": {
+    "message": "Host"
+  },
+  "dcol_mutations": {
+    "message": "Partie mutacji"
+  },
+  "dcol_generic": {
+    "message": "Ogólne [ms]"
+  },
+  "dcol_procedural": {
+    "message": "Proceduralne [ms] / uruchomień"
+  },
+  "dcol_selectors": {
+    "message": "Selektory"
+  },
+  "dcol_stage": {
+    "message": "Etap"
+  },
+  "dcol_timeMs": {
+    "message": "Czas [ms]"
+  },
+  "dcol_calls": {
+    "message": "Wywołania"
+  },
+  "dcol_scriptlet": {
+    "message": "Scriptlet"
+  },
+  "dcol_target": {
+    "message": "Przechwycona funkcja"
+  },
+  "dcol_totalMs": {
+    "message": "Łącznie [ms]"
+  },
+  "dcol_avgMs": {
+    "message": "Średnio [ms]"
+  },
+  "dcol_maxMs": {
+    "message": "Maks. [ms]"
+  },
+  "diag_ytStatus": {
+    "message": "Status:"
+  },
+  "diag_ytCritical": {
+    "message": "Krytyczne reguły YouTube (scriptlety): <b>$P1$</b> · obsługiwane: <b>$P2$</b> · nieobsługiwane: <b>$P3$</b>",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      }
+    }
+  },
+  "diag_ytGaps": {
+    "message": "Niewykonywane reguły:"
+  },
+  "diag_ytPlayer": {
+    "message": "Ostatni stan odtwarzacza ($P1$):",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "diag_ytNoPlayer": {
+    "message": "Brak raportu odtwarzacza – otwórz film na YouTube."
+  },
+  "diag_compatLine": {
+    "message": "Filtry scriptletów w listach: $P1$ · w pełni obsługiwane: $P2$ · częściowo (niewykonywane): $P3$ · nieobsługiwane: $P4$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      },
+      "p4": {
+        "content": "$4"
+      }
+    }
+  },
+  "diag_noCompat": {
+    "message": "Brak danych (uruchom build)."
+  },
+  "diag_noErrors": {
+    "message": "Brak błędów."
+  },
+  "diag_frame": {
+    "message": " (ramka $P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "diag_noPerf": {
+    "message": "Brak pomiarów – przeładuj kilka stron."
+  },
+  "diag_perfOff": {
+    "message": "Pomiary wyłączone."
+  },
+  "diag_after": {
+    "message": "po $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "diag_noStartup": {
+    "message": "Brak pomiaru – pojawi się po instalacji, aktualizacji lub przeładowaniu rozszerzenia."
+  },
+  "diag_noScriptletPerf": {
+    "message": "Brak pomiarów scriptletów – przeładuj kartę (np. YouTube) i odtwórz film."
+  },
+  "diag_syncOk": {
+    "message": "Synchronizacja zakończona"
+  },
+  "diag_syncErr": {
+    "message": "Synchronizacja zakończona z błędami – zobacz tabelę"
+  },
+  "diag_perfReset": {
+    "message": "Pomiary wyzerowane"
+  },
+  "diag_reportFailed": {
+    "message": "Nie udało się zbudować raportu"
+  },
+  "diag_reportCopied": {
+    "message": "Raport skopiowany do schowka (nic nie zostało wysłane)"
+  },
+  "diag_reportSelect": {
+    "message": "Zaznaczono raport – skopiuj go ręcznie (Ctrl+C)"
+  },
+  "about_title": {
+    "message": "O wtyczce"
+  },
+  "about_intro": {
+    "message": "Apex AdBlocker działa w Manifest V3 (MV3) i blokuje na trzech poziomach:"
+  },
+  "about_network": {
+    "message": "<b>Sieć</b> – żądania reklam i skryptów śledzących są blokowane regułami declarativeNetRequest."
+  },
+  "about_cosmetic": {
+    "message": "<b>Ukrywanie elementów</b> – puste ramki i kontenery po reklamach są ukrywane kosmetycznie (arkusze stylów)."
+  },
+  "about_scriptlets": {
+    "message": "<b>Scriptlety</b> – na stronach, które wykrywają blokery lub wplatają reklamy w odtwarzacz, Apex AdBlocker wykonuje tylko obsługiwane warianty scriptletów; pozostałe pomija."
+  },
+  "about_limitsTitle": {
+    "message": "Ograniczenia"
+  },
+  "about_limits": {
+    "message": "Apex AdBlocker obsługuje podzbiór składni filtrów uBO/ABP. Części filtrów nie da się wyrazić w MV3 (np. filtrowanie HTML, nagłówki CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma implementacji, więc na niektórych stronach skuteczność może być niższa niż w uBlock Origin. Apex AdBlocker nie obiecuje niewykrywalności przez strony."
+  },
+  "about_listsTitle": {
+    "message": "Listy filtrów"
+  },
+  "about_lists": {
+    "message": "EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README."
+  },
+  "about_stats": {
+    "message": "Aktywne: $P1$ filtrów sieciowych, $P2$ kosmetycznych, $P3$ scriptletów, $P4$ własnych.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      },
+      "p4": {
+        "content": "$4"
+      }
+    }
+  }
+}

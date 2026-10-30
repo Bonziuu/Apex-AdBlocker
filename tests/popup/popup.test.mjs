@@ -6,6 +6,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { viewModel } from '../../popup/view-model.js';
 import { loadBackground } from '../helpers/chrome-mock.mjs';
+import { installI18n } from '../helpers/i18n-mock.mjs';
+
+installI18n('pl');
 import { ROOT } from '../../tools/lists-config.mjs';
 
 const base = { host: 'www.example.com', disabled: false, blocked: 12, canRun: true, problems: [], youtube: null };

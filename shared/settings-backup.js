@@ -123,16 +123,22 @@ export const IMPORT_MSG = Object.freeze({
 export function importFailureMessage(r) {
   const res = r || {};
   const errors = Array.isArray(res.errors) ? res.errors : [];
-  if (res.rolledBack === true) return { title: IMPORT_MSG.rolledBack, items: errors, diagnostics: false };
+  if (res.rolledBack === true) return { kind: 'rolledBack', title: IMPORT_MSG.rolledBack, items: errors, diagnostics: false };
   if (res.rolledBack === false || Array.isArray(res.rollbackErrors)) {
-    return { title: IMPORT_MSG.incomplete, items: [...errors, ...(res.rollbackErrors || []).map((e) => `przywracanie: ${e}`)], diagnostics: true };
+    return { kind: 'incomplete', title: IMPORT_MSG.incomplete, items: [...errors, ...(res.rollbackErrors || []).map((e) => `przywracanie: ${e}`)], diagnostics: true };
   }
-  return { title: IMPORT_MSG.invalid, items: errors.length ? errors : ['nieznany błąd'], diagnostics: false };
+  return { kind: 'invalid', title: IMPORT_MSG.invalid, items: errors.length ? errors : ['nieznany błąd'], diagnostics: false };
 }
 
-/** Krótkie podsumowanie przywróconych ustawień (lista linii). */
+/** Liczby do podsumowania importu (Opcje formatują je w języku interfejsu). */
+export function settingsCounts(settings) {
+  const userFilterRules = (settings.userFilters || '').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('!')).length;
+  return { disabledSites: settings.disabledSites.length, userFilterRules };
+}
+
+/** Krótkie podsumowanie przywróconych ustawień (lista linii, po polsku – np. dla raportu). */
 export function summarizeSettings(settings) {
-  const lines = (settings.userFilters || '').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('!')).length;
+  const lines = settingsCounts(settings).userFilterRules;
   return [
     `Wyłączone strony: ${settings.disabledSites.length}`,
     `Moje filtry: ${lines} ${rulesWord(lines)}`,

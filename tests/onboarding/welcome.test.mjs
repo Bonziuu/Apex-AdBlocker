@@ -46,7 +46,7 @@ test('strona powitalna: ochrona od razu – opis blokowania, bez wyboru trybu i 
   const html = fs.readFileSync(path.join(ROOT, 'welcome/welcome.html'), 'utf8');
   const js = fs.readFileSync(path.join(ROOT, 'welcome/welcome.js'), 'utf8');
   assert.match(html, /Ochrona jest już włączona/);
-  assert.equal((html.match(/<li>/g) || []).length, 3, 'reklamy, śledzenie, złośliwe strony');
+  assert.equal((html.match(/<li[ >]/g) || []).length, 3, 'reklamy, śledzenie, złośliwe strony');
   assert.doesNotMatch(html + js, /Basic|Balanced|Strict|tryb ochrony|name="mode"|id="modes"/i);
   assert.doesNotMatch(js, /sendMessage|options:set|chrome\.storage/, '„Zacznij korzystać” niczego nie zapisuje');
   assert.match(js, /\$\('start'\)\.addEventListener\('click', closeTab\)/);

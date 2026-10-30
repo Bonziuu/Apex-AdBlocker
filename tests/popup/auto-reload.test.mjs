@@ -55,7 +55,9 @@ test('popup: ma dostępny checkbox, dynamiczny hint i łagodną informację o r�
   assert.match(html, /Odświeżaj stronę po zmianie ochrony/);
   assert.match(html, /id="reloadNotice"[^>]*aria-live="polite"/);
   assert.match(js, /popup:setAutoReload/);
-  assert.match(js, /bez automatycznego przeładowania/);
+  // podpowiedź przełącznika zależy od ustawienia (tekst w tłumaczeniach)
+  assert.match(js, /popup_toggleHintNoReload/);
+  assert.match(fs.readFileSync(path.join(ROOT, '_locales', 'pl', 'messages.json'), 'utf8'), /bez automatycznego przeładowania/);
   assert.match(js, /reloadNotice/);
   assert.match(css, /accent-color:\s*var\(--accent\)/);
 });

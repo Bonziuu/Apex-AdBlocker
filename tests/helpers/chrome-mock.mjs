@@ -1,5 +1,6 @@
 // Atrapa API Chrome dla testów service workera (background.js).
 
+import { i18nFor } from './i18n-mock.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -54,6 +55,7 @@ export async function loadBackground(opts = {}) {
     return { ok: true, status: 200, json: async () => JSON.parse(fs.readFileSync(p, 'utf8')) };
   };
   globalThis.chrome = {
+    i18n: i18nFor('pl'),
     runtime: {
       getURL: (p) => 'ext://' + p,
       onInstalled: ev('installed'),

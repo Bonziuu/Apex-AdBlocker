@@ -20,24 +20,24 @@
         <div class="host" id="host" title="">…</div>
         <div class="status" id="statusLabel">
           <span class="dot" aria-hidden="true"></span>
-          <span id="status">Sprawdzanie…</span>
+          <span id="status" data-i18n="popup_checking">Sprawdzanie…</span>
         </div>
         <label class="reload-option" for="autoReload">
           <input type="checkbox" id="autoReload" checked>
-          <span>Odświeżaj stronę po zmianie ochrony</span>
+          <span data-i18n="popup_autoReload">Odświeżaj stronę po zmianie ochrony</span>
         </label>
-        <div class="reload-notice" id="reloadNotice" role="status" aria-live="polite" hidden>Odśwież stronę, aby w pełni zastosować zmianę.</div>
+        <div class="reload-notice" id="reloadNotice" role="status" aria-live="polite" hidden data-i18n="popup_reloadNotice">Odśwież stronę, aby w pełni zastosować zmianę.</div>
       </div>
       <button id="toggle" class="toggle" role="switch" aria-checked="false" aria-labelledby="statusLabel" aria-describedby="toggleHint" disabled>
         <span class="knob" aria-hidden="true"></span>
       </button>
-      <span id="toggleHint" class="visually-hidden">Włącza lub wyłącza ochronę Apex AdBlocker na tej stronie. Karta zostanie przeładowana.</span>
+      <span id="toggleHint" class="visually-hidden" data-i18n="popup_toggleHintReload">Włącza lub wyłącza ochronę Apex AdBlocker na tej stronie. Karta zostanie przeładowana.</span>
     </section>
 
     <!-- licznik -->
     <section class="counter" aria-live="polite">
       <div class="num" id="blocked">—</div>
-      <div class="label" id="blockedLabel">zablokowanych żądań na tej karcie</div>
+      <div class="label" id="blockedLabel" data-i18n="popup_blocked_many">zablokowanych żądań na tej karcie</div>
     </section>
 
     <!-- YouTube Protection (tylko na YouTube) -->
@@ -56,18 +56,18 @@
   </main>
 
   <div id="unsupported" class="unsupported" hidden>
-    <strong>Ta strona nie jest obsługiwana</strong>
-    <span>Apex AdBlocker nie działa na stronach wewnętrznych przeglądarki (np. chrome://, Chrome Web Store).</span>
+    <strong data-i18n="popup_unsupportedTitle">Ta strona nie jest obsługiwana</strong>
+    <span data-i18n="popup_unsupportedText">Apex AdBlocker nie działa na stronach wewnętrznych przeglądarki (np. chrome://, Chrome Web Store).</span>
   </div>
 
   <footer class="actions">
     <button id="picker" class="btn" type="button" disabled>
       <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4l7 17 2.5-7.5L21 11z"/></svg>
-      Ukryj element
+      <span data-i18n="popup_picker">Ukryj element</span>
     </button>
     <button id="settings" class="btn" type="button">
       <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2.2-1.6ZM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" transform="translate(-1 0)"/></svg>
-      Ustawienia
+      <span data-i18n="popup_settings">Ustawienia</span>
     </button>
   </footer>
 

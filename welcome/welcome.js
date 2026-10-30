@@ -1,7 +1,11 @@
 // Apex AdBlocker – strona powitalna (tylko po świeżej instalacji). Ochrona działa od razu
 // (stały zestaw list) – strona tylko informuje. Bez telemetrii i bez zapisywania danych.
 
+import { localizeDocument } from '../shared/i18n.js';
+
 const $ = (id) => document.getElementById(id);
+
+localizeDocument();
 
 async function closeTab() {
   try {

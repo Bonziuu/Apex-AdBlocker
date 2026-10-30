@@ -27,7 +27,8 @@ test('Chromium: bez activeTab getMatchedRules odmawia, popup:get działa przez f
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });
   const ctx = await chromium.launchPersistentContext(path.join(tmp, 'profile'), {
     headless: true, channel: 'chromium',
-    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update'],
+    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update', '--lang=pl'],
+    env: { ...process.env, LANGUAGE: 'pl', LANG: 'pl_PL.UTF-8' },
   });
   const errors = [];
   ctx.on('weberror', (e) => errors.push(String(e.error())));

@@ -54,7 +54,8 @@ test('Opcje w Chromium: diagnostyka YouTube w #youtubeDiag; każda zakładka ma 
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });
   const ctx = await chromium.launchPersistentContext(path.join(tmp, 'profile'), {
     headless: true, channel: 'chromium',
-    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update'],
+    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update', '--lang=pl'],
+    env: { ...process.env, LANGUAGE: 'pl', LANG: 'pl_PL.UTF-8' },
   });
   try {
     await ctx.route(/^https?:/, (r) => r.fulfill({ status: 204, body: '' }));

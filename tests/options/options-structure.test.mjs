@@ -25,7 +25,7 @@ test('nawigacja: 4 zakładki w tej kolejności, każda ma swój panel', () => {
 
 test('Więcej: sekcje backup / diag / about jako <details>, domyślnie zwinięte; dane deweloperskie zwinięte', () => {
   const more = HTML.slice(HTML.indexOf('<section id="more"'), HTML.indexOf('</section>', HTML.indexOf('<section id="more"')));
-  const sections = [...more.matchAll(/<details id="([^"]+)" class="more-section"( open)?>\s*<summary><h2>([^<]+)<\/h2>/g)].map((m) => [m[1], m[3], !!m[2]]);
+  const sections = [...more.matchAll(/<details id="([^"]+)" class="more-section"( open)?>\s*<summary><h2[^>]*>([^<]+)<\/h2>/g)].map((m) => [m[1], m[3], !!m[2]]);
   assert.deepEqual(sections, [['backup', 'Kopia ustawień', false], ['diag', 'Diagnostyka', false], ['about', 'O wtyczce', false]]);
   assert.deepEqual([...MORE_SECTIONS], sections.map(([id]) => id));
   // główna diagnostyka
@@ -34,7 +34,7 @@ test('Więcej: sekcje backup / diag / about jako <details>, domyślnie zwinięte
   const mainDiag = diag.slice(0, diag.indexOf('<details id="devDiag"'));
   for (const id of ['components', 'sync', 'youtubeDiag', 'errors', 'refreshDiag', 'resync', 'copyReport', 'clearErrors']) assert.match(mainDiag, new RegExp(`id="${id}"`), id);
   // dane deweloperskie – osobny, zamknięty blok
-  assert.match(dev, /^<details id="devDiag" class="dev">\s*<summary>Dane deweloperskie<\/summary>/);
+  assert.match(dev, /^<details id="devDiag" class="dev">\s*<summary[^>]*>Dane deweloperskie<\/summary>/);
   for (const id of ['scriptletCompat', 'startupProfile', 'devPerf', 'resetPerf', 'perf', 'scriptletPerf']) {
     assert.match(dev, new RegExp(`id="${id}"`), id);
     assert.doesNotMatch(mainDiag, new RegExp(`id="${id}"`), `${id} nie w głównej diagnostyce`);
@@ -86,7 +86,8 @@ test('Opcje w Chromium: health:get tylko po otwarciu Diagnostyki; deep linki #di
   for (const e of EXTENSION_ENTRIES) if (fs.existsSync(path.join(ROOT, e))) fs.cpSync(path.join(ROOT, e), path.join(ext, e), { recursive: true });
   const ctx = await chromium.launchPersistentContext(path.join(tmp, 'profile'), {
     headless: true, channel: 'chromium',
-    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update'],
+    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--disable-component-update', '--lang=pl'],
+    env: { ...process.env, LANGUAGE: 'pl', LANG: 'pl_PL.UTF-8' },
   });
   try {
     await ctx.route(/^https?:/, (r) => r.fulfill({ status: 204, body: '' }));

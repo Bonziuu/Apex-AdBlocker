@@ -3,15 +3,32 @@
 (() => {
   if (window.__apexPicker) { window.__apexPicker.focus(); return; }
 
+  // teksty z chrome.i18n (polski albo angielski według języka przeglądarki), polski jako zapas
+  const T = (key, fallback, subs) => {
+    try { return chrome.i18n.getMessage(key, subs) || fallback; } catch { return fallback; }
+  };
+  const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  let lang = 'pl';
+  try { lang = String(chrome.i18n.getMessage('@@ui_locale') || 'pl').toLowerCase().startsWith('pl') ? 'pl' : 'en'; } catch { /* */ }
+  /** 1 → one; pl: 2–4 (bez 12–14) → few; reszta → many. */
+  const plural = (n) => {
+    if (n === 1) return 'one';
+    if (lang !== 'pl') return 'many';
+    const u = n % 10;
+    const t = n % 100;
+    return u >= 2 && u <= 4 && !(t >= 12 && t <= 14) ? 'few' : 'many';
+  };
+  const MATCH_FALLBACK = { one: 'Pasuje: 1 element', few: 'Pasuje: $1 elementy', many: 'Pasuje: $1 elementów' };
+
   const host = document.createElement('apex-picker');
   host.style.cssText = 'all:initial;position:fixed;inset:0;z-index:2147483647;pointer-events:none;';
   const root = host.attachShadow({ mode: 'closed' });
   root.innerHTML = `
 <style>
   :host { all: initial; }
-  .box { position: fixed; pointer-events: none; background: rgba(91,91,214,.18); outline: 2px solid #5b5bd6;
+  .box { position: fixed; pointer-events: none; background: rgba(34,184,168,.18); outline: 2px solid #22b8a8;
          border-radius: 2px; transition: all .06s ease-out; }
-  .match { position: fixed; pointer-events: none; outline: 1px dashed #5b5bd6; background: rgba(91,91,214,.08); }
+  .match { position: fixed; pointer-events: none; outline: 1px dashed #22b8a8; background: rgba(34,184,168,.08); }
   .panel { position: fixed; right: 16px; bottom: 16px; width: 360px; max-width: calc(100vw - 32px);
            pointer-events: auto; background: #18181b; color: #f4f4f5; border-radius: 12px;
            box-shadow: 0 10px 40px rgba(0,0,0,.45); font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -21,28 +38,28 @@
   .hint { color: #a1a1aa; margin-bottom: 10px; }
   textarea { width: 100%; min-height: 58px; resize: vertical; background: #27272a; color: #f4f4f5; border: 1px solid #3f3f46;
              border-radius: 8px; padding: 8px; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  textarea:focus { outline: 2px solid #5b5bd6; border-color: transparent; }
+  textarea:focus { outline: 2px solid #22b8a8; border-color: transparent; }
   .count { color: #a1a1aa; margin: 6px 0 10px; font-size: 12px; }
   .row { display: flex; gap: 6px; flex-wrap: wrap; }
   button { font: inherit; border: 0; border-radius: 8px; padding: 8px 10px; cursor: pointer; background: #27272a; color: #f4f4f5; }
   button:hover { background: #3f3f46; }
-  button.primary { background: #5b5bd6; color: #fff; margin-left: auto; }
-  button.primary:hover { background: #4c4cc4; }
+  button.primary { background: #22b8a8; color: #0b1d20; font-weight: 600; margin-left: auto; }
+  button.primary:hover { background: #2cc9b8; }
   button:disabled { opacity: .45; cursor: default; }
   .done { color: #86efac; }
 </style>
 <div class="box" hidden></div>
 <div class="matches"></div>
 <div class="panel">
-  <div class="title">🛡️ Ukryj element</div>
-  <div class="hint">Kliknij element na stronie, który chcesz ukryć. Esc – anuluj.</div>
-  <textarea spellcheck="false" placeholder="Selektor CSS pojawi się po kliknięciu"></textarea>
-  <div class="count">Nic nie wybrano</div>
+  <div class="title">🛡️ ${esc(T('picker_title', 'Ukryj element'))}</div>
+  <div class="hint">${esc(T('picker_hint', 'Kliknij element na stronie, który chcesz ukryć. Esc – anuluj.'))}</div>
+  <textarea spellcheck="false" placeholder="${esc(T('picker_placeholder', 'Selektor CSS pojawi się po kliknięciu'))}"></textarea>
+  <div class="count">${esc(T('picker_none', 'Nic nie wybrano'))}</div>
   <div class="row">
-    <button data-act="up" title="Zaznacz element nadrzędny" disabled>↑ Szerzej</button>
-    <button data-act="down" title="Wróć do węższego elementu" disabled>↓ Węziej</button>
-    <button data-act="cancel">Anuluj</button>
-    <button data-act="save" class="primary" disabled>Ukryj na stałe</button>
+    <button data-act="up" title="${esc(T('picker_upTitle', 'Zaznacz element nadrzędny'))}" disabled>${esc(T('picker_up', '↑ Szerzej'))}</button>
+    <button data-act="down" title="${esc(T('picker_downTitle', 'Wróć do węższego elementu'))}" disabled>${esc(T('picker_down', '↓ Węziej'))}</button>
+    <button data-act="cancel">${esc(T('picker_cancel', 'Anuluj'))}</button>
+    <button data-act="save" class="primary" disabled>${esc(T('picker_save', 'Ukryj na stałe'))}</button>
   </div>
 </div>`;
   (document.documentElement || document.body).appendChild(host);
@@ -112,11 +129,11 @@
   function preview() {
     matchesLayer.textContent = '';
     const sel = input.value.trim();
-    if (!sel) { countEl.textContent = 'Nic nie wybrano'; btn('save').disabled = true; return; }
+    if (!sel) { countEl.textContent = T('picker_none', 'Nic nie wybrano'); btn('save').disabled = true; return; }
     let found = [];
     try { found = [...document.querySelectorAll(sel)].filter((e) => !isOurs(e)); }
-    catch { countEl.textContent = 'Niepoprawny selektor'; btn('save').disabled = true; return; }
-    countEl.textContent = found.length === 1 ? 'Pasuje: 1 element' : `Pasuje: ${found.length} elementów`;
+    catch { countEl.textContent = T('picker_invalid', 'Niepoprawny selektor'); btn('save').disabled = true; return; }
+    { const f = plural(found.length); countEl.textContent = T(`picker_match_${f}`, MATCH_FALLBACK[f].replace('$1', found.length), [String(found.length)]); }
     btn('save').disabled = found.length === 0;
     for (const e of found.slice(0, 50)) {
       const d = document.createElement('div');
@@ -194,12 +211,12 @@
     try {
       const res = await chrome.runtime.sendMessage({ type: 'picker:add', selector });
       if (res && res.ok) {
-        countEl.innerHTML = '<span class="done">Zapisano w „Moich filtrach”. Element zostanie ukryty także po odświeżeniu.</span>';
+        countEl.innerHTML = `<span class="done">${esc(T('picker_saved', 'Zapisano w „Moich filtrach”. Element zostanie ukryty także po odświeżeniu.'))}</span>`;
         setTimeout(stop, 1400);
         return;
       }
     } catch {}
-    countEl.textContent = 'Nie udało się zapisać filtra.';
+    countEl.textContent = T('picker_saveFailed', 'Nie udało się zapisać filtra.');
   });
 
   window.__apexPicker = { focus() { input.focus(); } };

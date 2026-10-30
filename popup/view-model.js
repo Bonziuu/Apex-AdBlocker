@@ -1,19 +1,19 @@
 // Apex AdBlocker – model widoku popupu (czysta logika; testy: tests/popup/popup.test.mjs).
+// Teksty z chrome.i18n (shared/i18n.js) – polski albo angielski według języka przeglądarki.
 
-export const COMPONENT_PL = { network: 'sieć', cosmetic: 'filtry kosmetyczne', scriptlets: 'scriptlety', filters: 'listy filtrów', youtube: 'YouTube' };
-export const STATUS_PL = { ok: 'Aktywna', warning: 'Ostrzeżenie', error: 'Błąd', disabled: 'Wyłączona', unknown: 'Nieznany' };
+import { t, tPlural, numberLocale } from '../shared/i18n.js';
 
+const COMPONENTS = ['network', 'cosmetic', 'scriptlets', 'filters', 'youtube'];
+const YT_STATUSES = ['ok', 'warning', 'error', 'disabled', 'unknown'];
 
-/** Polska odmiana opisu licznika: 1 żądanie, 2–4 żądania, 0/5+ żądań (12–14 → żądań). */
+/** Opis licznika z odmianą (pl: 1 żądanie, 2–4 żądania, 0/5+ żądań; en: request/requests). */
 export function blockedLabel(n) {
   const k = Number(n);
-  if (!Number.isFinite(k)) return 'zablokowanych żądań na tej karcie';
-  const t = k % 100;
-  const u = k % 10;
-  if (k === 1) return 'zablokowane żądanie na tej karcie';
-  if (u >= 2 && u <= 4 && !(t >= 12 && t <= 14)) return 'zablokowane żądania na tej karcie';
-  return 'zablokowanych żądań na tej karcie';
+  return tPlural('popup_blocked', n === null || n === undefined || !Number.isFinite(k) ? NaN : k);
 }
+
+const componentName = (c) => (COMPONENTS.includes(c) ? t(`component_${c}`) : c);
+const ytStatusLabel = (s) => (YT_STATUSES.includes(s) ? t(`ytStatus_${s}`) : s);
 
 /** Stan widoku na podstawie odpowiedzi popup:get (czysta funkcja – testowana). */
 export function viewModel(info) {
@@ -25,13 +25,11 @@ export function viewModel(info) {
     supported: true,
     host: String(info.host || '').replace(/^www\./, ''),
     on,
-    status: on ? 'Ochrona aktywna' : 'Ochrona wyłączona',
-    blocked: info.blocked === null || info.blocked === undefined ? '—' : Number(info.blocked).toLocaleString('pl-PL'),
+    status: on ? t('popup_statusOn') : t('popup_statusOff'),
+    blocked: info.blocked === null || info.blocked === undefined ? '—' : Number(info.blocked).toLocaleString(numberLocale()),
     blockedLabel: blockedLabel(info.blocked),
     pickerEnabled: on,
-    problems: problems.length
-      ? `Problem z silnikiem: ${problems.map((p) => COMPONENT_PL[p] || p).join(', ')} – otwórz diagnostykę`
-      : '',
-    youtube: yt ? { status: yt.status, label: STATUS_PL[yt.status] || yt.status, detail: yt.detail || '' } : null,
+    problems: problems.length ? t('popup_problems', problems.map(componentName).join(', ')) : '',
+    youtube: yt ? { status: yt.status, label: ytStatusLabel(yt.status), detail: yt.detail || '' } : null,
   };
 }
