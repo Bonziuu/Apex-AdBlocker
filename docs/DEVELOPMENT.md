@@ -70,7 +70,7 @@ Strony mogą wykrywać blokowanie reklam, a skuteczność filtrów zależy równ
 
 Wbudowane listy filtrów pochodzą m.in. z EasyList/EasyPrivacy, uAssets oraz Polskich Filtrów i zachowują własne warunki licencyjne. Szczegóły i źródła znajdują się w [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) i [docs/filter-provenance.md](filter-provenance.md).
 
-Repozytorium nie deklaruje obecnie jednej licencji obejmującej cały projekt i wszystkie dane third-party.
+Własny kod i dokumentacja są na licencji MIT; cudze dane zachowują swoje licencje. Zasady oraz otwarte kwestie dystrybucji i opcjonalnego wsparcia opisuje [LICENSING.md](../LICENSING.md).
 
 ## Development
 

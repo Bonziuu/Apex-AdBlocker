@@ -36,3 +36,11 @@ Listy są udostępniane przez ich autorów na warunkach podanych niżej licencji
 - Snapshot jest zachowany w `tools/public-suffix-list.dat`; jego SHA-256 widnieje w wygenerowanym `shared/entity-hosts.js`.
 - Licencja: Mozilla Public License 2.0; pełny tekst: `shared/public-suffix-LICENSE.txt`.
 - Zmiany: komentarze usunięto, nazwy domen zakodowano jako ASCII, dane osadzono w pomocniku dopasowania encji domen. Zawartość reguł ICANN i PRIVATE pozostaje zachowana.
+
+## Dołączone teksty i źródła kompilacji
+
+Pełny tekst GPLv3: `LICENSES/GPL-3.0.txt`. Pełny tekst MPL 2.0:
+`shared/public-suffix-LICENSE.txt`. Adresy tekstów Creative Commons podano
+powyżej. Źródła i sposób odtworzenia konkretnej paczki: `LICENSING.md`.
+Licencja MIT własnego kodu nie obejmuje cudzych filtrów ani nie rozstrzyga
+warunków dystrybucji mieszanych artefaktów GPL / CC BY-NC-SA.

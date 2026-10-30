@@ -1,26 +1,19 @@
 {
   "version": "1.0.0",
-  "zip": "Apex-AdBlocker-WebStore-1.0.0.zip",
-  "packageSha256": "9bd2d6f8501fc4c226b50d91817b080eca304ccd38b105aecaf465028e33ca8a",
-  "sourceContentsSha256": "deadb8d5b04d21f83f1e275262450e974b84f1f06432b030dc4cf719c6acedd8",
+  "generatedAt": "2026-10-30T22:07:14.072Z",
+  "zip": "dist/Apex-AdBlocker-WebStore-1.0.0.zip",
+  "packageSha256": "f58affb6dc6f3bbaa866ac5a81cf923ba106eb92e029b66da9b3980358589588",
+  "sourceContentsSha256": "495380f524c48a7a1672465452325ad37ba7b5acb90bd84c2899fdff3cd56b56",
   "technicalReady": true,
+  "publicationReady": false,
   "github": {
     "repository": "Bonziuu/Apex-AdBlocker",
-    "branch": "main",
-    "commit": "92495979052cbe051318708ed0bd711252ac9540",
-    "published": true,
-    "verifiedAt": "2026-10-30T17:35:36.773658+00:00",
-    "privacyRawUrl": "https://raw.githubusercontent.com/Bonziuu/Apex-AdBlocker/main/PRIVACY.md",
-    "privacyContentSha256": "31cf8da9cdcfbf36d24a212353cdffab4c64af0f7ec7839da827bf7d9e145714"
-  },
-  "publicationReady": false,
-  "review": {
-    "newBlockingFindings": 0,
-    "scope": "Reviewed runtime, state transitions, frames, UI, parser, scriptlets and release materials; not proof that all bugs are absent."
+    "branch": "review/webstore-1.0.0-f58affb6",
+    "commitReference": "Use the GitHub commit containing this report and ZIP. No main-branch release or Chrome Web Store submission is implied."
   },
   "fullCheck": {
-    "tests": 596,
-    "passed": 576,
+    "tests": 597,
+    "passed": 577,
     "failed": 0,
     "skipped": 20,
     "cancelled": 0,
@@ -36,28 +29,79 @@
     ],
     "actualFailure": false
   },
-  "additionalCaptureToolTests": {
-    "tests": 24,
-    "passed": 24,
-    "failed": 0,
-    "skipped": 0
+  "runtimeEnvironment": {
+    "node": "v24.19.0",
+    "playwright": "1.64.1",
+    "environmentVariables": {
+      "APEX_DOM_TEST_BROWSER": "/usr/bin/chromium"
+    },
+    "note": "System Chromium used only for DOM fixtures. It blocks installing extensions; Playwright Chromium is not installed. Actual extension test and smoke outcomes remain SKIP."
   },
-  "publisherFeedback": {
-    "statement": "Używam wtyczki kilka dni i działa bardzo dobrze.",
-    "source": "publisher statement in this conversation",
-    "exactPackageHashConfirmed": false
+  "liveSites": {
+    "status": "not_run",
+    "tested": 0,
+    "failed": 0,
+    "reason": "Real-site tests are not run by this offline preparation command."
   },
   "screenshots": {
-    "status": "not_captured",
-    "reason": "Playwright Chromium download blocked by the cloud network policy; no placeholders generated."
+    "status": "author_assets_received_capture_unverified",
+    "files": 10,
+    "locales": [
+      "pl",
+      "en"
+    ],
+    "width": 1280,
+    "height": 800,
+    "directory": "docs/webstore/uploaded-screenshots",
+    "currentPackageCaptureVerified": false,
+    "pending": [
+      "Qualify supported filter syntax as a subset.",
+      "Disclose blur as editorial redaction or replace before/after images with actual captures.",
+      "Verify real extension captures against this exact package."
+    ]
   },
-  "privacy": {
-    "targetUrl": "https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md",
-    "prepared": true,
-    "published": true,
-    "remoteCommit": "92495979052cbe051318708ed0bd711252ac9540",
-    "verifiedAt": "2026-10-30T17:35:36.773658+00:00",
-    "rawUrl": "https://raw.githubusercontent.com/Bonziuu/Apex-AdBlocker/main/PRIVACY.md",
-    "contentSha256": "31cf8da9cdcfbf36d24a212353cdffab4c64af0f7ec7839da827bf7d9e145714"
+  "licensing": {
+    "ownCode": "MIT, scoped in LICENSE",
+    "bundledGPLText": "LICENSES/GPL-3.0.txt",
+    "bundledMPLText": "shared/public-suffix-LICENSE.txt",
+    "thirdPartyLicensingCleared": false,
+    "pending": [
+      "Combined GPL / CC BY-NC-SA derived artifacts need a supported distribution basis.",
+      "Assess the actual optional-support model under NonCommercial before introducing it.",
+      "Confirm corresponding-source and share-alike obligations for the complete distribution."
+    ]
+  },
+  "blockers": [
+    "1–5 genuine extension screenshots at 1280×800 or 640×400 are missing (UI fixtures do not qualify)",
+    "complete browser test evidence and extension smoke PASS are missing",
+    "representative real-site validation evidence is missing",
+    "Strict check is incomplete or failed (exit 1, smoke SKIP)",
+    "Third-party distribution licensing is unresolved; adding MIT and license texts does not resolve it."
+  ],
+  "review": {
+    "scope": "ZIP integrity, exact checkout content, packaging/import references, changed files, filter-license declarations, screenshots metadata, strict test rerun, and bounded static review of message authorization, settings rollback, frame injection, runtime network calls and privacy claims.",
+    "newConfirmedRuntimeDefects": 0,
+    "limitations": "Bounded static review; no assertion that all bugs are absent. No successful current extension launch or external-site validation."
+  },
+  "previousPublicationEvidence": {
+    "note": "Historical fields from the prior report, not proof this package or current sources were published in that commit.",
+    "github": {
+      "repository": "Bonziuu/Apex-AdBlocker",
+      "branch": "main",
+      "commit": "92495979052cbe051318708ed0bd711252ac9540",
+      "published": true,
+      "verifiedAt": "2026-10-30T17:35:36.773658+00:00",
+      "privacyRawUrl": "https://raw.githubusercontent.com/Bonziuu/Apex-AdBlocker/main/PRIVACY.md",
+      "privacyContentSha256": "31cf8da9cdcfbf36d24a212353cdffab4c64af0f7ec7839da827bf7d9e145714"
+    },
+    "privacy": {
+      "targetUrl": "https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md",
+      "prepared": true,
+      "published": true,
+      "remoteCommit": "92495979052cbe051318708ed0bd711252ac9540",
+      "verifiedAt": "2026-10-30T17:35:36.773658+00:00",
+      "rawUrl": "https://raw.githubusercontent.com/Bonziuu/Apex-AdBlocker/main/PRIVACY.md",
+      "contentSha256": "31cf8da9cdcfbf36d24a212353cdffab4c64af0f7ec7839da827bf7d9e145714"
+    }
   }
 }

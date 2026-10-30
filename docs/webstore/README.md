@@ -1,12 +1,12 @@
 # Przygotowanie Apex AdBlocker do Chrome Web Store
 
-Wydawca i autor: **Konrad Woźniak**. Publiczny kontakt: **konrad.wozniak.1996@gmail.com**. [Profil autora na LinkedIn](https://www.linkedin.com/in/konrad-woźniak-23a5b831a). Licencje są poza zakresem tego etapu.
+Wydawca i autor: **Konrad Woźniak**. Publiczny kontakt: **konrad.wozniak.1996@gmail.com**. [Profil autora na LinkedIn](https://www.linkedin.com/in/konrad-woźniak-23a5b831a). Zakres MIT oraz nierozstrzygnięte warunki dystrybucji cudzych filtrów opisuje [LICENSING.md](../../LICENSING.md).
 
 Zakładasz konto wydawcy po raz pierwszy? Zacznij od [krótkiej checklisty zgłoszenia](SUBMISSION-CHECKLIST.pl.md): wskazuje właściwy ZIP, obrazy i teksty do panelu. Ten katalog zawiera materiały do zgłoszenia; nie stanowi potwierdzenia przyjęcia rozszerzenia do sklepu.
 
 ## Publikacja na GitHubie
 
-Przygotowany kod, testy i materiały opublikowano na `main` w commicie [9249597](https://github.com/Bonziuu/Apex-AdBlocker/commit/92495979052cbe051318708ed0bd711252ac9540). Poprawiona [polityka prywatności](https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md) jest dostępna publicznie; jej treść sprawdzono po publikacji. Dokładny stan paczki i pozostałych warunków zgłoszenia opisuje [final-release-status.json](final-release-status.json). Publikacja w Chrome Web Store wymaga osobnego zgłoszenia z konta wydawcy.
+Poprzedni zestaw kodu, testów i materiałów opublikowano na `main` w commicie [9249597](https://github.com/Bonziuu/Apex-AdBlocker/commit/92495979052cbe051318708ed0bd711252ac9540). Poprawiona [polityka prywatności](https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md) jest dostępna publicznie; jej treść sprawdzono po publikacji. Ten historyczny commit nie identyfikuje obecnej paczki ani bieżących wyników kontroli. Aktualny stan paczki i pozostałych warunków zgłoszenia opisuje [final-release-status.json](final-release-status.json). Publikacja w Chrome Web Store wymaga osobnego zgłoszenia z konta wydawcy.
 
 ## Gotowe materiały
 

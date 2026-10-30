@@ -82,3 +82,7 @@ Release candidate: complete browser and representative real-site validation is r
 - 🌍 English and Polish interface
 
 **Install:** download `Apex-AdBlocker-<version>.zip` from the [latest release](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest), extract it, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and select the `Apex-AdBlocker` folder.
+
+## Licencja
+
+Własny kod i dokumentacja: MIT, © 2026 Konrad Woźniak. Dane third-party zachowują odrębne licencje. Zakres i warunki opcjonalnego wsparcia: [LICENSING.md](LICENSING.md).

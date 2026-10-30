@@ -1,0 +1,3617 @@
+$ node tools/check.mjs --require-browser
+
+━━ Walidacja buildu ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Wygenerowane pliki są aktualne
+
+━━ Zgodność YouTube (strict) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YouTube compatibility:
+  30 scriptlet rules
+  30 supported
+  0 unsupported (partial: 0)
+✓ Brak nowych nieobsługiwanych krytycznych reguł YouTube (znane braki: 0)
+
+━━ Audyt scriptletów ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Filtry scriptletów: 10353 · w pełni obsługiwane: 9698 · częściowo (niewykonywane): 32 · nieobsługiwane: 623
+Pełny raport: npm run audit:scriptlets
+
+━━ Testy ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TAP version 13
+# Subtest: frame file selection respects origin, subdomain boundaries, paths and helper order
+ok 1 - frame file selection respects origin, subdomain boundaries, paths and helper order
+  ---
+  duration_ms: 2.18831
+  type: 'test'
+  ...
+# Subtest: top-level hooks stay at document_start; allowed frames use trusted URL and document IDs once
+ok 2 - top-level hooks stay at document_start; allowed frames use trusted URL and document IDs once
+  ---
+  duration_ms: 23.910775
+  type: 'test'
+  ...
+# Subtest: disabled top-level sites suppress cross-origin frame scriptlets and generic cosmetics
+ok 3 - disabled top-level sites suppress cross-origin frame scriptlets and generic cosmetics
+  ---
+  duration_ms: 10.485573
+  type: 'test'
+  ...
+# Subtest: disabled frame origins are excluded even when their top-level site is enabled
+ok 4 - disabled frame origins are excluded even when their top-level site is enabled
+  ---
+  duration_ms: 9.108092
+  type: 'test'
+  ...
+# Subtest: missing document identity, opaque URL, changed top-level origin and cached documents fail closed
+ok 5 - missing document identity, opaque URL, changed top-level origin and cached documents fail closed
+  ---
+  duration_ms: 7.260705
+  type: 'test'
+  ...
+# Subtest: a stale document rejection never falls back to frameId; a new document can request injection
+ok 6 - a stale document rejection never falls back to frameId; a new document can request injection
+  ---
+  duration_ms: 8.041088
+  type: 'test'
+  ...
+# Subtest: skrypt treści nie może wyłączyć ochrony strony ani zmienić ustawień
+ok 7 - skrypt treści nie może wyłączyć ochrony strony ani zmienić ustawień
+  ---
+  duration_ms: 36.654975
+  type: 'test'
+  ...
+# Subtest: skrypt treści nie może odczytać diagnostyki ani eksportu ustawień
+ok 8 - skrypt treści nie może odczytać diagnostyki ani eksportu ustawień
+  ---
+  duration_ms: 18.491929
+  type: 'test'
+  ...
+# Subtest: strona rozszerzenia nadal zmienia ustawienia; skrypt treści nadal dodaje filtr z „Ukryj element”
+ok 9 - strona rozszerzenia nadal zmienia ustawienia; skrypt treści nadal dodaje filtr z „Ukryj element”
+  ---
+  duration_ms: 21.132119
+  type: 'test'
+  ...
+# Subtest: typy spoza rejestru handlerów (np. z prototypu obiektu) są ignorowane
+ok 10 - typy spoza rejestru handlerów (np. z prototypu obiektu) są ignorowane
+  ---
+  duration_ms: 6.040071
+  type: 'test'
+  ...
+# Subtest: polityka nadawców: czyste funkcje modułu background/message-policy.js
+ok 11 - polityka nadawców: czyste funkcje modułu background/message-policy.js
+  ---
+  duration_ms: 5.549443
+  type: 'test'
+  ...
+# Subtest: stałe: sufiks sesyjny i plik-flaga profilera
+ok 12 - stałe: sufiks sesyjny i plik-flaga profilera
+  ---
+  duration_ms: 1.743692
+  type: 'test'
+  ...
+# Subtest: tylko matches → jedna rejestracja utrwalana
+ok 13 - tylko matches → jedna rejestracja utrwalana
+  ---
+  duration_ms: 0.655396
+  type: 'test'
+  ...
+# Subtest: tylko sessionMatches → jedna rejestracja sesyjna z sufiksem -s
+ok 14 - tylko sessionMatches → jedna rejestracja sesyjna z sufiksem -s
+  ---
+  duration_ms: 0.164417
+  type: 'test'
+  ...
+# Subtest: oba rodzaje → dwie rejestracje (najpierw utrwalana); brak obu → pusta lista
+ok 15 - oba rodzaje → dwie rejestracje (najpierw utrwalana); brak obu → pusta lista
+  ---
+  duration_ms: 0.181804
+  type: 'test'
+  ...
+# Subtest: devPerf: false → tylko scriptlet; true → najpierw plik-flaga, potem scriptlet (w obu rejestracjach)
+ok 16 - devPerf: false → tylko scriptlet; true → najpierw plik-flaga, potem scriptlet (w obu rejestracjach)
+  ---
+  duration_ms: 0.146701
+  type: 'test'
+  ...
+# Subtest: excludeMatches kopiowane do obu rodzajów; puste → brak pola
+ok 17 - excludeMatches kopiowane do obu rodzajów; puste → brak pola
+  ---
+  duration_ms: 0.167592
+  type: 'test'
+  ...
+# Subtest: sameScriptletRegistrations: identyczne zestawy → true; kolejność hostów bez znaczenia
+ok 18 - sameScriptletRegistrations: identyczne zestawy → true; kolejność hostów bez znaczenia
+  ---
+  duration_ms: 0.527543
+  type: 'test'
+  ...
+# Subtest: sameScriptletRegistrations: różnica id, js, runAt, allFrames, world, utrwalania, matches lub liczby → false
+ok 19 - sameScriptletRegistrations: różnica id, js, runAt, allFrames, world, utrwalania, matches lub liczby → false
+  ---
+  duration_ms: 0.31911
+  type: 'test'
+  ...
+# Subtest: moduł czysty: bez importów, Chrome API, I/O, await i stanu; background.js go importuje
+ok 20 - moduł czysty: bez importów, Chrome API, I/O, await i stanu; background.js go importuje
+  ---
+  duration_ms: 1.127786
+  type: 'test'
+  ...
+# Subtest: pusty tekst, puste linie i komentarze → 0 filtrów, brak błędów
+ok 21 - pusty tekst, puste linie i komentarze → 0 filtrów, brak błędów
+  ---
+  duration_ms: 3.342836
+  type: 'test'
+  ...
+# Subtest: filtr sieciowy → reguła DNR z priorytetem własnych reguł, count
+ok 22 - filtr sieciowy → reguła DNR z priorytetem własnych reguł, count
+  ---
+  duration_ms: 1.674026
+  type: 'test'
+  ...
+# Subtest: nieobsługiwany filtr sieciowy → błąd z numerem linii i dotychczasowym komunikatem
+ok 23 - nieobsługiwany filtr sieciowy → błąd z numerem linii i dotychczasowym komunikatem
+  ---
+  duration_ms: 0.353201
+  type: 'test'
+  ...
+# Subtest: kosmetyka: globalny selektor → genC; dla domeny → spec (lista selektorów rozdzielona)
+ok 24 - kosmetyka: globalny selektor → genC; dla domeny → spec (lista selektorów rozdzielona)
+  ---
+  duration_ms: 1.186764
+  type: 'test'
+  ...
+# Subtest: wyjątek \#@\# → unhide
+ok 25 - wyjątek \#@\# → unhide
+  ---
+  duration_ms: 0.197046
+  type: 'test'
+  ...
+# Subtest: :style(...) → style
+ok 26 - :style(...) → style
+  ---
+  duration_ms: 0.318479
+  type: 'test'
+  ...
+# Subtest: filtr proceduralny :has-text() → proc
+ok 27 - filtr proceduralny :has-text() → proc
+  ---
+  duration_ms: 0.543166
+  type: 'test'
+  ...
+# Subtest: +js(...) → odrzucony z dotychczasowym komunikatem
+ok 28 - +js(...) → odrzucony z dotychczasowym komunikatem
+  ---
+  duration_ms: 0.779342
+  type: 'test'
+  ...
+# Subtest: kilka linii razem: count, kolejność i numery linii błędów (z wcięciami i CRLF)
+ok 29 - kilka linii razem: count, kolejność i numery linii błędów (z wcięciami i CRLF)
+  ---
+  duration_ms: 1.188687
+  type: 'test'
+  ...
+# Subtest: moduł czysty: tylko import parsera, bez Chrome API, I/O i dynamicznego importu; background.js go importuje
+ok 30 - moduł czysty: tylko import parsera, bez Chrome API, I/O i dynamicznego importu; background.js go importuje
+  ---
+  duration_ms: 1.430391
+  type: 'test'
+  ...
+# Subtest: własne wyjątki: globalne \#@\# oraz generichide/elemhide/document zachowują zakres
+ok 31 - własne wyjątki: globalne \#@\# oraz generichide/elemhide/document zachowują zakres
+  ---
+  duration_ms: 0.506952
+  type: 'test'
+  ...
+# Subtest: wyjątki \#@\# z wykluczeniem domeny nie stają się wyjątkami globalnymi ani dla całego rodzica
+ok 32 - wyjątki \#@\# z wykluczeniem domeny nie stają się wyjątkami globalnymi ani dla całego rodzica
+  ---
+  duration_ms: 0.28633
+  type: 'test'
+  ...
+# Subtest: hosty kolidujące z Object.prototype są zwykłymi kluczami filtrów
+ok 33 - hosty kolidujące z Object.prototype są zwykłymi kluczami filtrów
+  ---
+  duration_ms: 0.176195
+  type: 'test'
+  ...
+# Subtest: limit własnych reguł sieciowych zgłasza konkretną pominiętą linię
+ok 34 - limit własnych reguł sieciowych zgłasza konkretną pominiętą linię
+  ---
+  duration_ms: 19.725624
+  type: 'test'
+  ...
+# Subtest: wyłączenia style i proceduralnych pozostają związane z konkretnym filtrem
+ok 35 - wyłączenia style i proceduralnych pozostają związane z konkretnym filtrem
+  ---
+  duration_ms: 0.373441
+  type: 'test'
+  ...
+# Subtest: hide exclusions do not create global unhide or cancel a separate included selector
+ok 36 - hide exclusions do not create global unhide or cancel a separate included selector
+  ---
+  duration_ms: 0.346631
+  type: 'test'
+  ...
+# Subtest: style and procedural exclusions stay attached to the original filter
+ok 37 - style and procedural exclusions stay attached to the original filter
+  ---
+  duration_ms: 3.127992
+  type: 'test'
+  ...
+# Subtest: compiler host maps safely accept object-prototype names as literal keys
+ok 38 - compiler host maps safely accept object-prototype names as literal keys
+  ---
+  duration_ms: 0.391869
+  type: 'test'
+  ...
+# Subtest: hide exclusions remain scoped, including token-indexed and complex generic filters
+ok 39 - hide exclusions remain scoped, including token-indexed and complex generic filters
+  ---
+  duration_ms: 0.534794
+  type: 'test'
+  ...
+# Subtest: the shipped Geekweek selectors survive the parent Interia exclusion
+ok 40 - the shipped Geekweek selectors survive the parent Interia exclusion
+  ---
+  duration_ms: 0.248904
+  type: 'test'
+  ...
+# Subtest: regresja: \#@\# z wyłączonej listy NIE usuwa selektora z innej listy w czasie buildu
+ok 41 - regresja: \#@\# z wyłączonej listy NIE usuwa selektora z innej listy w czasie buildu
+  ---
+  duration_ms: 2.990545
+  type: 'test'
+  ...
+# Subtest: \#@\# w tej samej liście jest stosowany od razu
+ok 42 - \#@\# w tej samej liście jest stosowany od razu
+  ---
+  duration_ms: 1.952475
+  type: 'test'
+  ...
+# Subtest: regresja: $badfilter z innej listy nie usuwa reguły w buildzie – reguła jest osobna i wyłączana w czasie działania
+ok 43 - regresja: $badfilter z innej listy nie usuwa reguły w buildzie – reguła jest osobna i wyłączana w czasie działania
+  ---
+  duration_ms: 2.377444
+  type: 'test'
+  ...
+# Subtest: $badfilter w tej samej liście usuwa filtr w buildzie
+ok 44 - $badfilter w tej samej liście usuwa filtr w buildzie
+  ---
+  duration_ms: 2.08229
+  type: 'test'
+  ...
+# Subtest: nieobsługiwane scriptlety nie trafiają do plików scriptletów
+ok 45 - nieobsługiwane scriptlety nie trafiają do plików scriptletów
+  ---
+  duration_ms: 3.123376
+  type: 'test'
+  ...
+# Subtest: wyjątki scriptletów z innej listy są zliczane (nie stosowane w buildzie)
+ok 46 - wyjątki scriptletów z innej listy są zliczane (nie stosowane w buildzie)
+  ---
+  duration_ms: 2.217023
+  type: 'test'
+  ...
+# Subtest: tryb strict YouTube: nowy nieobsługiwany filtr YouTube jest wykrywany jako newGap
+ok 47 - tryb strict YouTube: nowy nieobsługiwany filtr YouTube jest wykrywany jako newGap
+  ---
+  duration_ms: 9.282585
+  type: 'test'
+  ...
+# Subtest: ordinary host patterns stay targeted; entities require their guarded shard
+ok 48 - ordinary host patterns stay targeted; entities require their guarded shard
+  ---
+  duration_ms: 1.539715
+  type: 'test'
+  ...
+# Subtest: entity scriptlets execute on regional and previously unknown suffixes
+ok 49 - entity scriptlets execute on regional and previously unknown suffixes
+  ---
+  duration_ms: 26.093451
+  type: 'test'
+  ...
+# Subtest: unrelated domains return before library initialization or page hooks
+ok 50 - unrelated domains return before library initialization or page hooks
+  ---
+  duration_ms: 8.347029
+  type: 'test'
+  ...
+# Subtest: entity guard preserves ancestorOrigins fallback and list exceptions
+ok 51 - entity guard preserves ancestorOrigins fallback and list exceptions
+  ---
+  duration_ms: 7.227385
+  type: 'test'
+  ...
+# Subtest: overlapping normal and entity scopes install each hook only once in either order
+ok 52 - overlapping normal and entity scopes install each hook only once in either order
+  ---
+  duration_ms: 12.958622
+  type: 'test'
+  ...
+# Subtest: saved artifacts: at most one guarded entity shard per list, ordinary shards remain targeted
+ok 53 - saved artifacts: at most one guarded entity shard per list, ordinary shards remain targeted
+  ---
+  duration_ms: 56.777045
+  type: 'test'
+  ...
+# Subtest: YouTube ordinary scopes remain persistent and unrelated hosts only receive the guarded shard
+ok 54 - YouTube ordinary scopes remain persistent and unrelated hosts only receive the guarded shard
+  ---
+  duration_ms: 64.321742
+  type: 'test'
+  ...
+# Subtest: entity guard fails closed when its explicit prerequisite is missing
+ok 55 - entity guard fails closed when its explicit prerequisite is missing
+  ---
+  duration_ms: 1.194275
+  type: 'test'
+  ...
+# Subtest: an actual generated shard installs its timer hook once despite a lost reply and worker retry
+ok 56 - an actual generated shard installs its timer hook once despite a lost reply and worker retry
+  ---
+  duration_ms: 8.740841
+  type: 'test'
+  ...
+# Subtest: each new document gets its own installation and distinct shards retain their own hooks
+ok 57 - each new document gets its own installation and distinct shards retain their own hooks
+  ---
+  duration_ms: 8.337895
+  type: 'test'
+  ...
+# Subtest: a changed packaged shard can run while retries of that source remain idempotent
+ok 58 - a changed packaged shard can run while retries of that source remain idempotent
+  ---
+  duration_ms: 4.409329
+  type: 'test'
+  ...
+# Subtest: a missing helper does not consume the ordinary shard marker when entity exceptions need it
+ok 59 - a missing helper does not consume the ordinary shard marker when entity exceptions need it
+  ---
+  duration_ms: 3.930218
+  type: 'test'
+  ...
+# Subtest: entity early guards stay cheap and a missing helper allows a later successful retry
+ok 60 - entity early guards stay cheap and a missing helper allows a later successful retry
+  ---
+  duration_ms: 4.649609
+  type: 'test'
+  ...
+# Subtest: instalacja: włącza domyślne listy, rejestruje scriptlety i zapisuje wynik każdego kroku
+ok 61 - instalacja: włącza domyślne listy, rejestruje scriptlety i zapisuje wynik każdego kroku
+  ---
+  duration_ms: 35.413318
+  type: 'test'
+  ...
+# Subtest: regresja: błąd syncScriptlets() NIE jest przemilczany (status ERROR, dziennik z czasem i komponentem)
+ok 62 - regresja: błąd syncScriptlets() NIE jest przemilczany (status ERROR, dziennik z czasem i komponentem)
+  ---
+  duration_ms: 19.118421
+  type: 'test'
+  ...
+# Subtest: błąd syncRulesets() → status ERROR dla network i filters
+ok 63 - błąd syncRulesets() → status ERROR dla network i filters
+  ---
+  duration_ms: 10.263069
+  type: 'test'
+  ...
+# Subtest: regresja: ogólny \#@\# z listy spoza stałego zestawu nie wpływa na inne listy; z listy zestawu – działa między listami
+ok 64 - regresja: ogólny \#@\# z listy spoza stałego zestawu nie wpływa na inne listy; z listy zestawu – działa między listami
+  ---
+  duration_ms: 16.430456
+  type: 'test'
+  ...
+# Subtest: filtry specyficzne, wyjątki hosta i $generichide
+ok 65 - filtry specyficzne, wyjątki hosta i $generichide
+  ---
+  duration_ms: 7.325032
+  type: 'test'
+  ...
+# Subtest: przycisk zasilania: wyłączenie strony → reguła allowAllRequests, excludeMatches dla scriptletów, brak CSS
+ok 66 - przycisk zasilania: wyłączenie strony → reguła allowAllRequests, excludeMatches dla scriptletów, brak CSS
+  ---
+  duration_ms: 21.796382
+  type: 'test'
+  ...
+# Subtest: YouTube Protection: wyłączenie ochrony na youtube.com → status "disabled"
+ok 67 - YouTube Protection: wyłączenie ochrony na youtube.com → status "disabled"
+  ---
+  duration_ms: 15.558229
+  type: 'test'
+  ...
+# Subtest: własne filtry: sieciowe → reguły dynamiczne, kosmetyczne → CSS, scriptlety → błąd z opisem
+ok 68 - własne filtry: sieciowe → reguły dynamiczne, kosmetyczne → CSS, scriptlety → błąd z opisem
+  ---
+  duration_ms: 65.0324
+  type: 'test'
+  ...
+# Subtest: picker: zapisuje filtr do moich filtrów i od razu wstrzykuje CSS
+ok 69 - picker: zapisuje filtr do moich filtrów i od razu wstrzykuje CSS
+  ---
+  duration_ms: 20.774731
+  type: 'test'
+  ...
+# Subtest: raport YouTube z odtwarzacza trafia do diagnostyki (bez adresu filmu)
+ok 70 - raport YouTube z odtwarzacza trafia do diagnostyki (bez adresu filmu)
+  ---
+  duration_ms: 10.978755
+  type: 'test'
+  ...
+# Subtest: diagnostyka wydajności jest domyślnie wyłączona i nie zbiera danych
+ok 71 - diagnostyka wydajności jest domyślnie wyłączona i nie zbiera danych
+  ---
+  duration_ms: 10.516009
+  type: 'test'
+  ...
+# Subtest: brak pliku danych listy → komponent cosmetic ERROR, pozostałe listy działają
+ok 72 - brak pliku danych listy → komponent cosmetic ERROR, pozostałe listy działają
+  ---
+  duration_ms: 43.570911
+  type: 'test'
+  ...
+# Subtest: playback health: iframe nie nadpisuje raportu ramki głównej w service workerze
+ok 73 - playback health: iframe nie nadpisuje raportu ramki głównej w service workerze
+  ---
+  duration_ms: 13.420345
+  type: 'test'
+  ...
+# Subtest: playback health: główna nawigacja i zamknięcie karty czyszczą raporty
+ok 74 - playback health: główna nawigacja i zamknięcie karty czyszczą raporty
+  ---
+  duration_ms: 15.40608
+  type: 'test'
+  ...
+# Subtest: diagnostics:export: raport lokalny bez URL, ID filmów i danych strony
+ok 75 - diagnostics:export: raport lokalny bez URL, ID filmów i danych strony
+  ---
+  duration_ms: 33.373281
+  type: 'test'
+  ...
+# Subtest: Moje filtry: globalny wyjątek usuwa selektor, a generichide/elemhide/document wyłączają właściwą kosmetykę
+ok 76 - Moje filtry: globalny wyjątek usuwa selektor, a generichide/elemhide/document wyłączają właściwą kosmetykę
+  ---
+  duration_ms: 13.053123
+  type: 'test'
+  ...
+# Subtest: wykluczone style/procedury nie anulują osobnych prawidłowych filtrów o tej samej treści
+ok 77 - wykluczone style/procedury nie anulują osobnych prawidłowych filtrów o tej samej treści
+  ---
+  duration_ms: 9.115474
+  type: 'test'
+  ...
+# Subtest: wykluczenie hide jest lokalne dla reguły, również dla własnych filtrów i generic tokenów
+ok 78 - wykluczenie hide jest lokalne dla reguły, również dla własnych filtrów i generic tokenów
+  ---
+  duration_ms: 7.590701
+  type: 'test'
+  ...
+# Subtest: DOM: procedural style applies all matching rules and restores original properties
+ok 79 - DOM: procedural style applies all matching rules and restores original properties
+  ---
+  duration_ms: 669.550639
+  type: 'test'
+  ...
+# Subtest: DOM: page changes to an active style survive when the filter no longer matches
+ok 80 - DOM: page changes to an active style survive when the filter no longer matches
+  ---
+  duration_ms: 650.006003
+  type: 'test'
+  ...
+# Subtest: DOM: procedural hiding is reversible, unions rules, and reacts to class changes
+ok 81 - DOM: procedural hiding is reversible, unions rules, and reacts to class changes
+  ---
+  duration_ms: 995.638991
+  type: 'test'
+  ...
+# Subtest: DOM: generic discovery delivers every token in acknowledged batches of at most 2000
+ok 82 - DOM: generic discovery delivers every token in acknowledged batches of at most 2000
+  ---
+  duration_ms: 619.955473
+  type: 'test'
+  ...
+# Subtest: DOM: tokens remain pending until a failed worker message is retried successfully
+ok 83 - DOM: tokens remain pending until a failed worker message is retried successfully
+  ---
+  duration_ms: 1212.417621
+  type: 'test'
+  ...
+# Subtest: DOM: cosmetic initialization recovers after a transient worker failure
+ok 84 - DOM: cosmetic initialization recovers after a transient worker failure
+  ---
+  duration_ms: 828.687293
+  type: 'test'
+  ...
+# Subtest: DOM: iframe requests scriptlet authorization independently and retries a transient failure
+ok 85 - DOM: iframe requests scriptlet authorization independently and retries a transient failure
+  ---
+  duration_ms: 991.876913
+  type: 'test'
+  ...
+# Subtest: DOM: relative sibling continuations return descendants and later siblings
+ok 86 - DOM: relative sibling continuations return descendants and later siblings
+  ---
+  duration_ms: 398.745307
+  type: 'test'
+  ...
+# Subtest: DOM: procedural matches-path reacts to SPA navigation and restores visibility
+ok 87 - DOM: procedural matches-path reacts to SPA navigation and restores visibility
+  ---
+  duration_ms: 527.547405
+  type: 'test'
+  ...
+# Subtest: DOM: picker preserves the page on failed saves and allows retrying the same selector
+ok 88 - DOM: picker preserves the page on failed saves and allows retrying the same selector
+  ---
+  duration_ms: 377.88558
+  type: 'test'
+  ...
+# Subtest: DOM: canceling the picker during a failed save leaves the original page unchanged
+ok 89 - DOM: canceling the picker during a failed save leaves the original page unchanged
+  ---
+  duration_ms: 341.349707
+  type: 'test'
+  ...
+# Subtest: DOM: closing and reopening the picker releases its scroll listener
+ok 90 - DOM: closing and reopening the picker releases its scroll listener
+  ---
+  duration_ms: 394.596425
+  type: 'test'
+  ...
+# Subtest: stały zestaw: CORE_LISTS = ads, privacy, security; build i metadane list dokładnie tym zestawem
+ok 91 - stały zestaw: CORE_LISTS = ads, privacy, security; build i metadane list dokładnie tym zestawem
+  ---
+  duration_ms: 1.438193
+  type: 'test'
+  ...
+# Subtest: świeża instalacja: tylko ads/privacy/security w DNR i scriptletach; bez zapisu list ani trybu
+ok 92 - świeża instalacja: tylko ads/privacy/security w DNR i scriptletach; bez zapisu list ani trybu
+  ---
+  duration_ms: 30.249635
+  type: 'test'
+  ...
+# Subtest: migracja basic → stały zestaw; cookies/annoyances znikają; wyłączone strony i własne filtry zachowane; idempotentna
+ok 93 - migracja basic → stały zestaw; cookies/annoyances znikają; wyłączone strony i własne filtry zachowane; idempotentna
+  ---
+  duration_ms: 17.061118
+  type: 'test'
+  ...
+# Subtest: migracja balanced → stały zestaw; cookies/annoyances znikają; wyłączone strony i własne filtry zachowane; idempotentna
+ok 94 - migracja balanced → stały zestaw; cookies/annoyances znikają; wyłączone strony i własne filtry zachowane; idempotentna
+  ---
+  duration_ms: 11.851487
+  type: 'test'
+  ...
+# Subtest: migracja strict → stały zestaw; cookies/annoyances znikają; wyłączone strony i własne filtry zachowane; idempotentna
+ok 95 - migracja strict → stały zestaw; cookies/annoyances znikają; wyłączone strony i własne filtry zachowane; idempotentna
+  ---
+  duration_ms: 19.069217
+  type: 'test'
+  ...
+# Subtest: migracja custom → stały zestaw; cookies/annoyances znikają; wyłączone strony i własne filtry zachowane; idempotentna
+ok 96 - migracja custom → stały zestaw; cookies/annoyances znikają; wyłączone strony i własne filtry zachowane; idempotentna
+  ---
+  duration_ms: 19.985224
+  type: 'test'
+  ...
+# Subtest: stare zapisane listy są ignorowane także bez aktualizacji (np. nieudane usunięcie klucza)
+ok 97 - stare zapisane listy są ignorowane także bez aktualizacji (np. nieudane usunięcie klucza)
+  ---
+  duration_ms: 10.870922
+  type: 'test'
+  ...
+# Subtest: produkt nie ma już wyboru trybu ani list: brak komunikatów, modułów i UI
+ok 98 - produkt nie ma już wyboru trybu ani list: brak komunikatów, modułów i UI
+  ---
+  duration_ms: 1.236289
+  type: 'test'
+  ...
+# Subtest: paczka (package:dev): brak danych cookies/annoyances, rulesety tylko z zestawu, scriptlety tylko ads/privacy/security
+ok 99 - paczka (package:dev): brak danych cookies/annoyances, rulesety tylko z zestawu, scriptlety tylko ads/privacy/security
+  ---
+  duration_ms: 697.085773
+  type: 'test'
+  ...
+# Subtest: sanitizeText: usuwa pełne adresy URL
+ok 100 - sanitizeText: usuwa pełne adresy URL
+  ---
+  duration_ms: 2.001098
+  type: 'test'
+  ...
+# Subtest: sanitizeText: usuwa ID filmów w ścieżkach i parametrach
+ok 101 - sanitizeText: usuwa ID filmów w ścieżkach i parametrach
+  ---
+  duration_ms: 3.439049
+  type: 'test'
+  ...
+# Subtest: sanitizeText: usuwa cookies, tokeny, loginy i e-maile
+ok 102 - sanitizeText: usuwa cookies, tokeny, loginy i e-maile
+  ---
+  duration_ms: 0.168163
+  type: 'test'
+  ...
+# Subtest: sanitizeText: usuwa nazwy hostów i długie tokeny, ogranicza długość
+ok 103 - sanitizeText: usuwa nazwy hostów i długie tokeny, ogranicza długość
+  ---
+  duration_ms: 2.672278
+  type: 'test'
+  ...
+# Subtest: sanitizeText: zachowuje zwykłe komunikaty techniczne
+ok 104 - sanitizeText: zachowuje zwykłe komunikaty techniczne
+  ---
+  duration_ms: 0.138728
+  type: 'test'
+  ...
+# Subtest: sanitizeText: usuwa domenę z nowym TLD w kontekście błędu i nazwane identyfikatory filmu
+ok 105 - sanitizeText: usuwa domenę z nowym TLD w kontekście błędu i nazwane identyfikatory filmu
+  ---
+  duration_ms: 0.138679
+  type: 'test'
+  ...
+# Subtest: buildDiagnosticsReport: zawiera dozwolone dane
+ok 106 - buildDiagnosticsReport: zawiera dozwolone dane
+  ---
+  duration_ms: 1.801939
+  type: 'test'
+  ...
+# Subtest: buildDiagnosticsReport: nie zawiera URL, hostów, sesji ani identyfikatorów karty
+ok 107 - buildDiagnosticsReport: nie zawiera URL, hostów, sesji ani identyfikatorów karty
+  ---
+  duration_ms: 0.29909
+  type: 'test'
+  ...
+# Subtest: buildDiagnosticsReport: nieznany typ strony odtwarzacza → "other"; brak danych → unknown/none
+ok 108 - buildDiagnosticsReport: nieznany typ strony odtwarzacza → "other"; brak danych → unknown/none
+  ---
+  duration_ms: 0.582235
+  type: 'test'
+  ...
+# Subtest: buildDiagnosticsReport: profil startu (tylko nazwy etapów i czasy)
+ok 109 - buildDiagnosticsReport: profil startu (tylko nazwy etapów i czasy)
+  ---
+  duration_ms: 0.906402
+  type: 'test'
+  ...
+# Subtest: runSyncSteps: każdy krok ma wynik OK/ERROR z czasem; błąd trafia do dziennika
+ok 110 - runSyncSteps: każdy krok ma wynik OK/ERROR z czasem; błąd trafia do dziennika
+  ---
+  duration_ms: 2.56079
+  type: 'test'
+  ...
+# Subtest: componentStatusFromSync: błąd dowolnego kroku sieciowego → network error
+ok 111 - componentStatusFromSync: błąd dowolnego kroku sieciowego → network error
+  ---
+  duration_ms: 1.308267
+  type: 'test'
+  ...
+# Subtest: dziennik błędów jest ograniczony i trwały między restartami service workera
+ok 112 - dziennik błędów jest ograniczony i trwały między restartami service workera
+  ---
+  duration_ms: 5.798467
+  type: 'test'
+  ...
+# Subtest: stan początkowy: wszystkie komponenty "unknown"
+ok 113 - stan początkowy: wszystkie komponenty "unknown"
+  ---
+  duration_ms: 0.238529
+  type: 'test'
+  ...
+# Subtest: równoległe pierwsze aktualizacje health współdzielą odczyt i zachowują oba wyniki
+ok 114 - równoległe pierwsze aktualizacje health współdzielą odczyt i zachowują oba wyniki
+  ---
+  duration_ms: 21.070476
+  type: 'test'
+  ...
+# Subtest: parseReport: przyjmuje tylko znane scriptlety i liczby; odrzuca adresy, ID i treść
+ok 115 - parseReport: przyjmuje tylko znane scriptlety i liczby; odrzuca adresy, ID i treść
+  ---
+  duration_ms: 2.092977
+  type: 'test'
+  ...
+# Subtest: ScriptletPerfStore: liczba wywołań, łączny, średni i maks. czas; sortowanie po łącznym czasie
+ok 116 - ScriptletPerfStore: liczba wywołań, łączny, średni i maks. czas; sortowanie po łącznym czasie
+  ---
+  duration_ms: 0.619211
+  type: 'test'
+  ...
+# Subtest: service worker: pomiary domyślnie wyłączone – scriptlety bez pliku-flagi, raporty ignorowane
+ok 117 - service worker: pomiary domyślnie wyłączone – scriptlety bez pliku-flagi, raporty ignorowane
+  ---
+  duration_ms: 37.096628
+  type: 'test'
+  ...
+# Subtest: service worker: włączenie pomiarów → plik-flaga przed każdym plikiem scriptletów; tabela, reset, wyłączenie
+ok 118 - service worker: włączenie pomiarów → plik-flaga przed każdym plikiem scriptletów; tabela, reset, wyłączenie
+  ---
+  duration_ms: 1137.91957
+  type: 'test'
+  ...
+# Subtest: UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez zmian
+ok 119 - UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez zmian # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 1.358065
+  type: 'test'
+  ...
+# Subtest: UI: niepełny rollback nie twierdzi, że przywrócono ustawienia; pokazuje ostrzeżenie i prowadzi do Diagnostyki
+ok 120 - UI: niepełny rollback nie twierdzi, że przywrócono ustawienia; pokazuje ostrzeżenie i prowadzi do Diagnostyki # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.211819
+  type: 'test'
+  ...
+# Subtest: eksport v2: tylko wyłączone strony i własne filtry (bez list, trybu, Focus Mode), wartości z bieżącego stanu
+ok 121 - eksport v2: tylko wyłączone strony i własne filtry (bez list, trybu, Focus Mode), wartości z bieżącego stanu
+  ---
+  duration_ms: 46.223766
+  type: 'test'
+  ...
+# Subtest: eksport: brak danych technicznych i prywatnych (health, diagnostyka, cache, sesja, statystyki, karty, URL)
+ok 122 - eksport: brak danych technicznych i prywatnych (health, diagnostyka, cache, sesja, statystyki, karty, URL)
+  ---
+  duration_ms: 10.36901
+  type: 'test'
+  ...
+# Subtest: import v2: zapis, synchronizacja reguł dynamicznych i scriptletów, podsumowanie; listy dalej stałe
+ok 123 - import v2: zapis, synchronizacja reguł dynamicznych i scriptletów, podsumowanie; listy dalej stałe
+  ---
+  duration_ms: 17.921279
+  type: 'test'
+  ...
+# Subtest: import v1 (basic): przywraca wyłączone strony i własne filtry; listy/tryb/Focus Mode ignorowane; ochrona zostaje ads/privacy/security
+ok 124 - import v1 (basic): przywraca wyłączone strony i własne filtry; listy/tryb/Focus Mode ignorowane; ochrona zostaje ads/privacy/security
+  ---
+  duration_ms: 26.82979
+  type: 'test'
+  ...
+# Subtest: import v1 (balanced): przywraca wyłączone strony i własne filtry; listy/tryb/Focus Mode ignorowane; ochrona zostaje ads/privacy/security
+ok 125 - import v1 (balanced): przywraca wyłączone strony i własne filtry; listy/tryb/Focus Mode ignorowane; ochrona zostaje ads/privacy/security
+  ---
+  duration_ms: 24.392481
+  type: 'test'
+  ...
+# Subtest: import v1 (strict): przywraca wyłączone strony i własne filtry; listy/tryb/Focus Mode ignorowane; ochrona zostaje ads/privacy/security
+ok 126 - import v1 (strict): przywraca wyłączone strony i własne filtry; listy/tryb/Focus Mode ignorowane; ochrona zostaje ads/privacy/security
+  ---
+  duration_ms: 16.647191
+  type: 'test'
+  ...
+# Subtest: import v1 (custom): przywraca wyłączone strony i własne filtry; listy/tryb/Focus Mode ignorowane; ochrona zostaje ads/privacy/security
+ok 127 - import v1 (custom): przywraca wyłączone strony i własne filtry; listy/tryb/Focus Mode ignorowane; ochrona zostaje ads/privacy/security
+  ---
+  duration_ms: 17.143542
+  type: 'test'
+  ...
+# Subtest: import v1: stare pola nie są walidowane (np. nieznane listy, zły tryb) – nie blokują przywrócenia danych
+ok 128 - import v1: stare pola nie są walidowane (np. nieznane listy, zły tryb) – nie blokują przywrócenia danych
+  ---
+  duration_ms: 0.469878
+  type: 'test'
+  ...
+# Subtest: uszkodzony JSON: nic nie jest zapisywane
+ok 129 - uszkodzony JSON: nic nie jest zapisywane
+  ---
+  duration_ms: 15.188104
+  type: 'test'
+  ...
+# Subtest: zły format / wersja / brak pól / złe typy: odrzucone w całości, z listą błędów
+ok 130 - zły format / wersja / brak pól / złe typy: odrzucone w całości, z listą błędów
+  ---
+  duration_ms: 11.498991
+  type: 'test'
+  ...
+# Subtest: nieznane pola: ignorowane, nie trafiają do storage
+ok 131 - nieznane pola: ignorowane, nie trafiają do storage
+  ---
+  duration_ms: 20.85746
+  type: 'test'
+  ...
+# Subtest: aktualizacja usuwa martwe klucze (Focus Mode, listy, tryb); świeża instalacja i zwykła praca ich nie tworzą
+ok 132 - aktualizacja usuwa martwe klucze (Focus Mode, listy, tryb); świeża instalacja i zwykła praca ich nie tworzą
+  ---
+  duration_ms: 31.173906
+  type: 'test'
+  ...
+# Subtest: czysta logika: nazwa pliku, podsumowanie, odmiana, limit rozmiaru
+ok 133 - czysta logika: nazwa pliku, podsumowanie, odmiana, limit rozmiaru
+  ---
+  duration_ms: 0.406642
+  type: 'test'
+  ...
+# Subtest: opcje: sekcja „Kopia ustawień” (w „Więcej”) z przyciskami eksportu i importu; opis bez list i trybu
+ok 134 - opcje: sekcja „Kopia ustawień” (w „Więcej”) z przyciskami eksportu i importu; opis bez list i trybu
+  ---
+  duration_ms: 0.629648
+  type: 'test'
+  ...
+# Subtest: rollback: jednorazowy błąd reguł dynamicznych przy imporcie → poprzednie ustawienia przywrócone (rolledBack=true)
+ok 135 - rollback: jednorazowy błąd reguł dynamicznych przy imporcie → poprzednie ustawienia przywrócone (rolledBack=true)
+  ---
+  duration_ms: 21.629651
+  type: 'test'
+  ...
+# Subtest: rollback: błąd rejestracji scriptletów przy imporcie → poprzednie ustawienia przywrócone
+ok 136 - rollback: błąd rejestracji scriptletów przy imporcie → poprzednie ustawienia przywrócone
+  ---
+  duration_ms: 33.222108
+  type: 'test'
+  ...
+# Subtest: rollback niepełny: synchronizacja list (rulesets) poprzedniego stanu nie powiodła się → rolledBack=false + rollbackErrors + dziennik błędów
+ok 137 - rollback niepełny: synchronizacja list (rulesets) poprzedniego stanu nie powiodła się → rolledBack=false + rollbackErrors + dziennik błędów
+  ---
+  duration_ms: 29.586746
+  type: 'test'
+  ...
+# Subtest: rollback niepełny: synchronizacja reguł dynamicznych poprzedniego stanu nie powiodła się
+ok 138 - rollback niepełny: synchronizacja reguł dynamicznych poprzedniego stanu nie powiodła się
+  ---
+  duration_ms: 28.786741
+  type: 'test'
+  ...
+# Subtest: rollback niepełny: rejestracja scriptletów poprzedniego stanu nie powiodła się
+ok 139 - rollback niepełny: rejestracja scriptletów poprzedniego stanu nie powiodła się
+  ---
+  duration_ms: 46.137847
+  type: 'test'
+  ...
+# Subtest: komunikat UI: „przywrócono” tylko przy rolledBack=true; niepełny rollback → wyraźne ostrzeżenie + Diagnostyka
+ok 140 - komunikat UI: „przywrócono” tylko przy rolledBack=true; niepełny rollback → wyraźne ostrzeżenie + Diagnostyka
+  ---
+  duration_ms: 0.453263
+  type: 'test'
+  ...
+# Subtest: bug 1: synchronizacja samych reguł dynamicznych nie ukrywa wcześniejszego błędu syncRulesets (fałszywe OK)
+ok 141 - bug 1: synchronizacja samych reguł dynamicznych nie ukrywa wcześniejszego błędu syncRulesets (fałszywe OK)
+  ---
+  duration_ms: 41.872797
+  type: 'test'
+  ...
+# Subtest: bug 2: po wybudzeniu SW Chrome odrzuca rulesety – zestaw list zostaje stały, nic nie jest nadpisywane
+ok 142 - bug 2: po wybudzeniu SW Chrome odrzuca rulesety – zestaw list zostaje stały, nic nie jest nadpisywane
+  ---
+  duration_ms: 31.569004
+  type: 'test'
+  ...
+# Subtest: bug 3: równoczesne zmiany (podwójne kliknięcie, zapis opcji) nie zderzają się na id reguł dynamicznych
+ok 143 - bug 3: równoczesne zmiany (podwójne kliknięcie, zapis opcji) nie zderzają się na id reguł dynamicznych
+  ---
+  duration_ms: 25.73353
+  type: 'test'
+  ...
+# Subtest: bug 3: równoczesna zmiana własnych filtrów i wyłączenie strony – obie zmiany w regułach dynamicznych
+ok 144 - bug 3: równoczesna zmiana własnych filtrów i wyłączenie strony – obie zmiany w regułach dynamicznych
+  ---
+  duration_ms: 15.522137
+  type: 'test'
+  ...
+# Subtest: odrzucone pomiary przywracają poprzednią flagę i działające rejestracje
+ok 145 - odrzucone pomiary przywracają poprzednią flagę i działające rejestracje
+  ---
+  duration_ms: 26.719474
+  type: 'test'
+  ...
+# Subtest: bug 4: znacznik sesji zdjęty na czas pełnej rejestracji (przerwanie SW w trakcie nie zostawia „OK”)
+ok 146 - bug 4: znacznik sesji zdjęty na czas pełnej rejestracji (przerwanie SW w trakcie nie zostawia „OK”)
+  ---
+  duration_ms: 13.975399
+  type: 'test'
+  ...
+# Subtest: bug 5: wynik liczony w trakcie zmiany ustawień nie trafia do cache hostów (brak nieaktualnego CSS)
+ok 147 - bug 5: wynik liczony w trakcie zmiany ustawień nie trafia do cache hostów (brak nieaktualnego CSS)
+  ---
+  duration_ms: 119.105639
+  type: 'test'
+  ...
+# Subtest: bug 3: dwa szybkie „Ukryj element” – oba filtry zapisane (bez utraconej aktualizacji)
+ok 148 - bug 3: dwa szybkie „Ukryj element” – oba filtry zapisane (bez utraconej aktualizacji)
+  ---
+  duration_ms: 11.134633
+  type: 'test'
+  ...
+# Subtest: wyłączenie strony i pełna ponowna rejestracja zachowują komplet utrwalonych shardów i helpery encji
+ok 149 - wyłączenie strony i pełna ponowna rejestracja zachowują komplet utrwalonych shardów i helpery encji
+  ---
+  duration_ms: 21.747179
+  type: 'test'
+  ...
+# Subtest: zimny start: inicjalizacja stanu jest wspólna dla synchronizacji i pierwszej zmiany ustawień
+ok 150 - zimny start: inicjalizacja stanu jest wspólna dla synchronizacji i pierwszej zmiany ustawień
+  ---
+  duration_ms: 236.51432
+  type: 'test'
+  ...
+# Subtest: odrzucony zapis storage nie zmienia ustawień ani skompilowanych filtrów w pamięci
+ok 151 - odrzucony zapis storage nie zmienia ustawień ani skompilowanych filtrów w pamięci
+  ---
+  duration_ms: 15.802074
+  type: 'test'
+  ...
+# Subtest: odrzucona zmiana DNR przywraca stan strony i nie przeładowuje karty
+ok 152 - odrzucona zmiana DNR przywraca stan strony i nie przeładowuje karty
+  ---
+  duration_ms: 15.668678
+  type: 'test'
+  ...
+# Subtest: odrzucona rejestracja scriptletów przywraca poprzednie DNR i wykluczenia
+ok 153 - odrzucona rejestracja scriptletów przywraca poprzednie DNR i wykluczenia
+  ---
+  duration_ms: 34.252831
+  type: 'test'
+  ...
+# Subtest: ponad 5000 własnych reguł jest jawnie odrzucane bez zapisu i częściowego zastosowania
+ok 154 - ponad 5000 własnych reguł jest jawnie odrzucane bez zapisu i częściowego zastosowania
+  ---
+  duration_ms: 27.554331
+  type: 'test'
+  ...
+# Subtest: host constructor we własnych filtrach nie uniemożliwia odczytu ustawień po starcie SW
+ok 155 - host constructor we własnych filtrach nie uniemożliwia odczytu ustawień po starcie SW
+  ---
+  duration_ms: 7.315533
+  type: 'test'
+  ...
+# Subtest: instalacja: wszystkie pliki scriptletów w JEDNYM registerContentScripts (było: 26 wywołań)
+ok 156 - instalacja: wszystkie pliki scriptletów w JEDNYM registerContentScripts (było: 26 wywołań)
+  ---
+  duration_ms: 36.967832
+  type: 'test'
+  ...
+# Subtest: start przeglądarki (onStartup) z poprawnie zarejestrowanymi scriptletami: zero rejestracji
+ok 157 - start przeglądarki (onStartup) z poprawnie zarejestrowanymi scriptletami: zero rejestracji
+  ---
+  duration_ms: 36.5677
+  type: 'test'
+  ...
+# Subtest: ponowna synchronizacja bez zmian: zero rejestracji; po zmianie ustawień: 1 unregister + 1 register
+ok 158 - ponowna synchronizacja bez zmian: zero rejestracji; po zmianie ustawień: 1 unregister + 1 register
+  ---
+  duration_ms: 28.989982
+  type: 'test'
+  ...
+# Subtest: brak pliku jednego scriptletu w paczce: pozostałe zarejestrowane, błąd zgłoszony (rejestracja zastępcza)
+ok 159 - brak pliku jednego scriptletu w paczce: pozostałe zarejestrowane, błąd zgłoszony (rejestracja zastępcza)
+  ---
+  duration_ms: 21.082077
+  type: 'test'
+  ...
+# Subtest: start: dane kosmetyczne (kilka MB JSON) NIE są parsowane tylko po to, żeby pokazać status OK
+ok 160 - start: dane kosmetyczne (kilka MB JSON) NIE są parsowane tylko po to, żeby pokazać status OK
+  ---
+  duration_ms: 60.575552
+  type: 'test'
+  ...
+# Subtest: start: metadane scriptletów (scriptlets.json, do 1,5 MB) parsowane raz na życie service workera
+ok 161 - start: metadane scriptletów (scriptlets.json, do 1,5 MB) parsowane raz na życie service workera
+  ---
+  duration_ms: 27.882345
+  type: 'test'
+  ...
+# Subtest: profil startu: etapy, liczba wywołań, znaczniki i raport tekstowy
+ok 162 - profil startu: etapy, liczba wywołań, znaczniki i raport tekstowy
+  ---
+  duration_ms: 0.490499
+  type: 'test'
+  ...
+# Subtest: profil startu jest dostępny w Diagnostyce (health:get) i przez startup:profile
+ok 163 - profil startu jest dostępny w Diagnostyce (health:get) i przez startup:profile
+  ---
+  duration_ms: 9.81173
+  type: 'test'
+  ...
+# Subtest: zgodność starszych metadanych: utrwalane przed sesyjnymi, obie w jednym wywołaniu
+ok 164 - zgodność starszych metadanych: utrwalane przed sesyjnymi, obie w jednym wywołaniu
+  ---
+  duration_ms: 5.347611
+  type: 'test'
+  ...
+# Subtest: starszy snapshot po restarcie: dorejestrowujemy WYŁĄCZNIE część sesyjną, raz
+ok 165 - starszy snapshot po restarcie: dorejestrowujemy WYŁĄCZNIE część sesyjną, raz
+  ---
+  duration_ms: 11.902718
+  type: 'test'
+  ...
+# Subtest: starszy snapshot po ponownym włączeniu: część sesyjna odtwarzana przy starcie workera
+ok 166 - starszy snapshot po ponownym włączeniu: część sesyjna odtwarzana przy starcie workera
+  ---
+  duration_ms: 31.504358
+  type: 'test'
+  ...
+# Subtest: aktualny build: strzeżone encje przeżywają restart bez ponownej rejestracji
+ok 167 - aktualny build: strzeżone encje przeżywają restart bez ponownej rejestracji
+  ---
+  duration_ms: 61.269677
+  type: 'test'
+  ...
+# Subtest: regresja: onInstalled:update → dokładnie jedna rzeczywista synchronizacja scriptletów
+ok 168 - regresja: onInstalled:update → dokładnie jedna rzeczywista synchronizacja scriptletów
+  ---
+  duration_ms: 30.712486
+  type: 'test'
+  ...
+# Subtest: regresja: onInstalled:install → dokładnie jedna rzeczywista synchronizacja scriptletów
+ok 169 - regresja: onInstalled:install → dokładnie jedna rzeczywista synchronizacja scriptletów
+  ---
+  duration_ms: 15.884743
+  type: 'test'
+  ...
+# Subtest: po inicjalnej synchronizacji zmiana ustawień nadal synchronizuje naprawdę (nie dołącza do inicjalnej)
+ok 170 - po inicjalnej synchronizacji zmiana ustawień nadal synchronizuje naprawdę (nie dołącza do inicjalnej)
+  ---
+  duration_ms: 17.875019
+  type: 'test'
+  ...
+# Subtest: profil startu: oczekiwanie w kolejce liczone osobno od wykonania
+ok 171 - profil startu: oczekiwanie w kolejce liczone osobno od wykonania
+  ---
+  duration_ms: 0.406873
+  type: 'test'
+  ...
+# Subtest: _locales/{pl,en}/messages.json aktualne (npm run i18n) i z tymi samymi kluczami
+ok 172 - _locales/{pl,en}/messages.json aktualne (npm run i18n) i z tymi samymi kluczami
+  ---
+  duration_ms: 13.569188
+  type: 'test'
+  ...
+# Subtest: źródło tekstów: każdy wpis ma oba języki, te same wstawki $1…$9 i znaczniki tylko z html: true
+ok 173 - źródło tekstów: każdy wpis ma oba języki, te same wstawki $1…$9 i znaczniki tylko z html: true
+  ---
+  duration_ms: 3.966031
+  type: 'test'
+  ...
+# Subtest: każdy klucz z HTML (data-i18n*) i JS (t/tPlural/T) istnieje w tłumaczeniach
+ok 174 - każdy klucz z HTML (data-i18n*) i JS (t/tPlural/T) istnieje w tłumaczeniach
+  ---
+  duration_ms: 1.70703
+  type: 'test'
+  ...
+# Subtest: manifest: opis z tłumaczeń, default_locale en, opisy w limicie 132 znaków
+ok 175 - manifest: opis z tłumaczeń, default_locale en, opisy w limicie 132 znaków
+  ---
+  duration_ms: 0.930471
+  type: 'test'
+  ...
+# Subtest: popup po angielsku: status, licznik z odmianą, problemy silnika
+ok 176 - popup po angielsku: status, licznik z odmianą, problemy silnika
+  ---
+  duration_ms: 47.3753
+  type: 'test'
+  ...
+# Subtest: popup po polsku: te same teksty co przed tłumaczeniem
+ok 177 - popup po polsku: te same teksty co przed tłumaczeniem
+  ---
+  duration_ms: 1.332146
+  type: 'test'
+  ...
+# Subtest: odmiana: polska (1 / 2–4 / 5+, 12–14) i angielska (1 / reszta)
+ok 178 - odmiana: polska (1 / 2–4 / 5+, 12–14) i angielska (1 / reszta)
+  ---
+  duration_ms: 0.614815
+  type: 'test'
+  ...
+# Subtest: „Ukryj element”: teksty z chrome.i18n z polskim zapasem, paleta morska zamiast fioletu
+ok 179 - „Ukryj element”: teksty z chrome.i18n z polskim zapasem, paleta morska zamiast fioletu
+  ---
+  duration_ms: 0.406742
+  type: 'test'
+  ...
+# Subtest: Diagnostyka po angielsku: kontrole YouTube, komunikaty silników, błędy importu; „$” zachowany
+ok 180 - Diagnostyka po angielsku: kontrole YouTube, komunikaty silników, błędy importu; „$” zachowany
+  ---
+  duration_ms: 4.989541
+  type: 'test'
+  ...
+# Subtest: Diagnostyka po polsku: teksty bez zmian (także bez chrome.i18n – zapas z shared/messages-pl.js)
+ok 181 - Diagnostyka po polsku: teksty bez zmian (także bez chrome.i18n – zapas z shared/messages-pl.js)
+  ---
+  duration_ms: 2.159792
+  type: 'test'
+  ...
+# Subtest: F5 na wyłączonej stronie przywraca szarą ikonę bez traktowania reloadu jako zmiany URL
+ok 182 - F5 na wyłączonej stronie przywraca szarą ikonę bez traktowania reloadu jako zmiany URL
+  ---
+  duration_ms: 71.768367
+  type: 'test'
+  ...
+# Subtest: reload aktywnej strony nie wymusza setIcon, a raport YouTube nie jest czyszczony
+ok 183 - reload aktywnej strony nie wymusza setIcon, a raport YouTube nie jest czyszczony
+  ---
+  duration_ms: 51.862035
+  type: 'test'
+  ...
+# Subtest: Chromium: history.pushState → tabs.onUpdated z url; YouTube SPA: stary raport usunięty, świeży raport nowego filmu
+ok 184 - Chromium: history.pushState → tabs.onUpdated z url; YouTube SPA: stary raport usunięty, świeży raport nowego filmu # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.692593
+  type: 'test'
+  ...
+# Subtest: Chromium: ochrona wyłączona dla strony – stan per karta po nawigacji (pełnej i SPA)
+ok 185 - Chromium: ochrona wyłączona dla strony – stan per karta po nawigacji (pełnej i SPA) # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.118158
+  type: 'test'
+  ...
+# Subtest: manifest: bez webNavigation i bez tabs; zestaw uprawnień = activeTab, declarativeNetRequest, scripting, storage
+ok 186 - manifest: bez webNavigation i bez tabs; zestaw uprawnień = activeTab, declarativeNetRequest, scripting, storage
+  ---
+  duration_ms: 1.923866
+  type: 'test'
+  ...
+# Subtest: tabs.onUpdated z changeInfo.url aktualizuje ikonę karty
+ok 187 - tabs.onUpdated z changeInfo.url aktualizuje ikonę karty
+  ---
+  duration_ms: 53.789321
+  type: 'test'
+  ...
+# Subtest: tabs.onUpdated bez url (status, title, favIconUrl, audible, discarded) nic nie robi
+ok 188 - tabs.onUpdated bez url (status, title, favIconUrl, audible, discarded) nic nie robi
+  ---
+  duration_ms: 37.376953
+  type: 'test'
+  ...
+# Subtest: zmiana URL (SPA) czyści raport YouTube: watch → inny watch, watch → Shorts, Shorts → watch, zwykła strona
+ok 189 - zmiana URL (SPA) czyści raport YouTube: watch → inny watch, watch → Shorts, Shorts → watch, zwykła strona
+  ---
+  duration_ms: 23.755012
+  type: 'test'
+  ...
+# Subtest: zmiana URL w jednej karcie nie czyści raportu innej karty
+ok 190 - zmiana URL w jednej karcie nie czyści raportu innej karty
+  ---
+  duration_ms: 15.130037
+  type: 'test'
+  ...
+# Subtest: ochrona wyłączona dla strony: poprawna ikona po nawigacji (także SPA i subdomena), normalna po wyjściu
+ok 191 - ochrona wyłączona dla strony: poprawna ikona po nawigacji (także SPA i subdomena), normalna po wyjściu
+  ---
+  duration_ms: 123.82838
+  type: 'test'
+  ...
+# Subtest: manifest: MV3, wersja z pola version, wymagane pliki istnieją
+ok 192 - manifest: MV3, wersja z pola version, wymagane pliki istnieją
+  ---
+  duration_ms: 1.678567
+  type: 'test'
+  ...
+# Subtest: manifest: brak zdalnego kodu i telemetrii (tylko lokalne zasoby)
+ok 193 - manifest: brak zdalnego kodu i telemetrii (tylko lokalne zasoby)
+  ---
+  duration_ms: 2.692434
+  type: 'test'
+  ...
+# Subtest: zestaw reguł "ads": poprawne reguły DNR
+ok 194 - zestaw reguł "ads": poprawne reguły DNR
+  ---
+  duration_ms: 87.647587
+  type: 'test'
+  ...
+# Subtest: zestaw reguł "privacy": poprawne reguły DNR
+ok 195 - zestaw reguł "privacy": poprawne reguły DNR
+  ---
+  duration_ms: 47.702512
+  type: 'test'
+  ...
+# Subtest: zestaw reguł "security": poprawne reguły DNR
+ok 196 - zestaw reguł "security": poprawne reguły DNR
+  ---
+  duration_ms: 6.92122
+  type: 'test'
+  ...
+# Subtest: suma reguł domyślnie włączonych list mieści się w gwarantowanym limicie Chrome (30 000)
+ok 197 - suma reguł domyślnie włączonych list mieści się w gwarantowanym limicie Chrome (30 000)
+  ---
+  duration_ms: 42.974374
+  type: 'test'
+  ...
+# Subtest: kolejność priorytetów: block < redirect < allow < important < własne < wyłączenie strony
+ok 198 - kolejność priorytetów: block < redirect < allow < important < własne < wyłączenie strony
+  ---
+  duration_ms: 0.208383
+  type: 'test'
+  ...
+# Subtest: $badfilter między listami wskazuje istniejące reguły docelowe
+ok 199 - $badfilter między listami wskazuje istniejące reguły docelowe
+  ---
+  duration_ms: 17.836452
+  type: 'test'
+  ...
+# Subtest: pliki scriptletów zawierają wyłącznie obsługiwane wywołania
+ok 200 - pliki scriptletów zawierają wyłącznie obsługiwane wywołania
+  ---
+  duration_ms: 50.77686
+  type: 'test'
+  ...
+# Subtest: web_accessible_resources: wszystkie wpisy tylko pod dynamicznym adresem (use_dynamic_url)
+ok 201 - web_accessible_resources: wszystkie wpisy tylko pod dynamicznym adresem (use_dynamic_url)
+  ---
+  duration_ms: 0.67756
+  type: 'test'
+  ...
+# Subtest: use_dynamic_url wymaga Chrome 119+ – minimum_chrome_version to pokrywa
+ok 202 - use_dynamic_url wymaga Chrome 119+ – minimum_chrome_version to pokrywa
+  ---
+  duration_ms: 0.121062
+  type: 'test'
+  ...
+# Subtest: onboarding w Chromium: instalacja → ochrona od razu → zamknięcie; przeładowanie: bez strony + migracja starych trybów; ustawienia
+ok 203 - onboarding w Chromium: instalacja → ochrona od razu → zamknięcie; przeładowanie: bez strony + migracja starych trybów; ustawienia # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.906564
+  type: 'test'
+  ...
+# Subtest: install → strona powitalna otwarta dokładnie raz
+ok 204 - install → strona powitalna otwarta dokładnie raz
+  ---
+  duration_ms: 36.856901
+  type: 'test'
+  ...
+# Subtest: update / reload rozszerzenia → bez strony powitalnej
+ok 205 - update / reload rozszerzenia → bez strony powitalnej
+  ---
+  duration_ms: 69.923846
+  type: 'test'
+  ...
+# Subtest: start Chrome → bez strony powitalnej
+ok 206 - start Chrome → bez strony powitalnej
+  ---
+  duration_ms: 12.28917
+  type: 'test'
+  ...
+# Subtest: strona powitalna: ochrona od razu – opis blokowania, bez wyboru trybu i bez zmiany ustawień
+ok 207 - strona powitalna: ochrona od razu – opis blokowania, bez wyboru trybu i bez zmiany ustawień
+  ---
+  duration_ms: 0.640965
+  type: 'test'
+  ...
+# Subtest: instalacja: strona powitalna nie zmienia stałego zestawu list
+ok 208 - instalacja: strona powitalna nie zmienia stałego zestawu list
+  ---
+  duration_ms: 20.696338
+  type: 'test'
+  ...
+# Subtest: brak nowych uprawnień; strona w paczce; bez telemetrii i bez dodatkowego profilu użytkownika
+ok 209 - brak nowych uprawnień; strona w paczce; bez telemetrii i bez dodatkowego profilu użytkownika
+  ---
+  duration_ms: 0.790881
+  type: 'test'
+  ...
+# Subtest: options: initial error keeps diagnostic actions usable and retry restores the form
+ok 210 - options: initial error keeps diagnostic actions usable and retry restores the form
+  ---
+  duration_ms: 18.363565
+  type: 'test'
+  ...
+# Subtest: options: rejected saves preserve text, show the error, and allow a successful retry
+ok 211 - options: rejected saves preserve text, show the error, and allow a successful retry
+  ---
+  duration_ms: 3.010692
+  type: 'test'
+  ...
+# Subtest: options: a pending save prevents conflicting import/edits and releases controls on failure
+ok 212 - options: a pending save prevents conflicting import/edits and releases controls on failure
+  ---
+  duration_ms: 1.159796
+  type: 'test'
+  ...
+# Subtest: options: incomplete rollback is explicit and refreshes both settings forms
+ok 213 - options: incomplete rollback is explicit and refreshes both settings forms
+  ---
+  duration_ms: 2.788578
+  type: 'test'
+  ...
+# Subtest: options: incomplete rollback plus failed refresh keeps stale forms read-only until retry
+ok 214 - options: incomplete rollback plus failed refresh keeps stale forms read-only until retry
+  ---
+  duration_ms: 1.038723
+  type: 'test'
+  ...
+# Subtest: options: resync rejection releases the button and reports its failure
+ok 215 - options: resync rejection releases the button and reports its failure
+  ---
+  duration_ms: 1.884948
+  type: 'test'
+  ...
+# Subtest: options: successful import with a failed refresh is reported as restored, not an invalid file
+ok 216 - options: successful import with a failed refresh is reported as restored, not an invalid file
+  ---
+  duration_ms: 1.495832
+  type: 'test'
+  ...
+# Subtest: options: arrow, Home and End navigate the accessible tab list and move focus
+ok 217 - options: arrow, Home and End navigate the accessible tab list and move focus
+  ---
+  duration_ms: 1.547019
+  type: 'test'
+  ...
+# Subtest: options: the complete help block compiles into six working example filters
+ok 218 - options: the complete help block compiles into six working example filters
+  ---
+  duration_ms: 3.860942
+  type: 'test'
+  ...
+# Subtest: options: incomplete import reloads the persisted state, and a failed reload disables stale edits
+ok 219 - options: incomplete import reloads the persisted state, and a failed reload disables stale edits
+  ---
+  duration_ms: 2.857272
+  type: 'test'
+  ...
+# Subtest: options: import with a lost response reloads settings and describes the outcome as unconfirmed
+ok 220 - options: import with a lost response reloads settings and describes the outcome as unconfirmed
+  ---
+  duration_ms: 1.530214
+  type: 'test'
+  ...
+# Subtest: options: localized help in both languages compiles into six working filters
+ok 221 - options: localized help in both languages compiles into six working filters
+  ---
+  duration_ms: 1.330633
+  type: 'test'
+  ...
+# Subtest: options: recovery feedback is translated for an English browser
+ok 222 - options: recovery feedback is translated for an English browser
+  ---
+  duration_ms: 1.676413
+  type: 'test'
+  ...
+# Subtest: nawigacja: 4 zakładki w tej kolejności, każda ma swój panel
+ok 223 - nawigacja: 4 zakładki w tej kolejności, każda ma swój panel
+  ---
+  duration_ms: 2.373083
+  type: 'test'
+  ...
+# Subtest: Więcej: sekcje backup / diag / about jako <details>, domyślnie zwinięte; dane deweloperskie zwinięte
+ok 224 - Więcej: sekcje backup / diag / about jako <details>, domyślnie zwinięte; dane deweloperskie zwinięte
+  ---
+  duration_ms: 0.694085
+  type: 'test'
+  ...
+# Subtest: routing: stare deep linki \#diag / \#backup / \#about otwierają sekcję w „Więcej”
+ok 225 - routing: stare deep linki \#diag / \#backup / \#about otwierają sekcję w „Więcej”
+  ---
+  duration_ms: 0.532411
+  type: 'test'
+  ...
+# Subtest: O wtyczce: zwięzłe, z ograniczeniami MV3 i pełnym attribution list (także Polskie Filtry)
+ok 226 - O wtyczce: zwięzłe, z ograniczeniami MV3 i pełnym attribution list (także Polskie Filtry)
+  ---
+  duration_ms: 0.487684
+  type: 'test'
+  ...
+# Subtest: Opcje w Chromium: health:get tylko po otwarciu Diagnostyki; deep linki \#diag/\#backup/\#about
+ok 227 - Opcje w Chromium: health:get tylko po otwarciu Diagnostyki; deep linki \#diag/\#backup/\#about # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.609558
+  type: 'test'
+  ...
+# Subtest: strony rozszerzenia nie mają powtórzonych id
+ok 228 - strony rozszerzenia nie mają powtórzonych id
+  ---
+  duration_ms: 3.598227
+  type: 'test'
+  ...
+# Subtest: Opcje: diagnostyka YouTube ma własne id, JS pisze do \#youtubeDiag
+ok 229 - Opcje: diagnostyka YouTube ma własne id, JS pisze do \#youtubeDiag
+  ---
+  duration_ms: 0.614265
+  type: 'test'
+  ...
+# Subtest: Opcje w Chromium: diagnostyka YouTube w \#youtubeDiag; każda zakładka ma niepusty panel; brak martwych kontrolek
+ok 230 - Opcje w Chromium: diagnostyka YouTube w \#youtubeDiag; każda zakładka ma niepusty panel; brak martwych kontrolek # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 1.30907
+  type: 'test'
+  ...
+# Subtest: entity scope uses the full PSL boundary, including private, wildcard and exception rules
+ok 231 - entity scope uses the full PSL boundary, including private, wildcard and exception rules
+  ---
+  duration_ms: 4.4035
+  type: 'test'
+  ...
+# Subtest: shared classic helper is generated reproducibly and safe to load repeatedly
+ok 232 - shared classic helper is generated reproducibly and safe to load repeatedly
+  ---
+  duration_ms: 36.972029
+  type: 'test'
+  ...
+# Subtest: without the shared prerequisite, an entity exception cannot be dropped
+ok 233 - without the shared prerequisite, an entity exception cannot be dropped
+  ---
+  duration_ms: 11.527343
+  type: 'test'
+  ...
+# Subtest: usuwanie: .a.b, ..klucz, .*
+ok 234 - usuwanie: .a.b, ..klucz, .*
+  ---
+  duration_ms: 5.070133
+  type: 'test'
+  ...
+# Subtest: brak dopasowania → undefined (obiekt niezmieniony)
+ok 235 - brak dopasowania → undefined (obiekt niezmieniony)
+  ---
+  duration_ms: 0.850841
+  type: 'test'
+  ...
+# Subtest: filtr legacy [?.x] na tablicy: usuwa elementy posiadające właściwość
+ok 236 - filtr legacy [?.x] na tablicy: usuwa elementy posiadające właściwość
+  ---
+  duration_ms: 0.368115
+  type: 'test'
+  ...
+# Subtest: filtr legacy [?.x] na obiekcie: działa jak warunek dla bieżącego węzła
+ok 237 - filtr legacy [?.x] na obiekcie: działa jak warunek dla bieżącego węzła
+  ---
+  duration_ms: 1.036561
+  type: 'test'
+  ...
+# Subtest: operatory porównania i regex
+ok 238 - operatory porównania i regex
+  ---
+  duration_ms: 0.739744
+  type: 'test'
+  ...
+# Subtest: negacja [?!.x]
+ok 239 - negacja [?!.x]
+  ---
+  duration_ms: 0.459251
+  type: 'test'
+  ...
+# Subtest: przypisania: =JSON, +={...}, =repl(...), ${now}
+ok 240 - przypisania: =JSON, +={...}, =repl(...), ${now}
+  ---
+  duration_ms: 0.761356
+  type: 'test'
+  ...
+# Subtest: łańcuchy ;$ i kwantyfikatory
+ok 241 - łańcuchy ;$ i kwantyfikatory
+  ---
+  duration_ms: 0.633023
+  type: 'test'
+  ...
+# Subtest: nawiasy: ["klucz"], indeksy, lista kluczy
+ok 242 - nawiasy: ["klucz"], indeksy, lista kluczy
+  ---
+  duration_ms: 0.591511
+  type: 'test'
+  ...
+# Subtest: niepoprawne zapytania i =call() są odrzucane
+ok 243 - niepoprawne zapytania i =call() są odrzucane
+  ---
+  duration_ms: 0.406542
+  type: 'test'
+  ...
+# Subtest: YouTube: ..itemSectionRenderer.contents.*[?.adSlotRenderer]
+ok 244 - YouTube: ..itemSectionRenderer.contents.*[?.adSlotRenderer]
+  ---
+  duration_ms: 0.337057
+  type: 'test'
+  ...
+# Subtest: block: "||doubleclick.net^" (EasyList) → requestDomains
+ok 245 - block: "||doubleclick.net^" (EasyList) → requestDomains
+  ---
+  duration_ms: 175.034061
+  type: 'test'
+  ...
+# Subtest: allow: "@@||…^$…" z aktywnych list → reguła allow z wyższym priorytetem
+ok 246 - allow: "@@||…^$…" z aktywnych list → reguła allow z wyższym priorytetem
+  ---
+  duration_ms: 3.649403
+  type: 'test'
+  ...
+# Subtest: domain restrictions: $domain=a|~b → initiatorDomains / excludedInitiatorDomains
+ok 247 - domain restrictions: $domain=a|~b → initiatorDomains / excludedInitiatorDomains
+  ---
+  duration_ms: 6.115967
+  type: 'test'
+  ...
+# Subtest: resource types: $script,third-party
+ok 248 - resource types: $script,third-party
+  ---
+  duration_ms: 0.356156
+  type: 'test'
+  ...
+# Subtest: strict party options are rejected instead of changing ordinary party scope
+ok 249 - strict party options are rejected instead of changing ordinary party scope
+  ---
+  duration_ms: 0.387153
+  type: 'test'
+  ...
+# Subtest: $to intersects optimized host patterns and keeps exclusions
+ok 250 - $to intersects optimized host patterns and keeps exclusions
+  ---
+  duration_ms: 0.328034
+  type: 'test'
+  ...
+# Subtest: important: priorytet wyższy niż allow
+ok 251 - important: priorytet wyższy niż allow
+  ---
+  duration_ms: 5.123272
+  type: 'test'
+  ...
+# Subtest: redirect: redirect=noopjs → przekierowanie na zasób rozszerzenia
+ok 252 - redirect: redirect=noopjs → przekierowanie na zasób rozszerzenia
+  ---
+  duration_ms: 3.514721
+  type: 'test'
+  ...
+# Subtest: removeparam: usuwanie parametru zapytania
+ok 253 - removeparam: usuwanie parametru zapytania
+  ---
+  duration_ms: 0.322816
+  type: 'test'
+  ...
+# Subtest: regex: /…/ → regexFilter; nieobsługiwane konstrukcje RE2 są pomijane
+ok 254 - regex: /…/ → regexFilter; nieobsługiwane konstrukcje RE2 są pomijane
+  ---
+  duration_ms: 0.633504
+  type: 'test'
+  ...
+# Subtest: nieobsługiwane opcje MV3 ($csp, $popup) → filtr pominięty
+ok 255 - nieobsługiwane opcje MV3 ($csp, $popup) → filtr pominięty
+  ---
+  duration_ms: 0.175955
+  type: 'test'
+  ...
+# Subtest: regresja: $domain z samymi nieczytelnymi domenami pozytywnymi nie staje się filtrem ogólnym
+ok 256 - regresja: $domain z samymi nieczytelnymi domenami pozytywnymi nie staje się filtrem ogólnym
+  ---
+  duration_ms: 0.176906
+  type: 'test'
+  ...
+# Subtest: cosmetic: selektor ogólny z EasyList
+ok 257 - cosmetic: selektor ogólny z EasyList
+  ---
+  duration_ms: 1.239115
+  type: 'test'
+  ...
+# Subtest: cosmetic: selektor specyficzny z wieloma domenami i wyjątkami
+ok 258 - cosmetic: selektor specyficzny z wieloma domenami i wyjątkami
+  ---
+  duration_ms: 0.718962
+  type: 'test'
+  ...
+# Subtest: cosmetic: encje "google.*" zostają encjami (dopasowanie w czasie działania)
+ok 259 - cosmetic: encje "google.*" zostają encjami (dopasowanie w czasie działania)
+  ---
+  duration_ms: 0.217878
+  type: 'test'
+  ...
+# Subtest: cosmetic: wyjątek \#@\#
+ok 260 - cosmetic: wyjątek \#@\#
+  ---
+  duration_ms: 0.150056
+  type: 'test'
+  ...
+# Subtest: cosmetic: negative-domain exceptions are rejected instead of widening their scope
+ok 261 - cosmetic: negative-domain exceptions are rejected instead of widening their scope
+  ---
+  duration_ms: 0.136786
+  type: 'test'
+  ...
+# Subtest: cosmetic: listy selektorów rozdzielane po przecinkach najwyższego poziomu
+ok 262 - cosmetic: listy selektorów rozdzielane po przecinkach najwyższego poziomu
+  ---
+  duration_ms: 0.152169
+  type: 'test'
+  ...
+# Subtest: procedural: has-text + upward z aktywnej listy
+ok 263 - procedural: has-text + upward z aktywnej listy
+  ---
+  duration_ms: 4.829104
+  type: 'test'
+  ...
+# Subtest: procedural: :style() na zwykłym selektorze → CSS
+ok 264 - procedural: :style() na zwykłym selektorze → CSS
+  ---
+  duration_ms: 0.508806
+  type: 'test'
+  ...
+# Subtest: procedural: zagnieżdżone operatory proceduralne są odrzucane (nieobsługiwane)
+ok 265 - procedural: zagnieżdżone operatory proceduralne są odrzucane (nieobsługiwane)
+  ---
+  duration_ms: 0.121533
+  type: 'test'
+  ...
+# Subtest: regresja: domeny "x>>" nie mogą zamienić filtra w ogólny
+ok 266 - regresja: domeny "x>>" nie mogą zamienić filtra w ogólny
+  ---
+  duration_ms: 0.353442
+  type: 'test'
+  ...
+# Subtest: filtrowanie HTML (\#\#^) i snippety ABP (\#$\#) są pomijane
+ok 267 - filtrowanie HTML (\#\#^) i snippety ABP (\#$\#) są pomijane
+  ---
+  duration_ms: 0.117467
+  type: 'test'
+  ...
+# Subtest: scriptlet parsing: prawdziwy filtr YouTube z cudzysłowami
+ok 268 - scriptlet parsing: prawdziwy filtr YouTube z cudzysłowami
+  ---
+  duration_ms: 3.57354
+  type: 'test'
+  ...
+# Subtest: scriptlet parsing: escapowany przecinek "\\," w argumencie
+ok 269 - scriptlet parsing: escapowany przecinek "\\," w argumencie
+  ---
+  duration_ms: 4.744282
+  type: 'test'
+  ...
+# Subtest: scriptlet: aliasy są zamieniane na nazwy kanoniczne
+ok 270 - scriptlet: aliasy są zamieniane na nazwy kanoniczne
+  ---
+  duration_ms: 0.308044
+  type: 'test'
+  ...
+# Subtest: unsupported scriptlet: brak implementacji → scriptlet-rejected (NIE wykonywany)
+ok 271 - unsupported scriptlet: brak implementacji → scriptlet-rejected (NIE wykonywany)
+  ---
+  duration_ms: 0.183877
+  type: 'test'
+  ...
+# Subtest: unsupported scriptlet arguments: znany scriptlet z nieznanym parametrem → partial (NIE wykonywany)
+ok 272 - unsupported scriptlet arguments: znany scriptlet z nieznanym parametrem → partial (NIE wykonywany)
+  ---
+  duration_ms: 0.249105
+  type: 'test'
+  ...
+# Subtest: scriptlet zaufany z niezaufanej listy → odrzucony
+ok 273 - scriptlet zaufany z niezaufanej listy → odrzucony
+  ---
+  duration_ms: 0.095794
+  type: 'test'
+  ...
+# Subtest: ogólny scriptlet (bez domeny) → odrzucony
+ok 274 - ogólny scriptlet (bez domeny) → odrzucony
+  ---
+  duration_ms: 0.075163
+  type: 'test'
+  ...
+# Subtest: wyjątki scriptletów \#@\#+js(...) używają nazwy kanonicznej
+ok 275 - wyjątki scriptletów \#@\#+js(...) używają nazwy kanonicznej
+  ---
+  duration_ms: 0.137177
+  type: 'test'
+  ...
+# Subtest: regresja (prawdziwy Chromium): regexFilter z licznikiem powtórzeń > 1000 jest odrzucany (RE2)
+ok 276 - regresja (prawdziwy Chromium): regexFilter z licznikiem powtórzeń > 1000 jest odrzucany (RE2)
+  ---
+  duration_ms: 0.355184
+  type: 'test'
+  ...
+# Subtest: regresja (prawdziwy Chromium): żaden wygenerowany regexFilter nie przekracza limitu RE2
+ok 277 - regresja (prawdziwy Chromium): żaden wygenerowany regexFilter nie przekracza limitu RE2
+  ---
+  duration_ms: 43.435815
+  type: 'test'
+  ...
+# Subtest: splitScriptletArgs: cudzysłowy, escapowane przecinki, puste argumenty
+ok 278 - splitScriptletArgs: cudzysłowy, escapowane przecinki, puste argumenty
+  ---
+  duration_ms: 1.855733
+  type: 'test'
+  ...
+# Subtest: aliasy
+ok 279 - aliasy
+  ---
+  duration_ms: 0.338659
+  type: 'test'
+  ...
+# Subtest: set-constant: dozwolone wartości uBO, inne → partial
+ok 280 - set-constant: dozwolone wartości uBO, inne → partial
+  ---
+  duration_ms: 0.673364
+  type: 'test'
+  ...
+# Subtest: json-prune: tryb logowania i stackNeedle nie są wykonywane
+ok 281 - json-prune: tryb logowania i stackNeedle nie są wykonywane
+  ---
+  duration_ms: 0.37816
+  type: 'test'
+  ...
+# Subtest: property pattern validation keeps colons inside URLs and regexes
+ok 282 - property pattern validation keeps colons inside URLs and regexes
+  ---
+  duration_ms: 0.449667
+  type: 'test'
+  ...
+# Subtest: trusted-replace-*-response: "*" i pusty wzorzec nie są wykonywane
+ok 283 - trusted-replace-*-response: "*" i pusty wzorzec nie są wykonywane
+  ---
+  duration_ms: 0.191578
+  type: 'test'
+  ...
+# Subtest: JSONPath: przypisanie tylko w wersji trusted; =call() nie jest obsługiwane
+ok 284 - JSONPath: przypisanie tylko w wersji trusted; =call() nie jest obsługiwane
+  ---
+  duration_ms: 1.332236
+  type: 'test'
+  ...
+# Subtest: trusted-click-element: ">>>" i warunek localStorage nie są wykonywane
+ok 285 - trusted-click-element: ">>>" i warunek localStorage nie są wykonywane
+  ---
+  duration_ms: 0.361274
+  type: 'test'
+  ...
+# Subtest: abort-on-stack-trace jest jawnie nieobsługiwany
+ok 286 - abort-on-stack-trace jest jawnie nieobsługiwany
+  ---
+  duration_ms: 0.337869
+  type: 'test'
+  ...
+# Subtest: każda specyfikacja ma walidator albo jest oznaczona jako niezaimplementowana
+ok 287 - każda specyfikacja ma walidator albo jest oznaczona jako niezaimplementowana
+  ---
+  duration_ms: 0.736539
+  type: 'test'
+  ...
+# Subtest: Chromium: bez activeTab getMatchedRules odmawia, popup:get działa przez fallback (zwykła strona i YouTube)
+ok 288 - Chromium: bez activeTab getMatchedRules odmawia, popup:get działa przez fallback (zwykła strona i YouTube) # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 1.079395
+  type: 'test'
+  ...
+# Subtest: manifest: activeTab zamiast declarativeNetRequestFeedback
+ok 289 - manifest: activeTab zamiast declarativeNetRequestFeedback
+  ---
+  duration_ms: 2.142566
+  type: 'test'
+  ...
+# Subtest: popup:get z przyznanym activeTab: dokładny licznik przez getMatchedRules (allow i wyjątki użytkownika nie są liczone)
+ok 290 - popup:get z przyznanym activeTab: dokładny licznik przez getMatchedRules (allow i wyjątki użytkownika nie są liczone)
+  ---
+  duration_ms: 40.610897
+  type: 'test'
+  ...
+# Subtest: popup:get bez dostępu (brak activeTab dla karty): fallback do tekstu plakietki
+ok 291 - popup:get bez dostępu (brak activeTab dla karty): fallback do tekstu plakietki
+  ---
+  duration_ms: 47.35589
+  type: 'test'
+  ...
+# Subtest: popup:get na YouTube z activeTab: licznik + wiersz YouTube Protection
+ok 292 - popup:get na YouTube z activeTab: licznik + wiersz YouTube Protection
+  ---
+  duration_ms: 19.56929
+  type: 'test'
+  ...
+# Subtest: popup:get na YouTube bez dostępu: fallback, wiersze YouTube bez zmian
+ok 293 - popup:get na YouTube bez dostępu: fallback, wiersze YouTube bez zmian
+  ---
+  duration_ms: 26.336769
+  type: 'test'
+  ...
+# Subtest: auto reload: brak klucza = true i site:toggle przeładowuje kartę
+ok 294 - auto reload: brak klucza = true i site:toggle przeładowuje kartę
+  ---
+  duration_ms: 70.496017
+  type: 'test'
+  ...
+# Subtest: auto reload: false zapisuje preferencję i nie przeładowuje, ale synchronizuje stan i ikonę
+ok 295 - auto reload: false zapisuje preferencję i nie przeładowuje, ale synchronizuje stan i ikonę
+  ---
+  duration_ms: 26.981368
+  type: 'test'
+  ...
+# Subtest: popup:setAutoReload zapisuje globalną preferencję i popup:get ją zwraca
+ok 296 - popup:setAutoReload zapisuje globalną preferencję i popup:get ją zwraca
+  ---
+  duration_ms: 19.679026
+  type: 'test'
+  ...
+# Subtest: popup: ma dostępny checkbox, dynamiczny hint i łagodną informację o ręcznym odświeżeniu
+ok 297 - popup: ma dostępny checkbox, dynamiczny hint i łagodną informację o ręcznym odświeżeniu
+  ---
+  duration_ms: 1.044463
+  type: 'test'
+  ...
+# Subtest: badge używa palety morskiej, bez starego fioletu
+ok 298 - badge używa palety morskiej, bez starego fioletu
+  ---
+  duration_ms: 0.503478
+  type: 'test'
+  ...
+# Subtest: popup: failed initial read offers retry instead of calling an ordinary page unsupported
+ok 299 - popup: failed initial read offers retry instead of calling an ordinary page unsupported
+  ---
+  duration_ms: 35.028908
+  type: 'test'
+  ...
+# Subtest: popup: failed toggle reports rollback and displays fresh worker state and errors
+ok 300 - popup: failed toggle reports rollback and displays fresh worker state and errors
+  ---
+  duration_ms: 2.979072
+  type: 'test'
+  ...
+# Subtest: popup: reload preference blocks conflicting toggle and actual reload result controls the notice
+ok 301 - popup: reload preference blocks conflicting toggle and actual reload result controls the notice
+  ---
+  duration_ms: 1.270672
+  type: 'test'
+  ...
+# Subtest: popup: reload failure is distinct from a successful protection change
+ok 302 - popup: reload failure is distinct from a successful protection change
+  ---
+  duration_ms: 0.880625
+  type: 'test'
+  ...
+# Subtest: popup: rejected mutation refreshes the result and releases both controls
+ok 303 - popup: rejected mutation refreshes the result and releases both controls
+  ---
+  duration_ms: 1.662441
+  type: 'test'
+  ...
+# Subtest: popup: English recovery uses translations and shows reload failures explicitly
+ok 304 - popup: English recovery uses translations and shows reload failures explicitly
+  ---
+  duration_ms: 2.333731
+  type: 'test'
+  ...
+# Subtest: widok: ochrona aktywna / wyłączona, licznik, „Ukryj element” tylko przy aktywnej ochronie
+ok 305 - widok: ochrona aktywna / wyłączona, licznik, „Ukryj element” tylko przy aktywnej ochronie
+  ---
+  duration_ms: 24.001279
+  type: 'test'
+  ...
+# Subtest: widok: strona nieobsługiwana (chrome://, brak danych)
+ok 306 - widok: strona nieobsługiwana (chrome://, brak danych)
+  ---
+  duration_ms: 0.779262
+  type: 'test'
+  ...
+# Subtest: widok: błąd komponentu → wyraźne ostrzeżenie (bez fałszywego „wszystko OK”)
+ok 307 - widok: błąd komponentu → wyraźne ostrzeżenie (bez fałszywego „wszystko OK”)
+  ---
+  duration_ms: 0.487574
+  type: 'test'
+  ...
+# Subtest: widok: wiersz YouTube Protection tylko gdy popup:get go zwraca
+ok 308 - widok: wiersz YouTube Protection tylko gdy popup:get go zwraca
+  ---
+  duration_ms: 0.289686
+  type: 'test'
+  ...
+# Subtest: popup:get: na YouTube zwraca stan YouTube Protection (tylko odczyt, bez synchronizacji)
+ok 309 - popup:get: na YouTube zwraca stan YouTube Protection (tylko odczyt, bez synchronizacji)
+  ---
+  duration_ms: 35.230543
+  type: 'test'
+  ...
+# Subtest: popup:get: poza YouTube bez wiersza YouTube; błąd komponentu w problems
+ok 310 - popup:get: poza YouTube bez wiersza YouTube; błąd komponentu w problems
+  ---
+  duration_ms: 18.180888
+  type: 'test'
+  ...
+# Subtest: popup: bez zewnętrznych zasobów, z dostępnością (switch, aria), szerokość 330–350 px
+ok 311 - popup: bez zewnętrznych zasobów, z dostępnością (switch, aria), szerokość 330–350 px
+  ---
+  duration_ms: 0.65163
+  type: 'test'
+  ...
+# Subtest: manifest: brak nowych uprawnień
+ok 312 - manifest: brak nowych uprawnień
+  ---
+  duration_ms: 0.270998
+  type: 'test'
+  ...
+# Subtest: widok: polska odmiana licznika
+ok 313 - widok: polska odmiana licznika
+  ---
+  duration_ms: 0.491259
+  type: 'test'
+  ...
+# Subtest: popup: ukryte elementy naprawdę ukryte (atrybut hidden ma pierwszeństwo przed display)
+ok 314 - popup: ukryte elementy naprawdę ukryte (atrybut hidden ma pierwszeństwo przed display)
+  ---
+  duration_ms: 0.350327
+  type: 'test'
+  ...
+# Subtest: set-constant: łańcuch definiowany później przez stronę
+ok 315 - set-constant: łańcuch definiowany później przez stronę
+  ---
+  duration_ms: 13.574923
+  type: 'test'
+  ...
+# Subtest: regresja: set-constant wycofuje się, gdy strona przypisze wartość innego typu (jak uBO)
+ok 316 - regresja: set-constant wycofuje się, gdy strona przypisze wartość innego typu (jak uBO)
+  ---
+  duration_ms: 10.246946
+  type: 'test'
+  ...
+# Subtest: trusted-set-constant: nie wycofuje się i obsługuje json:
+ok 317 - trusted-set-constant: nie wycofuje się i obsługuje json:
+  ---
+  duration_ms: 10.411935
+  type: 'test'
+  ...
+# Subtest: regresja: set-constant "as, function" (vararg uBO) zwraca funkcję
+ok 318 - regresja: set-constant "as, function" (vararg uBO) zwraca funkcję
+  ---
+  duration_ms: 5.375317
+  type: 'test'
+  ...
+# Subtest: abort-on-property-read: odczyt rzuca wyjątek
+ok 319 - abort-on-property-read: odczyt rzuca wyjątek
+  ---
+  duration_ms: 6.19512
+  type: 'test'
+  ...
+# Subtest: abort-on-property-write: zapis rzuca wyjątek
+ok 320 - abort-on-property-write: zapis rzuca wyjątek
+  ---
+  duration_ms: 4.747252
+  type: 'test'
+  ...
+# Subtest: regresja: abort-current-script dopasowuje TREŚĆ skryptu, a nie jego adres; context = src
+ok 321 - regresja: abort-current-script dopasowuje TREŚĆ skryptu, a nie jego adres; context = src
+  ---
+  duration_ms: 10.889794
+  type: 'test'
+  ...
+# Subtest: regresja: prevent-addEventListener – typ dopasowany dosłownie i w całości (nie jako podciąg)
+ok 322 - regresja: prevent-addEventListener – typ dopasowany dosłownie i w całości (nie jako podciąg)
+  ---
+  duration_ms: 4.712821
+  type: 'test'
+  ...
+# Subtest: regresja: prevent-addEventListener – obiekty z handleEvent
+ok 323 - regresja: prevent-addEventListener – obiekty z handleEvent
+  ---
+  duration_ms: 6.556725
+  type: 'test'
+  ...
+# Subtest: regresja: prevent-setTimeout – zakresy opóźnień ("1000-2000", "!500")
+ok 324 - regresja: prevent-setTimeout – zakresy opóźnień ("1000-2000", "!500")
+  ---
+  duration_ms: 4.434281
+  type: 'test'
+  ...
+# Subtest: prevent-setTimeout: negacja wzorca "!"
+ok 325 - prevent-setTimeout: negacja wzorca "!"
+  ---
+  duration_ms: 3.97442
+  type: 'test'
+  ...
+# Subtest: regresja: prevent-window-open bez opóźnienia zwraca null (nie atrapę okna)
+ok 326 - regresja: prevent-window-open bez opóźnienia zwraca null (nie atrapę okna)
+  ---
+  duration_ms: 3.887047
+  type: 'test'
+  ...
+# Subtest: prevent-window-open: negacja "!" blokuje wszystko poza wzorcem
+ok 327 - prevent-window-open: negacja "!" blokuje wszystko poza wzorcem
+  ---
+  duration_ms: 4.692409
+  type: 'test'
+  ...
+# Subtest: regresja: prevent-fetch – brakujące właściwości są pomijane, odpowiedź ma statusText OK
+ok 328 - regresja: prevent-fetch – brakujące właściwości są pomijane, odpowiedź ma statusText OK
+  ---
+  duration_ms: 5.099893
+  type: 'test'
+  ...
+# Subtest: prevent-fetch: responseType {"type":"cors"} i treść emptyObj
+ok 329 - prevent-fetch: responseType {"type":"cors"} i treść emptyObj
+  ---
+  duration_ms: 7.047082
+  type: 'test'
+  ...
+# Subtest: prevent-xhr: żądanie nie jest wysyłane, zdarzenia load/loadend przychodzą
+ok 330 - prevent-xhr: żądanie nie jest wysyłane, zdarzenia load/loadend przychodzą
+  ---
+  duration_ms: 14.36438
+  type: 'test'
+  ...
+# Subtest: json-prune: ścieżki potrzebne (needle) muszą istnieć
+ok 331 - json-prune: ścieżki potrzebne (needle) muszą istnieć
+  ---
+  duration_ms: 4.822355
+  type: 'test'
+  ...
+# Subtest: regresja: json-prune – "*" na końcu czyści obiekt, "[]" na końcu jest zwykłym kluczem
+ok 332 - regresja: json-prune – "*" na końcu czyści obiekt, "[]" na końcu jest zwykłym kluczem
+  ---
+  duration_ms: 4.619299
+  type: 'test'
+  ...
+# Subtest: json-prune: {-} usuwa właściwości, których zawartość pasuje
+ok 333 - json-prune: {-} usuwa właściwości, których zawartość pasuje
+  ---
+  duration_ms: 4.227551
+  type: 'test'
+  ...
+# Subtest: regresja: json-prune nie przechwytuje Response.json() (tylko JSON.parse, jak uBO)
+ok 334 - regresja: json-prune nie przechwytuje Response.json() (tylko JSON.parse, jak uBO)
+  ---
+  duration_ms: 4.149423
+  type: 'test'
+  ...
+# Subtest: regresja: trusted-replace-node-text – regex bez flag zamienia tylko pierwsze wystąpienie
+ok 335 - regresja: trusted-replace-node-text – regex bez flag zamienia tylko pierwsze wystąpienie
+  ---
+  duration_ms: 4.617897
+  type: 'test'
+  ...
+# Subtest: trusted-replace-node-text – tekst dosłowny zamienia wszystkie wystąpienia (flagi gms)
+ok 336 - trusted-replace-node-text – tekst dosłowny zamienia wszystkie wystąpienia (flagi gms)
+  ---
+  duration_ms: 4.656545
+  type: 'test'
+  ...
+# Subtest: trusted-replace-node-text – brak tekstu zastępującego = usunięcie dopasowania
+ok 337 - trusted-replace-node-text – brak tekstu zastępującego = usunięcie dopasowania
+  ---
+  duration_ms: 4.359558
+  type: 'test'
+  ...
+# Subtest: remove-node-text: obserwacja kończy się na etapie "interactive"
+ok 338 - remove-node-text: obserwacja kończy się na etapie "interactive"
+  ---
+  duration_ms: 4.658729
+  type: 'test'
+  ...
+# Subtest: set-cookie: dozwolone wartości są ustawiane z path=/
+ok 339 - set-cookie: dozwolone wartości są ustawiane z path=/
+  ---
+  duration_ms: 4.666391
+  type: 'test'
+  ...
+# Subtest: remove-cookie: usuwa pasujące ciasteczka
+ok 340 - remove-cookie: usuwa pasujące ciasteczka
+  ---
+  duration_ms: 4.802565
+  type: 'test'
+  ...
+# Subtest: set-local-storage-item i $remove$
+ok 341 - set-local-storage-item i $remove$
+  ---
+  duration_ms: 10.762973
+  type: 'test'
+  ...
+# Subtest: noeval-if: blokuje tylko pasujący kod
+ok 342 - noeval-if: blokuje tylko pasujący kod
+  ---
+  duration_ms: 13.492439
+  type: 'test'
+  ...
+# Subtest: wyjątki \#@\#+js: wyłączenie konkretnego scriptletu i wszystkich ("*")
+ok 343 - wyjątki \#@\#+js: wyłączenie konkretnego scriptletu i wszystkich ("*")
+  ---
+  duration_ms: 8.847521
+  type: 'test'
+  ...
+# Subtest: dopasowanie hosta: subdomeny i encje "nazwa.*"
+ok 344 - dopasowanie hosta: subdomeny i encje "nazwa.*"
+  ---
+  duration_ms: 9.059785
+  type: 'test'
+  ...
+# Subtest: regresja wydajności: 6× trusted-edit-inbound-object na JSON.stringify – koszt liniowy, nie 2^n
+ok 345 - regresja wydajności: 6× trusted-edit-inbound-object na JSON.stringify – koszt liniowy, nie 2^n
+  ---
+  duration_ms: 182.318902
+  type: 'test'
+  ...
+# Subtest: regresja wydajności: zachowanie edycji bez zmian – wszystkie edycje YouTube stosowane dokładnie raz
+ok 346 - regresja wydajności: zachowanie edycji bez zmian – wszystkie edycje YouTube stosowane dokładnie raz
+  ---
+  duration_ms: 14.961258
+  type: 'test'
+  ...
+# Subtest: regresja wydajności: wewnętrzne JSON.stringify scriptletów nie przechodzi przez wrappery strony
+ok 347 - regresja wydajności: wewnętrzne JSON.stringify scriptletów nie przechodzi przez wrappery strony
+  ---
+  duration_ms: 23.323039
+  type: 'test'
+  ...
+# Subtest: regresja wydajności: trusted-prevent-dom-bypass – zwykłe elementy bez alokacji na każde appendChild
+ok 348 - regresja wydajności: trusted-prevent-dom-bypass – zwykłe elementy bez alokacji na każde appendChild
+  ---
+  duration_ms: 15.735774
+  type: 'test'
+  ...
+# Subtest: jeden wrapper: 6 filtrów trusted-edit-inbound-object na JSON.stringify → dokładnie jeden Proxy
+ok 349 - jeden wrapper: 6 filtrów trusted-edit-inbound-object na JSON.stringify → dokładnie jeden Proxy
+  ---
+  duration_ms: 13.382343
+  type: 'test'
+  ...
+# Subtest: jeden wrapper: 3 filtry trusted-prevent-dom-bypass na Node.prototype.appendChild → dokładnie jeden Proxy
+ok 350 - jeden wrapper: 3 filtry trusted-prevent-dom-bypass na Node.prototype.appendChild → dokładnie jeden Proxy
+  ---
+  duration_ms: 12.552264
+  type: 'test'
+  ...
+# Subtest: jeden wrapper: kolejność handlerów, kopia argumentów, wyniki i wyjątki jak przy zagnieżdżonych Proxy
+ok 351 - jeden wrapper: kolejność handlerów, kopia argumentów, wyniki i wyjątki jak przy zagnieżdżonych Proxy
+  ---
+  duration_ms: 11.219374
+  type: 'test'
+  ...
+# Subtest: jeden wrapper: gdy inny kod owinie funkcję między filtrami, powstaje nowa warstwa (kolejność zachowana)
+ok 352 - jeden wrapper: gdy inny kod owinie funkcję między filtrami, powstaje nowa warstwa (kolejność zachowana)
+  ---
+  duration_ms: 19.419561
+  type: 'test'
+  ...
+# Subtest: bundled no-fetch-if preserves the complete URL and leaves unrelated HTTPS requests alone
+ok 353 - bundled no-fetch-if preserves the complete URL and leaves unrelated HTTPS requests alone
+  ---
+  duration_ms: 288.435987
+  type: 'test'
+  ...
+# Subtest: fetch matching preserves colons in explicit URL patterns and implicit regular expressions
+ok 354 - fetch matching preserves colons in explicit URL patterns and implicit regular expressions
+  ---
+  duration_ms: 66.751695
+  type: 'test'
+  ...
+# Subtest: global matching expressions give the same result on repeated fetches and timers
+ok 355 - global matching expressions give the same result on repeated fetches and timers
+  ---
+  duration_ms: 27.235746
+  type: 'test'
+  ...
+# Subtest: JSON XHR transforms invalidate an early null response and reset on reopen
+ok 356 - JSON XHR transforms invalidate an early null response and reset on reopen
+  ---
+  duration_ms: 8.691576
+  type: 'test'
+  ...
+# Subtest: JSON XHR native parsing does not run a JSON.parse scriptlet
+ok 357 - JSON XHR native parsing does not run a JSON.parse scriptlet
+  ---
+  duration_ms: 5.182226
+  type: 'test'
+  ...
+# Subtest: remove-attr stay removes an attribute restored on an existing element, including asap mode
+ok 358 - remove-attr stay removes an attribute restored on an existing element, including asap mode
+  ---
+  duration_ms: 35.525516
+  type: 'test'
+  ...
+# Subtest: remove-attr without stay remains a one-time change
+ok 359 - remove-attr without stay remains a one-time change
+  ---
+  duration_ms: 17.466137
+  type: 'test'
+  ...
+# Subtest: profiler wyłączony (domyślnie): brak pomiarów, brak zdarzeń, ani jednego wywołania performance.now()
+ok 360 - profiler wyłączony (domyślnie): brak pomiarów, brak zdarzeń, ani jednego wywołania performance.now()
+  ---
+  duration_ms: 243.617528
+  type: 'test'
+  ...
+# Subtest: profiler nie zmienia działania filtrów: identyczne wyniki z pomiarami i bez
+ok 361 - profiler nie zmienia działania filtrów: identyczne wyniki z pomiarami i bez
+  ---
+  duration_ms: 84.068448
+  type: 'test'
+  ...
+# Subtest: profiler włączony: liczba wywołań, łączny/średni/maks. czas dla każdego typu scriptletu
+ok 362 - profiler włączony: liczba wywołań, łączny/średni/maks. czas dla każdego typu scriptletu
+  ---
+  duration_ms: 42.615257
+  type: 'test'
+  ...
+# Subtest: profiler: dane bez adresów, ID filmów i treści – tylko nazwy scriptletów i liczby
+ok 363 - profiler: dane bez adresów, ID filmów i treści – tylko nazwy scriptletów i liczby
+  ---
+  duration_ms: 35.628763
+  type: 'test'
+  ...
+# Subtest: profiler: XHR i adjust-setTimeout mierzone pod własnymi etykietami
+ok 364 - profiler: XHR i adjust-setTimeout mierzone pod własnymi etykietami
+  ---
+  duration_ms: 39.619306
+  type: 'test'
+  ...
+# Subtest: set-constant: ytInitialPlayerResponse.adPlacements → undefined, reszta odpowiedzi nietknięta
+ok 365 - set-constant: ytInitialPlayerResponse.adPlacements → undefined, reszta odpowiedzi nietknięta
+  ---
+  duration_ms: 219.509954
+  type: 'test'
+  ...
+# Subtest: json-prune (YouTube): usuwa reklamy z JSON.parse odpowiedzi odtwarzacza
+ok 366 - json-prune (YouTube): usuwa reklamy z JSON.parse odpowiedzi odtwarzacza
+  ---
+  duration_ms: 13.38675
+  type: 'test'
+  ...
+# Subtest: json-prune [-] (Shorts): usuwa wpisy reklamowe z sekwencji Shorts
+ok 367 - json-prune [-] (Shorts): usuwa wpisy reklamowe z sekwencji Shorts
+  ---
+  duration_ms: 11.332299
+  type: 'test'
+  ...
+# Subtest: json-prune-fetch-response: przycina tylko żądania pasujące do propsToMatch
+ok 368 - json-prune-fetch-response: przycina tylko żądania pasujące do propsToMatch
+  ---
+  duration_ms: 10.185219
+  type: 'test'
+  ...
+# Subtest: json-prune-fetch-response (/player): obsługuje tablicę w korzeniu ("[].playerResponse...")
+ok 369 - json-prune-fetch-response (/player): obsługuje tablicę w korzeniu ("[].playerResponse...")
+  ---
+  duration_ms: 9.527905
+  type: 'test'
+  ...
+# Subtest: json-prune-xhr-response (/player): przycina odpowiedź XHR i zachowuje responseText spójny
+ok 370 - json-prune-xhr-response (/player): przycina odpowiedź XHR i zachowuje responseText spójny
+  ---
+  duration_ms: 19.438083
+  type: 'test'
+  ...
+# Subtest: trusted-replace-xhr-response: regex z flagami gms i $1 (YouTube /player)
+ok 371 - trusted-replace-xhr-response: regex z flagami gms i $1 (YouTube /player)
+  ---
+  duration_ms: 9.418149
+  type: 'test'
+  ...
+# Subtest: trusted-replace-xhr-response: tekst dosłowny zastępuje tylko pierwsze wystąpienie (semantyka uBO)
+ok 372 - trusted-replace-xhr-response: tekst dosłowny zastępuje tylko pierwsze wystąpienie (semantyka uBO)
+  ---
+  duration_ms: 4.774022
+  type: 'test'
+  ...
+# Subtest: trusted-replace-fetch-response (trusted-rpfr): zamienia tekst w odpowiedzi fetch dla "player?"
+ok 373 - trusted-replace-fetch-response (trusted-rpfr): zamienia tekst w odpowiedzi fetch dla "player?"
+  ---
+  duration_ms: 7.35102
+  type: 'test'
+  ...
+# Subtest: json-edit-fetch-response (m.youtube): usuwa elementy z adSlotRenderer z itemSectionRenderer.contents
+ok 374 - json-edit-fetch-response (m.youtube): usuwa elementy z adSlotRenderer z itemSectionRenderer.contents
+  ---
+  duration_ms: 11.232869
+  type: 'test'
+  ...
+# Subtest: trusted-edit-inbound-object (JSON.stringify): dopisuje clientScreen dla userAgent z "channel"
+ok 375 - trusted-edit-inbound-object (JSON.stringify): dopisuje clientScreen dla userAgent z "channel"
+  ---
+  duration_ms: 14.419929
+  type: 'test'
+  ...
+# Subtest: trusted-edit-inbound-object: lactMilliseconds="${now}" i referer=repl(...) (YouTube)
+ok 376 - trusted-edit-inbound-object: lactMilliseconds="${now}" i referer=repl(...) (YouTube)
+  ---
+  duration_ms: 19.370081
+  type: 'test'
+  ...
+# Subtest: trusted-prevent-dom-bypass: świeża ramka about:blank dostaje fetch strony (nie natywny)
+ok 377 - trusted-prevent-dom-bypass: świeża ramka about:blank dostaje fetch strony (nie natywny)
+  ---
+  duration_ms: 8.710215
+  type: 'test'
+  ...
+# Subtest: adjust-setTimeout (nano-stb "[native code]", 17000, 0.001): skraca tylko opóźnienia funkcji natywnych
+ok 378 - adjust-setTimeout (nano-stb "[native code]", 17000, 0.001): skraca tylko opóźnienia funkcji natywnych
+  ---
+  duration_ms: 11.251518
+  type: 'test'
+  ...
+# Subtest: trusted-replace-node-text (serverContract, sedCount/excludes/condition): podmienia tylko pierwszy pasujący skrypt
+ok 379 - trusted-replace-node-text (serverContract, sedCount/excludes/condition): podmienia tylko pierwszy pasujący skrypt
+  ---
+  duration_ms: 10.823474
+  type: 'test'
+  ...
+# Subtest: remove-node-text (rmnt script, window,"fetch"): opróżnia treść skryptu, nie usuwa węzła
+ok 380 - remove-node-text (rmnt script, window,"fetch"): opróżnia treść skryptu, nie usuwa węzła
+  ---
+  duration_ms: 10.066325
+  type: 'test'
+  ...
+# Subtest: prevent-addEventListener (m.youtube visibilitychange)
+ok 381 - prevent-addEventListener (m.youtube visibilitychange)
+  ---
+  duration_ms: 3.666657
+  type: 'test'
+  ...
+# Subtest: trusted-set-constant json:"visible" (m.youtube document.visibilityState)
+ok 382 - trusted-set-constant json:"visible" (m.youtube document.visibilityState)
+  ---
+  duration_ms: 3.222378
+  type: 'test'
+  ...
+# Subtest: aktualizacja list: co tydzień i ręcznie, uprawnienia do PR, limit czasu
+ok 383 - aktualizacja list: co tydzień i ręcznie, uprawnienia do PR, limit czasu
+  ---
+  duration_ms: 1.14333
+  type: 'test'
+  ...
+# Subtest: aktualizacja list: pobranie → build → npm run check → PR; nigdy push na main ani scalanie
+ok 384 - aktualizacja list: pobranie → build → npm run check → PR; nigdy push na main ani scalanie
+  ---
+  duration_ms: 1.149249
+  type: 'test'
+  ...
+# Subtest: wydanie: tylko na tag vX.Y.Z, zgodność z manifestem, kontrola przed paczką i publikacją
+ok 385 - wydanie: tylko na tag vX.Y.Z, zgodność z manifestem, kontrola przed paczką i publikacją
+  ---
+  duration_ms: 0.489537
+  type: 'test'
+  ...
+# Subtest: CHANGELOG.md: sekcja (PL i ENG) dla wersji z manifest.json
+ok 386 - CHANGELOG.md: sekcja (PL i ENG) dla wersji z manifest.json
+  ---
+  duration_ms: 0.759974
+  type: 'test'
+  ...
+# Subtest: opis wydania: kafelki, link do pobrania, zrzut, instalacja, Co nowego – PL, potem ENG; tylko HTML
+ok 387 - opis wydania: kafelki, link do pobrania, zrzut, instalacja, Co nowego – PL, potem ENG; tylko HTML
+  ---
+  duration_ms: 0.582586
+  type: 'test'
+  ...
+# Subtest: opis PR aktualizacji list: wyniki kroków, nieudane pobrania, zmiany liczby reguł, YouTube
+ok 388 - opis PR aktualizacji list: wyniki kroków, nieudane pobrania, zmiany liczby reguł, YouTube
+  ---
+  duration_ms: 13.975355
+  type: 'test'
+  ...
+# Subtest: strict local readiness requires completed nonzero tests, no skips/failures, and browser PASS
+ok 389 - strict local readiness requires completed nonzero tests, no skips/failures, and browser PASS
+  ---
+  duration_ms: 3.227606
+  type: 'test'
+  ...
+# Subtest: komunikat SKIP zgodny z wymaganiem
+ok 390 - komunikat SKIP zgodny z wymaganiem
+  ---
+  duration_ms: 0.893324
+  type: 'test'
+  ...
+# Subtest: brak Playwright/Chromium ⇒ SKIP (check może przejść)
+ok 391 - brak Playwright/Chromium ⇒ SKIP (check może przejść)
+  ---
+  duration_ms: 1.727389
+  type: 'test'
+  ...
+# Subtest: rozszerzenie załadowane, service worker, sync OK, brak ERROR ⇒ PASS
+ok 392 - rozszerzenie załadowane, service worker, sync OK, brak ERROR ⇒ PASS
+  ---
+  duration_ms: 0.459441
+  type: 'test'
+  ...
+# Subtest: WARNING i wpisy dziennika to uwagi, nie FAIL
+ok 393 - WARNING i wpisy dziennika to uwagi, nie FAIL
+  ---
+  duration_ms: 0.251848
+  type: 'test'
+  ...
+# Subtest: manifest odrzucony przez Chromium ⇒ FAIL z dokładnym komunikatem
+ok 394 - manifest odrzucony przez Chromium ⇒ FAIL z dokładnym komunikatem
+  ---
+  duration_ms: 0.787164
+  type: 'test'
+  ...
+# Subtest: rozszerzenie wyłączone, błąd manifestu lub działania ⇒ FAIL
+ok 395 - rozszerzenie wyłączone, błąd manifestu lub działania ⇒ FAIL
+  ---
+  duration_ms: 0.507443
+  type: 'test'
+  ...
+# Subtest: krytyczny ERROR w health po synchronizacji ⇒ FAIL
+ok 396 - krytyczny ERROR w health po synchronizacji ⇒ FAIL
+  ---
+  duration_ms: 0.49175
+  type: 'test'
+  ...
+# Subtest: synchronizacja niezakończona, brak odpowiedzi health lub wyjątek ⇒ FAIL
+ok 397 - synchronizacja niezakończona, brak odpowiedzi health lub wyjątek ⇒ FAIL
+  ---
+  duration_ms: 0.248284
+  type: 'test'
+  ...
+# Subtest: syncFinished i extractLoadErrors
+ok 398 - syncFinished i extractLoadErrors
+  ---
+  duration_ms: 0.500042
+  type: 'test'
+  ...
+# Subtest: CI: push + pull_request, tylko odczyt repo, limit czasu
+ok 399 - CI: push + pull_request, tylko odczyt repo, limit czasu
+  ---
+  duration_ms: 1.356761
+  type: 'test'
+  ...
+# Subtest: CI: zależności, Chromium, npm test i npm run check w tej kolejności; Node zgodny z engines
+ok 400 - CI: zależności, Chromium, npm test i npm run check w tej kolejności; Node zgodny z engines
+  ---
+  duration_ms: 2.042803
+  type: 'test'
+  ...
+# Subtest: CI: pominięte testy i brak smoke testu w Chromium kończą job błędem
+ok 401 - CI: pominięte testy i brak smoke testu w Chromium kończą job błędem
+  ---
+  duration_ms: 0.633953
+  type: 'test'
+  ...
+# Subtest: CI: po testach buduje i zachowuje wyłącznie paczkę Apex do Chrome Web Store
+ok 402 - CI: po testach buduje i zachowuje wyłącznie paczkę Apex do Chrome Web Store
+  ---
+  duration_ms: 0.264838
+  type: 'test'
+  ...
+# Subtest: provenance: każde źródło z LISTS (z !\#include) jest opisane
+ok 403 - provenance: każde źródło z LISTS (z !\#include) jest opisane
+  ---
+  duration_ms: 65.405019
+  type: 'test'
+  ...
+# Subtest: provenance: każdy snapshot w tools/lists/ (także nieużywany) jest opisany
+ok 404 - provenance: każdy snapshot w tools/lists/ (także nieużywany) jest opisany
+  ---
+  duration_ms: 1.755191
+  type: 'test'
+  ...
+# Subtest: provenance: licencje i statusy są w dokumentach; NonCommercial wyraźnie oznaczone
+ok 405 - provenance: licencje i statusy są w dokumentach; NonCommercial wyraźnie oznaczone
+  ---
+  duration_ms: 0.438029
+  type: 'test'
+  ...
+# Subtest: ikony: wszystkie rozmiary z manifestu i wersje „off” istnieją i mają właściwe wymiary
+ok 406 - ikony: wszystkie rozmiary z manifestu i wersje „off” istnieją i mają właściwe wymiary
+  ---
+  duration_ms: 5.843406
+  type: 'test'
+  ...
+# Subtest: ikony: źródło SVG w repozytorium (poza paczką) i paleta „morski”
+ok 407 - ikony: źródło SVG w repozytorium (poza paczką) i paleta „morski”
+  ---
+  duration_ms: 0.734184
+  type: 'test'
+  ...
+# Subtest: logo marki (brand/, icons/): sam znak bez badge'a, pliki aktualne, brand/ poza paczką
+ok 408 - logo marki (brand/, icons/): sam znak bez badge'a, pliki aktualne, brand/ poza paczką
+  ---
+  duration_ms: 3.296795
+  type: 'test'
+  ...
+# Subtest: logo w rozszerzeniu: ikona 128 px z manifestu (sklep) i nagłówki Opcji / ekranu powitalnego
+ok 409 - logo w rozszerzeniu: ikona 128 px z manifestu (sklep) i nagłówki Opcji / ekranu powitalnego
+  ---
+  duration_ms: 0.373692
+  type: 'test'
+  ...
+# Subtest: kolorystyka: ten sam akcent w popupie, Opcjach i ekranie powitalnym (jasny i ciemny motyw)
+ok 410 - kolorystyka: ten sam akcent w popupie, Opcjach i ekranie powitalnym (jasny i ciemny motyw)
+  ---
+  duration_ms: 0.925102
+  type: 'test'
+  ...
+# Subtest: teksty okna zgody: nagłówek i „Odrzuć wszystko” (z odpowiednikami językowymi)
+ok 411 - teksty okna zgody: nagłówek i „Odrzuć wszystko” (z odpowiednikami językowymi)
+  ---
+  duration_ms: 1.447327
+  type: 'test'
+  ...
+# Subtest: REGRESJA: „Zanim przejdziesz do YouTube” na youtube.com → „Odrzuć wszystko” (niżej w przewijanym oknie) → okno znika → odtwarzanie startuje
+ok 412 - REGRESJA: „Zanim przejdziesz do YouTube” na youtube.com → „Odrzuć wszystko” (niżej w przewijanym oknie) → okno znika → odtwarzanie startuje # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.182234
+  type: 'test'
+  ...
+# Subtest: PRZYCZYNA: stare jednorazowe sprawdzenie zaraz po wczytaniu nie widzi okna, które pojawia się później
+ok 413 - PRZYCZYNA: stare jednorazowe sprawdzenie zaraz po wczytaniu nie widzi okna, które pojawia się później # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.15333
+  type: 'test'
+  ...
+# Subtest: okno zgody jako zwykły div (bez roli dialog) – rozpoznane po nagłówku i zamknięte
+ok 414 - okno zgody jako zwykły div (bez roli dialog) – rozpoznane po nagłówku i zamknięte # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.153501
+  type: 'test'
+  ...
+# Subtest: okna zgody nie da się zamknąć → INCONCLUSIVE (nie FAIL Apex AdBlocker)
+ok 415 - okna zgody nie da się zamknąć → INCONCLUSIVE (nie FAIL Apex AdBlocker) # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.142084
+  type: 'test'
+  ...
+# Subtest: --no-consent: okno zgody → INCONCLUSIVE bez klikania
+ok 416 - --no-consent: okno zgody → INCONCLUSIVE bez klikania # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.187542
+  type: 'test'
+  ...
+# Subtest: bez okna zgody: brak opóźnienia, gdy film już się odtwarza
+ok 417 - bez okna zgody: brak opóźnienia, gdy film już się odtwarza # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.171348
+  type: 'test'
+  ...
+# Subtest: PRZYCZYNA: kontener z nagłówkiem nie zawiera stopki z „Odrzuć wszystko” (stara logika szukała tylko w nim)
+ok 418 - PRZYCZYNA: kontener z nagłówkiem nie zawiera stopki z „Odrzuć wszystko” (stara logika szukała tylko w nim) # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.158498
+  type: 'test'
+  ...
+# Subtest: REGRESJA: nagłówek w jednym kontenerze, stopka z „Odrzuć wszystko” (<button>) jako rodzeństwo, poza viewportem → kliknięte, okno znika, odtwarzanie startuje
+ok 419 - REGRESJA: nagłówek w jednym kontenerze, stopka z „Odrzuć wszystko” (<button>) jako rodzeństwo, poza viewportem → kliknięte, okno znika, odtwarzanie startuje # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.220522
+  type: 'test'
+  ...
+# Subtest: REGRESJA: nagłówek w jednym kontenerze, stopka z „Odrzuć wszystko” ([role="button"]) jako rodzeństwo, poza viewportem → kliknięte, okno znika, odtwarzanie startuje
+ok 420 - REGRESJA: nagłówek w jednym kontenerze, stopka z „Odrzuć wszystko” ([role="button"]) jako rodzeństwo, poza viewportem → kliknięte, okno znika, odtwarzanie startuje # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.186761
+  type: 'test'
+  ...
+# Subtest: REGRESJA: nagłówek w jednym kontenerze, stopka z „Odrzuć wszystko” (element klikalny z dokładnym tekstem) jako rodzeństwo, poza viewportem → kliknięte, okno znika, odtwarzanie startuje
+ok 421 - REGRESJA: nagłówek w jednym kontenerze, stopka z „Odrzuć wszystko” (element klikalny z dokładnym tekstem) jako rodzeństwo, poza viewportem → kliknięte, okno znika, odtwarzanie startuje # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.164828
+  type: 'test'
+  ...
+# Subtest: brak „Odrzuć wszystko” → diagnostyka: nagłówek i widoczne przyciski; „Zaakceptuj” nie jest klikane
+ok 422 - brak „Odrzuć wszystko” → diagnostyka: nagłówek i widoczne przyciski; „Zaakceptuj” nie jest klikane # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.144878
+  type: 'test'
+  ...
+# Subtest: akceptacja nigdy nie pasuje do wzorca odrzucenia
+ok 423 - akceptacja nigdy nie pasuje do wzorca odrzucenia
+  ---
+  duration_ms: 0.30619
+  type: 'test'
+  ...
+# Subtest: wynik zbiorczy: FAIL > INCONCLUSIVE (SKIP) > PASS; SKIP nigdy nie daje PASS
+ok 424 - wynik zbiorczy: FAIL > INCONCLUSIVE (SKIP) > PASS; SKIP nigdy nie daje PASS
+  ---
+  duration_ms: 1.669431
+  type: 'test'
+  ...
+# Subtest: błędy JS: tylko pochodzące z Apex AdBlocker
+ok 425 - błędy JS: tylko pochodzące z Apex AdBlocker
+  ---
+  duration_ms: 0.306531
+  type: 'test'
+  ...
+# Subtest: brak sieci → kod net::ERR (SKIP), inne błędy → null
+ok 426 - brak sieci → kod net::ERR (SKIP), inne błędy → null
+  ---
+  duration_ms: 0.176576
+  type: 'test'
+  ...
+# Subtest: raport: wersja, startup, wyniki, błędy, oznaczenie SKIP jako INCONCLUSIVE
+ok 427 - raport: wersja, startup, wyniki, błędy, oznaczenie SKIP jako INCONCLUSIVE
+  ---
+  duration_ms: 0.57816
+  type: 'test'
+  ...
+# Subtest: zapis wyników: latest.json + latest.txt
+ok 428 - zapis wyników: latest.json + latest.txt
+  ---
+  duration_ms: 0.667754
+  type: 'test'
+  ...
+# Subtest: opcje, npm run test:local, .cmd i izolacja od npm test
+ok 429 - opcje, npm run test:local, .cmd i izolacja od npm test
+  ---
+  duration_ms: 0.439882
+  type: 'test'
+  ...
+# Subtest: kody wyjścia: PASS 0, FAIL 1, błąd uruchomienia 2, INCONCLUSIVE 3
+ok 430 - kody wyjścia: PASS 0, FAIL 1, błąd uruchomienia 2, INCONCLUSIVE 3
+  ---
+  duration_ms: 0.375355
+  type: 'test'
+  ...
+# Subtest: test-apex-adblocker.cmd działa tylko z repozytorium (bez trybu paczki i folderu tester/)
+ok 431 - test-apex-adblocker.cmd działa tylko z repozytorium (bez trybu paczki i folderu tester/)
+  ---
+  duration_ms: 0.759283
+  type: 'test'
+  ...
+# Subtest: REGRESJA: seek wykonany poprawnie + chwilowe buforowanie → seek PASS, wznowienie PASS
+ok 432 - REGRESJA: seek wykonany poprawnie + chwilowe buforowanie → seek PASS, wznowienie PASS
+  ---
+  duration_ms: 0.488776
+  type: 'test'
+  ...
+# Subtest: seek poprawny, ale buforowanie przez całe okno → seek PASS, wznowienie SKIP (INCONCLUSIVE), nie FAIL
+ok 433 - seek poprawny, ale buforowanie przez całe okno → seek PASS, wznowienie SKIP (INCONCLUSIVE), nie FAIL
+  ---
+  duration_ms: 0.298939
+  type: 'test'
+  ...
+# Subtest: seek: FAIL tylko przy jednoznacznym dowodzie
+ok 434 - seek: FAIL tylko przy jednoznacznym dowodzie
+  ---
+  duration_ms: 0.271108
+  type: 'test'
+  ...
+# Subtest: seek: przeskok widoczny dopiero po chwili (pozycja aktualizuje się z opóźnieniem) → PASS
+ok 435 - seek: przeskok widoczny dopiero po chwili (pozycja aktualizuje się z opóźnieniem) → PASS
+  ---
+  duration_ms: 0.147182
+  type: 'test'
+  ...
+# Subtest: A/B: fakty seek do raportu (przypadek z Windows)
+ok 436 - A/B: fakty seek do raportu (przypadek z Windows)
+  ---
+  duration_ms: 0.403326
+  type: 'test'
+  ...
+# Subtest: A/B: ten sam błąd także bez Apex AdBlocker → CONTROL ALSO FAILS (nie obwiniamy Apex AdBlocker)
+ok 437 - A/B: ten sam błąd także bez Apex AdBlocker → CONTROL ALSO FAILS (nie obwiniamy Apex AdBlocker)
+  ---
+  duration_ms: 0.321473
+  type: 'test'
+  ...
+# Subtest: REGRESJA A/B: Apex AdBlocker ytp-error + fell-back, kontrola tylko ytp-error → INCONCLUSIVE (nie CONTROL ALSO FAILS)
+ok 438 - REGRESJA A/B: Apex AdBlocker ytp-error + fell-back, kontrola tylko ytp-error → INCONCLUSIVE (nie CONTROL ALSO FAILS)
+  ---
+  duration_ms: 0.356676
+  type: 'test'
+  ...
+# Subtest: REGRESJA A/B: Apex AdBlocker ytp-error + fell-back, kontrola ytp-error + fell-back → CONTROL ALSO FAILS
+ok 439 - REGRESJA A/B: Apex AdBlocker ytp-error + fell-back, kontrola ytp-error + fell-back → CONTROL ALSO FAILS
+  ---
+  duration_ms: 0.241143
+  type: 'test'
+  ...
+# Subtest: A/B: APEX-SPECIFIC tylko przy czystej kontroli (seek działa, wznowienie, brak twardych błędów)
+ok 440 - A/B: APEX-SPECIFIC tylko przy czystej kontroli (seek działa, wznowienie, brak twardych błędów)
+  ---
+  duration_ms: 0.228704
+  type: 'test'
+  ...
+# Subtest: A/B: bez Apex AdBlocker działa, z Apex AdBlocker nie → APEX-SPECIFIC FAIL
+ok 441 - A/B: bez Apex AdBlocker działa, z Apex AdBlocker nie → APEX-SPECIFIC FAIL
+  ---
+  duration_ms: 0.127141
+  type: 'test'
+  ...
+# Subtest: A/B: kontrola nie może się wykonać → INCONCLUSIVE
+ok 442 - A/B: kontrola nie może się wykonać → INCONCLUSIVE
+  ---
+  duration_ms: 0.122013
+  type: 'test'
+  ...
+# Subtest: A/B: kontrola z innym błędem albo tylko bez wznowienia → INCONCLUSIVE
+ok 443 - A/B: kontrola z innym błędem albo tylko bez wznowienia → INCONCLUSIVE
+  ---
+  duration_ms: 0.342275
+  type: 'test'
+  ...
+# Subtest: A/B: raport zawiera before / target / po seek / .ytp-error / video.error.code / cofnięcie / wznowienie / URL dla obu przebiegów
+ok 444 - A/B: raport zawiera before / target / po seek / .ytp-error / video.error.code / cofnięcie / wznowienie / URL dla obu przebiegów
+  ---
+  duration_ms: 0.610579
+  type: 'test'
+  ...
+# Subtest: A/B: kontrola uruchamiana BEZ rozszerzenia, z tymi samymi flagami odtwarzania
+ok 445 - A/B: kontrola uruchamiana BEZ rozszerzenia, z tymi samymi flagami odtwarzania
+  ---
+  duration_ms: 0.17276
+  type: 'test'
+  ...
+# Subtest: Backup w testerze: pozycje raportu
+ok 446 - Backup w testerze: pozycje raportu
+  ---
+  duration_ms: 0.093761
+  type: 'test'
+  ...
+# Subtest: Backup w testerze: kontrola pliku – format v2, dokładnie 2 pola, zgodność ze snapshotem
+ok 447 - Backup w testerze: kontrola pliku – format v2, dokładnie 2 pola, zgodność ze snapshotem
+  ---
+  duration_ms: 0.622596
+  type: 'test'
+  ...
+# Subtest: Backup w testerze: prywatność – brak health / diagnostyki / sesji / adresów (treść Moich filtrów pomijana)
+ok 448 - Backup w testerze: prywatność – brak health / diagnostyki / sesji / adresów (treść Moich filtrów pomijana)
+  ---
+  duration_ms: 0.235344
+  type: 'test'
+  ...
+# Subtest: Backup w testerze: porównanie ustawień (kolejność domen bez znaczenia; listy nie są ustawieniem)
+ok 449 - Backup w testerze: porównanie ustawień (kolejność domen bez znaczenia; listy nie są ustawieniem)
+  ---
+  duration_ms: 0.154092
+  type: 'test'
+  ...
+# Subtest: Onboarding i popup w testerze: pozycje raportu; bez trybów; stały zestaw list sprawdzany
+ok 450 - Onboarding i popup w testerze: pozycje raportu; bez trybów; stały zestaw list sprawdzany
+  ---
+  duration_ms: 0.555585
+  type: 'test'
+  ...
+# Subtest: crc32: znany wektor
+ok 451 - crc32: znany wektor
+  ---
+  duration_ms: 0.901246
+  type: 'test'
+  ...
+# Subtest: createZip: archiwum odczytywalne, nazwy UTF-8, deflate i store
+ok 452 - createZip: archiwum odczytywalne, nazwy UTF-8, deflate i store
+  ---
+  duration_ms: 1.932537
+  type: 'test'
+  ...
+# Subtest: manifestReferences: wszystkie pliki wskazane w manifeście
+ok 453 - manifestReferences: wszystkie pliki wskazane w manifeście
+  ---
+  duration_ms: 0.311409
+  type: 'test'
+  ...
+# Subtest: validatePackage: brak pliku z manifestu i pliki deweloperskie są wykrywane
+ok 454 - validatePackage: brak pliku z manifestu i pliki deweloperskie są wykrywane
+  ---
+  duration_ms: 7.173803
+  type: 'test'
+  ...
+# Subtest: package:dev: czysty dist/Apex-AdBlocker tylko z plikami rozszerzenia + ZIP wyłącznie z rozszerzeniem
+ok 455 - package:dev: czysty dist/Apex-AdBlocker tylko z plikami rozszerzenia + ZIP wyłącznie z rozszerzeniem
+  ---
+  duration_ms: 1412.314106
+  type: 'test'
+  ...
+# Subtest: repozytorium: bez commitowanego ZIP-a, instalatora i INSTALL.md
+ok 456 - repozytorium: bez commitowanego ZIP-a, instalatora i INSTALL.md
+  ---
+  duration_ms: 0.302085
+  type: 'test'
+  ...
+# Subtest: package:release: gotowy ZIP użytkownika + stała nazwa + SHA256
+ok 457 - package:release: gotowy ZIP użytkownika + stała nazwa + SHA256
+  ---
+  duration_ms: 1395.908326
+  type: 'test'
+  ...
+# Subtest: README prowadzi użytkownika do Releases, a szczegóły są w docs/INSTALLATION.md
+ok 458 - README prowadzi użytkownika do Releases, a szczegóły są w docs/INSTALLATION.md
+  ---
+  duration_ms: 0.429166
+  type: 'test'
+  ...
+# Subtest: package:store: ZIP ma manifest.json w root i tylko pliki rozszerzenia
+ok 459 - package:store: ZIP ma manifest.json w root i tylko pliki rozszerzenia
+  ---
+  duration_ms: 1407.67504
+  type: 'test'
+  ...
+# Subtest: package:store: build jest deterministyczny
+ok 460 - package:store: build jest deterministyczny
+  ---
+  duration_ms: 2528.679974
+  type: 'test'
+  ...
+# Subtest: kategorie: rozłączne i pokrywają całą paczkę
+ok 461 - kategorie: rozłączne i pokrywają całą paczkę
+  ---
+  duration_ms: 1.220577
+  type: 'test'
+  ...
+# Subtest: statystyka: mediana, p95 (nearest-rank), min, max
+ok 462 - statystyka: mediana, p95 (nearest-rank), min, max
+  ---
+  duration_ms: 1.051362
+  type: 'test'
+  ...
+# Subtest: wzorce dopasowania content scriptów (jak w Chrome)
+ok 463 - wzorce dopasowania content scriptów (jak w Chrome)
+  ---
+  duration_ms: 1.034507
+  type: 'test'
+  ...
+# Subtest: niechciane pliki: narzędzia, testy, raporty, ZIP-y, dokumentacja, package.json
+ok 464 - niechciane pliki: narzędzia, testy, raporty, ZIP-y, dokumentacja, package.json
+  ---
+  duration_ms: 0.632542
+  type: 'test'
+  ...
+# Subtest: raport rozmiaru: sumy kategorii = całość, top N malejąco, procenty, powtarzalny hash i ZIP
+ok 465 - raport rozmiaru: sumy kategorii = całość, top N malejąco, procenty, powtarzalny hash i ZIP
+  ---
+  duration_ms: 16.068518
+  type: 'test'
+  ...
+# Subtest: argumenty i plik baseline: tylko stabilne metryki, bez logów i list plików
+ok 466 - argumenty i plik baseline: tylko stabilne metryki, bez logów i list plików
+  ---
+  duration_ms: 10.829313
+  type: 'test'
+  ...
+# Subtest: narzędzie benchmarkowe nie trafia do paczki rozszerzenia (0 B), wyniki nie są commitowane
+ok 467 - narzędzie benchmarkowe nie trafia do paczki rozszerzenia (0 B), wyniki nie są commitowane
+  ---
+  duration_ms: 0.528796
+  type: 'test'
+  ...
+# Subtest: strażnik paczki: brak niechcianych plików i brak nagłego przyrostu względem perf/baseline.json
+ok 468 - strażnik paczki: brak niechcianych plików i brak nagłego przyrostu względem perf/baseline.json
+  ---
+  duration_ms: 1863.217392
+  type: 'test'
+  ...
+# Subtest: baseline: zapisuje registerContentScripts, DNR gotowy, aktywne pliki/bajty scriptletów i reguły dynamiczne/sesyjne
+ok 469 - baseline: zapisuje registerContentScripts, DNR gotowy, aktywne pliki/bajty scriptletów i reguły dynamiczne/sesyjne
+  ---
+  duration_ms: 0.459702
+  type: 'test'
+  ...
+# Subtest: opcja --modes usunięta (produkt ma jeden stały zestaw list)
+ok 470 - opcja --modes usunięta (produkt ma jeden stały zestaw list)
+  ---
+  duration_ms: 0.285841
+  type: 'test'
+  ...
+# Subtest: argumenty: domyślnie wszystkie konfiguracje (z kontrolą bez rozszerzenia), filtry, błędy
+ok 471 - argumenty: domyślnie wszystkie konfiguracje (z kontrolą bez rozszerzenia), filtry, błędy
+  ---
+  duration_ms: 2.51149
+  type: 'test'
+  ...
+# Subtest: lista stron: ~50 realnych stron, głównie PL, kategorie z zadania, kilka zagranicznych, YouTube osobno
+ok 472 - lista stron: ~50 realnych stron, głównie PL, kategorie z zadania, kilka zagranicznych, YouTube osobno
+  ---
+  duration_ms: 3.062801
+  type: 'test'
+  ...
+# Subtest: ocena automatyczna: podejrzenie, nie werdykt; priorytet breakage > anti-adblock > reklama
+ok 473 - ocena automatyczna: podejrzenie, nie werdykt; priorytet breakage > anti-adblock > reklama
+  ---
+  duration_ms: 0.79706
+  type: 'test'
+  ...
+# Subtest: podsumowanie trybu: zablokowane żądania, sygnały reklam i redukcja względem kontroli
+ok 474 - podsumowanie trybu: zablokowane żądania, sygnały reklam i redukcja względem kontroli
+  ---
+  duration_ms: 0.625341
+  type: 'test'
+  ...
+# Subtest: narzędzie oznaczone jako historyczne: bez uruchomienia, bez wrappera i poza paczką testera
+ok 475 - narzędzie oznaczone jako historyczne: bez uruchomienia, bez wrappera i poza paczką testera
+  ---
+  duration_ms: 1.302651
+  type: 'test'
+  ...
+# Subtest: npm test: tylko tests/**/*.test.mjs, bez E2E
+ok 476 - npm test: tylko tests/**/*.test.mjs, bez E2E
+  ---
+  duration_ms: 10.975852
+  type: 'test'
+  ...
+# Subtest: npm run test:e2e: wyłącznie tests/e2e/**/*.e2e.mjs
+ok 477 - npm run test:e2e: wyłącznie tests/e2e/**/*.e2e.mjs
+  ---
+  duration_ms: 2.375446
+  type: 'test'
+  ...
+# Subtest: package.json: skrypty bez globów, test nie uruchamia E2E
+ok 478 - package.json: skrypty bez globów, test nie uruchamia E2E
+  ---
+  duration_ms: 0.439221
+  type: 'test'
+  ...
+# Subtest: argumenty i corpus: 53 strony z historycznego testera, znane przypadki, YouTube osobno
+ok 479 - argumenty i corpus: 53 strony z historycznego testera, znane przypadki, YouTube osobno
+  ---
+  duration_ms: 4.148414
+  type: 'test'
+  ...
+# Subtest: wzorce consent: odrzucenie tak, akceptacja/login/subskrypcja nie
+ok 480 - wzorce consent: odrzucenie tak, akceptacja/login/subskrypcja nie
+  ---
+  duration_ms: 1.079645
+  type: 'test'
+  ...
+# Subtest: consent: realne warianty odrzucenia (WP, o2) i whitelista kroku ustawień CMP; zgody nigdy
+ok 481 - consent: realne warianty odrzucenia (WP, o2) i whitelista kroku ustawień CMP; zgody nigdy
+  ---
+  duration_ms: 0.479842
+  type: 'test'
+  ...
+# Subtest: ocena strony: priorytety, challenge vs kontrola, consent, błędy JS nie są breakage
+ok 482 - ocena strony: priorytety, challenge vs kontrola, consent, błędy JS nie są breakage
+  ---
+  duration_ms: 6.98881
+  type: 'test'
+  ...
+# Subtest: consent: do porównania reklam tylko ten sam stan (none+none, rejected+rejected)
+ok 483 - consent: do porównania reklam tylko ten sam stan (none+none, rejected+rejected)
+  ---
+  duration_ms: 1.064863
+  type: 'test'
+  ...
+# Subtest: domena rejestrowalna: obca domena z tym samym sufiksem publicznym nie jest „własna”
+ok 484 - domena rejestrowalna: obca domena z tym samym sufiksem publicznym nie jest „własna”
+  ---
+  duration_ms: 0.766885
+  type: 'test'
+  ...
+# Subtest: YouTube: brak okazji reklamowej = INCONCLUSIVE; seek A/B z kontrolą; Protection i bramka 30/30
+ok 485 - YouTube: brak okazji reklamowej = INCONCLUSIVE; seek A/B z kontrolą; Protection i bramka 30/30
+  ---
+  duration_ms: 0.591059
+  type: 'test'
+  ...
+# Subtest: podsumowanie i raporty: różnica none → Apex AdBlocker, zrzuty obok siebie, ręczna ocena, eksport JSON
+ok 486 - podsumowanie i raporty: różnica none → Apex AdBlocker, zrzuty obok siebie, ręczna ocena, eksport JSON
+  ---
+  duration_ms: 1.611115
+  type: 'test'
+  ...
+# Subtest: tester nie dotyka produktu: brak zmian zachowania, osobny plik
+ok 487 - tester nie dotyka produktu: brak zmian zachowania, osobny plik
+  ---
+  duration_ms: 0.626242
+  type: 'test'
+  ...
+# Subtest: uruchomienie: test-sites.cmd → test-apex-adblocker.cmd --sites, npm run test:sites
+ok 488 - uruchomienie: test-sites.cmd → test-apex-adblocker.cmd --sites, npm run test:sites
+  ---
+  duration_ms: 0.311879
+  type: 'test'
+  ...
+# Subtest: atrapy stron w Chromium (bez internetu): none vs Apex AdBlocker, consent, statusy, raport i zrzuty
+ok 489 - atrapy stron w Chromium (bez internetu): none vs Apex AdBlocker, consent, statusy, raport i zrzuty # SKIP Playwright/Chromium niedostępne
+  ---
+  duration_ms: 0.170146
+  type: 'test'
+  ...
+# Subtest: zrzuty ekranu: po 5 w każdym języku, 1280×800
+ok 490 - zrzuty ekranu: po 5 w każdym języku, 1280×800
+  ---
+  duration_ms: 3.100718
+  type: 'test'
+  ...
+# Subtest: mały kafelek promocyjny 440×280 (en i pl)
+ok 491 - mały kafelek promocyjny 440×280 (en i pl)
+  ---
+  duration_ms: 0.221984
+  type: 'test'
+  ...
+# Subtest: store/README.md: uzasadnienie każdego uprawnienia z manifestu i link do polityki prywatności
+ok 492 - store/README.md: uzasadnienie każdego uprawnienia z manifestu i link do polityki prywatności
+  ---
+  duration_ms: 0.459912
+  type: 'test'
+  ...
+# Subtest: polityka prywatności: wersja angielska i polska, uprawnienia z manifestu opisane
+ok 493 - polityka prywatności: wersja angielska i polska, uprawnienia z manifestu opisane
+  ---
+  duration_ms: 0.3126
+  type: 'test'
+  ...
+# Subtest: store/ nie trafia do paczki rozszerzenia
+ok 494 - store/ nie trafia do paczki rozszerzenia
+  ---
+  duration_ms: 0.10651
+  type: 'test'
+  ...
+# Subtest: store provenance identifies exact package and image bytes and requires unmodified APIs
+ok 495 - store provenance identifies exact package and image bytes and requires unmodified APIs
+  ---
+  duration_ms: 11.955305
+  type: 'test'
+  ...
+# Subtest: store assets are replaced as a batch and user additions survive
+ok 496 - store assets are replaced as a batch and user additions survive
+  ---
+  duration_ms: 1.205204
+  type: 'test'
+  ...
+# Subtest: a failure promoting a capture restores prior assets rather than leaving mixed screenshots
+ok 497 - a failure promoting a capture restores prior assets rather than leaving mixed screenshots
+  ---
+  duration_ms: 1.443813
+  type: 'test'
+  ...
+# Subtest: unavailable capture preserves every existing marketing asset and receives a fresh temporary package
+ok 498 - unavailable capture preserves every existing marketing asset and receives a fresh temporary package
+  ---
+  duration_ms: 701.146441
+  type: 'test'
+  ...
+# Subtest: update: all or partial download failure preserves the complete prior snapshot
+ok 499 - update: all or partial download failure preserves the complete prior snapshot
+  ---
+  duration_ms: 5.317765
+  type: 'test'
+  ...
+# Subtest: update: a complete valid batch replaces both files and preserves unrelated snapshots
+ok 500 - update: a complete valid batch replaces both files and preserves unrelated snapshots
+  ---
+  duration_ms: 1.048909
+  type: 'test'
+  ...
+# Subtest: update: new incompatible YouTube filters are rejected before replacing snapshots
+ok 501 - update: new incompatible YouTube filters are rejected before replacing snapshots
+  ---
+  duration_ms: 0.795728
+  type: 'test'
+  ...
+# Subtest: update: short/HTTP-invalid responses cannot replace a snapshot
+ok 502 - update: short/HTTP-invalid responses cannot replace a snapshot
+  ---
+  duration_ms: 3.375471
+  type: 'test'
+  ...
+# Subtest: update: every configured bundled upstream snapshot passes content validation without network requests
+ok 503 - update: every configured bundled upstream snapshot passes content validation without network requests
+  ---
+  duration_ms: 41.069721
+  type: 'test'
+  ...
+# Subtest: update: uAssets fragments with section comments or preprocessing directives need real filters
+ok 504 - update: uAssets fragments with section comments or preprocessing directives need real filters
+  ---
+  duration_ms: 0.381405
+  type: 'test'
+  ...
+# Subtest: update: failure promoting staging restores the old directory
+ok 505 - update: failure promoting staging restores the old directory
+  ---
+  duration_ms: 0.782147
+  type: 'test'
+  ...
+# Subtest: manifest.json: poprawne pole version, bez version_name
+ok 506 - manifest.json: poprawne pole version, bez version_name
+  ---
+  duration_ms: 1.024603
+  type: 'test'
+  ...
+# Subtest: package.json nie dubluje wersji produktu
+ok 507 - package.json nie dubluje wersji produktu
+  ---
+  duration_ms: 0.200341
+  type: 'test'
+  ...
+# Subtest: README: status bez wpisanego numeru wersji
+ok 508 - README: status bez wpisanego numeru wersji
+  ---
+  duration_ms: 0.315535
+  type: 'test'
+  ...
+# Subtest: wersja w UI, diagnostyce, kopii ustawień i paczce pochodzi z manifest.version
+ok 509 - wersja w UI, diagnostyce, kopii ustawień i paczce pochodzi z manifest.version
+  ---
+  duration_ms: 2.397308
+  type: 'test'
+  ...
+# Subtest: public policy: retains real policy details, escapes HTML, and removes preparation labels
+ok 510 - public policy: retains real policy details, escapes HTML, and removes preparation labels
+  ---
+  duration_ms: 2.342366
+  type: 'test'
+  ...
+# Subtest: store preflight validates actual PNG dimensions and catches corrupt/truncated bytes
+ok 511 - store preflight validates actual PNG dimensions and catches corrupt/truncated bytes
+  ---
+  duration_ms: 3.143431
+  type: 'test'
+  ...
+# Subtest: store preflight accepts current MV3 package with exact ZIP and source files
+ok 512 - store preflight accepts current MV3 package with exact ZIP and source files
+  ---
+  duration_ms: 18.789483
+  type: 'test'
+  ...
+# Subtest: store preflight rejects malformed Chrome versions and incorrect store icon dimensions
+ok 513 - store preflight rejects malformed Chrome versions and incorrect store icon dimensions
+  ---
+  duration_ms: 7.349103
+  type: 'test'
+  ...
+# Subtest: store preflight rejects stale permissions/source bytes or missing runtime source files
+ok 514 - store preflight rejects stale permissions/source bytes or missing runtime source files
+  ---
+  duration_ms: 5.824978
+  type: 'test'
+  ...
+# Subtest: store preflight rejects missing/escaping prerequisites and package symlinks
+ok 515 - store preflight rejects missing/escaping prerequisites and package symlinks
+  ---
+  duration_ms: 2.723459
+  type: 'test'
+  ...
+# Subtest: store preflight rejects root-folder, stale or corrupt ZIP instead of merely trusting its name
+ok 516 - store preflight rejects root-folder, stale or corrupt ZIP instead of merely trusting its name
+  ---
+  duration_ms: 5.371385
+  type: 'test'
+  ...
+# Subtest: readiness never turns skipped tests, fixture screenshots or stale evidence into publication approval
+ok 517 - readiness never turns skipped tests, fixture screenshots or stale evidence into publication approval
+  ---
+  duration_ms: 7.875946
+  type: 'test'
+  ...
+# Subtest: readiness can clear only when required publisher fields, actual images and matching complete evidence are supplied
+ok 518 - readiness can clear only when required publisher fields, actual images and matching complete evidence are supplied
+  ---
+  duration_ms: 22.803565
+  type: 'test'
+  ...
+# Subtest: all test counts PASS cannot hide a failed build, failed check command or incomplete summary
+ok 519 - all test counts PASS cannot hide a failed build, failed check command or incomplete summary
+  ---
+  duration_ms: 20.807571
+  type: 'test'
+  ...
+# Subtest: screenshot readiness rejects tampering, stale package metadata and unrelated capture images
+ok 520 - screenshot readiness rejects tampering, stale package metadata and unrelated capture images
+  ---
+  duration_ms: 40.271619
+  type: 'test'
+  ...
+# Subtest: localized manifest metadata validates rendered name and description for every packaged locale
+ok 521 - localized manifest metadata validates rendered name and description for every packaged locale
+  ---
+  duration_ms: 8.170869
+  type: 'test'
+  ...
+# Subtest: prepare parses the final anchored summary and actual smoke line, never test titles
+ok 522 - prepare parses the final anchored summary and actual smoke line, never test titles
+  ---
+  duration_ms: 1.539227
+  type: 'test'
+  ...
+# Subtest: prepare distinguishes blocked browser checks from genuine test/build failures and missing results
+ok 523 - prepare distinguishes blocked browser checks from genuine test/build failures and missing results
+  ---
+  duration_ms: 0.562987
+  type: 'test'
+  ...
+# Subtest: prepare builds a real fresh ZIP, records blocked checks, preserves publisher and unrelated outputs, and never captures without smoke
+ok 524 - prepare builds a real fresh ZIP, records blocked checks, preserves publisher and unrelated outputs, and never captures without smoke
+  ---
+  duration_ms: 34.32631
+  type: 'test'
+  ...
+# Subtest: prepare populates verified captures after smoke PASS and keeps publisher/privacy fields intact
+ok 525 - prepare populates verified captures after smoke PASS and keeps publisher/privacy fields intact
+  ---
+  duration_ms: 19.525977
+  type: 'test'
+  ...
+# Subtest: prepare rejects synthetic or stale screenshot metadata and preserves existing submission data
+ok 526 - prepare rejects synthetic or stale screenshot metadata and preserves existing submission data
+  ---
+  duration_ms: 40.865269
+  type: 'test'
+  ...
+# Subtest: prepare returns a technical failure for broken tests or a package stale relative to current source
+ok 527 - prepare returns a technical failure for broken tests or a package stale relative to current source
+  ---
+  duration_ms: 31.601818
+  type: 'test'
+  ...
+# Subtest: prepare only reuses explicitly requested live-site evidence matching this exact ZIP
+ok 528 - prepare only reuses explicitly requested live-site evidence matching this exact ZIP
+  ---
+  duration_ms: 51.145818
+  type: 'test'
+  ...
+# Subtest: prepare CLI has explicit paths and rejects unknown/incomplete options
+ok 529 - prepare CLI has explicit paths and rejects unknown/incomplete options
+  ---
+  duration_ms: 0.721266
+  type: 'test'
+  ...
+# Subtest: screenshots: locale selects English or Polish explicitly and rejects unsupported languages
+ok 530 - screenshots: locale selects English or Polish explicitly and rejects unsupported languages
+  ---
+  duration_ms: 1.370924
+  type: 'test'
+  ...
+# Subtest: screenshots: missing browser cannot replace existing captures or produce placeholder images
+ok 531 - screenshots: missing browser cannot replace existing captures or produce placeholder images
+  ---
+  duration_ms: 1.327749
+  type: 'test'
+  ...
+# Subtest: screenshots: partial browser startup failure closes the context and preserves prior output atomically
+ok 532 - screenshots: partial browser startup failure closes the context and preserves prior output atomically
+  ---
+  duration_ms: 1.910736
+  type: 'test'
+  ...
+# Subtest: screenshots: an output directory without generator ownership is never overwritten
+ok 533 - screenshots: an output directory without generator ownership is never overwritten
+  ---
+  duration_ms: 0.603519
+  type: 'test'
+  ...
+# Subtest: screenshots: user additions to an owned output directory are not deleted
+ok 534 - screenshots: user additions to an owned output directory are not deleted
+  ---
+  duration_ms: 0.350278
+  type: 'test'
+  ...
+# Subtest: benchmark czeka na gotową ochronę; błąd synchronizacji lub komponentu unieważnia pomiar
+ok 535 - benchmark czeka na gotową ochronę; błąd synchronizacji lub komponentu unieważnia pomiar
+  ---
+  duration_ms: 1.564916
+  type: 'test'
+  ...
+# Subtest: benchmark nie mierzy rozszerzenia po timeout ani bez gotowych komponentów
+ok 536 - benchmark nie mierzy rozszerzenia po timeout ani bez gotowych komponentów
+  ---
+  duration_ms: 0.429216
+  type: 'test'
+  ...
+# Subtest: attributeProfile: natywne wywołania dziedziczą właściciela; powrót do kodu strony zmienia właściciela
+ok 537 - attributeProfile: natywne wywołania dziedziczą właściciela; powrót do kodu strony zmienia właściciela
+  ---
+  duration_ms: 0.808968
+  type: 'test'
+  ...
+# Subtest: fixture: strona bez treści YouTube, z obciążeniem i polami reklam w odpowiedzi
+ok 538 - fixture: strona bez treści YouTube, z obciążeniem i polami reklam w odpowiedzi
+  ---
+  duration_ms: 1.071603
+  type: 'test'
+  ...
+# Subtest: listy zawierają krytyczne filtry YouTube (sanity check)
+ok 539 - listy zawierają krytyczne filtry YouTube (sanity check)
+  ---
+  duration_ms: 0.790871
+  type: 'test'
+  ...
+# Subtest: każdy krytyczny filtr YouTube jest obsługiwany albo jawnie wpisany jako znany brak
+ok 540 - każdy krytyczny filtr YouTube jest obsługiwany albo jawnie wpisany jako znany brak
+  ---
+  duration_ms: 0.123456
+  type: 'test'
+  ...
+# Subtest: baza znanych braków nie zawiera nieaktualnych wpisów
+ok 541 - baza znanych braków nie zawiera nieaktualnych wpisów
+  ---
+  duration_ms: 0.689588
+  type: 'test'
+  ...
+# Subtest: raport zgodności YouTube: supported + partial + unsupported = total
+ok 542 - raport zgodności YouTube: supported + partial + unsupported = total
+  ---
+  duration_ms: 0.251219
+  type: 'test'
+  ...
+# Subtest: wykrywanie nowych braków: nieobsługiwany wariant spoza bazy jest zgłaszany
+ok 543 - wykrywanie nowych braków: nieobsługiwany wariant spoza bazy jest zgłaszany
+  ---
+  duration_ms: 0.320492
+  type: 'test'
+  ...
+# Subtest: które hosty są krytyczne
+ok 544 - które hosty są krytyczne
+  ---
+  duration_ms: 0.230186
+  type: 'test'
+  ...
+# Subtest: baza znanych braków ma poprawny format
+ok 545 - baza znanych braków ma poprawny format
+  ---
+  duration_ms: 0.163186
+  type: 'test'
+  ...
+# Subtest: adSignals: klasa ad-showing i widoczne elementy reklamy
+ok 546 - adSignals: klasa ad-showing i widoczne elementy reklamy
+  ---
+  duration_ms: 2.489818
+  type: 'test'
+  ...
+# Subtest: stan reklamy przez ≥ 3 kolejne sekundy ⇒ AD_VISIBLE_FAILURE z sekundami, sygnałem i startem filmu
+ok 547 - stan reklamy przez ≥ 3 kolejne sekundy ⇒ AD_VISIBLE_FAILURE z sekundami, sygnałem i startem filmu
+  ---
+  duration_ms: 0.591551
+  type: 'test'
+  ...
+# Subtest: reklama bez startu filmu głównego: mainVideoStartedAfter = false
+ok 548 - reklama bez startu filmu głównego: mainVideoStartedAfter = false
+  ---
+  duration_ms: 0.255415
+  type: 'test'
+  ...
+# Subtest: krótka zmiana DOM (< 3 s) nie jest awarią
+ok 549 - krótka zmiana DOM (< 3 s) nie jest awarią
+  ---
+  duration_ms: 0.240141
+  type: 'test'
+  ...
+# Subtest: reklama po seek lub po zmianie filmu nadal powoduje AD_VISIBLE_FAILURE
+ok 550 - reklama po seek lub po zmianie filmu nadal powoduje AD_VISIBLE_FAILURE
+  ---
+  duration_ms: 0.269826
+  type: 'test'
+  ...
+# Subtest: oddzielne krótkie reklamy nie sumują się przez przerwę seek; dowód reklamy nie ginie
+ok 551 - oddzielne krótkie reklamy nie sumują się przez przerwę seek; dowód reklamy nie ginie
+  ---
+  duration_ms: 0.172359
+  type: 'test'
+  ...
+# Subtest: ciągłe dłuższe próbkowanie wykrywa reklamę na granicy początkowego i mid-roll okna
+ok 552 - ciągłe dłuższe próbkowanie wykrywa reklamę na granicy początkowego i mid-roll okna
+  ---
+  duration_ms: 0.833134
+  type: 'test'
+  ...
+# Subtest: brak reklamy i brak dowodu ⇒ INCONCLUSIVE — no ad opportunity observed (nie „zablokowano”)
+ok 553 - brak reklamy i brak dowodu ⇒ INCONCLUSIVE — no ad opportunity observed (nie „zablokowano”)
+  ---
+  duration_ms: 0.151368
+  type: 'test'
+  ...
+# Subtest: surowa odpowiedź z reklamami, widoczna bez reklam, brak stanu reklamy ⇒ AD_BLOCKING_OBSERVED
+ok 554 - surowa odpowiedź z reklamami, widoczna bez reklam, brak stanu reklamy ⇒ AD_BLOCKING_OBSERVED
+  ---
+  duration_ms: 0.250457
+  type: 'test'
+  ...
+# Subtest: dane reklam pozostały w odpowiedzi widocznej dla strony ⇒ ostrzeżenie, nie AD_BLOCKING_OBSERVED
+ok 555 - dane reklam pozostały w odpowiedzi widocznej dla strony ⇒ ostrzeżenie, nie AD_BLOCKING_OBSERVED
+  ---
+  duration_ms: 0.220131
+  type: 'test'
+  ...
+# Subtest: progressOf: ignoruje skoki (seek) i cofnięcia
+ok 556 - progressOf: ignoruje skoki (seek) i cofnięcia
+  ---
+  duration_ms: 0.190707
+  type: 'test'
+  ...
+# Subtest: analyzePlayback: prawdziwe odtwarzanie ⇒ ok
+ok 557 - analyzePlayback: prawdziwe odtwarzanie ⇒ ok
+  ---
+  duration_ms: 0.147321
+  type: 'test'
+  ...
+# Subtest: PLAYER_FAILURE: brak video, brak postępu, spinner, trwały błąd, anti-adblock
+ok 558 - PLAYER_FAILURE: brak video, brak postępu, spinner, trwały błąd, anti-adblock
+  ---
+  duration_ms: 0.480423
+  type: 'test'
+  ...
+# Subtest: analyzePlayback: próbki reklamy nie liczą się do postępu filmu głównego
+ok 559 - analyzePlayback: próbki reklamy nie liczą się do postępu filmu głównego
+  ---
+  duration_ms: 0.080732
+  type: 'test'
+  ...
+# Subtest: nieudany seek lub następny film ⇒ PLAYER_FAILURE
+ok 560 - nieudany seek lub następny film ⇒ PLAYER_FAILURE
+  ---
+  duration_ms: 0.186892
+  type: 'test'
+  ...
+# Subtest: AD_VISIBLE_FAILURE ma pierwszeństwo przed PLAYER_FAILURE
+ok 561 - AD_VISIBLE_FAILURE ma pierwszeństwo przed PLAYER_FAILURE
+  ---
+  duration_ms: 0.278409
+  type: 'test'
+  ...
+# Subtest: metadane reklam: yes/no/unknown
+ok 562 - metadane reklam: yes/no/unknown
+  ---
+  duration_ms: 0.557459
+  type: 'test'
+  ...
+# Subtest: summarize: liczniki PASS/FAIL/SKIP/INCONCLUSIVE i flagi reklamy/anti-adblock
+ok 563 - summarize: liczniki PASS/FAIL/SKIP/INCONCLUSIVE i flagi reklamy/anti-adblock
+  ---
+  duration_ms: 0.22591
+  type: 'test'
+  ...
+# Subtest: watch A → watch B (identyczny stan odtwarzacza): stary raport usunięty, przychodzi świeży raport B
+ok 564 - watch A → watch B (identyczny stan odtwarzacza): stary raport usunięty, przychodzi świeży raport B
+  ---
+  duration_ms: 57.350808
+  type: 'test'
+  ...
+# Subtest: watch → Shorts i Shorts → watch: prośba o raport i nowy raport z właściwym typem strony
+ok 565 - watch → Shorts i Shorts → watch: prośba o raport i nowy raport z właściwym typem strony
+  ---
+  duration_ms: 55.276236
+  type: 'test'
+  ...
+# Subtest: raport innej karty pozostaje; prośba trafia tylko do karty, która zmieniła adres
+ok 566 - raport innej karty pozostaje; prośba trafia tylko do karty, która zmieniła adres
+  ---
+  duration_ms: 31.702851
+  type: 'test'
+  ...
+# Subtest: zwykła strona nie dostaje prośby o raport YouTube; zdarzenia bez url też nie
+ok 567 - zwykła strona nie dostaje prośby o raport YouTube; zdarzenia bez url też nie
+  ---
+  duration_ms: 93.976129
+  type: 'test'
+  ...
+# Subtest: brak skryptu treści: odrzucona obietnica i wyjątek sendMessage są ignorowane
+ok 568 - brak skryptu treści: odrzucona obietnica i wyjątek sendMessage są ignorowane
+  ---
+  duration_ms: 86.941171
+  type: 'test'
+  ...
+# Subtest: youtube/health.js: prośba o raport wysyła aktualny stan ponownie, nawet bez zmiany stanu
+ok 569 - youtube/health.js: prośba o raport wysyła aktualny stan ponownie, nawet bez zmiany stanu
+  ---
+  duration_ms: 1.821011
+  type: 'test'
+  ...
+# Subtest: youtube/health.js: niewidoczna karta nie raportuje także po prośbie (bez zmian zachowania)
+ok 570 - youtube/health.js: niewidoczna karta nie raportuje także po prośbie (bez zmian zachowania)
+  ---
+  duration_ms: 0.649267
+  type: 'test'
+  ...
+# Subtest: heartbeat zachowuje stabilny raport ponad TTL i odtwarza go po restarcie workera
+ok 571 - heartbeat zachowuje stabilny raport ponad TTL i odtwarza go po restarcie workera
+  ---
+  duration_ms: 1.760861
+  type: 'test'
+  ...
+# Subtest: po ukryciu dłuższym niż TTL widoczna karta natychmiast odnawia raport
+ok 572 - po ukryciu dłuższym niż TTL widoczna karta natychmiast odnawia raport
+  ---
+  duration_ms: 0.713654
+  type: 'test'
+  ...
+# Subtest: watch A → watch B resetuje okres uruchamiania także przy tej samej ścieżce
+ok 573 - watch A → watch B resetuje okres uruchamiania także przy tej samej ścieżce
+  ---
+  duration_ms: 0.642848
+  type: 'test'
+  ...
+# Subtest: odrzucony raport jest ponawiany przy kolejnym ticku zamiast czekać na zmianę stanu
+ok 574 - odrzucony raport jest ponawiany przy kolejnym ticku zamiast czekać na zmianę stanu
+  ---
+  duration_ms: 0.774837
+  type: 'test'
+  ...
+# Subtest: rodzaj strony: watch, shorts, embed, live; inne → brak odtwarzacza
+ok 575 - rodzaj strony: watch, shorts, embed, live; inne → brak odtwarzacza
+  ---
+  duration_ms: 1.171604
+  type: 'test'
+  ...
+# Subtest: healthy: video gotowe lub odtwarzanie postępuje
+ok 576 - healthy: video gotowe lub odtwarzanie postępuje
+  ---
+  duration_ms: 0.400313
+  type: 'test'
+  ...
+# Subtest: error: błąd elementu video albo widoczny komunikat błędu odtwarzacza
+ok 577 - error: błąd elementu video albo widoczny komunikat błędu odtwarzacza
+  ---
+  duration_ms: 0.174362
+  type: 'test'
+  ...
+# Subtest: degraded: długi spinner, brak movie_player, odtwarzacz bez video
+ok 578 - degraded: długi spinner, brak movie_player, odtwarzacz bez video
+  ---
+  duration_ms: 0.244108
+  type: 'test'
+  ...
+# Subtest: unknown: brak odtwarzacza na stronie, trwa ładowanie, osadzony odtwarzacz przed kliknięciem
+ok 579 - unknown: brak odtwarzacza na stronie, trwa ładowanie, osadzony odtwarzacz przed kliknięciem
+  ---
+  duration_ms: 0.120461
+  type: 'test'
+  ...
+# Subtest: YouTube Protection: wszystko działa → ok
+ok 580 - YouTube Protection: wszystko działa → ok
+  ---
+  duration_ms: 0.494304
+  type: 'test'
+  ...
+# Subtest: YouTube Protection: znane braki → warning; brak rejestracji scriptletów → error
+ok 581 - YouTube Protection: znane braki → warning; brak rejestracji scriptletów → error
+  ---
+  duration_ms: 0.278209
+  type: 'test'
+  ...
+# Subtest: YouTube Protection: lista Reklamy wyłączona → error; ochrona wyłączona na stronie → disabled
+ok 582 - YouTube Protection: lista Reklamy wyłączona → error; ochrona wyłączona na stronie → disabled
+  ---
+  duration_ms: 0.132719
+  type: 'test'
+  ...
+# Subtest: YouTube Protection: problem odtwarzacza obniża status do warning
+ok 583 - YouTube Protection: problem odtwarzacza obniża status do warning
+  ---
+  duration_ms: 0.320182
+  type: 'test'
+  ...
+# Subtest: wzorce plików scriptletów obejmujące YouTube
+ok 584 - wzorce plików scriptletów obejmujące YouTube
+  ---
+  duration_ms: 3.331936
+  type: 'test'
+  ...
+# Subtest: regresja (prawdziwy Chromium): w trakcie synchronizacji brakujące scriptlety → WARNING, nie ERROR
+ok 585 - regresja (prawdziwy Chromium): w trakcie synchronizacji brakujące scriptlety → WARNING, nie ERROR
+  ---
+  duration_ms: 0.331399
+  type: 'test'
+  ...
+# Subtest: TTL domyślnie ok. 60 s
+ok 586 - TTL domyślnie ok. 60 s
+  ---
+  duration_ms: 1.087727
+  type: 'test'
+  ...
+# Subtest: raport zawiera tabId, frameId, top/frame, typ strony, status, powody i czas
+ok 587 - raport zawiera tabId, frameId, top/frame, typ strony, status, powody i czas
+  ---
+  duration_ms: 1.713169
+  type: 'test'
+  ...
+# Subtest: top healthy + iframe unknown ⇒ healthy
+ok 588 - top healthy + iframe unknown ⇒ healthy
+  ---
+  duration_ms: 0.253311
+  type: 'test'
+  ...
+# Subtest: top healthy + iframe degraded ⇒ healthy (iframe nie nadpisuje top)
+ok 589 - top healthy + iframe degraded ⇒ healthy (iframe nie nadpisuje top)
+  ---
+  duration_ms: 0.19301
+  type: 'test'
+  ...
+# Subtest: top error + iframe healthy ⇒ error
+ok 590 - top error + iframe healthy ⇒ error
+  ---
+  duration_ms: 0.190847
+  type: 'test'
+  ...
+# Subtest: brak top + embed healthy ⇒ healthy (raport z iframe)
+ok 591 - brak top + embed healthy ⇒ healthy (raport z iframe)
+  ---
+  duration_ms: 0.187322
+  type: 'test'
+  ...
+# Subtest: brak top, kilka odtwarzaczy w iframe ⇒ najpoważniejszy stan
+ok 592 - brak top, kilka odtwarzaczy w iframe ⇒ najpoważniejszy stan
+  ---
+  duration_ms: 0.149174
+  type: 'test'
+  ...
+# Subtest: raport starszy niż TTL ⇒ ignorowany i usuwany
+ok 593 - raport starszy niż TTL ⇒ ignorowany i usuwany
+  ---
+  duration_ms: 0.170016
+  type: 'test'
+  ...
+# Subtest: przeterminowany top nie blokuje świeżego iframe
+ok 594 - przeterminowany top nie blokuje świeżego iframe
+  ---
+  duration_ms: 0.221142
+  type: 'test'
+  ...
+# Subtest: nawigacja ramki głównej ⇒ poprzedni raport usunięty
+ok 595 - nawigacja ramki głównej ⇒ poprzedni raport usunięty
+  ---
+  duration_ms: 0.254423
+  type: 'test'
+  ...
+# Subtest: zamknięcie karty ⇒ raporty karty usunięte
+ok 596 - zamknięcie karty ⇒ raporty karty usunięte
+  ---
+  duration_ms: 0.158498
+  type: 'test'
+  ...
+# Subtest: latest(): najświeższy stan zagregowany spośród kart
+ok 597 - latest(): najświeższy stan zagregowany spośród kart
+  ---
+  duration_ms: 0.123876
+  type: 'test'
+  ...
+1..597
+# tests 597
+# suites 0
+# pass 577
+# fail 0
+# cancelled 0
+# skipped 20
+# todo 0
+# duration_ms 13201.117652
+not all tests passed; 20 tests skipped
+
+━━ Chromium smoke test ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SKIP: Chromium smoke test unavailable (Chromium nie jest zainstalowany (npx playwright install chromium))
+
+━━ Wynik ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✗ Niepowodzenie: tests, chromium-smoke-required
