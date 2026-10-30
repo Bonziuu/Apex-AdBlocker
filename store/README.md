@@ -76,7 +76,7 @@ PROSTA OBSŁUGA
 • Własne filtry w składni uBlock Origin / Adblock Plus
 • Kopia zapasowa i przywracanie ustawień
 
-PRYWATNOŚĆ OD PODSTAW
+PRYWATNOŚĆ PRZEDE WSZYSTKIM
 Apex AdBlocker działa w całości w Twojej przeglądarce. Nie ma serwera, nie wysyła danych i nie zawiera zdalnego kodu. Ustawienia i diagnostyka są przechowywane wyłącznie lokalnie.
 
 Listy filtrów: EasyList, EasyPrivacy, uBlock filters i Polskie Filtry Reklamowe, na warunkach ich licencji.
