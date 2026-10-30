@@ -1,19 +1,22 @@
 // Apex AdBlocker – raport diagnostyczny do skopiowania (opcje → Diagnostyka).
 //
-// Raport jest budowany lokalnie i NIGDZIE nie jest wysyłany. Celowo NIE zawiera:
-// adresów stron, historii, identyfikatorów filmów, ciasteczek, tokenów, loginów,
-// danych konta ani treści stron. Każdy tekst przechodzi przez sanitizeText().
+// Raport jest budowany lokalnie i nie jest automatycznie wysyłany.
+// Dobieramy ograniczone pola i usuwamy rozpoznane dane z tekstów. To mechanizm
+// best-effort: przed ręcznym udostępnieniem użytkownik powinien przejrzeć raport.
 
 const URL_RE = /\b(?:https?|wss?|ftp|chrome-extension|file):\/\/[^\s"'<>]+/gi;
-const QUERY_SECRET_RE = /([?&;\s]|^)(v|list|token|access_token|id_token|key|api_key|apikey|auth|authorization|sid|ssid|session|sessionid|code|password|pass|pwd|email|user|login)=([^&\s;"']+)/gi;
+const QUERY_SECRET_RE = /([?&;\s]|^)(v|video|video_id|videoid|list|token|access_token|id_token|key|api_key|apikey|auth|authorization|sid|ssid|session|sessionid|code|password|pass|pwd|email|user|login)=([^&\s;"']+)/gi;
 const COOKIE_PAIR_RE = /\b(cookie|set-cookie)\s*[:=]\s*[^\n]*/gi;
 const BEARER_RE = /\bbearer\s+[A-Za-z0-9._\-~+/]+=*/gi;
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
 const VIDEO_PATH_RE = /(\/(?:watch\/|shorts\/|embed\/|live\/|v\/)|youtu\.be\/)[A-Za-z0-9_-]{6,}/gi;
 const HOST_RE = /\b(?:[a-z0-9-]+\.)+(?:com|net|org|pl|io|tv|de|uk|eu|info|biz|co|me|ru|fr|it|es|nl|be|cz|sk|xyz|app|dev|be|ch|at|us|ca|jp|br)\b/gi;
+// Contextual host matching also covers new TLDs without mistaking API names
+// such as chrome.storage.local and source files for browsing domains.
+const NAMED_HOST_RE = /(\b(?:on|host|hostname|domain)\s*[:=]?\s+)(?:[a-z0-9-]+\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{2,59})\b/gi;
 const LONG_TOKEN_RE = /\b[A-Za-z0-9_\-+/]{32,}={0,2}/g;
 
-/** Usuwa z tekstu wszystko, co może identyfikować użytkownika lub odwiedzane strony. */
+/** Usuwa rozpoznane adresy i sekrety; nie gwarantuje wykrycia wszystkich danych. */
 export function sanitizeText(value) {
   return String(value ?? '')
     .replace(URL_RE, '[url]')
@@ -22,6 +25,7 @@ export function sanitizeText(value) {
     .replace(QUERY_SECRET_RE, (m, pre, k) => `${pre}${k}=[redacted]`)
     .replace(EMAIL_RE, '[email]')
     .replace(VIDEO_PATH_RE, '$1[video]')
+    .replace(NAMED_HOST_RE, '$1[host]')
     .replace(HOST_RE, '[host]')
     .replace(LONG_TOKEN_RE, '[token]')
     .slice(0, 300);

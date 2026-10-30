@@ -126,9 +126,10 @@ function vPropsToMatch(v) {
   if (v === undefined || v === '') return null;
   for (const needle of String(v).split(/\s+/)) {
     if (!needle) continue;
-    const parts = needle.split(':');
-    let pattern = parts.length > 1 ? parts[1] : needle;
-    if (parts.length > 1 && /[^$\w -]/.test(parts[0])) pattern = needle;
+    const separator = needle.indexOf(':');
+    const prop = separator === -1 ? needle : needle.slice(0, separator);
+    let pattern = separator === -1 ? needle : needle.slice(separator + 1);
+    if (separator !== -1 && /[^$\w -]/.test(prop)) pattern = needle;
     const err = badPattern(pattern, { negatable: true });
     if (err) return err;
   }

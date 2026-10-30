@@ -1,11 +1,11 @@
 // Apex AdBlocker – zrzuty do Chrome Web Store: lokalny serwer strony demo, Chrome z rozszerzeniem
-// (albo bez) i proste API DevTools. Domeny reklam i strona demo trafiają przez --host-resolver-rules
-// na lokalny serwer (adresy bez portu, więc reguły filtrów działają jak na prawdziwych stronach).
+// (albo bez) i API DevTools. Odpowiedzi demonstracyjne są lokalnie podstawiane przez
+// Playwright; żaden serwer reklamowy nie jest odwiedzany i żadne API rozszerzenia nie jest mockowane.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
-import { spawn } from 'node:child_process';
+import { loadPlaywright, COMPONENTS, SYNC_STEPS } from '../../tools/chromium-smoke.mjs';
 
 const AD_HOSTS = ['pagead2.googlesyndication.com', 'securepubads.g.doubleclick.net', 'www.googletagservices.com', 'static.criteo.net', 'www.google-analytics.com', 'connect.facebook.net', 'cdn.taboola.com'];
 export const DEMO_HOST = 'dailynews.example';
@@ -63,72 +63,93 @@ export function startServer(port = PORT) {
   return new Promise((r) => server.listen(port, '127.0.0.1', () => r(server)));
 }
 
-// ── Chrome + CDP ──────────────────────────────────────────────────────────────
+// ── Playwright + CDP: also works on the supported Node 20 runtime. ──────────
 export async function launch({ ext = null, lang = 'en', width = 1280, height = 800 } = {}) {
+  const chromium = await loadPlaywright();
+  if (!chromium || !fs.existsSync(chromium.executablePath())) {
+    const error = new Error('Chromium Playwright is unavailable; install it before capturing genuine extension images.');
+    error.code = 'BROWSER_UNAVAILABLE';
+    throw error;
+  }
   const prof = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-shot-'));
-  const args = ['--headless=new', ...(process.getuid && process.getuid() === 0 ? ['--no-sandbox'] : []), '--no-first-run', '--no-proxy-server', '--hide-scrollbars', `--user-data-dir=${prof}`,
-    '--remote-debugging-port=0', `--lang=${lang}`, `--window-size=${width},${height}`, '--disable-features=HttpsUpgrades,HttpsFirstBalancedModeAutoEnable',
-    `--host-resolver-rules=${[DEMO_HOST, ...AD_HOSTS].map((h) => `MAP ${h} 127.0.0.1:${PORT}`).join(', ')}`];
-  if (ext) args.push(`--load-extension=${ext}`, `--disable-extensions-except=${ext}`);
-  else args.push('--disable-extensions');
-  const proc = spawn(chromePath(), [...args, 'about:blank'], { stdio: 'ignore', env: { ...process.env, LANGUAGE: lang, LANG: lang === 'pl' ? 'pl_PL.UTF-8' : 'en_US.UTF-8' } });
-  let port;
-  for (let i = 0; i < 150 && !port; i++) { await sleep(100); try { port = fs.readFileSync(path.join(prof, 'DevToolsActivePort'), 'utf8').split('\n')[0]; } catch { /* */ } }
-  const json = async (p = '') => (await fetch(`http://127.0.0.1:${port}/json${p}`)).json();
-  const version = await json('/version');
-  const browser = await connect(version.webSocketDebuggerUrl);
-  let id = null;
-  if (ext) {
-    for (let i = 0; i < 100 && !id; i++) {
-      await sleep(200);
-      for (const t of (await json()).filter((x) => x.type === 'service_worker' && x.url.endsWith('/background.js'))) {
-        const c = await connect(t.webSocketDebuggerUrl);
-        const r = await c.send('Runtime.evaluate', { expression: 'chrome.runtime.getManifest().name', returnByValue: true }).catch(() => null);
-        c.close();
-        if (r && r.result && r.result.value === 'Apex AdBlocker') { id = new URL(t.url).host; break; }
+  let context;
+  try {
+    context = await chromium.launchPersistentContext(prof, {
+      headless: true, channel: 'chromium', locale: lang, viewport: { width, height },
+      args: [
+        '--no-first-run', '--hide-scrollbars', '--disable-component-update',
+        '--disable-background-networking', '--disable-sync',
+        ...(ext ? [`--load-extension=${ext}`, `--disable-extensions-except=${ext}`] : ['--disable-extensions']),
+      ],
+    });
+    // Fulfil only the controlled demo. No external website is contacted.
+    await context.route(/^(?:https?|wss?):/, async (route) => {
+      const url = new URL(route.request().url());
+      if (url.protocol !== 'http:') return route.abort();
+      if (url.hostname === DEMO_HOST) return route.fulfill({
+        contentType: 'text/html; charset=utf-8', body: demoPage(url.searchParams.get('lang') || lang),
+      });
+      if (!AD_HOSTS.includes(url.hostname)) return route.abort();
+      return route.fulfill({ contentType: 'text/javascript', body:
+        url.pathname.includes('adsbygoogle') ? ADS_JS : url.pathname.includes('loader.js') ? POPUP_AD_JS : TRACK_JS });
+    });
+    const browser = await context.browser().newBrowserCDPSession();
+    let id = null;
+    if (ext) {
+      let worker = context.serviceWorkers().find(w => w.url().endsWith('/background.js'));
+      if (!worker) worker = await context.waitForEvent('serviceworker', { predicate: w => w.url().endsWith('/background.js'), timeout: 30_000 });
+      if (await worker.evaluate(() => chrome.runtime.getManifest().name) !== 'Apex AdBlocker') throw new Error('Unexpected extension service worker');
+      id = new URL(worker.url()).host;
+      const check = await context.newPage();
+      await check.goto('chrome://extensions');
+      const loaded = await check.evaluate(async (extensionId) => {
+        const e = (await chrome.developerPrivate.getExtensionsInfo()).find(item => item.id === extensionId);
+        return e && { state: e.state, errors: [...(e.manifestErrors || []), ...(e.runtimeErrors || [])].map(error => error.message) };
+      }, id);
+      if (!loaded || loaded.state !== 'ENABLED' || loaded.errors.length) throw new Error('Chromium did not accept the actual extension without errors');
+      await check.goto(`chrome-extension://${id}/options/options.html`);
+      let ready = false;
+      const deadline = Date.now() + 180_000;
+      while (Date.now() < deadline) {
+        const health = await check.evaluate(() => chrome.runtime.sendMessage({ type: 'health:get' }));
+        if (SYNC_STEPS.some(step => health.sync?.[step]?.status === 'error')
+          || COMPONENTS.some(component => health.components?.[component]?.status === 'error')) throw new Error('Extension health reports an error');
+        if (SYNC_STEPS.every(step => health.sync?.[step]?.status === 'ok')) { ready = true; break; }
+        await sleep(250);
       }
+      if (!ready) throw new Error('Extension synchronization did not finish');
+      await check.close();
     }
-    await sleep(3000); // reguły DNR
+    async function newPage(url, { w = width, h = height, scale = 1 } = {}) {
+      const actual = await context.newPage();
+      const session = await context.newCDPSession(actual);
+      const events = [];
+      for (const method of ['Network.loadingFailed', 'Network.requestWillBeSent']) session.on(method, params => events.push({ method, params }));
+      await session.send('Page.enable');
+      await session.send('Runtime.enable');
+      await session.send('Emulation.setDeviceMetricsOverride', { width:w, height:h, deviceScaleFactor:scale, mobile:false });
+      const { targetInfo } = await session.send('Target.getTargetInfo');
+      const page = {
+        targetId: targetInfo.targetId, events, send: (method, params = {}) => session.send(method, params),
+        goto: async (u, wait = 1500) => { await actual.goto(u); await sleep(wait); },
+        eval: async expression => {
+          const result = await session.send('Runtime.evaluate', { expression, awaitPromise:true, returnByValue:true });
+          if (result.exceptionDetails) throw new Error(JSON.stringify(result.exceptionDetails).slice(0,400));
+          return result.result.value;
+        },
+        shot: async clip => Buffer.from((await session.send('Page.captureScreenshot', { format:'png', ...(clip ? { clip:{...clip, scale:1} } : {}) })).data, 'base64'),
+      };
+      if (url) await page.goto(url);
+      return page;
+    }
+    return { id, newPage, browser, close: async () => {
+      try { await context.close(); } finally { fs.rmSync(prof, { recursive:true,force:true }); }
+    } };
+  } catch (error) {
+    await context?.close().catch(() => {});
+    fs.rmSync(prof, { recursive:true,force:true });
+    throw error;
   }
-  async function newPage(url, { w = width, h = height, scale = 1 } = {}) {
-    const { targetId } = await browser.send('Target.createTarget', { url: 'about:blank' });
-    const t = (await json()).find((x) => x.id === targetId);
-    const page = await connect(t.webSocketDebuggerUrl);
-    page.targetId = targetId;
-    await page.send('Page.enable');
-    await page.send('Runtime.enable');
-    await page.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: scale, mobile: false });
-    page.goto = async (u, wait = 1500) => { await page.send('Page.navigate', { url: u }); await sleep(wait); };
-    page.eval = async (expr) => { const r = await page.send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true }); if (r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails).slice(0, 400)); return r.result.value; };
-    page.shot = async (clip) => Buffer.from((await page.send('Page.captureScreenshot', { format: 'png', ...(clip ? { clip: { ...clip, scale: 1 } } : {}) })).data, 'base64');
-    if (url) await page.goto(url);
-    return page;
-  }
-  async function close() { try { browser.close(); } catch { /* */ } proc.kill(); }
-  return { id, newPage, close, json, browser };
-}
-
-/** Ścieżka do Chrome: APEX_CHROME, potem typowe lokalizacje. */
-export function chromePath() {
-  const list = [process.env.APEX_CHROME, '/opt/google/chrome/chrome', '/usr/bin/google-chrome', '/usr/bin/chromium',
-    'C:/Program Files/Google/Chrome/Application/chrome.exe', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'].filter(Boolean);
-  const found = list.find((p) => fs.existsSync(p));
-  if (!found) throw new Error('Nie znaleziono Chrome – ustaw zmienną APEX_CHROME');
-  return found;
 }
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-async function connect(url) {
-  const ws = new WebSocket(url);
-  await new Promise((r, j) => { ws.addEventListener('open', r, { once: true }); ws.addEventListener('error', j, { once: true }); });
-  let seq = 0;
-  const pend = new Map();
-  const events = [];
-  ws.addEventListener('message', (e) => { const d = JSON.parse(e.data); if (!d.id && d.method) events.push(d); if (d.id && pend.has(d.id)) { const [res, rej] = pend.get(d.id); pend.delete(d.id); d.error ? rej(new Error(d.error.message)) : res(d.result); } });
-  return {
-    send: (method, params = {}) => new Promise((res, rej) => { const i = ++seq; pend.set(i, [res, rej]); ws.send(JSON.stringify({ id: i, method, params })); }),
-    close: () => ws.close(),
-    events,
-  };
-}

@@ -41,6 +41,27 @@ test('resource types: $script,third-party', () => {
   assert.deepEqual(neg.condition.excludedResourceTypes.sort(), ['image', 'main_frame', 'script']);
 });
 
+test('strict party options are rejected instead of changing ordinary party scope', () => {
+  for (const option of ['strict1p', 'strict3p', 'strict-first-party', 'strict-third-party', '~strict1p', '~strict3p']) {
+    assert.equal(net(`||cdn.example.com^$script,${option}`), null, option);
+  }
+  assert.equal(net('||cdn.example.com^$script,1p,strict3p'), null, 'must not overwrite 1p with ordinary thirdParty');
+  assert.equal(net('||cdn.example.com^$script,strict3p,1p'), null, 'option ordering cannot broaden the filter');
+  assert.equal(net('||cdn.example.com^$script,1p').rule.condition.domainType, 'firstParty');
+});
+
+test('$to intersects optimized host patterns and keeps exclusions', () => {
+  assert.deepEqual(net('||example.com^$to=sub.example.com').rule.condition.requestDomains, ['sub.example.com']);
+  assert.deepEqual(net('||cdn.example.com^$to=example.com').rule.condition.requestDomains, ['cdn.example.com']);
+  const r = net('||example.com^$script,to=a.example.com|b.example.com|other.test|~safe.a.example.com').rule;
+  assert.deepEqual(r.condition.requestDomains, ['a.example.com', 'b.example.com']);
+  assert.deepEqual(r.condition.excludedRequestDomains, ['safe.a.example.com']);
+  assert.deepEqual(r.condition.resourceTypes, ['script']);
+  assert.equal(net('||example.com^$to=other.test'), null, 'disjoint domains cannot become an unrestricted host rule');
+  assert.equal(net('@@||example.com^$to=other.test'), null, 'disjoint allow rules cannot disable protection on the host');
+  assert.deepEqual(net('||example.com^$to=~safe.example.com').rule.condition.excludedRequestDomains, ['safe.example.com']);
+});
+
 test('important: priorytet wyższy niż allow', () => {
   const hit = findLine(/^\|\|[^$]+\$.*\bimportant\b/);
   const r = net(hit.line).rule;
@@ -96,6 +117,17 @@ test('cosmetic: encje "google.*" zostają encjami (dopasowanie w czasie działan
 
 test('cosmetic: wyjątek #@#', () => {
   assert.deepEqual(cos('example.com#@#.ad-box'), { type: 'unhide', include: ['example.com'], selector: '.ad-box' });
+});
+
+test('cosmetic: negative-domain exceptions are rejected instead of widening their scope', () => {
+  for (const filter of [
+    '~safe.example#@#.ad',
+    'example.com,~safe.example.com#@#.ad',
+    '~safe.example#@#+js(set, marker, true)',
+    'example.com,~safe.example.com#@#+js(set, marker, true)',
+    'example.com,~safe.example.com#@#+js()',
+  ]) assert.equal(cos(filter, true), null, filter);
+  assert.deepEqual(cos('#@#.ad'), { type: 'unhide', include: [], selector: '.ad' });
 });
 
 test('cosmetic: listy selektorów rozdzielane po przecinkach najwyższego poziomu', () => {

@@ -4,6 +4,7 @@
 // poza standardowym URL.
 
 import { analyzeScriptlet, canonicalScriptletName, splitScriptletArgs } from './scriptlet-specs.js';
+import { hostKeys as entityHostKeys } from './entity-hosts-module.js';
 
 export const PRIORITY = {
   block: 1,
@@ -384,10 +385,15 @@ export function parseNetworkFilter(text, { trusted = false } = {}) {
       case 'popup':
         popupOnly = true;
         break;
-      case 'third-party': case '3p': case 'strict3p': case 'strict-third-party':
+      // Strict party options compare exact hostnames in uBO. DNR domainType
+      // compares registrable domains, so treating them as aliases changes scope.
+      case 'strict3p': case 'strict-third-party':
+      case 'strict1p': case 'strict-first-party':
+        return null;
+      case 'third-party': case '3p':
         domainType = neg ? 'firstParty' : 'thirdParty';
         break;
-      case 'first-party': case '1p': case 'strict1p': case 'strict-first-party':
+      case 'first-party': case '1p':
         domainType = neg ? 'thirdParty' : 'firstParty';
         break;
       case 'domain': case 'from':
@@ -501,7 +507,17 @@ export function parseNetworkFilter(text, { trusted = false } = {}) {
   if (request) {
     if (request.include.length) {
       if (condition.requestDomains) {
-        // przecięcie – rzadkie, upraszczamy: zostaw domenę z wzorca
+        // Both domain conditions include subdomains. Their intersection is the
+        // more specific domain for every overlapping pair, never their union.
+        const intersection = new Set();
+        for (const patternHost of condition.requestDomains) {
+          for (const requestedHost of request.include) {
+            if (patternHost === requestedHost || patternHost.endsWith('.' + requestedHost)) intersection.add(patternHost);
+            else if (requestedHost.endsWith('.' + patternHost)) intersection.add(requestedHost);
+          }
+        }
+        if (!intersection.size) return null;
+        condition.requestDomains = [...intersection];
       } else condition.requestDomains = request.include;
     }
     if (request.exclude.length) condition.excludedRequestDomains = request.exclude;
@@ -776,6 +792,9 @@ export function parseCosmeticFilter(c, opts = {}) {
   // Fail closed: "a.com>>,~b.com##x" nie może stać się filtrem ogólnym "~b.com##x".
   if (lostAllPositiveDomains(domainList)) return null;
   const isException = sep.includes('@');
+  // The exception data format has no negative-domain scope. Accepting one
+  // would silently broaden an exception to an included parent or to all sites.
+  if (isException && exclude.length) return null;
   const isExtended = sep.includes('?');
   if (sep.includes('$') || sep.includes('%')) return null; // ABP snippets / AdGuard CSS-JS
   const b = body.trim();
@@ -796,7 +815,7 @@ export function parseCosmeticFilter(c, opts = {}) {
     const rawName = parts[0];
     const args = parts.slice(1);
     if (!include.length) {
-      // Ogólne scriptlety (bez domeny) nie są wykonywane przez Apex AdBlocker.
+      // Ogólne scriptlety (bez domeny) nie są wykonywane przez ApexAdBlocker.
       return { type: 'scriptlet-rejected', include, exclude, rawName, args,
         support: { status: 'unsupported', name: rawName, canonical: canonicalScriptletName(rawName), reason: 'scriptlet ogólny (bez domeny) nie jest obsługiwany' } };
     }
@@ -852,13 +871,5 @@ export function scriptletKey(call) {
  * oraz formy encji ("example.*" pasuje do example.com, example.pl, example.co.uk...).
  */
 export function hostKeys(hostname) {
-  const labels = hostname.split('.');
-  const out = [];
-  for (let i = 0; i < labels.length; i++) {
-    const suffix = labels.slice(i);
-    out.push(suffix.join('.'));
-    if (suffix.length >= 2) out.push(suffix.slice(0, -1).join('.') + '.*');
-    if (suffix.length >= 3) out.push(suffix.slice(0, -2).join('.') + '.*');
-  }
-  return out;
+  return entityHostKeys(hostname);
 }

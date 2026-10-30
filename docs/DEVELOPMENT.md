@@ -26,13 +26,13 @@ Projekt ma automatyczny pipeline GitHub Actions oraz testy uruchamiane w Node.js
 
 ```bash
 npm test
-npm run check
+npm run check -- --require-browser
 npm run package:dev
 npm run package:release
 npm run package:store
 ```
 
-`npm run check` sprawdza m.in. aktualność wygenerowanych artefaktów, zgodność krytycznych filtrów YouTube, audyt scriptletów, testy oraz smoke test rozszerzenia w Chromium.
+`npm run check -- --require-browser` sprawdza aktualność artefaktów, zgodność krytycznych filtrów YouTube, audyt scriptletów, komplet testów bez SKIP/TODO i smoke test rozszerzenia w Chromium. Zwykły `npm run check` dopuszcza brak przeglądarki, ale oznacza walidację jako niekompletną.
 
 `npm run package:release` tworzy paczkę dla użytkownika z plikiem `START-HERE.txt`, wersjonowanym ZIP-em, stałą kopią `Apex-AdBlocker.zip` i sumami SHA-256.
 
@@ -50,7 +50,7 @@ Dodatkowe materiały:
 
 Apex AdBlocker nie ma telemetrii, analityki, kont ani własnego backendu. Ustawienia i diagnostyka są przechowywane lokalnie. Rozszerzenie nie pobiera ani nie wykonuje zdalnego kodu.
 
-Raport diagnostyczny jest sanityzowany i nie powinien zawierać historii, pełnych URL-i, identyfikatorów filmów, cookies, tokenów ani danych logowania.
+Raport diagnostyczny pomija surowe dane stron i usuwa rozpoznane adresy, identyfikatory oraz sekrety. Sanityzacja jest heurystyczna; przed ręcznym udostępnieniem należy przejrzeć raport. Opcjonalne lokalne pomiary mogą zawierać domenę i identyfikator ramki.
 
 Pełna polityka prywatności (EN/PL): [PRIVACY.md](../PRIVACY.md).
 
@@ -79,7 +79,7 @@ Wymagany Node.js 20+.
 ```bash
 git clone https://github.com/Bonziuu/Apex-AdBlocker.git
 cd Apex-AdBlocker
-npm install
+npm ci
 npm test
 npm run check
 npm run audit:scriptlets
@@ -100,8 +100,8 @@ Apex AdBlocker jest projektem niezależnym i nie jest powiązany z Google, uBloc
 | Workflow | Kiedy | Co robi |
 |---|---|---|
 | `ci.yml` | każdy push i PR | testy, `npm run check`, paczka do Chrome Web Store jako artefakt |
-| `update-lists.yml` | co poniedziałek (i ręcznie: Actions → *Aktualizacja list filtrów* → *Run workflow*) | pobiera listy, buduje reguły, `npm run check`, otwiera PR `auto/update-lists` do akceptacji (szkic, gdy kontrola nie przeszła) |
-| `release.yml` | tag `vX.Y.Z` | sprawdza zgodność z `manifest.json`, `npm run check`, buduje paczki i publikuje wydanie z opisem z `tools/release-notes.mjs` |
+| `update-lists.yml` | co poniedziałek (i ręcznie: Actions → *Aktualizacja list filtrów* → *Run workflow*) | pobiera listy, buduje reguły, `npm run check -- --require-browser`, otwiera PR `auto/update-lists` do akceptacji (szkic, gdy kontrola nie przeszła) |
+| `release.yml` | tag `vX.Y.Z` | sprawdza zgodność z `manifest.json`, `npm run check -- --require-browser`, buduje paczki i publikuje wydanie z opisem z `tools/release-notes.mjs` |
 
 **Nowe wydanie:** podbij `version` w `manifest.json`, dopisz sekcję `## X.Y.Z` (z `### PL` i `### ENG`) do [CHANGELOG.md](../CHANGELOG.md), wypchnij na `main`, a potem:
 

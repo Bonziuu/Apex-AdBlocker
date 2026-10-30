@@ -1,0 +1,8 @@
+{
+  "generator": "store/generate.mjs",
+  "status": "pending",
+  "reason": "Existing marketing images are preserved. Their source package hash and unmodified API capture have not been established. Regenerate with node store/generate.mjs using Playwright Chromium before treating them as current captures.",
+  "sourceContentsSha256": null,
+  "extensionVersion": null,
+  "images": []
+}

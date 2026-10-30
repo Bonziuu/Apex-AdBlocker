@@ -3,7 +3,10 @@
 // i klasy pochodziły z tej samej „przestrzeni” co kod scriptletów (jak w Chrome).
 
 import vm from 'node:vm';
+import fs from 'node:fs';
 import { loadScriptletLibrary } from '../../tools/build.mjs';
+
+const ENTITY_HELPER = fs.readFileSync(new URL('../../shared/entity-hosts.js', import.meta.url), 'utf8');
 
 const PRELUDE = String.raw`
 var window = globalThis; var self = globalThis;
@@ -36,12 +39,19 @@ var NodeFilter = { SHOW_ELEMENT: 1, SHOW_TEXT: 4 };
 var __observers = [];
 globalThis.MutationObserver = class MutationObserver {
   constructor(cb) { this.cb = cb; this.active = false; }
-  observe() { this.active = true; if (!__observers.includes(this)) __observers.push(this); }
+  observe(target, options = {}) { this.active = true; this.options = options; if (!__observers.includes(this)) __observers.push(this); }
   disconnect() { this.active = false; }
   takeRecords() { return []; }
 }
 function __mutate(addedNodes) {
   for (const o of __observers.slice()) if (o.active) o.cb([{ type: 'childList', addedNodes, removedNodes: [] }], o);
+}
+function __mutateAttribute(target, attributeName) {
+  for (const o of __observers.slice()) {
+    if (!o.active || !o.options.attributes) continue;
+    if (o.options.attributeFilter && !o.options.attributeFilter.includes(attributeName)) continue;
+    o.cb([{ type: 'attributes', target, attributeName, addedNodes: [], removedNodes: [] }], o);
+  }
 }
 
 var __cookies = new Map();
@@ -119,10 +129,17 @@ function fetch(resource, init) {
 
 var __xhrRespond = () => '';
 globalThis.XMLHttpRequest = class XMLHttpRequest {
-  constructor() { this.readyState = 0; this.responseType = ''; this._text = ''; this.sent = false; }
-  open(method, url) { this._method = method; this._url = String(url); this.readyState = 1; }
+  constructor() { this.readyState = 0; this.responseType = ''; this._text = ''; this._jsonResponse = undefined; this.sent = false; }
+  open(method, url) { this._method = method; this._url = String(url); this._text = ''; this._jsonResponse = undefined; this._status = 0; this.sent = false; this.readyState = 1; }
   send() { this.sent = true; this._text = __xhrRespond(this._method, this._url); this.readyState = 4; this._status = 200; this.dispatchEvent({ type: 'load' }); }
-  get response() { return this.responseType === 'json' ? JSON.parse(this._text) : this._text; }
+  get response() {
+    if (this.responseType !== 'json') return this.readyState < 3 ? '' : this._text;
+    if (this.readyState !== 4) return null;
+    if (this._jsonResponse === undefined) {
+      try { this._jsonResponse = __nativeParse(this._text); } catch { this._jsonResponse = null; }
+    }
+    return this._jsonResponse;
+  }
   get responseText() { return this._text; }
   get responseXML() { return null; }
   get status() { return this._status || 0; }
@@ -163,6 +180,7 @@ export function createEnv(host = 'example.com') {
   };
   vm.createContext(ctx);
   vm.runInContext(PRELUDE.replaceAll('__HOST__', JSON.stringify(host)), ctx);
+  vm.runInContext(ENTITY_HELPER, ctx);
   return ctx;
 }
 

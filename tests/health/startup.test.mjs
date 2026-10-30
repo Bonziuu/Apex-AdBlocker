@@ -26,8 +26,8 @@ test('instalacja: wszystkie pliki scriptletów w JEDNYM registerContentScripts (
 });
 
 /** Stan po instalacji (rejestracje + chrome.storage.local), z którego startuje nowy service worker. */
-async function installedState() {
-  const bg = await loadBackground();
+async function installedState(opts = {}) {
+  const bg = await loadBackground(opts);
   try {
     await bg.install();
     return { registered: structuredClone(bg.state.registered), local: structuredClone(bg.store) };
@@ -142,8 +142,16 @@ test('profil startu jest dostępny w Diagnostyce (health:get) i przez startup:pr
 
 const sessionRegs = (bg) => bg.state.registered.filter((r) => r.id.startsWith('sl-') && r.persistAcrossSessions === false);
 
-test('rejestracja: utrwalane (hosty zwykłe) najpierw, potem sesyjne (encje); obie w jednym wywołaniu', async () => {
-  const bg = await loadBackground();
+// Older snapshots used concrete TLD-expanded session patterns. Exercise their
+// recovery explicitly instead of assuming the current build still emits them.
+const legacyFiles = {
+  'data/ads.scriptlets.json': [{ file: 'scriptlets/ads-0.js', matches: ['*://*.legacy.example/*'], sessionMatches: ['*://*.legacy.fr/*'] }],
+  'data/privacy.scriptlets.json': [],
+  'data/security.scriptlets.json': [],
+};
+
+test('zgodność starszych metadanych: utrwalane przed sesyjnymi, obie w jednym wywołaniu', async () => {
+  const bg = await loadBackground({ files: legacyFiles });
   try {
     await bg.install();
     const regs = ourScripts(bg);
@@ -152,18 +160,19 @@ test('rejestracja: utrwalane (hosty zwykłe) najpierw, potem sesyjne (encje); ob
     assert.ok(regs.slice(0, firstSession).every((r) => r.persistAcrossSessions === true));
     assert.ok(regs.slice(firstSession).every((r) => r.persistAcrossSessions === false && r.id.endsWith('-s')));
     assert.equal(bg.state.calls.register, 1);
-    for (const r of regs) { assert.equal(r.world, 'MAIN'); assert.equal(r.runAt, 'document_start'); assert.equal(r.allFrames, true); }
+    for (const r of regs) { assert.equal(r.world, 'MAIN'); assert.equal(r.runAt, 'document_start'); assert.equal(r.allFrames, false); }
     const persisted = regs.filter((r) => r.persistAcrossSessions).reduce((n, r) => n + r.matches.length, 0);
     const session = sessionRegs(bg).reduce((n, r) => n + r.matches.length, 0);
-    assert.ok(persisted < session, `utrwalane ${persisted}, sesyjne ${session}`);
+    assert.equal(persisted, 1);
+    assert.equal(session, 1);
   } finally { bg.restore(); }
 });
 
-test('restart przeglądarki: Chrome zachowuje tylko utrwalone – dorejestrowujemy WYŁĄCZNIE część sesyjną, raz', async () => {
-  const { registered, local } = await installedState();
+test('starszy snapshot po restarcie: dorejestrowujemy WYŁĄCZNIE część sesyjną, raz', async () => {
+  const { registered, local } = await installedState({ files: legacyFiles });
   const persisted = registered.filter((r) => r.persistAcrossSessions !== false);
   const nSession = registered.length - persisted.length;
-  const bg = await loadBackground({ registered: persisted, local });
+  const bg = await loadBackground({ registered: persisted, local, files: legacyFiles });
   try {
     await bg.state.listeners.startup();
     await waitFor(() => bg.state.calls.register > 0);
@@ -178,8 +187,8 @@ test('restart przeglądarki: Chrome zachowuje tylko utrwalone – dorejestrowuje
   } finally { bg.restore(); }
 });
 
-test('ponowne włączenie rozszerzenia (bez onStartup): część sesyjna odtwarzana przy starcie service workera', async () => {
-  const bg = await loadBackground();
+test('starszy snapshot po ponownym włączeniu: część sesyjna odtwarzana przy starcie workera', async () => {
+  const bg = await loadBackground({ files: legacyFiles });
   let persistedOnly;
   let local;
   try {
@@ -188,7 +197,7 @@ test('ponowne włączenie rozszerzenia (bez onStartup): część sesyjna odtwarz
     local = structuredClone(bg.store);
   } finally { bg.restore(); }
   // nowy service worker: utrwalone rejestracje i ustawienia są, części sesyjnej i storage.session brak
-  const bg2 = await loadBackground({ registered: persistedOnly, local });
+  const bg2 = await loadBackground({ registered: persistedOnly, local, files: legacyFiles });
   try {
     for (let i = 0; i < 100 && bg2.state.calls.register === 0; i++) await new Promise((r) => setTimeout(r, 20));
     assert.equal(bg2.state.calls.register, 1, 'jedna rejestracja przy starcie SW');
@@ -198,6 +207,22 @@ test('ponowne włączenie rozszerzenia (bez onStartup): część sesyjna odtwarz
     // kolejny start SW w tej samej sesji (znacznik w storage.session) – zero pracy
     assert.equal(bg2.session.sessionScriptletsOk, true);
   } finally { bg2.restore(); }
+});
+
+test('aktualny build: strzeżone encje przeżywają restart bez ponownej rejestracji', async () => {
+  const { registered, local } = await installedState();
+  const entities = registered.filter((r) => r.js.some((file) => file.endsWith('-entities.js')));
+  assert.ok(entities.length > 0);
+  assert.ok(entities.every((r) => r.persistAcrossSessions === true && r.matches.includes('*://*/*')));
+  assert.ok(registered.every((r) => r.persistAcrossSessions === true));
+  const bg = await loadBackground({ registered, local });
+  try {
+    await bg.state.listeners.startup();
+    assert.equal(bg.state.calls.register, 0);
+    assert.equal(bg.state.calls.unregister, 0);
+    assert.equal(ourScripts(bg).length, registered.length);
+    assert.equal(bg.session.sessionScriptletsOk, true);
+  } finally { bg.restore(); }
 });
 
 for (const reason of ['update', 'install']) {

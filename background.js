@@ -7,6 +7,7 @@
 import { hostKeys, PRIORITY } from './shared/parser.js';
 import { compileUserFilters } from './background/user-filters.js';
 import { scriptletRegistrations, sameScriptletRegistrations } from './background/scriptlet-registration.js';
+import { scriptletFilesForFrame } from './background/frame-scriptlets.js';
 import { createHealth, runSyncSteps, componentStatusFromSync } from './background/health.js';
 import { evaluateYouTubeProtection, coversYouTube } from './youtube/protection.js';
 import { PlayerReportStore } from './youtube/player-reports.js';
@@ -35,13 +36,13 @@ async function lastStartupProfile() {
 
 const SITE_RULE_ID = 1;
 const USER_RULE_BASE = 1000;
-const MAX_USER_RULES = 5000;
 const HIDE_ATTR = 'data-apex-hide';
 
 // ---------------------------------------------------------------------------
 // Stan
 
 let listsMeta = null;           // data/lists.json
+let listsMetaLoading = null;
 const listData = new Map();     // id → dane kosmetyczne (leniwie)
 const hostCache = new Map();    // host → wynik dla stron (czyszczony przy zmianach)
 const allowIds = new Map();     // id listy → Set identyfikatorów reguł typu allow
@@ -56,9 +57,11 @@ function clearHostCaches() {
   cacheGeneration++;
 }
 let state = null;               // { enabledLists (zawsze CORE_LISTS), disabledSites, userFilters }
+let stateLoading = null;
 let user = null;                // skompilowane własne filtry
 const playerReports = new PlayerReportStore(); // tabId → frameId → raport odtwarzacza (TTL 60 s)
 const perfReports = [];          // raporty wydajności (tylko gdy włączone w opcjach)
+const frameScriptletInjections = new Map(); // tabId:documentId -> in-flight/completed injection
 // Pomiary scriptletów (tylko przy włączonych pomiarach). Trzymane w chrome.storage.session
 // (pamięć przeglądarki, bez zapisu na dysk), żeby przetrwały uśpienie service workera.
 const scriptletPerf = new ScriptletPerfStore();
@@ -97,22 +100,31 @@ async function fetchJSON(path) {
 
 async function getListsMeta() {
   if (!listsMeta) {
-    try {
-      listsMeta = await startup.time('metadane list (lists.json)', () => fetchJSON('data/lists.json'));
-    } catch (e) {
-      await health.setComponent('filters', 'error', String(e.message || e));
-      await health.error('filters', e);
-      throw e;
-    }
+    if (!listsMetaLoading) listsMetaLoading = (async () => {
+      try {
+        listsMeta = await startup.time('metadane list (lists.json)', () => fetchJSON('data/lists.json'));
+        return listsMeta;
+      } catch (e) {
+        await health.setComponent('filters', 'error', String(e.message || e));
+        await health.error('filters', e);
+        throw e;
+      } finally { listsMetaLoading = null; }
+    })();
+    return listsMetaLoading;
   }
   return listsMeta;
 }
 
 async function getState() {
   if (state) return state;
+  if (!stateLoading) stateLoading = loadState().finally(() => { stateLoading = null; });
+  return stateLoading;
+}
+
+async function loadState() {
   const meta = await getListsMeta();
   const stored = await startup.time('getState / storage', () => chrome.storage.local.get(['disabledSites', 'userFilters', 'autoReloadOnToggle']));
-  state = {
+  const next = {
     // stały zestaw list – zapisane w starszych wersjach enabledLists / protectionMode są ignorowane
     // (i usuwane przy aktualizacji, LEGACY_STORAGE_KEYS)
     enabledLists: CORE_LISTS.filter((id) => meta.some((m) => m.id === id)),
@@ -121,19 +133,27 @@ async function getState() {
     // brak klucza zachowuje dotychczasowe zachowanie: automatyczny reload po zmianie ochrony
     autoReloadOnToggle: stored.autoReloadOnToggle !== false,
   };
-  user = compileUserFilters(state.userFilters);
+  const compiled = compileUserFilters(next.userFilters);
+  state = next;
+  user = compiled;
   return state;
 }
 
 async function saveState(patch) {
   const s = await getState();
-  Object.assign(s, patch);
+  const compiled = 'userFilters' in patch ? compileUserFilters(patch.userFilters) : user;
+  if ('userFilters' in patch && compiled.limitExceeded) throw new Error(t('dmsg_userRuleLimit'));
+  // Prepare everything before persisting, then commit memory only after storage succeeds.
   await chrome.storage.local.set(patch);
-  if ('userFilters' in patch) user = compileUserFilters(s.userFilters);
+  state = { ...s, ...patch };
+  user = compiled;
   clearHostCaches();
 }
 
 function toSet(obj) {
+  for (const key of ['gen', 'spec', 'unhide', 'style', 'proc', 'scopedHide', 'scopedGen', 'scopedStyle', 'scopedProc']) {
+    obj[key] = Object.assign(Object.create(null), obj[key] || {});
+  }
   obj.ghideSet = new Set(obj.ghide || []);
   obj.ehideSet = new Set(obj.ehide || []);
   obj.docAllowSet = new Set(obj.docAllow || []);
@@ -274,7 +294,7 @@ async function syncDynamicRulesNow() {
       condition: { requestDomains: s.disabledSites, resourceTypes: ['main_frame'] },
     });
   }
-  user.rules.slice(0, MAX_USER_RULES).forEach((r, i) => {
+  user.rules.forEach((r, i) => {
     rules.push({ ...r, id: USER_RULE_BASE + i });
   });
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
@@ -376,40 +396,58 @@ async function syncScriptletsNow() {
     return t('dmsg_scriptletsUnchanged', expected.length);
   }
 
-  let toRegister = wanted;
-  let mode = t('dmsg_modeFull');
-  if (session.length && sameScriptletRegistrations(ours, persistent)) {
-    toRegister = session;
-    mode = t('dmsg_modeSession');
-  } else if (ours.length) {
-    // Znacznik „zarejestrowane w tej sesji” zdejmujemy PRZED zmianą: gdy rejestracja się nie
-    // uda albo service worker zostanie przerwany w trakcie, następny start SW sprawdzi i naprawi.
-    try { if (chrome.storage.session) await chrome.storage.session.remove(SESSION_SCRIPTLETS_KEY); } catch { /* */ }
-    await startup.time('scriptlety: unregisterContentScripts', () => chrome.scripting.unregisterContentScripts({ ids: ours.map((r) => r.id) }));
-  }
-  const failures = [];
   try {
-    if (toRegister.length) await startup.time('scriptlety: registerContentScripts', () => chrome.scripting.registerContentScripts(toRegister));
-  } catch (batchError) {
-    // paczka jest atomowa – ustalamy, który plik jest błędny, i rejestrujemy pozostałe
-    for (const script of toRegister) {
-      try {
-        await startup.time('scriptlety: registerContentScripts (pojedynczo po błędzie)', () => chrome.scripting.registerContentScripts([script]));
-      } catch (e) {
-        failures.push(`${script.id}: ${e.message || e}`);
-      }
+    let toRegister = wanted;
+    let mode = t('dmsg_modeFull');
+    if (session.length && sameScriptletRegistrations(ours, persistent)) {
+      toRegister = session;
+      mode = t('dmsg_modeSession');
+    } else if (ours.length) {
+      // Znacznik „zarejestrowane w tej sesji” zdejmujemy PRZED zmianą: gdy rejestracja się nie
+      // uda albo service worker zostanie przerwany w trakcie, następny start SW sprawdzi i naprawi.
+      try { if (chrome.storage.session) await chrome.storage.session.remove(SESSION_SCRIPTLETS_KEY); } catch { /* */ }
+      await startup.time('scriptlety: unregisterContentScripts', () => chrome.scripting.unregisterContentScripts({ ids: ours.map((r) => r.id) }));
     }
-    if (!failures.length) failures.push(String(batchError.message || batchError));
+    const failures = [];
+    try {
+      if (toRegister.length) await startup.time('scriptlety: registerContentScripts', () => chrome.scripting.registerContentScripts(toRegister));
+    } catch (batchError) {
+      // paczka jest atomowa – ustalamy, który plik jest błędny, i rejestrujemy pozostałe
+      for (const script of toRegister) {
+        try {
+          await startup.time('scriptlety: registerContentScripts (pojedynczo po błędzie)', () => chrome.scripting.registerContentScripts([script]));
+        } catch (e) {
+          failures.push(`${script.id}: ${e.message || e}`);
+        }
+      }
+      if (!failures.length) failures.push(String(batchError.message || batchError));
+    }
+    const after = new Set((await startup.time('scriptlety: weryfikacja', () => chrome.scripting.getRegisteredContentScripts())).map((r) => r.id));
+    const notRegistered = wanted.filter((r) => !after.has(r.id)).map((r) => r.id);
+    if (notRegistered.length) {
+      const files = new Set(notRegistered.map((id) => id.replace(/-s$/, '')));
+      throw new Error(t('dmsg_scriptletsPartial', [expected.length - files.size, expected.length, failures.slice(0, 3).join('; ') || notRegistered.slice(0, 5).join(', ')]));
+    }
+    await markSessionOk();
+    startup.mark('scriptlety gotowe');
+    return t('dmsg_scriptletsOk', [expected.length, mode]);
+  } catch (error) {
+    // Keep the previously working set when Chrome rejects a replacement. The caller
+    // still receives the original failure and can roll back the requested settings.
+    // On first installation there is no previous set: keep the healthy scripts
+    // recovered individually rather than removing the partial protection.
+    if (!ours.length) throw error;
+    try {
+      const current = (await chrome.scripting.getRegisteredContentScripts()).filter((r) => r.id.startsWith('sl-'));
+      if (current.length) await chrome.scripting.unregisterContentScripts({ ids: current.map((r) => r.id) });
+      if (ours.length) await chrome.scripting.registerContentScripts(ours);
+      const restored = (await chrome.scripting.getRegisteredContentScripts()).filter((r) => r.id.startsWith('sl-'));
+      if (!sameScriptletRegistrations(restored, ours)) throw new Error('registered scriptlet set differs from the previous set');
+    } catch (restoreError) {
+      throw new Error(t('dmsg_scriptletRestoreFailed', [String(error.message || error), String(restoreError.message || restoreError)]));
+    }
+    throw error;
   }
-  const after = new Set((await startup.time('scriptlety: weryfikacja', () => chrome.scripting.getRegisteredContentScripts())).map((r) => r.id));
-  const notRegistered = wanted.filter((r) => !after.has(r.id)).map((r) => r.id);
-  if (notRegistered.length) {
-    const files = new Set(notRegistered.map((id) => id.replace(/-s$/, '')));
-    throw new Error(t('dmsg_scriptletsPartial', [expected.length - files.size, expected.length, failures.slice(0, 3).join('; ') || notRegistered.slice(0, 5).join(', ')]));
-  }
-  await markSessionOk();
-  startup.mark('scriptlety gotowe');
-  return t('dmsg_scriptletsOk', [expected.length, mode]);
 }
 
 // Część sesyjna (bez utrwalania) znika po restarcie przeglądarki oraz po wyłączeniu i ponownym
@@ -501,12 +539,39 @@ async function rollbackImport(previous, syncAllSteps) {
   }
   // weryfikacja zapisu
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-  const now = await chrome.storage.local.get(['disabledSites', 'userFilters']).catch(() => ({}));
-  if (!same(now.disabledSites, previous.disabledSites)) errors.push(t('dmsg_rollbackSites'));
-  if (now.userFilters !== previous.userFilters) errors.push(t('dmsg_rollbackFilters'));
+  const now = await chrome.storage.local.get(Object.keys(previous)).catch(() => ({}));
+  for (const key of Object.keys(previous)) {
+    if (!same(now[key], previous[key])) errors.push(t('dmsg_rollbackStorageKey', key));
+  }
   // synchronizacja poprzedniego stanu – każdy krok osobno
-  for (const [name, r] of await syncAllSteps()) if (!r.ok) errors.push(`synchronizacja (${name}): ${r.message}`);
+  for (const [name, r] of await syncAllSteps()) if (!r.ok) errors.push(t('dmsg_rollbackSync', [name, r.message]));
   return errors;
+}
+
+/** Change desired settings and Chrome state together; a rejected sync restores both. */
+async function changeSettings(patch, steps) {
+  const s = await getState();
+  const previous = Object.fromEntries(Object.keys(patch).map((key) => [key, structuredClone(s[key])]));
+  try { await saveState(patch); } catch (e) {
+    return { ok: false, error: String(e.message || e) };
+  }
+  const synchronize = async () => {
+    const results = [];
+    for (const [id, fn] of steps) {
+      try { results.push([id, await runStep(id, fn)]); }
+      catch (e) { results.push([id, { ok: false, message: String(e.message || e) }]); }
+    }
+    return results;
+  };
+  const failed = (await synchronize()).filter(([, result]) => !result.ok);
+  if (!failed.length) return { ok: true };
+  const error = failed.map(([name, result]) => `${name}: ${result.message}`).join('; ');
+  const rollbackErrors = await rollbackImport(previous, synchronize);
+  if (rollbackErrors.length) {
+    await health.error('filters', t('dmsg_changeRollbackFailed', [error, rollbackErrors.join('; ')]));
+    return { ok: false, error, rolledBack: false, rollbackErrors };
+  }
+  return { ok: false, error, rolledBack: true };
 }
 
 /** Wykonuje jeden krok synchronizacji i zapisuje jego wynik (np. po zmianie ustawień). */
@@ -587,7 +652,10 @@ async function cosmeticFor(host) {
       if (u) for (const sel of u) unhide.add(sel);
     }
   }
+  for (const sel of user.gunhide) unhide.add(sel);
   for (const k of keys) {
+    if (user.ehide.includes(k) || user.docAllow.includes(k)) ehide = true;
+    if (user.ghide.includes(k)) ghide = true;
     const u = user.unhide[k];
     if (u) for (const sel of u) unhide.add(sel);
   }
@@ -595,29 +663,47 @@ async function cosmeticFor(host) {
   const selectors = new Set();
   const styles = [];
   const proc = [];
+  const addScoped = (data, key, host, output) => {
+    for (const entry of data[key]?.[host] || []) {
+      if (!entry.exclude.some((excluded) => keys.includes(excluded))) {
+        if (output instanceof Set) output.add(entry.value);
+        else output.push(entry.value);
+      }
+    }
+  };
   if (!ehide) {
     for (const d of lists) {
       for (const k of keys) {
         const sp = d.spec[k];
         if (sp) for (const i of sp) selectors.add(d.sel[i]);
+        addScoped(d, 'scopedHide', k, selectors);
         const st = d.style[k];
         if (st) styles.push(...st);
         const pr = d.proc[k];
         if (pr) proc.push(...pr);
+        addScoped(d, 'scopedStyle', k, styles);
+        addScoped(d, 'scopedProc', k, proc);
       }
-      if (!ghide) for (const i of d.genC) selectors.add(d.sel[i]);
+      if (!ghide) {
+        for (const i of d.genC) selectors.add(d.sel[i]);
+        addScoped(d, 'scopedGen', '*', selectors);
+      }
     }
   }
   // własne filtry działają zawsze (także przy $generichide list)
   for (const k of keys) {
     const sp = user.spec[k];
     if (sp) for (const sel of sp) selectors.add(sel);
+    addScoped(user, 'scopedHide', k, selectors);
     const st = user.style[k];
     if (st) styles.push(...st);
     const pr = user.proc[k];
     if (pr) proc.push(...pr);
+    addScoped(user, 'scopedStyle', k, styles);
+    addScoped(user, 'scopedProc', k, proc);
   }
   for (const sel of user.genC) selectors.add(sel);
+  addScoped(user, 'scopedHide', '*', selectors);
   for (const sel of unhide) selectors.delete(sel);
 
   let css = `[${HIDE_ATTR}]{display:none!important}\n`;
@@ -636,21 +722,22 @@ async function genericFor(host, tokens) {
   const lists = await Promise.all(s.enabledLists.map(getListData));
   const info = await cosmeticFor(host);
   if (!info.generic) return { css: '', count: 0 };
-  let css = '';
-  let count = 0;
+  const keys = hostKeys(host);
+  const selectors = new Set();
   for (const d of lists) {
     for (const t of tokens) {
       const idx = d.gen[t];
-      if (!idx) continue;
-      for (const i of idx) {
+      for (const i of idx || []) {
         const sel = d.sel[i];
         if (info.unhide.has(sel)) continue;
-        css += `${sel}{display:none!important}\n`;
-        count++;
+        selectors.add(sel);
+      }
+      for (const entry of d.scopedGen?.[t] || []) {
+        if (!info.unhide.has(entry.value) && !entry.exclude.some((h) => keys.includes(h))) selectors.add(entry.value);
       }
     }
   }
-  return { css, count };
+  return { css: [...selectors].map((sel) => `${sel}{display:none!important}\n`).join(''), count: selectors.size };
 }
 
 function frameHost(sender, url) {
@@ -761,12 +848,55 @@ export function onTabUpdated(tabId, changeInfo, tab) {
 
 chrome.tabs.onUpdated.addListener(onTabUpdated);
 
-chrome.tabs.onRemoved.addListener((tabId) => { playerReports.clearTab(tabId); });
+chrome.tabs.onRemoved.addListener((tabId) => {
+  playerReports.clearTab(tabId);
+  for (const key of frameScriptletInjections.keys()) if (key.startsWith(`${tabId}:`)) frameScriptletInjections.delete(key);
+});
 
 // ---------------------------------------------------------------------------
 // Wiadomości
 
 const handlers = {
+  async 'scriptlets:init'(msg, sender) {
+    if (!sender.tab || !Number.isInteger(sender.tab.id) || !Number.isInteger(sender.frameId) || sender.frameId <= 0 ||
+        typeof sender.documentId !== 'string' || !sender.documentId || !hostOf(sender.url) || !hostOf(sender.tab.url)) {
+      return { ok: false, error: t('dmsg_frameContextUnavailable') };
+    }
+    const tab = await chrome.tabs.get(sender.tab.id).catch(() => null);
+    if (!tab || hostOf(tab.url) !== hostOf(sender.tab.url) ||
+        (sender.documentLifecycle && sender.documentLifecycle !== 'active')) {
+      return { ok: false, error: t('dmsg_frameContextUnavailable') };
+    }
+    const s = await getState();
+    if (isSiteDisabled(hostOf(sender.tab.url), s) || isSiteDisabled(hostOf(sender.url), s)) return { ok: true, off: true };
+    const key = `${sender.tab.id}:${sender.documentId}`;
+    if (frameScriptletInjections.has(key)) return frameScriptletInjections.get(key);
+    const injection = (async () => {
+      const expected = await expectedScriptlets();
+      const { devPerf } = await chrome.storage.local.get('devPerf');
+      const files = scriptletFilesForFrame(expected, sender.url, { devPerf: !!devPerf });
+      // Settings can change while metadata is loading. Check the current state again.
+      const latest = await getState();
+      if (isSiteDisabled(hostOf(sender.tab.url), latest) || isSiteDisabled(hostOf(sender.url), latest)) return { ok: true, off: true };
+      if (!files.length) return { ok: true, injected: 0 };
+      await chrome.scripting.executeScript({
+        target: { tabId: sender.tab.id, documentIds: [sender.documentId] },
+        files, world: 'MAIN', injectImmediately: true,
+      });
+      return { ok: true, injected: files.length };
+    })();
+    frameScriptletInjections.set(key, injection);
+    try {
+      const result = await injection;
+      if (result.off) frameScriptletInjections.delete(key);
+      if (frameScriptletInjections.size > 300) frameScriptletInjections.delete(frameScriptletInjections.keys().next().value);
+      return result;
+    } catch (e) {
+      frameScriptletInjections.delete(key);
+      throw e;
+    }
+  },
+
   async 'cosmetic:init'(msg, sender) {
     const s = await getState();
     const topHost = sender.tab ? hostOf(sender.tab.url) : '';
@@ -779,6 +909,8 @@ const handlers = {
   },
 
   async 'cosmetic:tokens'(msg, sender) {
+    const s = await getState();
+    if (sender.tab && isSiteDisabled(hostOf(sender.tab.url), s)) return { selectors: 0, off: true };
     const host = frameHost(sender, msg.url);
     if (!host || !Array.isArray(msg.tokens)) return { selectors: 0 };
     const { css, count } = await genericFor(host, msg.tokens.slice(0, 2000));
@@ -879,11 +1011,20 @@ const handlers = {
   },
 
   async 'options:setDevPerf'(msg) {
+    const before = (await chrome.storage.local.get('devPerf')).devPerf === true;
     await chrome.storage.local.set({ devPerf: !!msg.enabled });
+    const result = await runStep('scriptlets', syncScriptlets);
+    if (!result.ok) {
+      const rollbackErrors = [];
+      try { await chrome.storage.local.set({ devPerf: before }); }
+      catch (e) { rollbackErrors.push(t('dmsg_rollbackSave', String(e.message || e))); }
+      const restored = await runStep('scriptlets', syncScriptlets);
+      if (!restored.ok) rollbackErrors.push(restored.message);
+      if (rollbackErrors.length) await health.error('filters', t('dmsg_changeRollbackFailed', [result.message, rollbackErrors.join('; ')]));
+      return { ok: false, error: result.message, rolledBack: !rollbackErrors.length, ...(rollbackErrors.length ? { rollbackErrors } : {}) };
+    }
     if (!msg.enabled) { perfReports.length = 0; await resetScriptletPerf(); }
-    // ponowna rejestracja scriptletów: z plikiem-flagą profilera albo bez niego
-    const r = await runStep('scriptlets', syncScriptlets);
-    return { ok: !!r && r.ok };
+    return { ok: true };
   },
 
   async 'popup:get'(msg) {
@@ -930,10 +1071,8 @@ const handlers = {
   },
 
   async 'popup:setAutoReload'(msg) {
-    const s = await getState();
     const enabled = msg.enabled !== false;
-    s.autoReloadOnToggle = enabled;
-    await chrome.storage.local.set({ autoReloadOnToggle: enabled });
+    await saveState({ autoReloadOnToggle: enabled });
     return { ok: true, autoReloadOnToggle: enabled };
   },
 
@@ -948,16 +1087,20 @@ const handlers = {
     } else {
       disabledSites = [...new Set([...s.disabledSites, host])];
     }
-    await saveState({ disabledSites });
-    const dyn = await runStep('dynamicRules', syncDynamicRules);
-    const sl = await runStep('scriptlets', syncScriptlets);
+    const result = await changeSettings({ disabledSites }, [['dynamicRules', syncDynamicRules], ['scriptlets', syncScriptlets]]);
     await refreshYouTubeStatus();
+    let reloaded = false;
+    let reloadError;
+    if (!result.ok) return { ...result, disabled: isSiteDisabled(host, state), reloaded };
     if (msg.tabId) {
       const tab = await chrome.tabs.get(msg.tabId).catch(() => null);
       if (tab) await updateIcon(tab.id, tab.url);
-      if (s.autoReloadOnToggle) chrome.tabs.reload(msg.tabId);
+      if (s.autoReloadOnToggle) {
+        try { await chrome.tabs.reload(msg.tabId); reloaded = true; }
+        catch (e) { reloadError = String(e.message || e); }
+      }
     }
-    return { ok: dyn.ok && sl.ok, disabled: isSiteDisabled(host, state), error: [dyn, sl].filter((r) => !r.ok).map((r) => r.message).join('; ') };
+    return { ok: true, disabled: isSiteDisabled(host, state), reloaded, ...(reloadError ? { reloadError } : {}) };
   },
 
   async 'options:get'() {
@@ -1012,7 +1155,8 @@ const handlers = {
         await step(t('dmsg_stepScriptlets'), 'scriptlets', syncScriptlets),
       ];
     };
-    await saveState({ disabledSites: next.disabledSites, userFilters: next.userFilters });
+    try { await saveState({ disabledSites: next.disabledSites, userFilters: next.userFilters }); }
+    catch (e) { return { ok: false, errors: [String(e.message || e)] }; }
     const failed = (await syncAllSteps()).filter(([, r]) => !r.ok);
     if (failed.length) {
       const errors = failed.map(([name, r]) => `${name}: ${r.message}`);
@@ -1029,19 +1173,15 @@ const handlers = {
   },
 
   async 'options:setUserFilters'(msg) {
-    await saveState({ userFilters: String(msg.text || '') });
-    const r = await runStep('dynamicRules', syncDynamicRules);
-    if (!r.ok) return { ok: false, error: r.message, errors: user.errors, count: user.count };
-    return { ok: true, errors: user.errors, count: user.count };
+    const result = await changeSettings({ userFilters: String(msg.text || '') }, [['dynamicRules', syncDynamicRules]]);
+    return { ...result, errors: user.errors, count: user.count };
   },
 
   async 'options:setDisabledSites'(msg) {
     const disabledSites = [...new Set(msg.sites.map(normalizeHost).filter((h) => /^[a-z0-9.\-]+\.[a-z0-9\-]+$/.test(h)))];
-    await saveState({ disabledSites });
-    const dyn = await runStep('dynamicRules', syncDynamicRules);
-    const sl = await runStep('scriptlets', syncScriptlets);
+    const result = await changeSettings({ disabledSites }, [['dynamicRules', syncDynamicRules], ['scriptlets', syncScriptlets]]);
     await refreshYouTubeStatus();
-    return { ok: dyn.ok && sl.ok, disabledSites, error: [dyn, sl].filter((x) => !x.ok).map((x) => x.message).join('; ') };
+    return { ...result, disabledSites: state.disabledSites };
   },
 
   async 'picker:start'(msg) {
@@ -1073,7 +1213,7 @@ const handlers = {
 // i synchronizuje z Chrome; równoległe wykonanie gubiło zmiany (np. dwa szybkie przełączenia
 // stron albo dwa „Ukryj element” – druga zapisywała stan bez pierwszej).
 const MUTATING = new Set(['site:toggle', 'popup:setAutoReload', 'settings:import', 'options:setUserFilters', 'options:setDisabledSites',
-  'options:setDevPerf', 'picker:add', 'health:resync']);
+  'options:setDevPerf', 'picker:add', 'health:resync', 'scriptlets:init']);
 let settingsQueue = Promise.resolve();
 function runHandler(h, msg, sender) {
   if (!MUTATING.has(msg.type)) return h(msg, sender);
@@ -1092,7 +1232,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return false;
   }
   runHandler(h, msg, sender).then(sendResponse, async (e) => {
-    const component = msg.type.startsWith('cosmetic') ? 'cosmetic' : msg.type.startsWith('youtube') ? 'youtube' : 'filters';
+    const component = msg.type.startsWith('cosmetic') ? 'cosmetic' : msg.type.startsWith('youtube') ? 'youtube' : msg.type.startsWith('scriptlets') ? 'scriptlets' : 'filters';
     await health.error(component, `${msg.type}: ${e && e.message || e}`).catch(() => {});
     sendResponse({ ok: false, error: String(e && e.message || e) });
   });

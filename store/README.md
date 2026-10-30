@@ -1,155 +1,43 @@
-# Apex AdBlocker – materiały do Chrome Web Store
+# Apex AdBlocker — materiały do Chrome Web Store
 
-Wszystko, co trzeba wkleić lub wgrać w [panelu dewelopera Chrome Web Store](https://chrome.google.com/webstore/devconsole). Folder `store/` nie trafia do paczki rozszerzenia.
+Wydawca: **Konrad Woźniak** · kontakt: **konrad.wozniak.1996@gmail.com** · [LinkedIn autora](https://www.linkedin.com/in/konrad-woźniak-23a5b831a).
 
-**Paczka do wgrania:** `npm run package:store` → `dist/Apex-AdBlocker-WebStore-<wersja>.zip`
+Zacznij od [checklisty zgłoszenia](../docs/webstore/SUBMISSION-CHECKLIST.pl.md). Folder `store/` zawiera także zachowane grafiki marketingowe i narzędzia ich przygotowania; nie trafia do ZIP-a rozszerzenia.
 
----
+## Teksty i pola panelu
 
-## 1. Karta „Store listing”
-
-| Pole | Wartość |
+| Materiał | Plik lub adres |
 |---|---|
-| Język główny | English (wersja polska jako dodatkowe tłumaczenie wpisu) |
-| Kategoria | Privacy & Security (jeśli niedostępna: Productivity) |
-| Ikona sklepu | `brand/apex-store-icon-128.png` (z paczki pobierana jest też `icons/logo128.png`) |
-| Zrzuty ekranu | `store/screenshots/en/*.png` (EN) i `store/screenshots/pl/*.png` (PL), 1280×800 |
-| Mały kafelek promocyjny | `store/promo/small-tile-440x280.png` (EN) / `small-tile-440x280-pl.png` (PL) |
-| Strona domowa | https://github.com/Bonziuu/Apex-AdBlocker |
-| Strona pomocy | https://github.com/Bonziuu/Apex-AdBlocker/issues |
+| Nazwa, opis krótki i pełny PL | [listing-pl.md](../docs/webstore/listing-pl.md) |
+| Nazwa, opis krótki i pełny EN | [listing-en.md](../docs/webstore/listing-en.md) |
+| Jedno przeznaczenie, uprawnienia, kod zdalny i użycie danych | [permissions-and-privacy.md](../docs/webstore/permissions-and-privacy.md) |
+| Publiczny URL polityki | https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md |
+| Strona produktu | https://github.com/Bonziuu/Apex-AdBlocker |
+| Pomoc | konrad.wozniak.1996@gmail.com lub https://github.com/Bonziuu/Apex-AdBlocker/issues |
 
-Nazwa i krótki opis (summary) pochodzą z manifestu i `_locales` – nie wpisuje się ich ręcznie.
+Publiczna polityka musi zawierać aktualną, przejrzaną treść; lokalna zmiana `PRIVACY.md` nie aktualizuje strony na GitHubie. Nazwy pól i kategorię wybierz według bieżącego panelu. Jego układu ani wymagań regulaminowych na 2026 rok nie potwierdzono na żywo.
 
-### Opis (English)
+Żądane uprawnienia mają uzasadnienia PL/EN w podlinkowanym dokumencie:
 
-```
-Apex AdBlocker blocks ads, trackers and malicious sites – with no setup, no accounts and no telemetry.
+- **declarativeNetRequest** — stosowanie dołączonych reguł, własnych filtrów i wyjątków.
+- **scripting** — dołączone skrypty filtrujące, kosmetyczny CSS i narzędzie wskazywania elementu.
+- **storage** — lokalne ustawienia i ograniczona diagnostyka.
+- **activeTab** — działania i dostępne statystyki dla karty wskazanej przez użytkownika.
+- **Dostęp do witryn `<all_urls>`** — filtrowanie obsługiwanych stron i ramek, z zachowaniem ograniczeń Chrome.
 
-Protection works right after installation, with one fixed set of trusted filter lists. There are no protection levels to choose and nothing to configure.
+Brak telemetrii lub backendu nie oznacza braku lokalnego dostępu do danych. W formularzu prywatności uwzględnij adresy, DOM, używane przez filtry cookies/pamięć witryn, ustawienia i opcjonalną diagnostykę zgodnie z aktualnymi definicjami pól. Oświadczenia wydawcy powinny odpowiadać rzeczywistym praktykom; nie zaznaczaj ich automatycznie na podstawie samej instrukcji.
 
-WHAT IT BLOCKS
-• Ads – banners, pop-ups and video ads, including YouTube Protection
-• Tracking – tracking scripts and pixels that follow you across sites
-• Malicious sites – known scams and malware
+## Właściwe pliki do wgrania
 
-HOW IT WORKS
-• Network blocking with Chrome's built-in declarativeNetRequest engine – fast and light on resources
-• Cosmetic filtering hides the empty frames and leftovers ads leave behind
-• Scriptlets neutralise anti-adblock scripts and ads woven into video players
-• A built-in check verifies that the YouTube filters are supported before each release
+- ZIP rozszerzenia: `Apex-AdBlocker-WebStore-1.0.0.zip` wskazany przez najnowszy `docs/webstore/readiness-report.json` w `package.path`. Nie wybieraj ZIP-a użytkownika z plikiem `START-HERE.txt`, paczki `-dev.zip` ani całego zestawu materiałów.
+- Ikona sklepu: `icons/logo128.png`, zgodna z obecnym manifestem; ta sama grafika znajduje się w `brand/apex-store-icon-128.png`.
+- Grafika promocyjna: `docs/webstore/assets/promo-small-440x280.png` (440×280). To grafika marki, nie zrzut aplikacji.
+- Zrzuty: aktualne PNG wskazane przez `docs/webstore/submission.json` i powiązane metadanymi z daną paczką. Procedura: [screenshots.md](../docs/webstore/screenshots.md).
 
-SIMPLE CONTROLS
-• Turn protection off for a site with one click if something doesn't work
-• "Hide element" – click anything on a page to hide it permanently
-• Add your own filters in uBlock Origin / Adblock Plus syntax
-• Back up and restore your settings
+Zachowane `screenshots/en/`, `screenshots/pl/`, `promo/` i `github/` służą także prezentacji projektu. Dotychczasowe kompozycje pokazują lokalną stronę demonstracyjną, a `capture-metadata.json` określa, czy potwierdzono ich źródło dla bieżącej paczki. Przy statusie `pending` nie przedstawiaj ich jako aktualnych, zweryfikowanych przechwyceń. Nie dowodzą skuteczności na rzeczywistych portalach.
 
-PRIVATE BY DESIGN
-Apex AdBlocker works entirely in your browser. It has no server, sends no data and contains no remote code. Settings and diagnostics are stored only locally.
+## Odtworzenie materiałów
 
-Filter lists: EasyList, EasyPrivacy, uBlock filters and Polish Ad Filters, used under their respective licences.
+`node store/generate.mjs` tworzy świeżą paczkę w katalogu tymczasowym, uruchamia rzeczywiste rozszerzenie w Chromium Playwright, przygotowuje komplet obrazów w stagingu i zapisuje wersję oraz hashe. Generator nie podmienia API Chrome ani licznika blokowania. Brak przeglądarki lub błąd przechwycenia zachowuje starsze pliki.
 
-Apex AdBlocker is free, with no paid features or subscriptions.
-```
-
-### Opis (polski)
-
-```
-Apex AdBlocker blokuje reklamy, śledzenie i złośliwe strony – bez konfiguracji, bez kont i bez telemetrii.
-
-Ochrona działa od razu po instalacji, z jednym stałym zestawem sprawdzonych list filtrów. Nie trzeba wybierać poziomu ochrony ani niczego ustawiać.
-
-CO BLOKUJE
-• Reklamy – banery, wyskakujące okna i reklamy wideo, w tym YouTube Protection
-• Śledzenie – skrypty i piksele śledzące Cię między stronami
-• Złośliwe strony – znane oszustwa i malware
-
-JAK DZIAŁA
-• Blokowanie sieci przez wbudowany w Chrome silnik declarativeNetRequest – szybko i oszczędnie
-• Filtry kosmetyczne ukrywają puste ramki i pozostałości po reklamach
-• Scriptlety neutralizują skrypty anty-adblock i reklamy wplecione w odtwarzacze wideo
-• Wbudowana kontrola sprawdza przed każdym wydaniem, czy filtry YouTube są obsługiwane
-
-PROSTA OBSŁUGA
-• Jednym kliknięciem wyłączysz ochronę na stronie, jeśli coś nie działa
-• „Ukryj element” – kliknij cokolwiek na stronie, żeby ukryć to na stałe
-• Własne filtry w składni uBlock Origin / Adblock Plus
-• Kopia zapasowa i przywracanie ustawień
-
-PRYWATNOŚĆ PRZEDE WSZYSTKIM
-Apex AdBlocker działa w całości w Twojej przeglądarce. Nie ma serwera, nie wysyła danych i nie zawiera zdalnego kodu. Ustawienia i diagnostyka są przechowywane wyłącznie lokalnie.
-
-Listy filtrów: EasyList, EasyPrivacy, uBlock filters i Polskie Filtry Reklamowe, na warunkach ich licencji.
-
-Apex AdBlocker jest darmowy – bez płatnych funkcji i subskrypcji.
-```
-
----
-
-## 2. Karta „Privacy practices”
-
-### Single purpose (jedno przeznaczenie)
-
-```
-Apex AdBlocker blocks ads, trackers and malicious sites on the web pages the user visits.
-```
-
-### Uzasadnienia uprawnień
-
-**declarativeNetRequest**
-```
-Used to block requests to ad, tracking and malware domains with the extension's built-in static filter rules, and to apply the user's own filters and per-site exceptions as dynamic rules. This is the core ad-blocking function of the extension.
-```
-
-**scripting**
-```
-Used to hide ad elements left on pages (cosmetic filtering), to register blocking scripts (scriptlets) that neutralise anti-adblock code and in-player video ads on the sites that need them, and to inject the "Hide element" tool when the user starts it from the popup. All scripts are bundled in the extension package; no remote code is executed.
-```
-
-**storage**
-```
-Used to save the user's settings locally (sites where protection is turned off, the user's own filters, the page-reload preference) and a local diagnostics log shown in the extension's settings. Nothing is synced or sent anywhere.
-```
-
-**activeTab**
-```
-Used to show the number of requests blocked on the current tab when the user opens the extension popup (chrome.declarativeNetRequest.getMatchedRules for that tab).
-```
-
-**Host permission (<all_urls>)**
-```
-An ad blocker must be able to act on every site the user visits: to apply cosmetic filters and blocking scripts in page frames, to apply site-specific filters and to redirect blocked ad scripts to harmless built-in placeholders. Page data is processed only locally in the browser and is never collected or transmitted.
-```
-
-### Remote code
-
-```
-No, I am not using remote code.
-```
-Uzasadnienie (jeśli pole jest wymagane):
-```
-All JavaScript, filter rules and resources are included in the extension package. The extension makes no network requests of its own.
-```
-
-### Data usage (wykorzystanie danych)
-
-Nie zaznaczaj **żadnej** kategorii danych – rozszerzenie nie zbiera i nie przesyła danych użytkownika (dane stron są przetwarzane wyłącznie lokalnie).
-
-Zaznacz wszystkie trzy oświadczenia:
-- I do not sell or transfer user data to third parties, outside of the approved use cases
-- I do not use or transfer user data for purposes that are unrelated to my item's single purpose
-- I do not use or transfer user data to determine creditworthiness or for lending purposes
-
-### Privacy policy URL
-
-```
-https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md
-```
-
----
-
-## 3. Uwagi do weryfikacji
-
-- Rozszerzenia z dostępem do wszystkich stron przechodzą dłuższą weryfikację – to normalne.
-- Zrzuty ekranu pokazują prawdziwe rozszerzenie na fikcyjnej stronie demo („Daily News”) z lokalnie podstawionymi reklamami (adres `dailynews.example` to domena zarezerwowana do przykładów). Ramka przeglądarki jest neutralną makietą (bez elementów konkretnego systemu), a nagłówki opisują tylko to, co rozszerzenie faktycznie robi (np. „Ukryj element” wymaga kilku kliknięć, więc nie obiecujemy „dwóch”). Liczba zablokowanych żądań w popupie to faktyczna liczba żądań zablokowanych na tej stronie (automat nie może kliknąć ikony, więc Chrome nie przyznaje uprawnienia `activeTab` – liczba pochodzi z dziennika sieci tej samej strony).
-- Zrzuty generuje `node store/generate.mjs` (wymaga Chrome i paczki `npm run package:dev`).
+Automat `npm run webstore:prepare` tworzy paczkę zgłoszeniową, sprawdza kod i zapisuje stan walidacji. [Instrukcja przygotowania](../docs/webstore/README.md) wyjaśnia pozostałe kroki. Niczego nie publikuje ani nie zastępuje decyzji sklepu.

@@ -74,6 +74,9 @@
   let picking = true;
   let chain = [];          // [wybrany, rodzic, dziadek...] do przycisków szerzej/węziej
   let level = 0;
+  let closeTimer = 0;
+  let stopped = false;
+  let saving = false;
 
   const isOurs = (el) => el === host;
 
@@ -185,9 +188,14 @@
   }
 
   function stop() {
+    if (stopped) return;
+    stopped = true;
+    clearTimeout(closeTimer);
     window.removeEventListener('mousemove', onMove, true);
     for (const t of ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup']) window.removeEventListener(t, onClick, true);
     window.removeEventListener('keydown', onKey, true);
+    window.removeEventListener('scroll', onScroll);
+    chain = [];
     host.remove();
     delete window.__apexPicker;
   }
@@ -195,7 +203,8 @@
   window.addEventListener('mousemove', onMove, true);
   for (const t of ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup']) window.addEventListener(t, onClick, true);
   window.addEventListener('keydown', onKey, true);
-  window.addEventListener('scroll', () => { if (!picking) { const el = chain[level]; if (el) place(el, box); preview(); } }, { passive: true });
+  function onScroll() { if (!picking) { const el = chain[level]; if (el) place(el, box); preview(); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
 
   input.addEventListener('input', preview);
   btn('up').addEventListener('click', () => { if (level < chain.length - 1) { level++; applyLevel(); } });
@@ -203,20 +212,26 @@
   btn('cancel').addEventListener('click', stop);
   btn('save').addEventListener('click', async () => {
     const selector = input.value.trim();
-    if (!selector) return;
+    if (!selector || saving) return;
+    saving = true;
     btn('save').disabled = true;
-    try {
-      for (const e of document.querySelectorAll(selector)) if (!isOurs(e)) e.style.setProperty('display', 'none', 'important');
-    } catch {}
     try {
       const res = await chrome.runtime.sendMessage({ type: 'picker:add', selector });
       if (res && res.ok) {
+        if (stopped) return;
+        try {
+          for (const e of document.querySelectorAll(selector)) if (!isOurs(e)) e.style.setProperty('display', 'none', 'important');
+        } catch {}
         countEl.innerHTML = `<span class="done">${esc(T('picker_saved', 'Zapisano w „Moich filtrach”. Element zostanie ukryty także po odświeżeniu.'))}</span>`;
-        setTimeout(stop, 1400);
+        closeTimer = setTimeout(stop, 1400);
         return;
       }
     } catch {}
-    countEl.textContent = T('picker_saveFailed', 'Nie udało się zapisać filtra.');
+    finally { saving = false; }
+    if (!stopped) {
+      btn('save').disabled = false;
+      countEl.textContent = T('picker_saveFailed', 'Nie udało się zapisać filtra.');
+    }
   });
 
   window.__apexPicker = { focus() { input.focus(); } };

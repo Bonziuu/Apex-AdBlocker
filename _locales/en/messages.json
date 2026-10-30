@@ -25,6 +25,213 @@
   "rules_many": {
     "message": "rules"
   },
+  "dmsg_userRuleLimit": {
+    "message": "Too many custom network rules (maximum 5000); settings unchanged."
+  },
+  "dmsg_rollbackStorageKey": {
+    "message": "storage: field $P1$ was not restored",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_rollbackSync": {
+    "message": "synchronization ($P1$): $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_changeRollbackFailed": {
+    "message": "Settings change failed ($P1$); the previous state could not be fully restored: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_scriptletRestoreFailed": {
+    "message": "Scriptlet registration failed ($P1$), and the previous set could not be fully restored: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_frameContextUnavailable": {
+    "message": "The frame document and top-level site could not be verified; scriptlets were skipped."
+  },
+  "ui_noResponse": {
+    "message": "The extension did not respond"
+  },
+  "ui_noDiagnosticsResponse": {
+    "message": "Diagnostics did not respond"
+  },
+  "ui_optionsReadFailed": {
+    "message": "Could not read settings: $P1$. Try again or open Diagnostics.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_rollbackIncomplete": {
+    "message": "$P1$. The previous settings could not be fully restored. ",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_currentSettingsRead": {
+    "message": "The currently saved settings have been loaded. "
+  },
+  "ui_currentSettingsReadFailed": {
+    "message": "Could not read the current settings. Use the button above to try again. "
+  },
+  "ui_openDiagnostics": {
+    "message": "Open Diagnostics to check protection."
+  },
+  "ui_rolledBack": {
+    "message": ". The previous settings were restored."
+  },
+  "ui_popupRolledBack": {
+    "message": " The previous settings were restored."
+  },
+  "ui_backupExportFailed": {
+    "message": "Could not prepare the backup: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_importRefreshFailed": {
+    "message": "Settings restored, but the view could not be refreshed. Try again."
+  },
+  "ui_importUnconfirmed": {
+    "message": "Could not confirm the import: $P1$. Read the settings again or open Diagnostics.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_filtersSaveFailed": {
+    "message": "Could not save filters"
+  },
+  "ui_resyncFailed": {
+    "message": "Could not synchronize: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_operationFailed": {
+    "message": "The operation failed"
+  },
+  "ui_diagActionFailed": {
+    "message": "Diagnostics error: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_diagReadFailed": {
+    "message": "Could not read diagnostics: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_reportFailed": {
+    "message": "Could not build the report: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_noActiveTab": {
+    "message": "No active tab was found"
+  },
+  "ui_popupReadFailed": {
+    "message": "Could not read the current protection status: $P1$. Try again.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_reloadFailed": {
+    "message": "Protection was changed, but the page could not be reloaded: $P1$. Reload it manually.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_popupRollbackIncomplete": {
+    "message": " The settings could not be fully restored. Open Diagnostics."
+  },
+  "ui_protectionFailed": {
+    "message": "Could not change protection: $P1$.$P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "ui_protectionUnconfirmed": {
+    "message": "Could not confirm the protection change: $P1$. Check the current status or open Diagnostics.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_reloadPreferenceFailed": {
+    "message": "Could not save the reload preference: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_pickerStartFailed": {
+    "message": "Could not start the element picker: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_retry": {
+    "message": "Try again"
+  },
+  "ui_openDiagnosticsLink": {
+    "message": "Open Diagnostics"
+  },
+  "ui_reportPreview": {
+    "message": "Diagnostic report"
+  },
   "popup_checking": {
     "message": "Checking…"
   },
@@ -262,7 +469,7 @@
     "message": "Examples"
   },
   "filters_examplesBody": {
-    "message": "! comment\n||ads.example.com^                block a domain\n||example.com/banner/*$$image      block images from this path\n@@||example.com^$$script           allow scripts from a domain\nexample.com##.ad                   hide an element on example.com\n##.sponsored                       hide on all sites\nexample.com##div:has-text(Advert)  hide an element containing text"
+    "message": "! Block a domain\n||ads.example.com^\n! Block images from this path\n||example.com/banner/*$$image\n! Allow scripts from a domain\n@@||example.com^$$script\n! Hide an element on example.com\nexample.com##.ad\n! Hide on all sites\n##.sponsored\n! Hide an element containing text\nexample.com##div:has-text(Advert)"
   },
   "filters_placeholder": {
     "message": "e.g. ||ads.example.com^"
@@ -302,7 +509,7 @@
     "message": "Import settings"
   },
   "backup_note": {
-    "message": "Importing replaces your current settings. If the file is invalid or Chrome doesn’t accept the changes, your settings stay as they were."
+    "message": "Importing replaces the current settings. An invalid file does not change them. If Chrome rejects the changes, the extension tries to restore the previous state and shows the result."
   },
   "backup_restored": {
     "message": "Restored:"
@@ -362,7 +569,7 @@
     "message": "Diagnostics"
   },
   "diag_desc": {
-    "message": "Status of the Apex AdBlocker engines. All data is collected and stored only locally, in this browser. The diagnostic report contains no page addresses, video IDs, cookies or account data – you can safely paste it into a conversation."
+    "message": "Status of the Apex AdBlocker engines. Diagnostic data stays locally in this browser. The exported report removes recognized addresses, video IDs, cookies and tokens. Review its contents before sharing, because automatic redaction may not recognize every piece of information."
   },
   "diag_refresh": {
     "message": "Refresh"
@@ -404,7 +611,7 @@
     "message": "Measure the work of cosmetic filters and scriptlets on pages (off by default)"
   },
   "diag_perfDesc": {
-    "message": "Collected: number of DOM mutation batches, generic and procedural filtering time, number of applied selectors and – for each scriptlet – number of calls and time spent in Apex AdBlocker code (excluding the page’s original function). No page addresses, video IDs or data contents. The data stays in this browser and is cleared when it closes. Reload your tabs after turning this on."
+    "message": "Collected locally: the page domain, frame, number of DOM mutation batches, generic and procedural filtering time, number of applied selectors and, for each scriptlet, calls and time spent in Apex AdBlocker code (excluding the page’s original function). No full page URLs, video IDs or data contents. The data stays in this browser and is cleared when it closes. Reload your tabs after enabling measurements."
   },
   "diag_resetPerf": {
     "message": "Reset measurements"
@@ -1012,6 +1219,15 @@
   },
   "about_title": {
     "message": "About"
+  },
+  "about_authorTitle": {
+    "message": "Author and contact"
+  },
+  "about_linkedin": {
+    "message": "LinkedIn profile"
+  },
+  "about_linkedinLabel": {
+    "message": "Author’s LinkedIn profile (opens in a new tab)"
   },
   "about_intro": {
     "message": "Apex AdBlocker runs on Manifest V3 (MV3) and blocks on three levels:"

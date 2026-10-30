@@ -2,7 +2,8 @@
 //
 // Lekka diagnostyka odtwarzacza YouTube. Działa lokalnie: sprawdza tylko DOM
 // odtwarzacza co kilka sekund i wysyła do service workera status
-// (healthy | degraded | error | unknown) wyłącznie przy zmianie stanu.
+// (healthy | degraded | error | unknown) przy zmianie stanu oraz co 30 s.
+// Heartbeat odnawia 60-sekundowy TTL raportu i odtwarza go po wybudzeniu workera.
 // Nie zapisuje adresów filmów, nie wysyła niczego poza rozszerzenie, nie
 // próbuje automatycznie naprawiać odtwarzacza.
 
@@ -57,17 +58,22 @@
     : el.offsetParent !== null);
 
   let pageStart = Date.now();
-  let lastPath = location.pathname;
+  // Tożsamość filmu pozostaje lokalna i nie trafia do raportu.
+  const pageIdentity = () => `${location.pathname}|${location.search || ''}`;
+  let lastPage = pageIdentity();
   let spinnerSince = 0;
   let lastTime = -1;
   let lastSent = '';
+  let lastSentAt = -Infinity;
+  const HEARTBEAT_MS = 30_000;
 
   const sample = () => {
-    if (location.pathname !== lastPath) {
-      lastPath = location.pathname;
+    if (pageIdentity() !== lastPage) {
+      lastPage = pageIdentity();
       pageStart = Date.now();
       spinnerSince = 0;
       lastTime = -1;
+      lastSent = '';
     }
     const kind = NS.pageKind(location);
     const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
@@ -102,11 +108,16 @@
     try { result = sample(); } catch { return; }
     const kind = NS.pageKind(location);
     const key = `${kind}|${result.status}|${result.reasons.join(',')}`;
-    if (key === lastSent) return;
+    if (key === lastSent && Date.now() - lastSentAt < HEARTBEAT_MS) return;
     lastSent = key;
+    const sentAt = lastSentAt = Date.now();
+    const retry = () => {
+      // Nie kasuj nowszego raportu, jeśli starsza wiadomość zawiedzie później.
+      if (lastSent === key && lastSentAt === sentAt) lastSent = '';
+    };
     try {
-      chrome.runtime.sendMessage({ type: 'youtube:health', status: result.status, reasons: result.reasons, page: kind, frame: window === window.top ? 'top' : 'frame' }).catch(() => {});
-    } catch { /* rozszerzenie przeładowane */ }
+      chrome.runtime.sendMessage({ type: 'youtube:health', status: result.status, reasons: result.reasons, page: kind, frame: window === window.top ? 'top' : 'frame' }).catch(retry);
+    } catch { retry(); /* rozszerzenie przeładowane */ }
   };
 
   // Po zmianie adresu karty (np. SPA watch → watch) service worker usuwa stary raport i prosi

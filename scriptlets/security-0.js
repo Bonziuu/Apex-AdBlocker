@@ -1,6 +1,16 @@
 /* Apex AdBlocker – scriptlety listy "Złośliwe strony" (część 1/1). Plik generowany przez tools/build.mjs. */
 (function () {
 'use strict';
+
+const installedKey = Symbol.for('ApexAdBlocker.scriptletShards.v1');
+let installed = globalThis[installedKey];
+if (!installed) {
+  installed = new Set();
+  Object.defineProperty(globalThis, installedKey, { value: installed, writable: false, configurable: false });
+}
+const shardKey = "scriptlets/security-0.js:c23589959cc3f6ab4696086f9b75e85b86a08886ad61e293b920c08950061ef2";
+if (installed.has(shardKey)) return;
+installed.add(shardKey);
 const CALLS = [["prevent-addEventListener","DOMContentLoaded","fullscreenEnabled"],["prevent-addEventListener","beforeunload","/[Ww]orker/"],["prevent-addEventListener","mousemove","loadSecret"],["remove-node-text","script","TextDecoder"],["remove-node-text","script","/document\\.currentScript\\.remove|0x0/"],["remove-node-text","script","String.fromCharCode"],["abort-current-script","fetch","_0x","/^data:/"],["abort-on-property-write","ai_front"],["abort-current-script","document.createElement",".onerror"],["abort-current-script","String.prototype.toLowerCase","Contract"],["remove-node-text","script","randomUUID"],["abort-current-script","atob","Uint8Array"],["remove-node-text","script","(self);"],["abort-current-script","atob","new"],["noeval-if","tigervip2"],["abort-current-script","atob","new Function(atob("],["abort-current-script","WebSocket","event.data"],["abort-current-script","open","executeCode"],["noeval-if","_0x"]];
 const HOSTS = {"z13.web.core.windows.net":[0],"web.core.windows.net":[1],"ondigitalocean.app":[2],"gemfellowship.org":[3],"longhall.consulting":[4],"casabasics.es":[5],"abogadosrosarinos.com":[6,7],"aptisweb.com":[6,7],"avene-hebergement.com":[6,7],"caesarjaco.co.id":[6,7],"https-xhamster.com":[6,7],"skybap.shop":[6,7],"strand-co.com":[8],"igualdad.iaa.csic.es":[9],"cizitensports.com":[10],"webrick.com":[11],"aspireatlas.com":[5],"pentest.blog":[12,13],"www.cambe.pr.gov.br":[14],"crimsonav.com":[15],"ngsingleissues.nationalgeographic.com":[15],"adrissa.com.co":[16],"americansoda.co.uk":[16],"casteloforte.com.br":[16],"centerfabril.com.br":[16],"forqueen.cz":[16],"joinusonline.net":[16],"jollibee.com.vn":[16],"kitapsan.com.tr":[16],"mebelinovdom.com":[16],"ojworld.it":[16],"qualityrental.com":[16],"szaszmotorshop.hu":[16],"tvojstyl.sk":[16],"up-shop.org":[16],"yairalon.com.br":[16],"weightlossdiet.top":[17],"msm-wroclaw.pl":[18]};
 const EXCEPT = {};
@@ -489,8 +499,13 @@ return { text: p, expect };
 }
 function testPattern(details, haystack) {
 if (details.matchAll) return true;
-if (details.re) return details.re.test(haystack) === details.expect;
+if (details.re) return regexMatches(details.re, haystack) === details.expect;
 return haystack.includes(details.text) === details.expect;
+}
+/** Matching is independent of earlier calls, including patterns carrying /g. */
+function regexMatches(re, value) {
+re.lastIndex = 0;
+return re.test(value);
 }
 /** Varargi "nazwa, wartość, ..." → obiekt; wartości liczbowe są zamieniane na liczby. */
 function parseVarargs(arr) {
@@ -610,10 +625,12 @@ function parsePropsToMatch(propsToMatch, implicit = '') {
 const needles = new Map();
 if (propsToMatch === undefined || propsToMatch === '') return needles;
 for (const needle of String(propsToMatch).split(/\s+/)) {
-let [prop, pattern] = needle.split(':');
+const separator = needle.indexOf(':');
+let prop = separator === -1 ? needle : needle.slice(0, separator);
+let pattern = separator === -1 ? undefined : needle.slice(separator + 1);
 if (prop === '') continue;
 if (pattern !== undefined && /[^$\w -]/.test(prop)) {
-prop = `${prop}:${pattern}`;
+prop = needle;
 pattern = undefined;
 }
 if (pattern !== undefined) needles.set(prop, initPattern(pattern, { canNegate: true }));
@@ -904,10 +921,9 @@ return plain;
 let sedCount = extra.sedCount !== undefined ? extra.sedCount : Number.MAX_SAFE_INTEGER;
 const handleNode = (node) => {
 const before = textContentGetter.call(node);
-if (reIncludes) { reIncludes.lastIndex = 0; if (!reIncludes.test(before)) return; }
-if (reExcludes) { reExcludes.lastIndex = 0; if (reExcludes.test(before)) return; }
-rePattern.lastIndex = 0;
-if (!rePattern.test(before)) return;
+if (reIncludes && !regexMatches(reIncludes, before)) return;
+if (reExcludes && regexMatches(reExcludes, before)) return;
+if (!regexMatches(rePattern, before)) return;
 rePattern.lastIndex = 0;
 const after = pattern !== '' ? before.replace(rePattern, replacement) : replacement;
 node.textContent = node.nodeName === 'SCRIPT' ? textFactory.createScript(after) : after;
@@ -920,7 +936,7 @@ for (;;) {
 const node = walker.nextNode();
 if (node === null) break;
 if (node === currentScript) continue;
-if (reNodeName.test(node.nodeName)) handleNode(node);
+if (regexMatches(reNodeName, node.nodeName)) handleNode(node);
 else if (node.nodeName === 'TEMPLATE') handleTree(node.content);
 else continue;
 if (sedCount === 0) break;
@@ -933,7 +949,7 @@ let observer;
 const handleMutations = (mutations) => {
 for (const m of mutations) {
 for (const node of m.addedNodes) {
-if (reNodeName.test(node.nodeName)) handleNode(node);
+if (regexMatches(reNodeName, node.nodeName)) handleNode(node);
 else if (node.nodeName === 'TEMPLATE') handleTree(node.content);
 else continue;
 if (sedCount === 0) { stop(false); return; }
@@ -1014,7 +1030,7 @@ const re = patternToRegex(key, undefined, true);
 const toRemove = [];
 for (let i = 0, n = storage.length; i < n; i++) {
 const k = storage.key(i);
-if (re.test(k)) toRemove.push(k);
+if (regexMatches(re, k)) toRemove.push(k);
 }
 modified = toRemove.length !== 0;
 for (const k of toRemove) storage.removeItem(k);
@@ -1179,10 +1195,11 @@ get response() {
 const inner = super.response;
 const d = instances.get(this);
 if (d === undefined) return inner;
-const len = typeof inner === 'string' ? inner.length : undefined;
-if (d.lastLength !== len) { d.response = undefined; d.lastLength = len; }
-if (d.response !== undefined) return d.response;
+if (!d.cached || d.lastResponse !== inner) {
+d.lastResponse = inner;
 d.response = transform(inner);
+d.cached = true;
+}
 return d.response;
 }
 get responseText() {
@@ -1257,8 +1274,8 @@ const validate = () => {
 const e = doc.currentScript;
 if (!(e instanceof HTMLScriptElement)) return;
 if (e === thisScript) return;
-if (context !== '' && reContext.test(e.src) === false) return;
-if (reNeedle.test(scriptText(e)) === false) return;
+if (context !== '' && regexMatches(reContext, e.src) === false) return;
+if (regexMatches(reNeedle, scriptText(e)) === false) return;
 throw new ReferenceError(exceptionToken);
 };
 let current = trapProperty(target, {
@@ -1281,7 +1298,7 @@ return Array.from(doc.querySelectorAll(targetSelector)).includes(el);
 } catch { return false; }
 };
 const shouldPrevent = (thisArg, t, h) => {
-const both = reType.test(t) && rePattern.test(h);
+const both = regexMatches(reType, t) && regexMatches(rePattern, h);
 if (both && targetSelector !== undefined && !elementMatches(thisArg)) return false;
 return both;
 };
@@ -1339,7 +1356,7 @@ return el;
 const noop = function () {};
 proxyApply('open', (ctx) => {
 const { callArgs } = ctx;
-if (rePattern.test(callArgs.join(' ')) !== expect) return ctx.reflect();
+if (regexMatches(rePattern, callArgs.join(' ')) !== expect) return ctx.reflect();
 if (delay === '') return null;
 if (decoy === 'blank') {
 callArgs[0] = 'about:blank';
@@ -1388,7 +1405,12 @@ timer = onIdle(() => { timer = undefined; removeAll(); }, { timeout: 17 });
 };
 let observer;
 const onMutations = (mutations) => {
-for (const { addedNodes, removedNodes } of mutations) {
+for (const { type, target, addedNodes, removedNodes } of mutations) {
+if (type === 'attributes') {
+if (lazily) { lazy(); return; }
+try { if (target.matches(selector)) fromNode(target); } catch { /* */ }
+continue;
+}
 for (const node of addedNodes) {
 if (node.nodeType !== 1) continue;
 if (lazily) { lazy(); return; }
@@ -1504,7 +1526,7 @@ const fetchPromise = ctx.reflect();
 if (pattern === '') return fetchPromise;
 if (needles.size !== 0 && matchObjectProps(needles, collateFetchArgs(...ctx.callArgs)) === undefined) return fetchPromise;
 return fetchPromise.then((before) => before.clone().text().then(perfWrap(respLabel, (textBefore) => {
-if (reIncludes && reIncludes.test(textBefore) === false) return before;
+if (reIncludes && regexMatches(reIncludes, textBefore) === false) return before;
 const textAfter = textBefore.replace(rePattern, replacement);
 if (textAfter === textBefore) return before;
 return respondLike(before, textAfter);
@@ -1517,7 +1539,7 @@ const extra = parseVarargs(varargs);
 const reIncludes = extra.includes ? patternToRegex(extra.includes) : null;
 installXhrResponseTransform(parsePropsToMatch(propsToMatch, 'url'), (inner) => {
 if (typeof inner !== 'string') return inner;
-if (reIncludes && reIncludes.test(inner) === false) return inner;
+if (reIncludes && regexMatches(reIncludes, inner) === false) return inner;
 return inner.replace(rePattern, replacement);
 });
 },
@@ -1600,7 +1622,7 @@ doc.cookie.split(';').forEach((cookieStr) => {
 const pos = cookieStr.indexOf('=');
 if (pos === -1) return;
 const name = cookieStr.slice(0, pos).trim();
-if (!reName.test(name)) return;
+if (!regexMatches(reName, name)) return;
 const p1 = name + '=';
 const p2a = `; domain=${baseURL.hostname}`;
 const p2b = `; domain=.${baseURL.hostname}`;
@@ -1643,7 +1665,7 @@ doc.addEventListener(type, () => throttle(remove), { passive: true });
 'noeval-if'(needle = '') {
 const reNeedle = patternToRegex(needle);
 proxyApply('eval', (ctx) => {
-if (needle !== '' && reNeedle.test(String(ctx.callArgs[0]))) return undefined;
+if (needle !== '' && regexMatches(reNeedle, String(ctx.callArgs[0]))) return undefined;
 return ctx.reflect();
 });
 },
@@ -1689,7 +1711,7 @@ if (pos === -1) return { key: s.trim(), value: '' };
 return { key: s.slice(0, pos).trim(), value: s.slice(pos + 1).trim() };
 }).filter(Boolean)
 : [];
-const has = (haystack, needle) => haystack.some(({ key, value }) => needle.test(`${key}=${value}`));
+const has = (haystack, needle) => haystack.some(({ key, value }) => regexMatches(needle, `${key}=${value}`));
 for (const { not, type, re } of assertions) {
 if (type === 'cookie' && has(cookies, re) === not) return;
 }
@@ -1763,7 +1785,7 @@ proxyApply(name, (ctx) => {
 const { callArgs } = ctx;
 const a = callArgs[0] instanceof Function ? String(fnToString(callArgs[0])) : String(callArgs[0]);
 if (needleRaw === '' && range.unbound) return ctx.reflect();
-if (reNeedle.test(a) !== not && range.test(callArgs[1])) callArgs[0] = function () {};
+if (regexMatches(reNeedle, a) !== not && range.test(callArgs[1])) callArgs[0] = function () {};
 return ctx.reflect();
 });
 }
@@ -1800,7 +1822,7 @@ if (perf === null) {
 win[name] = new Proxy(win[name], {
 apply(target, thisArg, args) {
 const [a, b] = args;
-if ((delay === -1 || b === delay) && reNeedle.test(a.toString())) args[1] = b * boost;
+if ((delay === -1 || b === delay) && regexMatches(reNeedle, a.toString())) args[1] = b * boost;
 return target.apply(thisArg, args);
 },
 });
@@ -1809,7 +1831,7 @@ return;
 win[name] = new Proxy(win[name], {
 apply: makeApplyTrap(perfLabel(name), (target, thisArg, args, reflect) => {
 const [a, b] = args;
-if ((delay === -1 || b === delay) && reNeedle.test(a.toString())) args[1] = b * boost;
+if ((delay === -1 || b === delay) && regexMatches(reNeedle, a.toString())) args[1] = b * boost;
 return reflect();
 }),
 });
@@ -1942,17 +1964,13 @@ return ctx.reflect();
 }
 /** Ustala, które scriptlety dotyczą bieżącego hosta, i je uruchamia. */
 function hostCandidates(hostname) {
-const labels = hostname.split('.');
-const out = [];
-for (let i = 0; i < labels.length; i++) {
-const suffix = labels.slice(i);
-out.push(suffix.join('.'));
-if (suffix.length >= 2) out.push(suffix.slice(0, -1).join('.') + '.*');
-if (suffix.length >= 3) out.push(suffix.slice(0, -2).join('.') + '.*');
-}
-return out;
+const resolve = globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')];
+if (typeof resolve === 'function') return resolve(hostname);
+return hostname.split('.').map((_, i, labels) => labels.slice(i).join('.'));
 }
 function runForHost(calls, hosts, except) {
+if (typeof globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')] !== 'function'
+&& [...Object.keys(hosts), ...Object.keys(except)].some((h) => h.endsWith('.*'))) return;
 let hostname = '';
 try { hostname = location.hostname; } catch { /* */ }
 if (!hostname) {

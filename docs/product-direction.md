@@ -14,7 +14,9 @@ Nie planujemy:
 
 Nie dotyczy to warunków licencyjnych samego kodu Apex AdBlocker ani komponentów i list filtrów stron trzecich – obowiązują one bez zmian (zob. sekcję „Źródła list i licencje” w README).
 
-W przyszłości mogą pojawić się wyłącznie **opcjonalne linki**:
+W sekcji **Więcej → O wtyczce** znajdują się dane autora: **Konrad Woźniak**, kontakt e-mail i profil LinkedIn.
+
+W przyszłości mogą pojawić się dodatkowe **opcjonalne linki**:
 
 - Strona autora
 - Wesprzyj rozwój
@@ -22,4 +24,4 @@ W przyszłości mogą pojawić się wyłącznie **opcjonalne linki**:
 
 Linki będą otwierane wyłącznie po świadomym kliknięciu. Apex AdBlocker nie będzie przekazywał do stron autora, wsparcia ani GitHuba danych z rozszerzenia.
 
-Te linki nie są jeszcze dodane (brak docelowych adresów).
+Te dodatkowe linki nie są jeszcze dodane (brak docelowych adresów).

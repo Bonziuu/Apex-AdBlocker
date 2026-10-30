@@ -133,8 +133,14 @@ function initPattern(pattern, { canNegate = false, flags } = {}) {
 
 function testPattern(details, haystack) {
   if (details.matchAll) return true;
-  if (details.re) return details.re.test(haystack) === details.expect;
+  if (details.re) return regexMatches(details.re, haystack) === details.expect;
   return haystack.includes(details.text) === details.expect;
+}
+
+/** Matching is independent of earlier calls, including patterns carrying /g. */
+function regexMatches(re, value) {
+  re.lastIndex = 0;
+  return re.test(value);
 }
 
 /** Varargi "nazwa, wartość, ..." → obiekt; wartości liczbowe są zamieniane na liczby. */
@@ -266,10 +272,12 @@ function parsePropsToMatch(propsToMatch, implicit = '') {
   const needles = new Map();
   if (propsToMatch === undefined || propsToMatch === '') return needles;
   for (const needle of String(propsToMatch).split(/\s+/)) {
-    let [prop, pattern] = needle.split(':');
+    const separator = needle.indexOf(':');
+    let prop = separator === -1 ? needle : needle.slice(0, separator);
+    let pattern = separator === -1 ? undefined : needle.slice(separator + 1);
     if (prop === '') continue;
     if (pattern !== undefined && /[^$\w -]/.test(prop)) {
-      prop = `${prop}:${pattern}`;
+      prop = needle;
       pattern = undefined;
     }
     if (pattern !== undefined) needles.set(prop, initPattern(pattern, { canNegate: true }));
@@ -584,10 +592,9 @@ function replaceNodeTextImpl(nodeName = '', pattern = '', replacement = '', ...v
   let sedCount = extra.sedCount !== undefined ? extra.sedCount : Number.MAX_SAFE_INTEGER;
   const handleNode = (node) => {
     const before = textContentGetter.call(node);
-    if (reIncludes) { reIncludes.lastIndex = 0; if (!reIncludes.test(before)) return; }
-    if (reExcludes) { reExcludes.lastIndex = 0; if (reExcludes.test(before)) return; }
-    rePattern.lastIndex = 0;
-    if (!rePattern.test(before)) return;
+    if (reIncludes && !regexMatches(reIncludes, before)) return;
+    if (reExcludes && regexMatches(reExcludes, before)) return;
+    if (!regexMatches(rePattern, before)) return;
     rePattern.lastIndex = 0;
     const after = pattern !== '' ? before.replace(rePattern, replacement) : replacement;
     node.textContent = node.nodeName === 'SCRIPT' ? textFactory.createScript(after) : after;
@@ -600,7 +607,7 @@ function replaceNodeTextImpl(nodeName = '', pattern = '', replacement = '', ...v
       const node = walker.nextNode();
       if (node === null) break;
       if (node === currentScript) continue;
-      if (reNodeName.test(node.nodeName)) handleNode(node);
+      if (regexMatches(reNodeName, node.nodeName)) handleNode(node);
       else if (node.nodeName === 'TEMPLATE') handleTree(node.content);
       else continue;
       if (sedCount === 0) break;
@@ -613,7 +620,7 @@ function replaceNodeTextImpl(nodeName = '', pattern = '', replacement = '', ...v
   const handleMutations = (mutations) => {
     for (const m of mutations) {
       for (const node of m.addedNodes) {
-        if (reNodeName.test(node.nodeName)) handleNode(node);
+        if (regexMatches(reNodeName, node.nodeName)) handleNode(node);
         else if (node.nodeName === 'TEMPLATE') handleTree(node.content);
         else continue;
         if (sedCount === 0) { stop(false); return; }
@@ -700,7 +707,7 @@ function setStorageImpl(which, trusted, key = '', value = '', options = {}) {
       const toRemove = [];
       for (let i = 0, n = storage.length; i < n; i++) {
         const k = storage.key(i);
-        if (re.test(k)) toRemove.push(k);
+        if (regexMatches(re, k)) toRemove.push(k);
       }
       modified = toRemove.length !== 0;
       for (const k of toRemove) storage.removeItem(k);
@@ -872,10 +879,13 @@ function installXhrResponseTransform(needles, rawTransform) {
       const inner = super.response;
       const d = instances.get(this);
       if (d === undefined) return inner;
-      const len = typeof inner === 'string' ? inner.length : undefined;
-      if (d.lastLength !== len) { d.response = undefined; d.lastLength = len; }
-      if (d.response !== undefined) return d.response;
-      d.response = transform(inner);
+      // JSON responses transition from null to an object, without a string length.
+      // open() creates fresh details, so reuse of an XHR cannot reuse this cache.
+      if (!d.cached || d.lastResponse !== inner) {
+        d.lastResponse = inner;
+        d.response = transform(inner);
+        d.cached = true;
+      }
       return d.response;
     }
 
@@ -958,8 +968,8 @@ const SCRIPTLETS = {
         const e = doc.currentScript;
         if (!(e instanceof HTMLScriptElement)) return;
         if (e === thisScript) return;
-        if (context !== '' && reContext.test(e.src) === false) return;
-        if (reNeedle.test(scriptText(e)) === false) return;
+        if (context !== '' && regexMatches(reContext, e.src) === false) return;
+        if (regexMatches(reNeedle, scriptText(e)) === false) return;
         throw new ReferenceError(exceptionToken);
       };
       let current = trapProperty(target, {
@@ -983,7 +993,7 @@ const SCRIPTLETS = {
       } catch { return false; }
     };
     const shouldPrevent = (thisArg, t, h) => {
-      const both = reType.test(t) && rePattern.test(h);
+      const both = regexMatches(reType, t) && regexMatches(rePattern, h);
       if (both && targetSelector !== undefined && !elementMatches(thisArg)) return false;
       return both;
     };
@@ -1043,7 +1053,7 @@ const SCRIPTLETS = {
     const noop = function () {};
     proxyApply('open', (ctx) => {
       const { callArgs } = ctx;
-      if (rePattern.test(callArgs.join(' ')) !== expect) return ctx.reflect();
+      if (regexMatches(rePattern, callArgs.join(' ')) !== expect) return ctx.reflect();
       if (delay === '') return null;
       if (decoy === 'blank') {
         callArgs[0] = 'about:blank';
@@ -1094,7 +1104,12 @@ const SCRIPTLETS = {
     };
     let observer;
     const onMutations = (mutations) => {
-      for (const { addedNodes, removedNodes } of mutations) {
+      for (const { type, target, addedNodes, removedNodes } of mutations) {
+        if (type === 'attributes') {
+          if (lazily) { lazy(); return; }
+          try { if (target.matches(selector)) fromNode(target); } catch { /* */ }
+          continue;
+        }
         for (const node of addedNodes) {
           if (node.nodeType !== 1) continue;
           if (lazily) { lazy(); return; }
@@ -1217,7 +1232,7 @@ const SCRIPTLETS = {
       if (pattern === '') return fetchPromise;
       if (needles.size !== 0 && matchObjectProps(needles, collateFetchArgs(...ctx.callArgs)) === undefined) return fetchPromise;
       return fetchPromise.then((before) => before.clone().text().then(perfWrap(respLabel, (textBefore) => {
-        if (reIncludes && reIncludes.test(textBefore) === false) return before;
+        if (reIncludes && regexMatches(reIncludes, textBefore) === false) return before;
         const textAfter = textBefore.replace(rePattern, replacement);
         if (textAfter === textBefore) return before;
         return respondLike(before, textAfter);
@@ -1231,7 +1246,7 @@ const SCRIPTLETS = {
     const reIncludes = extra.includes ? patternToRegex(extra.includes) : null;
     installXhrResponseTransform(parsePropsToMatch(propsToMatch, 'url'), (inner) => {
       if (typeof inner !== 'string') return inner;
-      if (reIncludes && reIncludes.test(inner) === false) return inner;
+      if (reIncludes && regexMatches(reIncludes, inner) === false) return inner;
       return inner.replace(rePattern, replacement);
     });
   },
@@ -1321,7 +1336,7 @@ const SCRIPTLETS = {
         const pos = cookieStr.indexOf('=');
         if (pos === -1) return;
         const name = cookieStr.slice(0, pos).trim();
-        if (!reName.test(name)) return;
+        if (!regexMatches(reName, name)) return;
         const p1 = name + '=';
         const p2a = `; domain=${baseURL.hostname}`;
         const p2b = `; domain=.${baseURL.hostname}`;
@@ -1366,7 +1381,7 @@ const SCRIPTLETS = {
   'noeval-if'(needle = '') {
     const reNeedle = patternToRegex(needle);
     proxyApply('eval', (ctx) => {
-      if (needle !== '' && reNeedle.test(String(ctx.callArgs[0]))) return undefined;
+      if (needle !== '' && regexMatches(reNeedle, String(ctx.callArgs[0]))) return undefined;
       return ctx.reflect();
     });
   },
@@ -1414,7 +1429,7 @@ const SCRIPTLETS = {
           return { key: s.slice(0, pos).trim(), value: s.slice(pos + 1).trim() };
         }).filter(Boolean)
         : [];
-      const has = (haystack, needle) => haystack.some(({ key, value }) => needle.test(`${key}=${value}`));
+      const has = (haystack, needle) => haystack.some(({ key, value }) => regexMatches(needle, `${key}=${value}`));
       for (const { not, type, re } of assertions) {
         if (type === 'cookie' && has(cookies, re) === not) return;
       }
@@ -1489,7 +1504,7 @@ function timerPrevent(name, needleRaw, delayRaw) {
     const { callArgs } = ctx;
     const a = callArgs[0] instanceof Function ? String(fnToString(callArgs[0])) : String(callArgs[0]);
     if (needleRaw === '' && range.unbound) return ctx.reflect();
-    if (reNeedle.test(a) !== not && range.test(callArgs[1])) callArgs[0] = function () {};
+    if (regexMatches(reNeedle, a) !== not && range.test(callArgs[1])) callArgs[0] = function () {};
     return ctx.reflect();
   });
 }
@@ -1529,7 +1544,7 @@ function timerAdjust(name, needleArg, delayArg, boostArg) {
       apply(target, thisArg, args) {
         const [a, b] = args;
         // Jak w uBO: porównanie ścisłe i zwykłe a.toString().
-        if ((delay === -1 || b === delay) && reNeedle.test(a.toString())) args[1] = b * boost;
+        if ((delay === -1 || b === delay) && regexMatches(reNeedle, a.toString())) args[1] = b * boost;
         return target.apply(thisArg, args);
       },
     });
@@ -1538,7 +1553,7 @@ function timerAdjust(name, needleArg, delayArg, boostArg) {
   win[name] = new Proxy(win[name], {
     apply: makeApplyTrap(perfLabel(name), (target, thisArg, args, reflect) => {
       const [a, b] = args;
-      if ((delay === -1 || b === delay) && reNeedle.test(a.toString())) args[1] = b * boost;
+      if ((delay === -1 || b === delay) && regexMatches(reNeedle, a.toString())) args[1] = b * boost;
       return reflect();
     }),
   });
@@ -1680,18 +1695,18 @@ function editInbound(trusted, chain, argPosRaw, q) {
 
 /** Ustala, które scriptlety dotyczą bieżącego hosta, i je uruchamia. */
 function hostCandidates(hostname) {
-  const labels = hostname.split('.');
-  const out = [];
-  for (let i = 0; i < labels.length; i++) {
-    const suffix = labels.slice(i);
-    out.push(suffix.join('.'));
-    if (suffix.length >= 2) out.push(suffix.slice(0, -1).join('.') + '.*');
-    if (suffix.length >= 3) out.push(suffix.slice(0, -2).join('.') + '.*');
-  }
-  return out;
+  const resolve = globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')];
+  if (typeof resolve === 'function') return resolve(hostname);
+  // Fail closed for entity scopes if an older/incomplete registration omitted
+  // the prerequisite. Ordinary concrete hostname filters still work.
+  return hostname.split('.').map((_, i, labels) => labels.slice(i).join('.'));
 }
 
 function runForHost(calls, hosts, except) {
+  // Entity exclusions are also security-sensitive scope constraints: without
+  // the prerequisite, do not run a concrete filter while dropping its exception.
+  if (typeof globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')] !== 'function'
+      && [...Object.keys(hosts), ...Object.keys(except)].some((h) => h.endsWith('.*'))) return;
   let hostname = '';
   try { hostname = location.hostname; } catch { /* */ }
   if (!hostname) {

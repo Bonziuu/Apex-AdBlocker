@@ -7,7 +7,7 @@
 
 /** Typy wiadomości dozwolone ze skryptów treści. */
 export const CONTENT_SCRIPT_MESSAGES = Object.freeze(new Set([
-  'cosmetic:init', 'cosmetic:tokens', 'youtube:health', 'perf:report', 'perf:scriptlets', 'picker:add',
+  'cosmetic:init', 'cosmetic:tokens', 'scriptlets:init', 'youtube:health', 'perf:report', 'perf:scriptlets', 'picker:add',
 ]));
 
 /**

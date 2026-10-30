@@ -73,7 +73,7 @@ Jeżeli po aktualizacji list pojawi się nowy krytyczny filtr YouTube, którego 
 
 Apex AdBlocker nie ma telemetrii ani backendu.
 
-Stan diagnostyczny jest lokalny. Raport eksportowany przez użytkownika jest sanityzowany z danych takich jak pełne URL-e, cookies, tokeny, adresy e-mail i identyfikatory filmów.
+Stan diagnostyczny jest lokalny. Raport eksportowany przez użytkownika pomija surowe dane stron i usuwa rozpoznane URL-e, cookies, tokeny, adresy e-mail i identyfikatory filmów. Sanityzacja jest heurystyczna: użytkownik powinien przejrzeć raport przed ręcznym udostępnieniem. Opcjonalne lokalne pomiary wydajności mogą zawierać domenę i identyfikator ramki.
 
 Service worker przyjmuje od skryptów treści (działających na każdej stronie) tylko wiadomości kosmetyki, YouTube, pomiarów i „Ukryj element”. Zmiana ustawień, import kopii i diagnostyka są dostępne wyłącznie ze stron rozszerzenia (`background/message-policy.js`). Pełna polityka prywatności: [PRIVACY.md](../PRIVACY.md).
 
@@ -113,6 +113,26 @@ Szczegóły:
 `npm run package:dev` tworzy paczkę zawierającą wyłącznie pliki potrzebne przez rozszerzenie. Testy, dokumentacja developerska, lokalne wrappery i inne narzędzia nie trafiają do ZIP-a.
 
 `npm run package:store` tworzy osobny ZIP pod Chrome Web Store z `manifest.json` w katalogu głównym.
+
+## Zakres domen i wyłączeń
+
+Encje takie jak `google.*` są dopasowywane według dołączonego snapshotu Public Suffix List, obejmującego granice ICANN i PRIVATE. `google.co.jp` pasuje do encji, a `google.attacker.com` nie. Scriptlety encji mają osobne shardy i wczesny test hosta; wspólny prerequisite `shared/entity-hosts.js` zapewnia ten sam algorytm w workerze i świecie MAIN. Generator helpera działa offline: `node tools/build-entity-hosts.mjs`.
+
+Wykluczenie domeny jest przypisane do konkretnego filtra hide/style/procedural. Nie staje się globalnym wyjątkiem anulującym niezależne reguły. Nieodwzorowywalne warianty `strict1p`/`strict3p` są odrzucane; dodatni `$to` przecina zakres wzorca żądania.
+
+## Scriptlety w ramkach
+
+Rejestracje MAIN z `document_start` obejmują dokument główny. W ramce izolowany content script prosi workera o uruchomienie odpowiednich dołączonych plików. Worker sprawdza zaufany URL nadawcy, bieżącą stronę nadrzędną, stan ochrony oraz identyfikator dokumentu i wykonuje pliki wyłącznie w tym dokumencie. Wyłączenie ochrony strony obejmuje także jej ramki obcego pochodzenia; wiadomość strony nie wybiera hosta ani dokumentu docelowego.
+
+Ta kontrola wymaga komunikacji z workerem. Scriptlet ramki może rozpocząć działanie po kodzie wykonanym wcześniej przez ramkę i nie przechwyci takich wcześniejszych wywołań. Nie gwarantujemy dla ramek takiego samego czasu uruchomienia jak `document_start` w dokumencie głównym. Nie zwiększa to uprawnień rozszerzenia. Zmiana ochrony wymaga przeładowania już otwartego dokumentu, aby usunąć wcześniej wykonane hooki; popup pokazuje potrzebę odświeżenia, jeśli przeładowanie nie nastąpiło.
+
+Każdy shard zapisuje w dokumencie MAIN znacznik swojej nazwy i hasha źródła. Powtórzone żądanie po utracie odpowiedzi lub restarcie workera nie instaluje ponownie tych samych hooków. Nieudana próba bez wymaganego helpera PSL nie blokuje późniejszego poprawnego uruchomienia.
+
+## Spójność ustawień i walidacja wydania
+
+Kompilacja i walidacja poprzedzają trwały zapis. Zmiana ustawień jest potwierdzana po synchronizacji wymaganych silników; po błędzie następuje sprawdzany rollback. Niepełne przywrócenie jest jawne, a interfejs odczytuje aktualny stan. Limit 5000 własnych reguł sieciowych jest jawnie egzekwowany.
+
+`npm ci` odtwarza narzędzia z lockfile. `npm run check -- --require-browser` wymaga kompletnych wyników testów bez SKIP/TODO oraz smoke PASS. CI i automaty wydania korzystają z tej samej kontroli. `npm run webstore:prepare` tworzy świeżą paczkę i zapisuje faktyczne wyniki oraz pozostałe braki; nie publikuje rozszerzenia ani nie zastępuje testów rzeczywistych stron. Błąd pobierania, HTML zamiast listy lub nowe nieobsługiwane krytyczne filtry zatrzymują aktualizację przed zastąpieniem poprzedniego snapshotu.
 
 ## Znane ograniczenia
 

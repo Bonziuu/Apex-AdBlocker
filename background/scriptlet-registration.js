@@ -19,9 +19,11 @@ export const SESSION_SUFFIX = '-s';
 export function scriptletRegistrations(f, { devPerf, excludeMatches }) {
   const base = {
     // przy pomiarach wydajności najpierw plik-flaga (ta sama rejestracja → gwarantowana kolejność)
-    js: devPerf ? [SCRIPTLET_PERF_FLAG_FILE, f.file] : [f.file],
+    js: [...(devPerf ? [SCRIPTLET_PERF_FLAG_FILE] : []), ...(f.jsBefore || []), f.file],
     runAt: 'document_start',
-    allFrames: true,
+    // Frames are injected separately after the worker verifies their top-level site.
+    // Top-level hooks retain document_start; frame hooks wait for that authorization.
+    allFrames: false,
     world: 'MAIN',
   };
   if (excludeMatches.length) base.excludeMatches = excludeMatches;

@@ -1,1 +1,4 @@
 *.cmd text eol=crlf
+
+# Preserve whitespace in the original upstream license text.
+shared/public-suffix-LICENSE.txt -whitespace

@@ -17,60 +17,73 @@
       </div>
     </header>
 
-    <nav>
-      <button class="tab" data-tab="protection" aria-selected="true" data-i18n="tab_protection">Ochrona</button>
-      <button class="tab" data-tab="filters" data-i18n="tab_filters">Moje filtry</button>
-      <button class="tab" data-tab="sites" data-i18n="tab_sites">Wyłączone strony</button>
-      <button class="tab" data-tab="more" data-i18n="tab_more">Więcej</button>
+    <div id="loadError" class="msg" role="alert" hidden>
+      <p id="loadErrorMessage"></p>
+      <button id="retryOptions" class="secondary" type="button" data-i18n="ui_retry">Spróbuj ponownie</button>
+      <a href="#diag" data-i18n="ui_openDiagnosticsLink">Otwórz diagnostykę</a>
+    </div>
+
+    <nav role="tablist" aria-label="Apex AdBlocker">
+      <button class="tab" data-tab="protection" id="tab-protection" role="tab" aria-controls="protection" tabindex="0" aria-selected="true" data-i18n="tab_protection">Ochrona</button>
+      <button class="tab" data-tab="filters" id="tab-filters" role="tab" aria-controls="filters" tabindex="-1" data-i18n="tab_filters">Moje filtry</button>
+      <button class="tab" data-tab="sites" id="tab-sites" role="tab" aria-controls="sites" tabindex="-1" data-i18n="tab_sites">Wyłączone strony</button>
+      <button class="tab" data-tab="more" id="tab-more" role="tab" aria-controls="more" tabindex="-1" data-i18n="tab_more">Więcej</button>
     </nav>
 
-    <section id="protection" class="panel">
+    <section id="protection" class="panel" role="tabpanel" tabindex="0" aria-labelledby="tab-protection">
       <h2 class="mode-h" data-i18n="prot_title">Ochrona</h2>
       <p class="muted" data-i18n="prot_desc">Apex AdBlocker blokuje reklamy, śledzenie i złośliwe strony – zawsze tym samym zestawem list, bez wybierania poziomu ochrony. YouTube Protection działa razem z listą reklam. Na wybranych stronach ochronę wyłączysz przyciskiem w okienku wtyczki albo w zakładce „Wyłączone strony”.</p>
       <div id="listContainer" class="cards"></div>
     </section>
 
-    <section id="filters" class="panel" hidden>
-      <p class="muted" data-i18n="filters_desc">Własne filtry w składni uBlock Origin / Adblock Plus, po jednym w linii. Filtry dodane przyciskiem „Ukryj element” trafiają tutaj.</p>
+    <section id="filters" class="panel" role="tabpanel" tabindex="0" aria-labelledby="tab-filters" hidden>
+      <p id="filtersHelp" class="muted" data-i18n="filters_desc">Własne filtry w składni uBlock Origin / Adblock Plus, po jednym w linii. Filtry dodane przyciskiem „Ukryj element” trafiają tutaj.</p>
       <details class="help">
         <summary data-i18n="filters_examples">Przykłady</summary>
-        <pre data-i18n="filters_examplesBody">! komentarz
-||reklamy.example.com^            blokuj domenę
-||example.com/banner/*$image      blokuj obrazki z tej ścieżki
-@@||example.com^$script           zezwól na skrypty z domeny
-example.com##.reklama              ukryj element na example.com
-##.sponsorowane                    ukryj na wszystkich stronach
-example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
+        <pre data-i18n="filters_examplesBody">! Blokuj domenę
+||reklamy.example.com^
+! Blokuj obrazki z tej ścieżki
+||example.com/banner/*$image
+! Zezwól na skrypty z domeny
+@@||example.com^$script
+! Ukryj element na example.com
+example.com##.reklama
+! Ukryj na wszystkich stronach
+##.sponsorowane
+! Ukryj element zawierający tekst
+example.com##div:has-text(Reklama)</pre>
       </details>
-      <textarea id="userFilters" spellcheck="false" placeholder="np. ||ads.example.com^" data-i18n-placeholder="filters_placeholder"></textarea>
+      <label class="field-label" for="userFilters" data-i18n="tab_filters">Moje filtry</label>
+      <textarea id="userFilters" disabled aria-describedby="filtersHelp" spellcheck="false" placeholder="np. ||ads.example.com^" data-i18n-placeholder="filters_placeholder"></textarea>
       <div class="bar">
-        <button id="saveFilters" class="primary" data-i18n="common_save">Zapisz</button>
-        <span id="filtersMsg" class="msg-inline"></span>
+        <button id="saveFilters" disabled class="primary" data-i18n="common_save">Zapisz</button>
+        <span id="filtersMsg" class="msg-inline" role="status" aria-live="polite"></span>
       </div>
       <ul id="filterErrors" class="errors"></ul>
     </section>
 
-    <section id="sites" class="panel" hidden>
-      <p class="muted" data-i18n="sites_desc">Na tych stronach (i ich subdomenach) Apex AdBlocker nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki.</p>
-      <textarea id="disabledSites" spellcheck="false" placeholder="np. example.com" data-i18n-placeholder="sites_placeholder"></textarea>
+    <section id="sites" class="panel" role="tabpanel" tabindex="0" aria-labelledby="tab-sites" hidden>
+      <p id="sitesHelp" class="muted" data-i18n="sites_desc">Na tych stronach (i ich subdomenach) Apex AdBlocker nic nie blokuje. Jedna domena w linii. Najprościej dodawać je przyciskiem zasilania w okienku wtyczki.</p>
+      <label class="field-label" for="disabledSites" data-i18n="tab_sites">Domeny z wyłączoną ochroną</label>
+      <textarea id="disabledSites" disabled aria-describedby="sitesHelp" spellcheck="false" placeholder="np. example.com" data-i18n-placeholder="sites_placeholder"></textarea>
       <div class="bar">
-        <button id="saveSites" class="primary" data-i18n="common_save">Zapisz</button>
-        <span id="sitesMsg" class="msg-inline"></span>
+        <button id="saveSites" disabled class="primary" data-i18n="common_save">Zapisz</button>
+        <span id="sitesMsg" class="msg-inline" role="status" aria-live="polite"></span>
       </div>
     </section>
 
-    <section id="more" class="panel" hidden>
+    <section id="more" class="panel" role="tabpanel" tabindex="0" aria-labelledby="tab-more" hidden>
       <details id="backup" class="more-section">
         <summary><h2 data-i18n="backup_title">Kopia ustawień</h2></summary>
         <div class="more-body">
           <p class="muted" data-i18n="backup_desc">Zapisz ustawienia Apex AdBlocker do pliku JSON i przywróć je później (np. po ponownej instalacji). Plik zawiera tylko: wyłączone strony (same nazwy domen) i Moje filtry – listy ochrony są stałe. Kopie ze starszych wersji Apex AdBlocker też da się zaimportować. Nie zawiera historii, statystyk ani danych diagnostycznych. Nic nie jest wysyłane.</p>
           <div class="bar">
-            <button id="exportSettings" class="primary" data-i18n="backup_export">Eksportuj ustawienia</button>
-            <button id="importSettings" class="secondary" data-i18n="backup_import">Importuj ustawienia</button>
+            <button id="exportSettings" disabled class="primary" data-i18n="backup_export">Eksportuj ustawienia</button>
+            <button id="importSettings" disabled class="secondary" data-i18n="backup_import">Importuj ustawienia</button>
             <input type="file" id="importFile" accept="application/json,.json" hidden>
             <span id="backupMsg" class="msg-inline" role="status"></span>
           </div>
-          <p class="muted backup-note" data-i18n="backup_note">Import zastępuje obecne ustawienia. Jeśli plik jest niepoprawny albo Chrome nie przyjmie zmian, ustawienia pozostaną bez zmian.</p>
+          <p class="muted backup-note" data-i18n="backup_note">Import zastępuje obecne ustawienia. Niepoprawny plik nie zmienia ustawień. Jeśli Chrome odrzuci zmiany, rozszerzenie spróbuje przywrócić poprzedni stan i pokaże wynik.</p>
           <div id="importSummary" class="backup-summary" hidden>
             <strong data-i18n="backup_restored">Przywrócono:</strong>
             <ul id="importSummaryList"></ul>
@@ -82,13 +95,13 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       <details id="diag" class="more-section">
         <summary><h2 data-i18n="diag_title">Diagnostyka</h2></summary>
         <div class="more-body">
-          <p class="muted" data-i18n="diag_desc">Stan silników Apex AdBlocker. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce. Raport diagnostyczny nie zawiera adresów stron, identyfikatorów filmów, ciasteczek ani danych konta – możesz go bezpiecznie wkleić do rozmowy.</p>
-          <textarea id="reportPreview" class="report" readonly hidden></textarea>
+          <p class="muted" data-i18n="diag_desc">Stan silników Apex AdBlocker. Dane diagnostyczne pozostają lokalnie, w tej przeglądarce. Eksportowany raport usuwa rozpoznawane adresy, identyfikatory filmów, ciasteczka i tokeny. Przed udostępnieniem przejrzyj jego treść, ponieważ automatyczne oczyszczanie może nie rozpoznać każdej informacji.</p>
+          <textarea id="reportPreview" aria-label="Raport diagnostyczny" data-i18n-aria-label="ui_reportPreview" class="report" readonly hidden></textarea>
           <div class="bar">
             <button id="refreshDiag" class="primary" data-i18n="diag_refresh">Odśwież</button>
             <button id="resync" class="secondary" data-i18n="diag_resync">Synchronizuj ponownie</button>
             <button id="copyReport" class="secondary" data-i18n="diag_copyReport">Kopiuj raport diagnostyczny</button>
-            <span id="diagMsg" class="msg-inline"></span>
+            <span id="diagMsg" class="msg-inline" role="status" aria-live="polite"></span>
           </div>
 
           <h3 data-i18n="diag_engines">Silniki</h3>
@@ -115,7 +128,7 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
 
             <h3 data-i18n="diag_perf">Pomiary wydajności</h3>
             <label class="check"><input type="checkbox" id="devPerf"> <span data-i18n="diag_perfToggle">Mierz pracę filtrów kosmetycznych i scriptletów na stronach (domyślnie wyłączone)</span></label>
-            <p class="muted small" data-i18n="diag_perfDesc">Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu Apex AdBlocker (bez czasu oryginalnej funkcji strony). Bez adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty.</p>
+            <p class="muted small" data-i18n="diag_perfDesc">Zbierane lokalnie: domena strony, ramka, liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu Apex AdBlocker (bez czasu oryginalnej funkcji strony). Bez pełnych adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty.</p>
             <div class="bar"><button id="resetPerf" class="secondary" data-i18n="diag_resetPerf">Resetuj pomiary</button></div>
             <table class="diag" id="perf"></table>
             <h3 data-i18n="diag_topScriptlets">Najdroższe scriptlety</h3>
@@ -127,6 +140,12 @@ example.com##div:has-text(Reklama) ukryj element zawierający tekst</pre>
       <details id="about" class="more-section">
         <summary><h2 data-i18n="about_title">O wtyczce</h2></summary>
         <div class="more-body">
+          <div class="author-contact">
+            <h3 data-i18n="about_authorTitle">Autor i kontakt</h3>
+            <p><strong>Konrad Woźniak</strong></p>
+            <p><a href="mailto:konrad.wozniak.1996@gmail.com">konrad.wozniak.1996@gmail.com</a></p>
+            <p><a href="https://www.linkedin.com/in/konrad-woźniak-23a5b831a" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-i18n="about_linkedin" data-i18n-aria-label="about_linkedinLabel" aria-label="Profil autora na LinkedIn (otwiera się w nowej karcie)">Profil LinkedIn</a></p>
+          </div>
           <p data-i18n="about_intro">Apex AdBlocker działa w Manifest V3 (MV3) i blokuje na trzech poziomach:</p>
           <ul>
             <li data-i18n-html="about_network"><b>Sieć</b> – żądania reklam i skryptów śledzących są blokowane regułami declarativeNetRequest.</li>

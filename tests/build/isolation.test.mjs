@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { buildAll } from '../../tools/build.mjs';
+import { buildAll, compileList } from '../../tools/build.mjs';
 
 function makeLists(files) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-lists-'));
@@ -21,6 +21,65 @@ const LISTS = [
   { id: 'ads', name: 'Ads', desc: '', enabled: true, sources: [{ file: 'ads.txt', trusted: true }] },
   { id: 'annoyances', name: 'Annoyances', desc: '', enabled: false, sources: [{ file: 'annoyances.txt', trusted: true }] },
 ];
+
+test('style and procedural exclusions stay attached to the original filter', () => {
+  const lines = [
+    'example.com,~safe.example.com##body:style(color:red)',
+    'safe.example.com##body:style(color:red)',
+    'example.com,~safe.example.com##div:has-text(ad):remove()',
+    'safe.example.com##div:has-text(ad):remove()',
+  ].map((line) => ({ line }));
+  const { cosmetic } = compileList('ads', lines, { badfilters: new Set(), gunhide: new Set() });
+  assert.deepEqual(cosmetic.scopedStyle['example.com'], [{ value: ['body', 'color:red'], exclude: ['safe.example.com'] }]);
+  assert.deepEqual(cosmetic.style['safe.example.com'], [['body', 'color:red']], 'a separate included filter remains valid');
+  assert.deepEqual(cosmetic.scopedProc['example.com'], [{ value: [
+    { css: 'div' }, { op: 'has-text', arg: 'ad' }, { op: 'remove', arg: '' },
+  ], exclude: ['safe.example.com'] }]);
+  assert.deepEqual(cosmetic.proc['safe.example.com'], cosmetic.scopedProc['example.com'].map((f) => f.value));
+  assert.equal(cosmetic.style['example.com'], undefined, 'excluded filter cannot leak into the unscoped map');
+  assert.equal(cosmetic.proc['example.com'], undefined);
+});
+
+test('compiler host maps safely accept object-prototype names as literal keys', () => {
+  const { cosmetic } = compileList('ads', [
+    { line: 'constructor##.ad' }, { line: '__proto__##body:style(color:red)' },
+    { line: 'toString##div:has-text(ad):remove()' },
+  ], { badfilters: new Set(), gunhide: new Set() });
+  assert.deepEqual(cosmetic.spec.constructor, [0]);
+  assert.deepEqual(cosmetic.style.__proto__, [['body', 'color:red']]);
+  assert.equal(Object.getPrototypeOf(cosmetic.style), null);
+});
+
+test('hide exclusions remain scoped, including token-indexed and complex generic filters', () => {
+  const lines = [
+    'example.com,~safe.example.com##.ad',
+    'safe.example.com##.ad',
+    '~bank.example##.promo',
+    'bank.example##.promo',
+    '~bank.example##div[data-ad]',
+    '~bank.example##.excepted',
+  ].map((line) => ({ line }));
+  const { cosmetic } = compileList('ads', lines, { badfilters: new Set(), gunhide: new Set(['.excepted']) });
+  assert.deepEqual(cosmetic.scopedHide['example.com'], [{ value: '.ad', exclude: ['safe.example.com'] }]);
+  assert.deepEqual(cosmetic.spec['safe.example.com'].map((i) => cosmetic.sel[i]), ['.ad']);
+  assert.deepEqual(cosmetic.scopedGen['.promo'], [{ value: '.promo', exclude: ['bank.example'] }]);
+  assert.deepEqual(cosmetic.scopedGen['*'], [{ value: 'div[data-ad]', exclude: ['bank.example'] }]);
+  assert.equal(cosmetic.scopedGen['.excepted'], undefined, 'global cosmetic exception still wins');
+  assert.deepEqual(Object.keys(cosmetic.unhide), [], 'negative scopes are not global selector exceptions');
+  assert.equal(Object.getPrototypeOf(cosmetic.scopedHide), null);
+  assert.equal(Object.getPrototypeOf(cosmetic.scopedGen), null);
+});
+
+test('the shipped Geekweek selectors survive the parent Interia exclusion', () => {
+  const lines = [
+    'geekweek.interia.pl##.dol_srodek_ads_box, .adStandardTop, #feed_grupa.ad, #ad-feed_grupa, .article-body__ad-gora-srodek',
+    'interia.pl,~geekweek.interia.pl##.adStandardTop, #feed_grupa.ad, #ad-feed_grupa, .article-body__ad-gora-srodek, .mixerAdTopRight-wrapper, .has-mixerAdTopRight',
+  ].map((line) => ({ line }));
+  const { cosmetic } = compileList('ads', lines, { badfilters: new Set(), gunhide: new Set() });
+  assert.equal(cosmetic.spec['geekweek.interia.pl'].length, 5);
+  assert.equal(cosmetic.scopedHide['interia.pl'].length, 6);
+  assert.equal(cosmetic.unhide['geekweek.interia.pl'], undefined);
+});
 
 function build(files) {
   const listsDir = makeLists(files);

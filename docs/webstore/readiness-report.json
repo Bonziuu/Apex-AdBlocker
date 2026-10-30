@@ -1,0 +1,69 @@
+{
+  "generator": "tools/webstore-prepare.mjs",
+  "generatedAt": "2026-10-30T17:05:19.677Z",
+  "scope": "Offline preparation, actual strict-check outcomes and genuine captures only; no submission or Chrome Web Store approval.",
+  "package": {
+    "version": "1.0.0",
+    "path": "dist/webstore-prepare-nG15Jw/package/Apex-AdBlocker-WebStore-1.0.0.zip",
+    "extensionDir": "dist/webstore-prepare-nG15Jw/package/Apex-AdBlocker",
+    "sha256": "9bd2d6f8501fc4c226b50d91817b080eca304ccd38b105aecaf465028e33ca8a"
+  },
+  "evidenceFile": "docs/webstore/validation-evidence.json",
+  "checkLog": "dist/webstore-validation/check.log",
+  "screenshots": {
+    "status": "NOT_RUN",
+    "reason": "Extension smoke result is SKIP; genuine captures require PASS."
+  },
+  "technical": {
+    "ok": true,
+    "issues": [],
+    "checks": [
+      {
+        "name": "package contents and manifest references",
+        "status": "PASS"
+      },
+      {
+        "name": "Manifest V3 and metadata",
+        "status": "PASS"
+      },
+      {
+        "name": "128px store icon bytes",
+        "status": "PASS"
+      },
+      {
+        "name": "scriptlet metadata and prerequisite files",
+        "status": "PASS"
+      },
+      {
+        "name": "source version, permission declarations and extension bytes",
+        "status": "PASS"
+      },
+      {
+        "name": "store ZIP has exact current extension contents and root manifest",
+        "status": "PASS"
+      }
+    ],
+    "version": "1.0.0",
+    "name": "Apex AdBlocker",
+    "permissions": [
+      "activeTab",
+      "declarativeNetRequest",
+      "scripting",
+      "storage"
+    ],
+    "hostPermissions": [
+      "<all_urls>"
+    ],
+    "packageSha256": "9bd2d6f8501fc4c226b50d91817b080eca304ccd38b105aecaf465028e33ca8a",
+    "sourceContentsSha256": "deadb8d5b04d21f83f1e275262450e974b84f1f06432b030dc4cf719c6acedd8"
+  },
+  "publicationReady": false,
+  "blockers": [
+    "1–5 genuine extension screenshots at 1280×800 or 640×400 are missing (UI fixtures do not qualify)",
+    "complete browser test evidence and extension smoke PASS are missing",
+    "representative real-site validation evidence is missing",
+    "Strict check is incomplete or failed (exit 1, smoke SKIP)"
+  ],
+  "exitCode": 2,
+  "previousOutputsBackupDir": "dist/webstore-prepare-nG15Jw"
+}

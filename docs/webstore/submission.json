@@ -1,0 +1,15 @@
+{
+  "publisher": {
+    "name": "Konrad Woźniak",
+    "contactEmail": "konrad.wozniak.1996@gmail.com",
+    "privacyPolicyUrl": "https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md"
+  },
+  "materials": {
+    "listings": [
+      "docs/webstore/listing-pl.md",
+      "docs/webstore/listing-en.md"
+    ],
+    "promotionalImage": "docs/webstore/assets/promo-small-440x280.png",
+    "screenshots": []
+  }
+}

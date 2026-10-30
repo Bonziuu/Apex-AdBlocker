@@ -78,16 +78,17 @@ test('bug 3: równoczesna zmiana własnych filtrów i wyłączenie strony – ob
   } finally { bg.restore(); }
 });
 
-test('bug 4: nieudana pełna ponowna rejestracja kasuje znacznik sesji – następny start SW naprawia scriptlety', async () => {
-  let failing = false;
-  const bg = await loadBackground({ failRegister: () => failing });
+test('odrzucone pomiary przywracają poprzednią flagę i działające rejestracje', async () => {
+  const bg = await loadBackground({ failRegister: (_, script) => script.js.includes('content/scriptlet-perf-on.js') });
   try {
     await bg.install();
+    const previous = structuredClone(bg.state.registered);
+    const result = await bg.send({ type: 'options:setDevPerf', enabled: true });
+    assert.equal(result.ok, false);
+    assert.equal(result.rolledBack, true, JSON.stringify(result));
+    assert.equal(bg.store.devPerf, false);
+    assert.deepEqual(bg.state.registered, previous);
     assert.equal(bg.session.sessionScriptletsOk, true);
-    failing = true; // np. SW przerwany / Chrome odrzuca w trakcie pełnej rejestracji
-    await bg.send({ type: 'options:setDevPerf', enabled: true });
-    assert.equal(bg.state.registered.filter((r) => r.id.startsWith('sl-')).length, 0, 'scriptlety wyrejestrowane, nowe niezarejestrowane');
-    assert.notEqual(bg.session.sessionScriptletsOk, true, 'znacznik sesji nie może twierdzić, że stan jest poprawny');
   } finally { bg.restore(); }
 });
 
@@ -140,25 +141,143 @@ test('bug 3: dwa szybkie „Ukryj element” – oba filtry zapisane (bez utraco
   } finally { bg.restore(); }
 });
 
-test('wyłączenie strony i pełna ponowna rejestracja: część utrwalona i sesyjna zawsze w tym samym, poprawnym stanie', async () => {
+test('wyłączenie strony i pełna ponowna rejestracja zachowują komplet utrwalonych shardów i helpery encji', async () => {
   const bg = await loadBackground();
   try {
     await bg.install();
+    const installed = bg.state.registered.filter((r) => r.id.startsWith('sl-'));
+    const installedIds = installed.map((r) => r.id).sort();
+    assert.ok(installedIds.length > 0);
+    assert.ok(installed.some((r) => r.js.at(-1).endsWith('-entities.js')), 'zestaw zawiera strzeżone encje');
+    const assertCompleteSet = (registrations, measuring) => {
+      assert.deepEqual(registrations.map((r) => r.id).sort(), installedIds, 'bez utraconych ani nadmiarowych shardów');
+      for (const registration of registrations) {
+        assert.equal(registration.persistAcrossSessions, true, registration.id);
+        assert.equal(registration.allFrames, false, registration.id);
+        assert.equal(registration.runAt, 'document_start', registration.id);
+        assert.equal(registration.world, 'MAIN', registration.id);
+        const helperIndex = registration.js.indexOf('shared/entity-hosts.js');
+        assert.equal(helperIndex, measuring ? 1 : 0, registration.id);
+        assert.ok(helperIndex < registration.js.length - 1, 'helper musi poprzedzać shard');
+        assert.equal(registration.js.includes('content/scriptlet-perf-on.js'), measuring, registration.id);
+        if (measuring) assert.equal(registration.js[0], 'content/scriptlet-perf-on.js', registration.id);
+      }
+    };
     await bg.send({ type: 'site:toggle', host: 'news.example' });
     let ours = bg.state.registered.filter((r) => r.id.startsWith('sl-'));
-    assert.ok(ours.some((r) => r.persistAcrossSessions === false) && ours.some((r) => r.persistAcrossSessions === true));
+    assertCompleteSet(ours, false);
     for (const r of ours) assert.deepEqual(r.excludeMatches, ['*://*.news.example/*'], r.id);
     // pełna ponowna rejestracja (zmiana zestawu rejestracji) – wyłączona strona zostaje wykluczona
     await bg.send({ type: 'options:setDevPerf', enabled: true });
     ours = bg.state.registered.filter((r) => r.id.startsWith('sl-'));
+    assertCompleteSet(ours, true);
     assert.deepEqual([...new Set(ours.map((r) => r.id.split('-')[1]))].sort(), ['ads', 'privacy', 'security']);
     for (const r of ours) assert.deepEqual(r.excludeMatches, ['*://*.news.example/*'], r.id);
     assert.equal(new Set(ours.map((r) => r.id)).size, ours.length, 'bez duplikatów id');
     await bg.send({ type: 'site:toggle', host: 'news.example' });
     ours = bg.state.registered.filter((r) => r.id.startsWith('sl-'));
+    assertCompleteSet(ours, true);
     for (const r of ours) assert.equal(r.excludeMatches, undefined, r.id);
     assert.equal(bg.session.sessionScriptletsOk, true);
     const h = await bg.send({ type: 'health:get' });
     for (const c of ['network', 'scriptlets', 'filters', 'youtube']) assert.equal(h.components[c].status, 'ok', c);
+  } finally { bg.restore(); }
+});
+
+test('zimny start: inicjalizacja stanu jest wspólna dla synchronizacji i pierwszej zmiany ustawień', async () => {
+  let reads = 0;
+  const bg = await loadBackground({
+    fetchDelay: (p) => p === 'data/lists.json' ? 20 : 0,
+    storageGetDelay: (keys) => keys.includes('disabledSites') && ++reads === 1 ? 80 : 0,
+  });
+  try {
+    const r = await bg.send({ type: 'options:setDisabledSites', sites: ['example.com'] });
+    assert.equal(r.ok, true);
+    await tick(120);
+    const options = await bg.send({ type: 'options:get' });
+    assert.equal(reads, 1, 'jeden odczyt stanu przy równoległym starcie');
+    assert.deepEqual(options.disabledSites, ['example.com']);
+    assert.deepEqual(bg.store.disabledSites, options.disabledSites);
+    assert.deepEqual(bg.state.dynamic.find((x) => x.id === 1).condition.requestDomains, options.disabledSites);
+  } finally { bg.restore(); }
+});
+
+test('odrzucony zapis storage nie zmienia ustawień ani skompilowanych filtrów w pamięci', async () => {
+  const opts = {};
+  const bg = await loadBackground(opts);
+  try {
+    await bg.install();
+    await bg.send({ type: 'options:setUserFilters', text: '||old.example^' });
+    opts.failStorageSet = (patch) => 'userFilters' in patch || 'autoReloadOnToggle' in patch;
+    const failed = await bg.send({ type: 'options:setUserFilters', text: '||new.example^\n##.new' });
+    assert.equal(failed.ok, false);
+    assert.match(failed.error, /quota/);
+    const options = await bg.send({ type: 'options:get' });
+    assert.equal(options.userFilters, '||old.example^');
+    assert.equal(options.userCount, 1);
+    assert.equal(bg.store.userFilters, options.userFilters);
+    assert.deepEqual(bg.state.dynamic[0].condition.requestDomains, ['old.example']);
+    const auto = await bg.send({ type: 'popup:setAutoReload', enabled: false });
+    assert.equal(auto.ok, false);
+    assert.equal((await bg.send({ type: 'popup:get', tabId: 7 })).autoReloadOnToggle, true);
+  } finally { bg.restore(); }
+});
+
+test('odrzucona zmiana DNR przywraca stan strony i nie przeładowuje karty', async () => {
+  const opts = {};
+  const bg = await loadBackground(opts);
+  try {
+    await bg.install();
+    let calls = 0;
+    opts.failDynamic = () => calls++ === 0;
+    const r = await bg.send({ type: 'site:toggle', host: 'example.com', tabId: 7 });
+    assert.equal(r.ok, false);
+    assert.equal(r.rolledBack, true, JSON.stringify(r));
+    assert.equal(r.disabled, false);
+    assert.equal(r.reloaded, false);
+    assert.deepEqual(bg.store.disabledSites, []);
+    assert.equal(bg.state.dynamic.some((x) => x.id === 1), false);
+    assert.equal(bg.state.reloads.length, 0);
+    assert.ok(bg.state.registered.every((x) => !x.excludeMatches));
+  } finally { bg.restore(); }
+});
+
+test('odrzucona rejestracja scriptletów przywraca poprzednie DNR i wykluczenia', async () => {
+  const opts = {};
+  const bg = await loadBackground(opts);
+  try {
+    await bg.install();
+    opts.failRegister = (_, script) => script.excludeMatches?.some((x) => x.includes('example.com'));
+    const r = await bg.send({ type: 'options:setDisabledSites', sites: ['example.com'] });
+    assert.equal(r.ok, false);
+    assert.equal(r.rolledBack, true, JSON.stringify(r));
+    assert.deepEqual(r.disabledSites, []);
+    assert.equal(bg.state.dynamic.some((x) => x.id === 1), false);
+    assert.ok(bg.state.registered.length > 0);
+    assert.ok(bg.state.registered.every((x) => !x.excludeMatches));
+  } finally { bg.restore(); }
+});
+
+test('ponad 5000 własnych reguł jest jawnie odrzucane bez zapisu i częściowego zastosowania', async () => {
+  const bg = await loadBackground();
+  try {
+    await bg.install();
+    const text = Array.from({ length: 5001 }, (_, i) => `||ad${i}.example^`).join('\n');
+    const r = await bg.send({ type: 'options:setUserFilters', text });
+    assert.equal(r.ok, false);
+    assert.match(r.error, /5000/);
+    assert.equal((await bg.send({ type: 'options:get' })).userFilters, '');
+    assert.equal(bg.store.userFilters, undefined);
+    assert.equal(bg.state.dynamic.length, 0);
+  } finally { bg.restore(); }
+});
+
+test('host constructor we własnych filtrach nie uniemożliwia odczytu ustawień po starcie SW', async () => {
+  const bg = await loadBackground({ local: { userFilters: 'constructor##.ad\n__proto__##.promo' } });
+  try {
+    const options = await bg.send({ type: 'options:get' });
+    assert.equal(options.userCount, 2);
+    assert.deepEqual(options.userErrors, []);
+    assert.equal(options.userFilters, bg.store.userFilters);
   } finally { bg.restore(); }
 });

@@ -18,7 +18,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { loadPlaywright, EXTENSION_ENTRIES, syncFinished, ROOT } from '../chromium-smoke.mjs';
+import { loadPlaywright, EXTENSION_ENTRIES, syncFinished, SYNC_STEPS, COMPONENTS, ROOT } from '../chromium-smoke.mjs';
 import { fixtureHtml, playerResponse, nextResponse } from './youtube-fixture.mjs';
 
 const arg = (name, def) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : def; };
@@ -33,6 +33,24 @@ const DEV_PERF = process.argv.includes('--dev-perf');
 const PLAYER_JSON = JSON.stringify(playerResponse(400));
 const NEXT_JSON = JSON.stringify(nextResponse(200));
 const HTML = fixtureHtml();
+
+/** Nie zapisuj benchmarku nieaktywnej ochrony jako niskiego narzutu rozszerzenia. */
+export async function waitForProtectionReady(options, { timeoutMs = 180_000, now = () => Date.now() } = {}) {
+  const deadline = now() + timeoutMs;
+  for (;;) {
+    const h = await options.evaluate(() => chrome.runtime.sendMessage({ type: 'health:get' })).catch(() => null);
+    const failures = [
+      ...SYNC_STEPS.filter((k) => h?.sync?.[k]?.status === 'error').map((k) => `${k}: ${h.sync[k].message || 'ERROR'}`),
+      ...COMPONENTS.filter((k) => h?.components?.[k]?.status === 'error').map((k) => `${k}: ${h.components[k].detail || 'ERROR'}`),
+    ];
+    if (failures.length) throw new Error(`Benchmark invalid: extension protection failed (${failures.join('; ')})`);
+    if (syncFinished(h)
+      && SYNC_STEPS.every((k) => h.sync[k].status === 'ok')
+      && COMPONENTS.every((k) => ['ok', 'warning'].includes(h.components?.[k]?.status))) return h;
+    if (now() >= deadline) throw new Error('Benchmark invalid: extension protection did not become ready before timeout');
+    await options.waitForTimeout(Math.min(2000, Math.max(0, deadline - now())));
+  }
+}
 
 /** Przypisuje czas próbek profilu do właściciela: najbliższa ramka rozszerzenia albo strony. */
 export function attributeProfile(profile) {
@@ -101,33 +119,36 @@ async function launch(chromium, config, tmp) {
     return route.abort();
   });
   let options = null;
-  if (extDir) {
-    let [sw] = context.serviceWorkers();
-    if (!sw) sw = await context.waitForEvent('serviceworker', { timeout: 20000 });
-    const id = new URL(sw.url()).host;
-    options = await context.newPage();
-    await options.goto(`chrome-extension://${id}/options/options.html`);
-    const deadline = Date.now() + 180000;
-    for (;;) {
-      const h = await options.evaluate(() => chrome.runtime.sendMessage({ type: 'health:get' })).catch(() => null);
-      if (syncFinished(h) || Date.now() > deadline) break;
-      await options.waitForTimeout(2000);
+  try {
+    if (extDir) {
+      let [sw] = context.serviceWorkers();
+      if (!sw) sw = await context.waitForEvent('serviceworker', { timeout: 20000 });
+      const id = new URL(sw.url()).host;
+      options = await context.newPage();
+      await options.goto(`chrome-extension://${id}/options/options.html`);
+      await waitForProtectionReady(options);
+      if (DEV_PERF) await options.evaluate(() => chrome.runtime.sendMessage({ type: 'options:setDevPerf', enabled: true }));
+      if (config === 'no-scriptlets') {
+        await options.evaluate(async () => {
+          const ids = (await chrome.scripting.getRegisteredContentScripts()).map((s) => s.id);
+          if (ids.length) await chrome.scripting.unregisterContentScripts({ ids });
+        });
+      }
     }
-    if (DEV_PERF) await options.evaluate(() => chrome.runtime.sendMessage({ type: 'options:setDevPerf', enabled: true }));
-    if (config === 'no-scriptlets') {
-      await options.evaluate(async () => {
-        const ids = (await chrome.scripting.getRegisteredContentScripts()).map((s) => s.id);
-        if (ids.length) await chrome.scripting.unregisterContentScripts({ ids });
-      });
-    }
+    return { context, options };
+  } catch (e) {
+    await context.close().catch(() => {});
+    throw e;
   }
-  return { context, options };
 }
 
 async function runOnce(chromium, config) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-perf-'));
-  const { context, options } = await launch(chromium, config, tmp);
+  let context = null;
   try {
+    const launched = await launch(chromium, config, tmp);
+    context = launched.context;
+    const { options } = launched;
     const page = await context.newPage();
     await page.goto('https://www.youtube.com/watch?v=perfTest01', { waitUntil: 'load' });
     await page.waitForFunction(() => window.__perfReady === true, null, { timeout: 30000 });
@@ -162,7 +183,7 @@ async function runOnce(chromium, config) {
       cosmetic,
     };
   } finally {
-    await context.close().catch(() => {});
+    if (context) await context.close().catch(() => {});
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 }

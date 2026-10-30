@@ -25,7 +25,7 @@ test('CI: zależności, Chromium, npm test i npm run check w tej kolejności; No
   const minNode = /(\d+)/.exec(pkg.engines.node)[1];
   assert.match(t, new RegExp(`node-version: ${minNode}\\b`), `Node ${minNode} (minimum z engines)`);
   const steps = t.slice(t.indexOf('steps:')).split('\n').filter((l) => /^\s+(run:|npm |npx )/.test(l)).join('\n');
-  const order = ['npm install', 'npx playwright install --with-deps chromium', 'npm test', 'npm run check'].map((s) => steps.indexOf(s));
+  const order = ['npm ci', 'npx playwright install --with-deps chromium', 'npm test', 'npm run check'].map((s) => steps.indexOf(s));
   for (const i of order) assert.ok(i > 0);
   assert.deepEqual([...order].sort((a, b) => a - b), order, 'kolejność kroków');
 });
@@ -37,6 +37,7 @@ test('CI: pominięte testy i brak smoke testu w Chromium kończą job błędem',
   assert.match(t, /grep -Eq '\^# skipped 0\$' test\.log \|\| \{[^}]*exit 1; \}/);
   const smoke = fs.readFileSync(path.join(ROOT, 'tools/chromium-smoke.mjs'), 'utf8');
   const msg = /SKIP_MESSAGE = '([^']+)'/.exec(smoke)[1];
+  assert.match(t, /npm run check -- --require-browser \| tee check\.log/);
   assert.ok(t.includes(`grep -q '${msg}' check.log`), 'CI szuka dokładnego komunikatu SKIP smoke testu');
 });
 

@@ -146,3 +146,6 @@ main { padding: 0 12px 4px; display: grid; gap: 8px; }
 .btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .btn:disabled { opacity: .45; cursor: default; }
 .btn svg { flex: none; }
+
+.operation-message { margin: 8px 14px; color: var(--err); font-size: 12px; }
+.retry { margin: 0 14px 8px; }

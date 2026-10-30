@@ -45,7 +45,7 @@ jobs:
           echo "VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Instalacja zależności
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Instalacja Chromium (Playwright)
         run: npx playwright install --with-deps chromium
@@ -54,7 +54,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          npm run check | tee check.log
+          npm run check -- --require-browser | tee check.log
           if grep -q 'SKIP: Chromium smoke test unavailable' check.log; then
             echo '::error::Smoke test w Chromium nie został uruchomiony.'; exit 1
           fi

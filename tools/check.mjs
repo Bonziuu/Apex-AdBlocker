@@ -6,7 +6,8 @@
 //   3. raport audytu scriptletów (podsumowanie),
 //   4. testy (node:test),
 //   5. opcjonalnie: smoke test prawdziwego załadowania w Chromium (SKIP bez Playwright/Chromium).
-// Kończy się kodem != 0, jeśli którykolwiek krok się nie powiódł.
+// --require-browser dodatkowo odrzuca brak przeglądarki, SKIP, TODO i niepełny wynik testów.
+// Kończy się kodem != 0, jeśli którykolwiek wymagany krok się nie powiódł.
 
 import fs from 'node:fs';
 import os from 'node:os';
@@ -14,7 +15,12 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT } from './lists-config.mjs';
 import { buildAll, validateCompatibility } from './build.mjs';
+import { entityHelperSource } from './build-entity-hosts.mjs';
 import { runSmoke, SKIP_MESSAGE } from './chromium-smoke.mjs';
+import { parseCheckArgs, testRunProblems, smokeRequiredFailure } from './check-policy.mjs';
+
+const { requireBrowser } = parseCheckArgs(process.argv.slice(2));
+let browserSkipped = false;
 
 const failures = [];
 const step = (name) => console.log(`\n━━ ${name} ${'━'.repeat(Math.max(0, 60 - name.length))}`);
@@ -26,6 +32,8 @@ fs.copyFileSync(path.join(ROOT, 'manifest.json'), path.join(tmp, 'manifest.json'
 buildAll({ outDir: tmp });
 validateCompatibility({ outDir: tmp });
 const stale = [];
+const entityHelper = path.join(ROOT, 'shared/entity-hosts.js');
+if (!fs.existsSync(entityHelper) || fs.readFileSync(entityHelper, 'utf8') !== entityHelperSource()) stale.push('shared/entity-hosts.js (Public Suffix List)');
 for (const dir of ['rules', 'data', 'scriptlets']) {
   const fresh = new Set(fs.readdirSync(path.join(tmp, dir)));
   const current = new Set(fs.existsSync(path.join(ROOT, dir)) ? fs.readdirSync(path.join(ROOT, dir)) : []);
@@ -42,7 +50,7 @@ fs.rmSync(tmp, { recursive: true, force: true });
 if (stale.length) {
   failures.push('build');
   console.log(`✗ Wygenerowane pliki są nieaktualne (${stale.length}): ${stale.slice(0, 8).join(', ')}${stale.length > 8 ? ', …' : ''}`);
-  console.log('  Uruchom: npm run build');
+  console.log('  Uruchom: node tools/build-entity-hosts.mjs && npm run build');
 } else {
   console.log('✓ Wygenerowane pliki są aktualne');
 }
@@ -62,16 +70,26 @@ console.log('Pełny raport: npm run audit:scriptlets');
 // 4. Testy
 step('Testy');
 // Node 20 nie rozwija globów w `node --test` – pliki wyszukuje tools/run-tests.mjs (bez E2E).
-const r = spawnSync(process.execPath, ['tools/run-tests.mjs', '--test-reporter=dot'], { cwd: ROOT, stdio: 'inherit' });
-if (r.status !== 0) failures.push('tests');
+const r = spawnSync(process.execPath, ['tools/run-tests.mjs', `--test-reporter=${requireBrowser ? 'tap' : 'dot'}`], {
+  cwd: ROOT, ...(requireBrowser ? { encoding: 'utf8', maxBuffer: 100 * 1024 * 1024 } : { stdio: 'inherit' }),
+});
+if (requireBrowser) { process.stdout.write(r.stdout || ''); process.stderr.write(r.stderr || ''); }
+const testProblems = testRunProblems(r, { requireBrowser });
+if (testProblems.length) { failures.push('tests'); console.log(testProblems.join('; ')); }
 
 // 5. Chromium smoke test (opcjonalny; bez stron zewnętrznych)
 step('Chromium smoke test');
 if (process.env.APEX_SMOKE === '0') {
   console.log(`${SKIP_MESSAGE} (APEX_SMOKE=0)`);
+  browserSkipped = true;
+  if (requireBrowser) failures.push('chromium-smoke-required');
 } else {
   const smoke = await runSmoke();
-  if (smoke.status === 'SKIP') console.log(`${SKIP_MESSAGE} (${smoke.reasons.join('; ')})`);
+  if (smoke.status === 'SKIP') {
+    browserSkipped = true;
+    console.log(`${SKIP_MESSAGE} (${smoke.reasons.join('; ')})`);
+    if (smokeRequiredFailure(smoke.status, requireBrowser)) failures.push('chromium-smoke-required');
+  }
   else if (smoke.status === 'PASS') console.log('✓ Apex AdBlocker załadowany w Chromium: service worker działa, health bez ERROR');
   else {
     failures.push('chromium-smoke');
@@ -84,6 +102,9 @@ if (process.env.APEX_SMOKE === '0') {
 step('Wynik');
 if (failures.length) {
   console.log(`✗ Niepowodzenie: ${failures.join(', ')}`);
-  process.exit(1);
-}
-console.log('✓ Wszystkie kontrole zakończone powodzeniem');
+  // stdout is a pipe in webstore:prepare/CI. Natural shutdown must flush the
+  // complete TAP, smoke result and failure summary before the process exits.
+  process.exitCode = 1;
+} else console.log(browserSkipped
+  ? '✓ Wykonane kontrole zakończone powodzeniem; walidacja przeglądarkowa NIEKOMPLETNA (uruchom --require-browser)'
+  : '✓ Wszystkie kontrole zakończone powodzeniem');

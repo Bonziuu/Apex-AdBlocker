@@ -29,3 +29,10 @@ Listy są udostępniane przez ich autorów na warunkach podanych niżej licencji
 - Licencja: **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** – https://creativecommons.org/licenses/by-nc-sa/4.0/
 - Zmiany: filtry są przekształcane do formatu Apex AdBlocker (reguły `declarativeNetRequest`, filtry kosmetyczne, scriptlety) i łączone z innymi listami w liście `ads`.
 - Używane w liście Apex AdBlocker: `ads`
+
+## Public Suffix List
+
+- Źródło: https://github.com/publicsuffix/list/blob/master/public_suffix_list.dat
+- Snapshot jest zachowany w `tools/public-suffix-list.dat`; jego SHA-256 widnieje w wygenerowanym `shared/entity-hosts.js`.
+- Licencja: Mozilla Public License 2.0; pełny tekst: `shared/public-suffix-LICENSE.txt`.
+- Zmiany: komentarze usunięto, nazwy domen zakodowano jako ASCII, dane osadzono w pomocniku dopasowania encji domen. Zawartość reguł ICANN i PRIVATE pozostaje zachowana.

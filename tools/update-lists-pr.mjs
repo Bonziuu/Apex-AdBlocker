@@ -43,13 +43,14 @@ export function prBody({ dir, codes, date = new Date(), beforeJson, afterJson })
   const check = read(dir, 'check.log');
   const ok = (c) => c === '0';
   const listsLine = ok(codes.lists)
-    ? '✅ Listy pobrane'
+    ? '✅ Kompletny snapshot pobrany i zweryfikowany'
     : codes.lists === '2'
-      ? '⚠️ Listy pobrane, ale pojawiły się **nowe nieobsługiwane scriptlety YouTube** (szczegóły niżej)'
-      : `⚠️ Pobieranie zakończone kodem ${codes.lists}`;
+      ? '⚠️ Aktualizacja odrzucona: **nowe nieobsługiwane scriptlety YouTube**. Poprzedni snapshot pozostaje bez zmian.'
+      : `⚠️ Aktualizacja nie została zaakceptowana (kod ${codes.lists}); sprawdź log pobierania i ewentualną ścieżkę zachowanej kopii.`;
   const failedDownloads = update.split('\n').filter((l) => l.startsWith('✗')).map((l) => `- ${l.slice(2)}`);
-  const youtube = update.includes('YouTube filters changed') ? tail(update.slice(update.indexOf('YouTube filters changed')), 40) : 'Filtry YouTube bez zmian.';
-  const allOk = ok(codes.build) && ok(codes.check);
+  const youtube = update.includes('YouTube filters changed') ? tail(update.slice(update.indexOf('YouTube filters changed')), 40)
+    : ok(codes.lists) ? 'Filtry YouTube bez zmian.' : 'Brak zaakceptowanego nowego snapshotu; szczegóły w logu aktualizacji.';
+  const allOk = ok(codes.lists) && ok(codes.build) && ok(codes.check);
   const day = date.toISOString().slice(0, 10);
   return `# Aktualizacja list filtrów (${day})${allOk ? '' : ' – wymaga sprawdzenia'}
 
@@ -59,8 +60,8 @@ Automatyczna cotygodniowa aktualizacja list filtrów. **Przejrzyj i zatwierdź**
 |---|---|
 | Pobranie list | ${listsLine} |
 | Build reguł | ${ok(codes.build) ? '✅ OK' : `❌ błąd (kod ${codes.build})`} |
-| Pełna kontrola (\`npm run check\`) | ${ok(codes.check) ? '✅ wszystkie kontrole i testy przeszły' : `❌ błąd (kod ${codes.check}) – zobacz log niżej`} |
-${failedDownloads.length ? `\n**Nie udało się pobrać** (zostały poprzednie wersje):\n${failedDownloads.join('\n')}\n` : ''}
+| Pełna kontrola (\`npm run check -- --require-browser\`) | ${ok(codes.check) ? '✅ wszystkie wymagane kontrole, testy i smoke przeszły' : `❌ błąd lub niepełne testy (kod ${codes.check}) – zobacz log niżej`} |
+${failedDownloads.length ? `\n**Błędy aktualizacji** (nowy snapshot nie został zaakceptowany):\n${failedDownloads.join('\n')}\n` : ''}
 ## Listy po aktualizacji
 
 ${statsTable(beforeJson, afterJson)}
@@ -70,7 +71,13 @@ ${statsTable(beforeJson, afterJson)}
 \`\`\`
 ${youtube}
 \`\`\`
-${allOk ? '' : `
+${!ok(codes.lists) ? `
+## Log aktualizacji (koniec)
+
+\`\`\`
+${tail(update, 60)}
+\`\`\`
+` : ''}${allOk ? '' : `
 ## Log kontroli (koniec)
 
 \`\`\`
@@ -89,7 +96,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {
   const afterJson = fs.readFileSync(path.join(ROOT, 'data', 'lists.json'), 'utf8');
   process.stdout.write(prBody({
     dir,
-    codes: { lists: process.env.LISTS_CODE || '0', build: process.env.BUILD_CODE || '0', check: process.env.CHECK_CODE || '0' },
+    codes: { lists: process.env.LISTS_CODE || 'not_run', build: process.env.BUILD_CODE || 'not_run', check: process.env.CHECK_CODE || 'not_run' },
     beforeJson,
     afterJson,
   }));

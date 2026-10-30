@@ -47,3 +47,22 @@ test('stan początkowy: wszystkie komponenty "unknown"', () => {
   assert.deepEqual(Object.keys(e.components), ['network', 'cosmetic', 'scriptlets', 'filters', 'youtube']);
   assert.ok(Object.values(e.components).every((c) => c.status === 'unknown'));
 });
+
+test('równoległe pierwsze aktualizacje health współdzielą odczyt i zachowują oba wyniki', async () => {
+  let reads = 0;
+  let saved;
+  const h = createHealth({
+    get: async () => {
+      reads++;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      return null;
+    },
+    set: async (_, value) => { saved = value; },
+  }, { log: () => {} });
+  await Promise.all([h.setComponent('network', 'ok'), h.setComponent('scriptlets', 'error', 'registration failed')]);
+  const snap = await h.snapshot();
+  assert.equal(reads, 1);
+  assert.equal(snap.components.network.status, 'ok');
+  assert.equal(snap.components.scriptlets.status, 'error');
+  assert.equal(saved.components.scriptlets.detail, 'registration failed');
+});

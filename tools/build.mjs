@@ -13,6 +13,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import {
   classifyLine, parseNetworkFilter, parseCosmeticFilter, validateRule,
@@ -21,52 +22,20 @@ import {
 import { LISTS, ROOT, LISTS_DIR, loadList } from './lists-config.mjs';
 import { runAudit, readBaseline } from './audit-scriptlets.mjs';
 
-// TLD, na które rozwijamy encje "x.*" przy rejestracji scriptletów (dopasowanie
-// i tak jest sprawdzane w czasie działania, więc to tylko lista adresów, gdzie plik się ładuje).
-const REG_TLDS = ['com', 'net', 'org', 'pl', 'com.pl', 'de', 'co.uk', 'io', 'tv', 'me', 'cc', 'to',
-  'co', 'info', 'xyz', 'online', 'site', 'top', 'ws', 'la', 'is', 'sx', 'one', 'lol'];
-
+// Chrome match patterns cannot express an entity such as google.*. Those hosts
+// are handled by a separate guarded shard instead of an incomplete TLD list.
 export function hostPatterns(h) {
-  if (!/^[a-z0-9.\-]+(\.\*)?$/.test(h) || h.startsWith('.') || h.startsWith('-')) return [];
-  if (h.endsWith('.*')) {
-    const base = h.slice(0, -2);
-    return REG_TLDS.map((t) => `*://*.${base}.${t}/*`);
-  }
+  if (!/^[a-z0-9.\-]+$/.test(h) || h.startsWith('.') || h.startsWith('-')) return [];
   return [/^\d+\.\d+\.\d+\.\d+$/.test(h) ? `*://${h}/*` : `*://*.${h}/*`];
 }
 
-/** Host wzorca dopasowania i czy obejmuje subdomeny („*://*.host/*”). */
-function patternHost(p) {
-  const m = /^\*:\/\/(\*\.)?([^/]+)\/\*$/.exec(p);
-  return m ? { host: m[2], sub: !!m[1] } : null;
-}
-
-/** Czy każdy adres pasujący do wzorca `a` pasuje też do wzorca `b`. */
-function patternCovers(b, a) {
-  const pb = patternHost(b);
-  const pa = patternHost(a);
-  if (!pa || !pb) return a === b;
-  if (pa.host === pb.host) return pb.sub || !pa.sub;
-  return pb.sub && pa.host.endsWith('.' + pb.host);
-}
-
 /**
- * Wzorce rejestracji pliku scriptletów, rozdzielone na:
- *   matches        – hosty zwykłe (utrwalane w Chrome: działają od razu po starcie przeglądarki),
- *   sessionMatches – rozwinięcia encji „nazwa.*” (24 TLD na rdzeń; rejestrowane bez utrwalania).
- * Wydajność: utrwalanie wzorców w Chrome kosztuje mniej więcej kwadratowo względem ich liczby
- * (60 tys. ≈ 2,8 s zawieszenia przeglądarki), a encje dają ~60% wzorców.
- * Zbiór dopasowywanych adresów jest identyczny jak przy jednej liście wzorców; nakładające się
- * wzorce są przypisywane tylko do jednej części, żeby plik nie został wstrzyknięty dwa razy.
+ * Ordinary host shards use targeted, persistent registration. Entity shards
+ * are constructed separately, with one broad registration per list and an early
+ * hostname guard. Keep the metadata's sessionMatches field for compatibility.
  */
 export function splitShardMatches(hostList) {
-  const plain = [...new Set(hostList.filter((h) => !h.endsWith('.*')).flatMap(hostPatterns))].sort();
-  let session = [...new Set(hostList.filter((h) => h.endsWith('.*')).flatMap(hostPatterns))].sort();
-  // encja pokryta przez wzorzec zwykły – zostaje tylko zwykły (utrwalony)
-  session = session.filter((e) => !plain.some((p) => patternCovers(p, e)));
-  // wzorzec zwykły pokryty przez encję – obsługuje go część sesyjna (bez podwójnego wstrzyknięcia)
-  const matches = plain.filter((p) => !session.some((e) => patternCovers(e, p)));
-  return { matches, sessionMatches: session };
+  return { matches: [...new Set(hostList.flatMap(hostPatterns))].sort(), sessionMatches: [] };
 }
 
 export function normalizeForBadfilter(text) {
@@ -127,19 +96,25 @@ export function compileList(listId, lines, own, crossTargets = new Map()) {
   const selTable = [];
   const selIndex = new Map();
   const sel = (s) => { let i = selIndex.get(s); if (i === undefined) { i = selTable.length; selTable.push(s); selIndex.set(s, i); } return i; };
-  const gen = {};
+  const gen = Object.create(null);
   const genC = new Set();
-  const spec = {};
-  const unhide = {};
-  const style = {};
-  const proc = {};
+  const spec = Object.create(null);
+  const unhide = Object.create(null);
+  const style = Object.create(null);
+  const proc = Object.create(null);
+  // Keep exclusions attached to their own filter. A value-wide exception would
+  // incorrectly cancel a separate rule that explicitly includes the same host.
+  const scopedStyle = Object.create(null);
+  const scopedProc = Object.create(null);
+  const scopedHide = Object.create(null);
+  const scopedGen = Object.create(null);
   const ghide = new Set();
   const ehide = new Set();
   const docAllow = new Set();
   const calls = [];
   const callIndex = new Map();
-  const scriptHosts = {};
-  const scriptExcept = {};
+  const scriptHosts = Object.create(null);
+  const scriptExcept = Object.create(null);
   const stats = { network: 0, skippedNetwork: 0, cosmetic: 0, skippedCosmetic: 0, scriptletRejected: 0, regex: 0, ownBadfiltered: 0 };
   const add = (obj, host, v) => { (obj[host] ||= []).push(v); };
 
@@ -192,6 +167,12 @@ export function compileList(listId, lines, own, crossTargets = new Map()) {
     switch (f.type) {
       case 'hide':
         for (const s of splitSelectorList(f.selector)) {
+          if (f.exclude.length) {
+            const scoped = { value: s, exclude: f.exclude };
+            if (f.include.length) for (const h of f.include) add(scopedHide, h, scoped);
+            else if (!own.gunhide.has(s)) add(scopedGen, genericToken(s) || '*', scoped);
+            continue;
+          }
           if (f.include.length) {
             const i = sel(s);
             for (const h of f.include) add(spec, h, i);
@@ -202,17 +183,22 @@ export function compileList(listId, lines, own, crossTargets = new Map()) {
             const i = sel(s);
             if (tok) add(gen, tok, i); else genC.add(i);
           }
-          for (const h of f.exclude) add(unhide, h, s);
         }
         break;
       case 'unhide':
         for (const s of splitSelectorList(f.selector)) for (const h of f.include) add(unhide, h, s);
         break;
       case 'style':
-        for (const h of f.include) add(style, h, [f.selector, f.css]);
+        for (const h of f.include) {
+          if (f.exclude.length) add(scopedStyle, h, { value: [f.selector, f.css], exclude: f.exclude });
+          else add(style, h, [f.selector, f.css]);
+        }
         break;
       case 'procedural':
-        for (const h of f.include) add(proc, h, f.tasks);
+        for (const h of f.include) {
+          if (f.exclude.length) add(scopedProc, h, { value: f.tasks, exclude: f.exclude });
+          else add(proc, h, f.tasks);
+        }
         break;
       case 'scriptlet': {
         const key = scriptletKey(f.call);
@@ -262,6 +248,10 @@ export function compileList(listId, lines, own, crossTargets = new Map()) {
     unhide: uniq(unhide),
     style: uniqJSON(style),
     proc: uniqJSON(proc),
+    scopedStyle: uniqJSON(scopedStyle),
+    scopedProc: uniqJSON(scopedProc),
+    scopedHide: uniqJSON(scopedHide),
+    scopedGen: uniqJSON(scopedGen),
     ghide: [...ghide],
     ehide: [...ehide],
     docAllow: [...docAllow],
@@ -280,40 +270,118 @@ export function compileList(listId, lines, own, crossTargets = new Map()) {
   return { rules: ordered, cosmetic, calls, scriptHosts, scriptExcept, crossRuleIds, stats, unmatchedExceptionKeys };
 }
 
+/**
+ * The worker can restart after executeScript succeeds but before its reply arrives.
+ * Keep the installation marker in the document's MAIN world, where it outlives
+ * that worker, and include the source digest so a new packaged revision can run.
+ * Scope/prerequisite guards must run before this marker is recorded.
+ */
+function oncePerDocument(file, source) {
+  const key = `${file}:${createHash('sha256').update(source).digest('hex')}`;
+  return `const installedKey = Symbol.for('ApexAdBlocker.scriptletShards.v1');
+let installed = globalThis[installedKey];
+if (!installed) {
+  installed = new Set();
+  Object.defineProperty(globalThis, installedKey, { value: installed, writable: false, configurable: false });
+}
+const shardKey = ${JSON.stringify(key)};
+if (installed.has(shardKey)) return;
+installed.add(shardKey);`;
+}
+
 /** Dzieli scriptlety na pliki według domeny, żeby strona ładowała tylko małą część danych. */
 export function shardScriptlets(listId, listName, compiled, scriptletLib) {
   const { calls, scriptHosts, scriptExcept } = compiled;
-  const hosts = Object.keys(scriptHosts);
+  const hosts = Object.keys(scriptHosts).filter((h) => !h.endsWith('.*'));
+  const entityHosts = Object.keys(scriptHosts).filter((h) => h.endsWith('.*'));
   const shardCount = Math.max(1, Math.min(32, Math.ceil(hosts.length / 1000)));
-  const shards = Array.from({ length: shardCount }, () => ({ hosts: {}, calls: [], callMap: new Map() }));
-  const hash = (str) => { let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0; return h; };
-  for (const h of hosts) {
-    const base = h.endsWith('.*') ? h.slice(0, -2).split('.').pop() : h.split('.').slice(-2, -1)[0] || h;
-    const shard = shards[hash(base) % shardCount];
+  const makeShard = () => ({ hosts: Object.create(null), calls: [], callMap: new Map() });
+  const shards = Array.from({ length: shardCount }, makeShard);
+  const addHost = (shard, h) => {
     shard.hosts[h] = scriptHosts[h].map((i) => {
       let j = shard.callMap.get(i);
       if (j === undefined) { j = shard.calls.length; shard.calls.push(calls[i]); shard.callMap.set(i, j); }
       return j;
     });
+  };
+  const hash = (str) => { let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0; return h; };
+  for (const h of hosts) {
+    const base = h.split('.').slice(-2, -1)[0] || h;
+    addHost(shards[hash(base) % shardCount], h);
   }
   const files = [];
+  const body = (shard, except) => `const CALLS = ${JSON.stringify(shard.calls)};
+const HOSTS = ${JSON.stringify(shard.hosts)};
+const EXCEPT = ${JSON.stringify(except)};
+${scriptletLib}
+runForHost(CALLS, HOSTS, EXCEPT);`;
   shards.forEach((shard, n) => {
     const shardHosts = Object.keys(shard.hosts);
     if (!shardHosts.length) return;
     const { matches, sessionMatches } = splitShardMatches(shardHosts);
     const file = `scriptlets/${listId}-${n}.js`;
+    const source = body(shard, scriptExcept);
+    // runForHost fails closed when an entity exception needs the PSL helper.
+    // Do not mark such an early return as installed: a later authorized retry
+    // with the prerequisite must still be able to apply the ordinary hooks.
+    const prerequisiteGuard = Object.keys(scriptExcept).some((h) => h.endsWith('.*'))
+      ? "if (typeof globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')] !== 'function') return;"
+      : '';
     const js = `/* Apex AdBlocker – scriptlety listy "${listName}" (część ${n + 1}/${shardCount}). Plik generowany przez tools/build.mjs. */
 (function () {
 'use strict';
-const CALLS = ${JSON.stringify(shard.calls)};
-const HOSTS = ${JSON.stringify(shard.hosts)};
-const EXCEPT = ${JSON.stringify(scriptExcept)};
-${scriptletLib}
-runForHost(CALLS, HOSTS, EXCEPT);
+${prerequisiteGuard}
+${oncePerDocument(file, prerequisiteGuard + source)}
+${source}
 })();
 `;
-    files.push({ file, matches, sessionMatches, js });
+    files.push({ file, matches, sessionMatches, js, jsBefore: ['shared/entity-hosts.js'] });
   });
+
+  if (entityHosts.length) {
+    const entity = makeShard();
+    for (const h of entityHosts) addHost(entity, h);
+    const entityCalls = new Set(entity.callMap.keys());
+    const except = Object.create(null);
+    for (const [h, keys] of Object.entries(scriptExcept)) except[h] = keys.slice();
+    // Ordinary host shards own overlapping calls, regardless of injection order.
+    // Avoid installing the same hook twice when both google.* and google.fr match.
+    for (const h of hosts) {
+      const keys = scriptHosts[h].filter((i) => entityCalls.has(i)).map((i) => scriptletKey(calls[i]));
+      if (keys.length) except[h] = [...new Set([...(except[h] || []), ...keys])];
+    }
+    const file = `scriptlets/${listId}-entities.js`;
+    const source = body(entity, except);
+    // One broad registration per list trades a small hostname check on unrelated
+    // pages for complete entity coverage. Keep CALLS and the library in an inner
+    // function so they are not initialized on pages rejected by the early guard.
+    const js = `/* Apex AdBlocker – entity scriptlets for "${listName}". Generated by tools/build.mjs. */
+(function () {
+'use strict';
+let hostname = '';
+try { hostname = location.hostname; } catch { /* inaccessible location */ }
+if (!hostname) {
+  try { hostname = new URL(location.ancestorOrigins[0]).hostname; } catch { return; }
+}
+const ENTITIES = new Set(${JSON.stringify(entityHosts)});
+const labels = hostname.split('.');
+let applies = false;
+for (let i = 0; i < labels.length && !applies; i++) {
+  for (let end = i + 1; end < labels.length; end++) {
+    if (ENTITIES.has(labels.slice(i, end).join('.') + '.*')) { applies = true; break; }
+  }
+}
+if (!applies) return;
+const resolve = globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')];
+if (typeof resolve !== 'function' || !resolve(hostname).some((key) => ENTITIES.has(key))) return;
+(function () {
+${oncePerDocument(file, source)}
+${source}
+})();
+})();
+`;
+    files.push({ file, matches: ['*://*/*'], sessionMatches: [], js, jsBefore: ['shared/entity-hosts.js'] });
+  }
   return files;
 }
 
@@ -375,7 +443,7 @@ export function buildAll(opts = {}) {
         JSON.stringify(compiled.rules.filter((r) => r.action.type.startsWith('allow')).map((r) => r.id)));
       fs.writeFileSync(path.join(outDir, 'data', `${list.id}.json`), JSON.stringify(compiled.cosmetic));
       for (const f of files) fs.writeFileSync(path.join(outDir, f.file), f.js);
-      fs.writeFileSync(path.join(outDir, 'data', `${list.id}.scriptlets.json`), JSON.stringify(files.map(({ file, matches, sessionMatches }) => ({ file, matches, sessionMatches }))));
+      fs.writeFileSync(path.join(outDir, 'data', `${list.id}.scriptlets.json`), JSON.stringify(files.map(({ file, matches, sessionMatches, jsBefore }) => ({ file, matches, sessionMatches, jsBefore }))));
     }
     ruleResources.push({ id: list.id, enabled: list.enabled, path: `rules/${list.id}.json` });
 

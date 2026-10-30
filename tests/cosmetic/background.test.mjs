@@ -263,3 +263,101 @@ test('diagnostics:export: raport lokalny bez URL, ID filmów i danych strony', a
     assert.ok(!all.includes('youtube.com'), 'brak nazw hostów');
   } finally { bg.restore(); }
 });
+
+test('Moje filtry: globalny wyjątek usuwa selektor, a generichide/elemhide/document wyłączają właściwą kosmetykę', async () => {
+  const bg = await loadBackground({ files: {
+    'data/lists.json': listsJson(['ads']),
+    'data/ads.scriptlets.json': [],
+    'data/ads.json': emptyList({
+      sel: ['.generic', '.specific'], genC: [0],
+      spec: { 'example.com': [1] }, gen: { '.token': [0] },
+    }),
+  } });
+  try {
+    await bg.install();
+    const css = async () => {
+      const response = await bg.send({ type: 'cosmetic:init', url: 'https://example.com/' }, sender('https://example.com/'));
+      return { response, css: bg.state.css.at(-1).css };
+    };
+    await bg.send({ type: 'options:setUserFilters', text: '#@#.specific' });
+    assert.doesNotMatch((await css()).css, /\.specific\{/);
+    await bg.send({ type: 'options:setUserFilters', text: '@@||example.com^$generichide' });
+    let current = await css();
+    assert.equal(current.response.generic, false);
+    assert.doesNotMatch(current.css, /\.generic\{/);
+    assert.match(current.css, /\.specific\{/);
+    for (const flag of ['elemhide', 'document']) {
+      await bg.send({ type: 'options:setUserFilters', text: `@@||example.com^$${flag}` });
+      current = await css();
+      assert.equal(current.response.generic, false);
+      assert.doesNotMatch(current.css, /\.(generic|specific)\{/);
+    }
+  } finally { bg.restore(); }
+});
+
+test('wykluczone style/procedury nie anulują osobnych prawidłowych filtrów o tej samej treści', async () => {
+  const tasks = [{ css: 'div' }, { op: 'has-text', arg: 'ad' }];
+  const bg = await loadBackground({ files: {
+    'data/lists.json': listsJson(['ads']), 'data/ads.scriptlets.json': [],
+    'data/ads.json': emptyList({
+      scopedStyle: { 'example.com': [{ value: ['body', 'color:red'], exclude: ['safe.example.com'] }] },
+      scopedProc: { 'example.com': [{ value: tasks, exclude: ['safe.example.com'] }] },
+      style: { 'safe.example.com': [['body', 'color:blue']] },
+    }),
+  } });
+  try {
+    await bg.install();
+    let r = await bg.send({ type: 'cosmetic:init', url: 'https://safe.example.com/' }, sender('https://safe.example.com/'));
+    assert.deepEqual(r.proc, []);
+    assert.doesNotMatch(bg.state.css.at(-1).css, /color:red/);
+    assert.match(bg.state.css.at(-1).css, /color:blue/);
+    await bg.send({ type: 'options:setUserFilters', text: 'example.com,~safe.example.com##body:style(color:green)\nsafe.example.com##body:style(color:green)\nexample.com,~safe.example.com##div:has-text(ad)\nsafe.example.com##div:has-text(ad)' });
+    r = await bg.send({ type: 'cosmetic:init', url: 'https://safe.example.com/' }, sender('https://safe.example.com/'));
+    assert.deepEqual(r.proc, [tasks]);
+    assert.match(bg.state.css.at(-1).css, /color:green/);
+    r = await bg.send({ type: 'cosmetic:init', url: 'https://other.example.com/' }, sender('https://other.example.com/'));
+    assert.deepEqual(r.proc, [tasks, tasks]);
+    assert.match(bg.state.css.at(-1).css, /color:red/);
+    assert.match(bg.state.css.at(-1).css, /color:green/);
+  } finally { bg.restore(); }
+});
+
+test('wykluczenie hide jest lokalne dla reguły, również dla własnych filtrów i generic tokenów', async () => {
+  const bg = await loadBackground({ files: {
+    'data/lists.json': listsJson(['ads']), 'data/ads.scriptlets.json': [],
+    'data/ads.json': emptyList({
+      sel: ['.shared-token'], spec: { 'safe.example.com': [0] },
+      scopedHide: { 'example.com': [{ value: '.scoped', exclude: ['safe.example.com'] }] },
+      scopedGen: {
+        '*': [{ value: 'div.complex > .ad', exclude: ['safe.example.com'] }],
+        '.shared-token': [{ value: '.shared-token', exclude: ['safe.example.com'] }],
+        '.only-scoped': [{ value: '.only-scoped', exclude: ['safe.example.com'] }],
+      },
+    }),
+  } });
+  try {
+    await bg.install();
+    await bg.send({ type: 'options:setUserFilters', text: [
+      'example.com,~safe.example.com##.user-ad', 'safe.example.com##.user-ad',
+      '~safe.example.com##.user-generic',
+    ].join('\n') });
+    const init = async (host) => {
+      await bg.send({ type: 'cosmetic:init', url: `https://${host}/` }, sender(`https://${host}/`));
+      return bg.state.css.at(-1).css;
+    };
+    const safe = await init('safe.example.com');
+    assert.match(safe, /\.shared-token\{/);
+    assert.match(safe, /\.user-ad\{/);
+    assert.doesNotMatch(safe, /\.scoped\{|div\.complex|\.user-generic\{/);
+    const other = await init('other.example.com');
+    assert.match(other, /\.scoped\{/);
+    assert.match(other, /div\.complex > \.ad\{/);
+    assert.match(other, /\.user-ad\{/);
+    assert.match(other, /\.user-generic\{/);
+    let result = await bg.send({ type: 'cosmetic:tokens', tokens: ['.only-scoped', '.shared-token'], url: 'https://safe.example.com/' }, sender('https://safe.example.com/'));
+    assert.equal(result.selectors, 0);
+    result = await bg.send({ type: 'cosmetic:tokens', tokens: ['.only-scoped', '.shared-token', '.shared-token'], url: 'https://other.example.com/' }, sender('https://other.example.com/'));
+    assert.equal(result.selectors, 2, 'selectors are deduplicated across tokens');
+    assert.match(bg.state.css.at(-1).css, /\.only-scoped\{/);
+  } finally { bg.restore(); }
+});

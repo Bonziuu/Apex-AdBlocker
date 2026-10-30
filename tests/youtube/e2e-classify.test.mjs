@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  adSignals, analyzeAdState, progressOf, analyzePlayback, adFieldsInPlayerResponse,
+  adSignals, analyzeAdState, mergeAdStates, progressOf, analyzePlayback, adFieldsInPlayerResponse,
   adFieldsInRawText, mergeTriState, classifyAds, classifyCase, summarize, OUTCOME, AD_THRESHOLD_SECONDS,
 } from '../e2e/lib/classify.mjs';
 
@@ -47,6 +47,38 @@ test('krótka zmiana DOM (< 3 s) nie jest awarią', () => {
   assert.equal(ads.verdict, OUTCOME.INCONCLUSIVE);
   assert.ok(ads.notes.some((n) => /krótki stan reklamy/.test(n)));
   assert.equal(classifyCase({ playback: analyzePlayback(samples), ads }).failed, false);
+});
+
+test('reklama po seek lub po zmianie filmu nadal powoduje AD_VISIBLE_FAILURE', () => {
+  const initial = analyzeAdState(seq(20));
+  const afterSeek = analyzeAdState([ad(0), ad(1), ad(2), ...seq(5)]);
+  const merged = mergeAdStates([initial, afterSeek]);
+  assert.equal(merged.persistent, true);
+  assert.equal(merged.adSeconds, 3);
+  assert.equal(classifyCase({ playback: analyzePlayback(seq(20)), ads: classifyAds(merged) }).outcome, OUTCOME.AD_VISIBLE_FAILURE);
+});
+
+test('oddzielne krótkie reklamy nie sumują się przez przerwę seek; dowód reklamy nie ginie', () => {
+  const merged = mergeAdStates([
+    analyzeAdState([ad(0), ad(1), ...seq(4)]),
+    analyzeAdState([play(20), ad(0), ad(1), ...seq(4)]),
+  ]);
+  assert.equal(merged.anyAd, true);
+  assert.equal(merged.persistent, false);
+  assert.equal(merged.adSeconds, 2);
+  assert.equal(classifyAds(merged, { raw: 'yes', visible: 'no' }).verdict, OUTCOME.INCONCLUSIVE);
+});
+
+test('ciągłe dłuższe próbkowanie wykrywa reklamę na granicy początkowego i mid-roll okna', () => {
+  const initial = [...seq(19), ad(0)];
+  const extended = [ad(1), ad(2), ...seq(20)];
+  assert.equal(analyzeAdState(initial).persistent, false);
+  assert.equal(analyzeAdState(extended).persistent, false);
+  assert.equal(analyzeAdState(initial.concat(extended)).persistent, true);
+  const goodStart = analyzePlayback(seq(20));
+  const stalled = analyzePlayback(Array.from({ length: 20 }, () => play(20)));
+  const verdict = classifyCase({ playback: goodStart, ads: classifyAds(analyzeAdState(seq(20))), midroll: stalled });
+  assert.equal(verdict.outcome, OUTCOME.PLAYER_FAILURE, 'dobry początek nie ukrywa awarii w dłuższym oknie');
 });
 
 test('brak reklamy i brak dowodu ⇒ INCONCLUSIVE — no ad opportunity observed (nie „zablokowano”)', () => {

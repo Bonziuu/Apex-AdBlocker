@@ -25,6 +25,213 @@
   "rules_many": {
     "message": "reguł"
   },
+  "dmsg_userRuleLimit": {
+    "message": "Za dużo własnych reguł sieciowych (maks. 5000); ustawienia bez zmian."
+  },
+  "dmsg_rollbackStorageKey": {
+    "message": "storage: nie przywrócono pola $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_rollbackSync": {
+    "message": "synchronizacja ($P1$): $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_changeRollbackFailed": {
+    "message": "Zmiana ustawień nie powiodła się ($P1$); przywrócenie poprzedniego stanu jest niepełne: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_scriptletRestoreFailed": {
+    "message": "Nie udało się zarejestrować scriptletów ($P1$) ani w pełni przywrócić poprzedniego zestawu: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_frameContextUnavailable": {
+    "message": "Nie można potwierdzić dokumentu i witryny ramki; pominięto scriptlety."
+  },
+  "ui_noResponse": {
+    "message": "Brak odpowiedzi rozszerzenia"
+  },
+  "ui_noDiagnosticsResponse": {
+    "message": "Brak odpowiedzi diagnostyki"
+  },
+  "ui_optionsReadFailed": {
+    "message": "Nie udało się odczytać ustawień: $P1$. Spróbuj ponownie lub otwórz diagnostykę.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_rollbackIncomplete": {
+    "message": "$P1$. Nie udało się w pełni przywrócić poprzednich ustawień. ",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_currentSettingsRead": {
+    "message": "Odczytano aktualne zapisane ustawienia. "
+  },
+  "ui_currentSettingsReadFailed": {
+    "message": "Nie udało się odczytać aktualnych ustawień — spróbuj ponownie odczytać je przyciskiem powyżej. "
+  },
+  "ui_openDiagnostics": {
+    "message": "Otwórz diagnostykę, aby sprawdzić stan ochrony."
+  },
+  "ui_rolledBack": {
+    "message": ". Przywrócono poprzednie ustawienia."
+  },
+  "ui_popupRolledBack": {
+    "message": " Przywrócono poprzednie ustawienia."
+  },
+  "ui_backupExportFailed": {
+    "message": "Nie udało się przygotować kopii: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_importRefreshFailed": {
+    "message": "Ustawienia przywrócone, ale nie udało się odświeżyć widoku. Spróbuj ponownie."
+  },
+  "ui_importUnconfirmed": {
+    "message": "Nie udało się potwierdzić importu: $P1$. Odczytaj ustawienia ponownie lub otwórz diagnostykę.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_filtersSaveFailed": {
+    "message": "Nie udało się zapisać filtrów"
+  },
+  "ui_resyncFailed": {
+    "message": "Nie udało się przeprowadzić synchronizacji: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_operationFailed": {
+    "message": "Operacja nie powiodła się"
+  },
+  "ui_diagActionFailed": {
+    "message": "Błąd diagnostyki: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_diagReadFailed": {
+    "message": "Nie udało się odczytać diagnostyki: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_reportFailed": {
+    "message": "Nie udało się zbudować raportu: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_noActiveTab": {
+    "message": "Nie znaleziono aktywnej karty"
+  },
+  "ui_popupReadFailed": {
+    "message": "Nie udało się odczytać bieżącego stanu ochrony: $P1$. Spróbuj ponownie.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_reloadFailed": {
+    "message": "Ochrona została zmieniona, ale nie udało się odświeżyć strony: $P1$. Odśwież ją ręcznie.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_popupRollbackIncomplete": {
+    "message": " Nie udało się w pełni przywrócić ustawień. Otwórz diagnostykę."
+  },
+  "ui_protectionFailed": {
+    "message": "Nie udało się zmienić ochrony: $P1$.$P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "ui_protectionUnconfirmed": {
+    "message": "Nie udało się potwierdzić zmiany ochrony: $P1$. Sprawdź bieżący stan lub otwórz diagnostykę.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_reloadPreferenceFailed": {
+    "message": "Nie udało się zapisać ustawienia odświeżania: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_pickerStartFailed": {
+    "message": "Nie udało się uruchomić wyboru elementu: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ui_retry": {
+    "message": "Spróbuj ponownie"
+  },
+  "ui_openDiagnosticsLink": {
+    "message": "Otwórz diagnostykę"
+  },
+  "ui_reportPreview": {
+    "message": "Raport diagnostyczny"
+  },
   "popup_checking": {
     "message": "Sprawdzanie…"
   },
@@ -262,7 +469,7 @@
     "message": "Przykłady"
   },
   "filters_examplesBody": {
-    "message": "! komentarz\n||reklamy.example.com^            blokuj domenę\n||example.com/banner/*$$image      blokuj obrazki z tej ścieżki\n@@||example.com^$$script           zezwól na skrypty z domeny\nexample.com##.reklama              ukryj element na example.com\n##.sponsorowane                    ukryj na wszystkich stronach\nexample.com##div:has-text(Reklama) ukryj element zawierający tekst"
+    "message": "! Blokuj domenę\n||reklamy.example.com^\n! Blokuj obrazki z tej ścieżki\n||example.com/banner/*$$image\n! Zezwól na skrypty z domeny\n@@||example.com^$$script\n! Ukryj element na example.com\nexample.com##.reklama\n! Ukryj na wszystkich stronach\n##.sponsorowane\n! Ukryj element zawierający tekst\nexample.com##div:has-text(Reklama)"
   },
   "filters_placeholder": {
     "message": "np. ||ads.example.com^"
@@ -302,7 +509,7 @@
     "message": "Importuj ustawienia"
   },
   "backup_note": {
-    "message": "Import zastępuje obecne ustawienia. Jeśli plik jest niepoprawny albo Chrome nie przyjmie zmian, ustawienia pozostaną bez zmian."
+    "message": "Import zastępuje obecne ustawienia. Niepoprawny plik nie zmienia ustawień. Jeśli Chrome odrzuci zmiany, rozszerzenie spróbuje przywrócić poprzedni stan i pokaże wynik."
   },
   "backup_restored": {
     "message": "Przywrócono:"
@@ -362,7 +569,7 @@
     "message": "Diagnostyka"
   },
   "diag_desc": {
-    "message": "Stan silników Apex AdBlocker. Wszystkie dane są zbierane i przechowywane wyłącznie lokalnie, w tej przeglądarce. Raport diagnostyczny nie zawiera adresów stron, identyfikatorów filmów, ciasteczek ani danych konta – możesz go bezpiecznie wkleić do rozmowy."
+    "message": "Stan silników Apex AdBlocker. Dane diagnostyczne pozostają lokalnie, w tej przeglądarce. Eksportowany raport usuwa rozpoznawane adresy, identyfikatory filmów, ciasteczka i tokeny. Przed udostępnieniem przejrzyj jego treść, ponieważ automatyczne oczyszczanie może nie rozpoznać każdej informacji."
   },
   "diag_refresh": {
     "message": "Odśwież"
@@ -404,7 +611,7 @@
     "message": "Mierz pracę filtrów kosmetycznych i scriptletów na stronach (domyślnie wyłączone)"
   },
   "diag_perfDesc": {
-    "message": "Zbierane: liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu Apex AdBlocker (bez czasu oryginalnej funkcji strony). Bez adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty."
+    "message": "Zbierane lokalnie: domena strony, ramka, liczba partii mutacji DOM, czas filtrowania ogólnego i proceduralnego, liczba zastosowanych selektorów oraz – dla każdego scriptletu – liczba wywołań i czas pracy kodu Apex AdBlocker (bez czasu oryginalnej funkcji strony). Bez pełnych adresów stron, ID filmów i treści danych. Dane pozostają w tej przeglądarce i znikają po jej zamknięciu. Po włączeniu przeładuj karty."
   },
   "diag_resetPerf": {
     "message": "Resetuj pomiary"
@@ -1012,6 +1219,15 @@
   },
   "about_title": {
     "message": "O wtyczce"
+  },
+  "about_authorTitle": {
+    "message": "Autor i kontakt"
+  },
+  "about_linkedin": {
+    "message": "Profil LinkedIn"
+  },
+  "about_linkedinLabel": {
+    "message": "Profil autora na LinkedIn (otwiera się w nowej karcie)"
   },
   "about_intro": {
     "message": "Apex AdBlocker działa w Manifest V3 (MV3) i blokuje na trzech poziomach:"

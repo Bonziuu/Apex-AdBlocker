@@ -14,6 +14,8 @@
 //   E2E_HANDLE_CONSENT=1 zwykła interakcja z ekranem zgody w jednorazowym profilu (domyślnie: nic nie klikamy)
 //   E2E_HEADLESS=1       tryb headless (rozszerzenia działają tylko w nowym trybie headless)
 //   E2E_SAMPLE_SECONDS   długość próbkowania odtwarzania (domyślnie 20)
+//   E2E_MIDROLL_SECONDS  dodatkowe ciągłe próbkowanie ostatniego /watch (0–600 s, domyślnie 0)
+//                       Dla długiego filmu ustaw np. 600; brak reklamy nadal jest INCONCLUSIVE.
 //
 // Zasady (z założeń sprintu):
 //  - test NIE klika „Pomiń reklamę” i NIE modyfikuje obiektów odtwarzacza – tylko obserwuje,
@@ -28,8 +30,8 @@ import os from 'node:os';
 import fs from 'node:fs';
 import { ROOT } from '../../tools/lists-config.mjs';
 import {
-  analyzeAdState, analyzePlayback, adFieldsInPlayerResponse, mergeTriState,
-  classifyAds, classifyCase, summarize, progressOf, OUTCOME,
+  analyzeAdState, mergeAdStates, analyzePlayback, adFieldsInPlayerResponse, mergeTriState,
+  classifyAds, classifyCase, summarize, OUTCOME,
 } from './lib/classify.mjs';
 import {
   pageSample, pagePlayerResponseSummary, watchRawResponses, detectGate, handleConsent,
@@ -45,6 +47,10 @@ try {
 
 const env = process.env;
 const SAMPLE_SECONDS = Number(env.E2E_SAMPLE_SECONDS) || 20;
+const MIDROLL_SECONDS = Number(env.E2E_MIDROLL_SECONDS || 0);
+if (!Number.isInteger(MIDROLL_SECONDS) || MIDROLL_SECONDS < 0 || MIDROLL_SECONDS > 600) {
+  throw new Error('E2E_MIDROLL_SECONDS must be an integer between 0 and 600');
+}
 const LONG_VIDEO = 'aqz-KE-bpKQ'; // Big Buck Bunny (~10 min)
 const WATCH_URLS = (env.YOUTUBE_WATCH_URLS || [
   'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
@@ -60,7 +66,7 @@ const SHORTS_URL = env.YOUTUBE_SHORTS_URL || '';
 const label = (kind, i) => `${kind}${i != null ? ` #${i + 1}` : ''}`;
 
 const CASES = [
-  ...WATCH_URLS.map((url, i) => ({ name: label('watch', i), kind: 'watch', url, seek: true })),
+  ...WATCH_URLS.map((url, i) => ({ name: label('watch', i), kind: 'watch', url, seek: true, midroll: i === WATCH_URLS.length - 1 })),
   { name: 'playlist', kind: 'playlist', url: PLAYLIST_URL, next: true },
   { name: 'embed', kind: 'embed', url: EMBED_URL },
   { name: 'music', kind: 'music', url: MUSIC_URL },
@@ -127,20 +133,42 @@ async function runCase(context, c, t) {
     const sampleKind = c.kind === 'shorts' ? 'shorts' : 'player';
     await ensurePlaying(page, sampleKind);
     const samples = await samplePlayer(page, sampleKind, SAMPLE_SECONDS);
-    const adState = analyzeAdState(samples);
-    const playback = analyzePlayback(samples);
+    let adState = analyzeAdState(samples);
+    let playback = analyzePlayback(samples);
+
+    // Opcjonalny dłuższy przebieg bez seek: obserwuje reklamy mid-roll, zamiast
+    // wnioskować o nich z pierwszych 20 s filmu. Łączymy ciągłe próbki, aby nie
+    // zgubić reklamy zaczynającej się na granicy okien.
+    let midroll = null;
+    if (c.midroll && MIDROLL_SECONDS > 0 && playback.ok) {
+      const extended = await samplePlayer(page, sampleKind, MIDROLL_SECONDS);
+      const continuous = samples.concat(extended);
+      adState = analyzeAdState(continuous);
+      playback = analyzePlayback(continuous);
+      const prolonged = analyzePlayback(extended);
+      midroll = { sampledSeconds: MIDROLL_SECONDS, ok: prolonged.ok, reasons: prolonged.reasons };
+    }
+    // Zachowujemy metadane tego filmu przed seek / przejściem playlisty;
+    // nie porównujemy surowych danych filmu A z player response filmu B.
     const visibleSummary = await page.evaluate(pagePlayerResponseSummary).catch(() => null);
     const metadata = { raw: mergeTriState(raw), visible: adFieldsInPlayerResponse(visibleSummary) };
-    const ads = classifyAds(adState, metadata);
 
     let seek = null;
-    if (c.seek && playback.ok) {
+    let seekSkipped = null;
+    if (c.seek && playback.ok && midroll?.ok) {
+      const position = await page.evaluate(pageSample, sampleKind);
+      if (typeof position.duration === 'number' && position.duration - position.currentTime < 25) {
+        seekSkipped = 'po dłuższym próbkowaniu za mało filmu na seek +15 s i obserwację';
+      }
+    }
+    if (c.seek && playback.ok && (!midroll || midroll.ok) && !seekSkipped) {
       const before = await seekForward(page, 15);
       await page.waitForTimeout(1500);
       const after = await samplePlayer(page, sampleKind, 8);
+      adState = mergeAdStates([adState, analyzeAdState(after)]);
       const jumped = before != null && typeof after[0].currentTime === 'number' && after[0].currentTime >= before + 10;
-      const grew = progressOf(after) >= 3;
-      seek = { ok: jumped && grew, reasons: [!jumped && 'pozycja nie przeskoczyła o ≥ 10 s', !grew && 'czas nie rośnie po seek'].filter(Boolean) };
+      const resumed = analyzePlayback(after);
+      seek = { ok: jumped && resumed.ok, reasons: [!jumped && 'pozycja nie przeskoczyła o ≥ 10 s', ...resumed.reasons].filter(Boolean) };
     }
 
     let next = null;
@@ -152,12 +180,11 @@ async function runCase(context, c, t) {
         const s2 = await samplePlayer(page, sampleKind, 10);
         const p2 = analyzePlayback(s2);
         next = { ok: p2.ok, reasons: p2.reasons };
-        const a2 = analyzeAdState(s2);
-        if (a2.persistent) Object.assign(adState, a2);
+        adState = mergeAdStates([adState, analyzeAdState(s2)]);
       }
     }
 
-    const verdict = classifyCase({ playback, ads: classifyAds(adState, metadata), seek, next });
+    const verdict = classifyCase({ playback, ads: classifyAds(adState, metadata), seek, next, midroll });
     const extErrors = pageErrors.filter((e) => /apex|scriptlet/i.test(e));
     if (extErrors.length) { verdict.failed = true; verdict.outcome = OUTCOME.PLAYER_FAILURE; verdict.reasons.push(`błędy rozszerzenia na stronie: ${extErrors.length}`); }
 
@@ -171,7 +198,7 @@ async function runCase(context, c, t) {
       adMetadataDetected: metadata.visible,
       adMetadataRaw: metadata.raw,
       playbackDetail: { progress: playback.progress, readyOk: playback.readyOk, spinnerSeconds: playback.spinnerSeconds, permanentError: playback.permanentError, antiAdblock: playback.antiAdblock },
-      seek: seek && seek.ok, next: next && next.ok,
+      seek: seek && seek.ok, seekSkipped, next: next && next.ok, midroll,
       lastSample: samples.at(-1),
     });
     t.diagnostic(`${c.name}: ${verdict.outcome} · playback ${verdict.playback} · ad metadata detected: ${metadata.visible} (raw: ${metadata.raw})`);

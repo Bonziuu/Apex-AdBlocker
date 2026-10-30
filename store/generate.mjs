@@ -1,27 +1,35 @@
 #!/usr/bin/env node
 // Apex AdBlocker – zrzuty ekranu (1280×800) i kafelek promocyjny (440×280) do Chrome Web Store.
 //
-//   npm run package:dev && node store/generate.mjs
+//   node store/generate.mjs
 //
-// 1. Zrzuty prawdziwego rozszerzenia z dist/Apex-AdBlocker na fikcyjnej stronie demo (store/tools/).
+// 1. Świeża paczka bieżącego źródła w katalogu tymczasowym, rzeczywiste UI i lokalna strona demo.
 // 2. Kompozycja z nagłówkami w języku wpisu (en, pl) → store/screenshots/<lang>/, store/promo/.
 // 3. Wersje z zaokrąglonymi rogami na GitHuba → store/github/ (store/github-images.mjs).
 
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { capture } from './tools/capture.mjs';
 import { launch, sleep } from './tools/harness.mjs';
 import { buildGithubImages } from './github-images.mjs';
+import { packageDev } from '../tools/package-dev.mjs';
+import { captureMetadata, contentsHash, publishAssets } from './tools/provenance.mjs';
 
 const STORE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(STORE, '..');
-const EXT = path.join(ROOT, 'dist', 'Apex-AdBlocker');
-if (!fs.existsSync(path.join(EXT, 'manifest.json'))) { console.error('Brak dist/Apex-AdBlocker – uruchom najpierw: npm run package:dev'); process.exit(2); }
-
+export async function generateStoreAssets({ captureImpl = capture, launchImpl = launch, buildGithubImagesImpl = buildGithubImages } = {}) {
 const RAW = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-store-raw-'));
-await capture(EXT, RAW, (...a) => console.log('  ', ...a));
+const NEXT = path.join(RAW,'next');
+let b;
+let retainedBackup = false;
+try {
+// Always package current source into a private temporary directory. Never trust stale dist/.
+const packaged = packageDev({ root:ROOT,outDir:path.join(RAW,'package') });
+const EXT = packaged.extDir;
+const sourceHash = contentsHash(EXT);
+const details = await captureImpl(EXT, RAW, (...a) => console.log('  ', ...a));
 const raw = (name) => 'data:image/png;base64,' + fs.readFileSync(path.join(RAW, name)).toString('base64');
 const logo = 'data:image/svg+xml;base64,' + fs.readFileSync(path.join(ROOT, 'icons', 'logo.svg')).toString('base64');
 const icon32 = 'data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'icons', 'icon32.png')).toString('base64');
@@ -110,7 +118,7 @@ img{width:118px;height:118px;flex:none}h1{margin:0;font-size:31px;letter-spacing
 .t{font-size:18px;font-weight:700;color:#0f7f8c;margin-top:8px;line-height:1.25}.s{font-size:13.5px;color:#4b6466;margin-top:10px}
 </style></head><body><img src="${logo}"><div><h1>${TEXT[lang].tile[0]}</h1><div class="t">${TEXT[lang].tile[1]}</div><div class="s">${TEXT[lang].tile[2]}</div></div></body></html>`;
 
-const b = await launch({ lang: 'en' });
+b = await launchImpl({ lang: 'en' });
 const render = async (html, file, w, h) => {
   const tmp = path.join(RAW, 'page.html');
   fs.writeFileSync(tmp, html);
@@ -123,11 +131,29 @@ const render = async (html, file, w, h) => {
   console.log('✓', path.relative(ROOT, file));
 };
 for (const lang of ['en', 'pl']) {
-  for (const [name, html] of Object.entries(screens(lang))) await render(html, path.join(STORE, 'screenshots', lang, `${name}.png`), 1280, 800);
-  await render(tile(lang), path.join(STORE, 'promo', `small-tile-440x280${lang === 'en' ? '' : '-pl'}.png`), 440, 280);
+  for (const [name, html] of Object.entries(screens(lang))) await render(html, path.join(NEXT, 'screenshots', lang, `${name}.png`), 1280, 800);
+  await render(tile(lang), path.join(NEXT, 'promo', `small-tile-440x280${lang === 'en' ? '' : '-pl'}.png`), 440, 280);
 }
 await sleep(100);
 await b.close();
-fs.rmSync(RAW, { recursive: true, force: true });
-// wersje z zaokrąglonymi rogami do README i opisów wydań na GitHubie
-await buildGithubImages();
+b = null;
+// Finish all outputs before replacing any existing marketing asset.
+await buildGithubImagesImpl({ storeDir:NEXT });
+if (contentsHash(ROOT,true) !== sourceHash) throw new Error('Source changed during capture; existing marketing assets were preserved.');
+const metadata = captureMetadata({ extensionDir:EXT,outputDir:NEXT,details });
+fs.writeFileSync(path.join(NEXT,'capture-metadata.json'),JSON.stringify(metadata,null,2)+'\n');
+publishAssets({ stagedDir:NEXT,destinationDir:STORE,backupDir:path.join(RAW,'previous') });
+return metadata;
+} catch (error) {
+  retainedBackup = !!error.retainedBackup;
+  throw error;
+} finally {
+  await b?.close().catch(() => {});
+  if (!retainedBackup) fs.rmSync(RAW,{recursive:true,force:true});
+}
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  try { await generateStoreAssets(); }
+  catch(error) { console.error(error.message); process.exitCode = error.code === 'BROWSER_UNAVAILABLE' ? 2 : 1; }
+}

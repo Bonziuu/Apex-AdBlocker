@@ -13,7 +13,7 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const FILE = { id: 'sl-ads-0', file: 'scriptlets/ads-0.js' };
 const regs = (f, o = {}) => scriptletRegistrations({ ...FILE, ...f }, { devPerf: false, excludeMatches: [], ...o });
-const COMMON = { runAt: 'document_start', allFrames: true, world: 'MAIN' };
+const COMMON = { runAt: 'document_start', allFrames: false, world: 'MAIN' };
 
 test('stałe: sufiks sesyjny i plik-flaga profilera', () => {
   assert.equal(SESSION_SUFFIX, '-s');
@@ -71,7 +71,7 @@ test('sameScriptletRegistrations: różnica id, js, runAt, allFrames, world, utr
     js: { js: ['content/scriptlet-perf-on.js', 'scriptlets/ads-0.js'] },
     runAt: { runAt: 'document_end' },
     runAtDefault: { runAt: undefined }, // brak → document_idle
-    allFrames: { allFrames: false },
+    allFrames: { allFrames: true },
     world: { world: 'ISOLATED' },
     worldDefault: { world: undefined }, // brak → ISOLATED
     persistence: { persistAcrossSessions: false },

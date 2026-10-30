@@ -25,19 +25,23 @@ export function createHealth(store, opts = {}) {
   const now = opts.now || (() => Date.now());
   const log = opts.log || ((...a) => console.error(...a));
   let state = null;
+  let loading = null;
   let saving = Promise.resolve();
 
   async function load() {
     if (state) return state;
-    const stored = await store.get('health').catch(() => null);
-    const base = emptyHealth();
-    if (stored && typeof stored === 'object') {
-      for (const c of COMPONENTS) if (stored.components && stored.components[c]) base.components[c] = stored.components[c];
-      for (const s of SYNC_STEPS) if (stored.sync && stored.sync[s]) base.sync[s] = stored.sync[s];
-      if (Array.isArray(stored.errors)) base.errors = stored.errors.slice(-MAX_ERRORS);
-    }
-    state = base;
-    return state;
+    if (!loading) loading = (async () => {
+      const stored = await store.get('health').catch(() => null);
+      const base = emptyHealth();
+      if (stored && typeof stored === 'object') {
+        for (const c of COMPONENTS) if (stored.components && stored.components[c]) base.components[c] = stored.components[c];
+        for (const s of SYNC_STEPS) if (stored.sync && stored.sync[s]) base.sync[s] = stored.sync[s];
+        if (Array.isArray(stored.errors)) base.errors = stored.errors.slice(-MAX_ERRORS);
+      }
+      state = base;
+      return state;
+    })();
+    return loading;
   }
 
   function persist() {

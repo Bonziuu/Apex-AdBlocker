@@ -36,7 +36,7 @@ jobs:
           node-version: 20
 
       - name: Instalacja zależności
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Pobranie list filtrów
         id: lists
@@ -45,6 +45,12 @@ jobs:
           set +e
           node tools/update-lists.mjs 2>&1 | tee "$RUNNER_TEMP/update.log"
           echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Odrzucenie niepełnego lub niezgodnego snapshotu
+        if: steps.lists.outputs.code != '0'
+        run: |
+          echo '::error::Aktualizacja odrzucona; poprzedni zestaw list pozostał bez zmian. Sprawdź log pobierania i zgodności.'
+          exit 1
 
       - name: Czy listy się zmieniły
         id: diff
@@ -77,7 +83,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          npm run check 2>&1 | tee "$RUNNER_TEMP/check.log"
+          npm run check -- --require-browser 2>&1 | tee "$RUNNER_TEMP/check.log"
           echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Pull Request
@@ -99,9 +105,12 @@ jobs:
           git commit -m "$title"
           git push --force origin "$BRANCH"
           draft=()
-          if [ "$BUILD_CODE" != "0" ] || [ "$CHECK_CODE" != "0" ]; then draft=(--draft); fi
+          if [ "$LISTS_CODE" != "0" ] || [ "$BUILD_CODE" != "0" ] || [ "$CHECK_CODE" != "0" ]; then draft=(--draft); fi
           if gh pr view "$BRANCH" --json state --jq .state 2>/dev/null | grep -q OPEN; then
             gh pr edit "$BRANCH" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md"
+            if [ "${#draft[@]}" -gt 0 ] && [ "$(gh pr view "$BRANCH" --json isDraft --jq .isDraft)" != "true" ]; then
+              gh pr ready "$BRANCH" --undo
+            fi
           else
             gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md" "${draft[@]}"
           fi

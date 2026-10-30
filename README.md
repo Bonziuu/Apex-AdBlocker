@@ -14,7 +14,7 @@
   <img src="store/github/ads-blocked-pl.png" alt="Strona bez rozszerzenia i z Apex AdBlocker" width="820">
 </p>
 
-> **Status:** stabilne wydanie.
+> **Status:** kandydat do wydania; pełna walidacja obejmuje testy przeglądarkowe i rzeczywiste strony.
 
 ## Co robi
 
@@ -40,12 +40,14 @@ Aktualizacja i usuwanie: [docs/INSTALLATION.md](docs/INSTALLATION.md).
 ## Dla programistów
 
 ```bash
-npm install && npm test   # testy (Node.js 20+)
-npm run check             # pełna kontrola, w tym test w Chromium
+npm ci && npm test   # testy (Node.js 20+)
+npm run check -- --require-browser  # komplet testów bez SKIP oraz smoke Chromium
 npm run package:release   # paczka dla użytkownika
 ```
 
 Architektura, testy, packaging i ograniczenia: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) · [opis techniczny](docs/technical-overview.md) · [materiały do Chrome Web Store](store/README.md)
+
+Opis połączonych poprawek i wyniki walidacji: [docs/integration-fixes.md](docs/integration-fixes.md). Automat przygotowania zgłoszenia: `npm run webstore:prepare`.
 
 ## Listy filtrów
 
@@ -70,6 +72,8 @@ EasyList, EasyPrivacy, uBlock filters i Polskie Filtry – na warunkach ich lice
 </p>
 
 **Lightweight ad and tracker blocker for Chrome – no setup, no telemetry.**
+
+Release candidate: complete browser and representative real-site validation is required before publication.
 
 - 🛡️ Blocks ads, trackers and malicious sites right after installation
 - ▶️ YouTube Protection

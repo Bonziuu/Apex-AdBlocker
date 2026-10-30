@@ -114,7 +114,7 @@ test('paczka (package:dev): brak danych cookies/annoyances, rulesety tylko z zes
     assert.deepEqual(bad, [], 'pliki cookies/annoyances w paczce');
     for (const f of ['rules/cookies.json', 'rules/annoyances.json', 'data/cookies.json', 'data/annoyances.json', 'data/cookies.scriptlets.json', 'data/annoyances.scriptlets.json']) assert.ok(!files.includes(f), f);
     const shards = files.filter((f) => f.startsWith('scriptlets/'));
-    assert.ok(shards.length > 0 && shards.every((f) => /^scriptlets\/(ads|privacy|security)-\d+\.js$/.test(f)), `scriptlety: ${shards.filter((f) => !/^scriptlets\/(ads|privacy|security)-/.test(f)).join(', ')}`);
+    assert.ok(shards.length > 0 && shards.every((f) => /^scriptlets\/(ads|privacy|security)-(\d+|entities)\.js$/.test(f)), `scriptlety: ${shards.filter((f) => !/^scriptlets\/(ads|privacy|security)-/.test(f)).join(', ')}`);
     assert.deepEqual(files.filter((f) => f.startsWith('rules/')), ['rules/ads.json', 'rules/privacy.json', 'rules/security.json']);
     const manifest = JSON.parse(fs.readFileSync(path.join(extDir, 'manifest.json'), 'utf8'));
     assert.deepEqual(manifest.declarative_net_request.rule_resources.map((r) => [r.id, r.enabled]), CORE_LISTS.map((id) => [id, true]));

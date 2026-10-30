@@ -8,6 +8,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { loadBackground, sender } from '../helpers/chrome-mock.mjs';
 import { ROOT } from '../../tools/lists-config.mjs';
+import { PlayerReportStore, PLAYER_REPORT_TTL_MS } from '../../youtube/player-reports.js';
 
 const REFRESH = { type: 'youtube:health-refresh' };
 const pageOf = (url) => {
@@ -130,14 +131,14 @@ test('brak skryptu treści: odrzucona obietnica i wyjątek sendMessage są ignor
 
 // --- youtube/health.js: obsługa prośby o ponowny raport -------------------------------------
 
-function loadContentScript(pathname) {
+function loadContentScript(pathname, options = {}) {
   const sent = [];
   const listeners = [];
   let intervalFn = null;
-  const player = { querySelector: () => null };
+  const player = options.player || { querySelector: () => null };
   const ctx = {
     window: {},
-    location: { pathname },
+    location: { pathname, search: options.search || '' },
     document: {
       visibilityState: 'visible',
       getElementById: (id) => (id === 'movie_player' ? player : null),
@@ -145,12 +146,12 @@ function loadContentScript(pathname) {
     },
     chrome: {
       runtime: {
-        sendMessage: (m) => { sent.push(m); return Promise.resolve(); },
+        sendMessage: (m) => { sent.push(m); return options.sendMessage ? options.sendMessage(m) : Promise.resolve(); },
         onMessage: { addListener: (fn) => listeners.push(fn) },
       },
     },
     setInterval: (fn) => { intervalFn = fn; return 1; },
-    Date,
+    Date: options.now ? { now: options.now } : Date,
   };
   ctx.window.top = ctx.window;
   ctx.globalThis = ctx;
@@ -187,4 +188,70 @@ test('youtube/health.js: niewidoczna karta nie raportuje także po prośbie (bez
   cs.ctx.document.visibilityState = 'hidden';
   cs.listeners[0]({ type: 'youtube:health-refresh' }, {}, () => {});
   assert.equal(cs.sent.length, 1);
+});
+
+test('heartbeat zachowuje stabilny raport ponad TTL i odtwarza go po restarcie workera', () => {
+  for (const error of [null, { code: 4 }]) {
+    let now = 1_000_000;
+    let store = new PlayerReportStore({ now: () => now });
+    const video = { currentTime: 0, readyState: 4, paused: false, error };
+    const cs = loadContentScript('/watch', {
+      now: () => now,
+      player: { querySelector: (s) => s === 'video' ? video : null },
+      sendMessage: (msg) => { store.set(7, 0, msg); return Promise.resolve(); },
+    });
+    const expected = error ? 'error' : 'healthy';
+    for (let elapsed = 3000; elapsed <= PLAYER_REPORT_TTL_MS * 2; elapsed += 3000) {
+      now += 3000;
+      video.currentTime += 3;
+      cs.interval();
+      assert.equal(store.latest()?.status, expected, `raport nadal świeży po ${elapsed} ms`);
+    }
+    assert.ok(cs.sent.length >= 4, 'stabilny stan wysyła heartbeat');
+    assert.ok(cs.sent.length <= 6, 'heartbeat nie wybudza workera co każde 3 s');
+
+    store = new PlayerReportStore({ now: () => now }); // nowy worker: pusta pamięć
+    assert.equal(store.latest(), null);
+    for (let elapsed = 0; elapsed < 30_000; elapsed += 3000) { now += 3000; cs.interval(); }
+    assert.equal(store.latest()?.status, expected, 'heartbeat odtwarza niezmieniony raport');
+  }
+});
+
+test('po ukryciu dłuższym niż TTL widoczna karta natychmiast odnawia raport', () => {
+  let now = 1_000_000;
+  const cs = loadContentScript('/embed/x', { now: () => now });
+  cs.ctx.document.visibilityState = 'hidden';
+  now += PLAYER_REPORT_TTL_MS * 2;
+  cs.interval();
+  assert.equal(cs.sent.length, 1);
+  cs.ctx.document.visibilityState = 'visible';
+  cs.interval();
+  assert.equal(cs.sent.length, 2);
+});
+
+test('watch A → watch B resetuje okres uruchamiania także przy tej samej ścieżce', () => {
+  let now = 1_000_000;
+  const cs = loadContentScript('/watch', { now: () => now, search: '?v=A' });
+  now += 60_000;
+  cs.interval();
+  assert.equal(cs.sent.at(-1).status, 'degraded', 'stary odtwarzacz nadal bez video');
+  cs.ctx.location.search = '?v=B';
+  cs.listeners[0](REFRESH);
+  assert.equal(cs.sent.at(-1).status, 'unknown', 'nowy film ma własny okres uruchamiania');
+  now += 21_000;
+  cs.interval();
+  assert.equal(cs.sent.at(-1).status, 'degraded', 'brak video wykrywany po nowym okresie uruchamiania');
+});
+
+test('odrzucony raport jest ponawiany przy kolejnym ticku zamiast czekać na zmianę stanu', async () => {
+  let attempts = 0;
+  const cs = loadContentScript('/embed/x', {
+    sendMessage: () => ++attempts === 1 ? Promise.reject(new Error('worker unavailable')) : Promise.resolve(),
+  });
+  await Promise.resolve();
+  cs.interval();
+  assert.equal(cs.sent.length, 2);
+  await Promise.resolve();
+  cs.interval();
+  assert.equal(cs.sent.length, 2, 'udany raport znowu podlega deduplikacji');
 });

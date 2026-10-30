@@ -33,6 +33,8 @@ test('aktualizacja list: pobranie → build → npm run check → PR; nigdy push
   assert.doesNotMatch(UPDATE, /git push[^\n]*\bmain\b/, 'bez pushowania na main');
   assert.doesNotMatch(UPDATE, /gh pr merge|--admin|gh release/, 'bez scalania i wydań');
   assert.match(UPDATE, /--draft/, 'nieudana kontrola → szkic PR');
+  assert.match(UPDATE,/steps\.lists\.outputs\.code != '0'/,'odrzucony snapshot zatrzymuje job');
+  assert.match(UPDATE,/gh pr ready "\$BRANCH" --undo/,'nieudana kontrola istniejącego PR też przywraca szkic');
   assert.match(UPDATE, /git diff --quiet -- tools\/lists/, 'bez zmian list – bez PR');
 });
 
@@ -40,11 +42,13 @@ test('wydanie: tylko na tag vX.Y.Z, zgodność z manifestem, kontrola przed pacz
   assert.match(RELEASE, /on:\n {2}push:\n {4}tags:\n {6}- 'v\*\.\*\.\*'/);
   assert.match(RELEASE, /permissions:\n {2}contents: write/);
   assert.match(RELEASE, /require\('\.\/manifest\.json'\)\.version/);
-  const order = ['npm install', 'npx playwright install --with-deps chromium', 'npm run check', 'npm run package:release', 'node tools/release-notes.mjs', 'gh release create'].map((s) => stepsOf(RELEASE).indexOf(s));
+  const order = ['npm ci', 'npx playwright install --with-deps chromium', 'npm run check', 'npm run package:release', 'node tools/release-notes.mjs', 'gh release create'].map((s) => stepsOf(RELEASE).indexOf(s));
   for (const i of order) assert.ok(i > 0);
   assert.deepEqual([...order].sort((a, b) => a - b), order);
   assert.match(RELEASE, /--verify-tag/);
   assert.match(RELEASE, /SKIP: Chromium smoke test unavailable/);
+  assert.match(RELEASE,/npm run check -- --require-browser \| tee check\.log/);
+  assert.match(UPDATE,/npm run check -- --require-browser 2>&1 \| tee/);
   assert.doesNotMatch(RELEASE, /chromewebstore|webstore.*publish/i, 'bez publikacji w Chrome Web Store');
   for (const f of ['dist/Apex-AdBlocker.zip', 'dist/SHA256SUMS.txt', 'Apex-AdBlocker-$VERSION.zip']) assert.ok(RELEASE.includes(f), f);
 });
@@ -87,6 +91,12 @@ test('opis PR aktualizacji list: wyniki kroków, nieudane pobrania, zmiany liczb
     const okBody = prBody({ dir, codes: { lists: '0', build: '0', check: '0' }, beforeJson: before, afterJson: after });
     assert.doesNotMatch(okBody.split('\n')[0], /wymaga sprawdzenia/);
     assert.doesNotMatch(okBody, /Log kontroli/);
+    const downloadFailure=prBody({dir,codes:{lists:'1',build:'0',check:'0'},beforeJson:before,afterJson:after});
+    assert.match(downloadFailure.split('\n')[0],/wymaga sprawdzenia/,'download failure cannot be a green PR');
+    assert.doesNotMatch(downloadFailure,/✅ Kompletny snapshot/);
+    const rejected=prBody({dir,codes:{lists:'2',build:'not_run',check:'not_run'},beforeJson:before,afterJson:after});
+    assert.match(rejected,/Poprzedni snapshot pozostaje bez zmian/);
+    assert.doesNotMatch(rejected,/Listy pobrane, ale/,'rejected candidates were not installed');
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   assert.match(statsTable('', JSON.stringify([{ id: 'x', name: 'X', networkRules: 1, cosmeticFilters: 2, scriptletFilters: 3 }])), /\| X \| 1 \| 2 \| 3 \|/);
 });

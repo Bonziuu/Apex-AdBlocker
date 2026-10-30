@@ -20,9 +20,13 @@
     "icons": "node tools/build-icons.mjs",
     "test:local": "node tests/local/apex-local-test.mjs",
     "test:sites": "node tests/local/single-blocker-sites.mjs",
-    "i18n": "node tools/build-i18n.mjs"
+    "i18n": "node tools/build-i18n.mjs",
+    "webstore:materials": "node tools/webstore-materials.mjs",
+    "webstore:screenshots": "node tools/webstore-screenshots.mjs",
+    "webstore:prepare": "node tools/webstore-prepare.mjs",
+    "webstore:preflight": "node tools/webstore-preflight.mjs --prepared docs/webstore/readiness-report.json --submission docs/webstore/submission.json --evidence docs/webstore/validation-evidence.json"
   },
   "devDependencies": {
-    "playwright": "^1.49.0"
+    "playwright": "1.64.1"
   }
 }

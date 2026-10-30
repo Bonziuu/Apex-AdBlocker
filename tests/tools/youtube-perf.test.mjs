@@ -2,11 +2,42 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { attributeProfile } from '../../tools/perf/youtube-perf.mjs';
+import { attributeProfile, waitForProtectionReady } from '../../tools/perf/youtube-perf.mjs';
 import { fixtureHtml, playerResponse } from '../../tools/perf/youtube-fixture.mjs';
 
 const EXT = 'chrome-extension://abcdefghijklmnop';
 const node = (id, url, functionName, children = [], lineNumber = 0) => ({ id, callFrame: { url, functionName, lineNumber }, children });
+const health = () => ({
+  sync: Object.fromEntries(['rulesets', 'dynamicRules', 'scriptlets'].map((k) => [k, { status: 'ok' }])),
+  components: Object.fromEntries(['network', 'cosmetic', 'scriptlets', 'filters', 'youtube'].map((k) => [k, { status: 'ok' }])),
+});
+
+test('benchmark czeka na gotową ochronę; błąd synchronizacji lub komponentu unieważnia pomiar', async () => {
+  let now = 0;
+  const ready = health();
+  const pending = health();
+  pending.sync.scriptlets.status = 'unknown';
+  const queue = [pending, ready];
+  const options = { evaluate: async () => queue.shift(), waitForTimeout: async (ms) => { now += ms; } };
+  assert.equal(await waitForProtectionReady(options, { now: () => now }), ready);
+  assert.equal(now, 2000);
+  const broken = health();
+  broken.sync.scriptlets = { status: 'error', message: 'registration failed' };
+  await assert.rejects(waitForProtectionReady({ evaluate: async () => broken }), /Benchmark invalid.*registration failed/);
+  const componentError = health();
+  componentError.components.scriptlets = { status: 'error', detail: 'missing scripts' };
+  await assert.rejects(waitForProtectionReady({ evaluate: async () => componentError }), /Benchmark invalid.*missing scripts/);
+});
+
+test('benchmark nie mierzy rozszerzenia po timeout ani bez gotowych komponentów', async () => {
+  for (const snapshot of [null, health()]) {
+    if (snapshot) snapshot.components.youtube.status = 'unknown';
+    let now = 0;
+    const options = { evaluate: async () => snapshot, waitForTimeout: async (ms) => { now += ms; } };
+    await assert.rejects(waitForProtectionReady(options, { timeoutMs: 2500, now: () => now }), /Benchmark invalid.*timeout/);
+    assert.equal(now, 2500);
+  }
+});
 
 test('attributeProfile: natywne wywołania dziedziczą właściciela; powrót do kodu strony zmienia właściciela', () => {
   const profile = {

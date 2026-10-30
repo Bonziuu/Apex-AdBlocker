@@ -54,7 +54,10 @@ test('service worker: pomiary domyślnie wyłączone – scriptlety bez pliku-fl
   try {
     await bg.install();
     assert.ok(bg.state.registered.length > 0);
-    for (const r of bg.state.registered.filter((x) => x.id.startsWith('sl-'))) assert.equal(r.js.length, 1, r.id);
+    for (const r of bg.state.registered.filter((x) => x.id.startsWith('sl-'))) {
+      assert.match(r.js.at(-1), /^scriptlets\//, r.id);
+      assert.ok(!r.js.includes('content/scriptlet-perf-on.js'));
+    }
     const r = await bg.send({ type: 'perf:scriptlets', data: report([['json-prune · JSON.parse', 1, 1, 1]]) }, sender('https://www.youtube.com/'));
     assert.equal(r.accepted, 0);
     assert.deepEqual((await bg.send({ type: 'health:get' })).scriptletPerf, []);
@@ -70,7 +73,8 @@ test('service worker: włączenie pomiarów → plik-flaga przed każdym plikiem
     assert.ok(sl.length > 0);
     for (const r of sl) {
       assert.equal(r.js[0], 'content/scriptlet-perf-on.js', r.id);
-      assert.equal(r.js.length, 2);
+      assert.equal(r.js.filter((file) => file === 'content/scriptlet-perf-on.js').length, 1);
+      assert.match(r.js.at(-1), /^scriptlets\//);
       assert.equal(r.world, 'MAIN');
     }
     const yt = sender('https://www.youtube.com/watch?v=SECRETVID01');
@@ -89,7 +93,7 @@ test('service worker: włączenie pomiarów → plik-flaga przed każdym plikiem
 
     await bg.send({ type: 'perf:scriptlets', data: report([['json-prune · JSON.parse', 1, 1, 1]]) }, yt);
     await bg.send({ type: 'options:setDevPerf', enabled: false });
-    for (const r of bg.state.registered.filter((x) => x.id.startsWith('sl-'))) assert.equal(r.js.length, 1, 'po wyłączeniu bez pliku-flagi');
+    for (const r of bg.state.registered.filter((x) => x.id.startsWith('sl-'))) assert.ok(!r.js.includes('content/scriptlet-perf-on.js'), 'po wyłączeniu bez pliku-flagi');
     const off = await bg.send({ type: 'health:get' });
     assert.equal(off.devPerf, false);
     assert.deepEqual(off.scriptletPerf, []);

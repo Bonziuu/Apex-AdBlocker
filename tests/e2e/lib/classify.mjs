@@ -67,6 +67,17 @@ export function analyzeAdState(samples, { intervalSec = 1, thresholdSec = AD_THR
   };
 }
 
+/** Łączy oddzielne okna (np. seek), nie skleja czasu reklamy ponad przerwą pomiaru. */
+export function mergeAdStates(states) {
+  return {
+    anyAd: states.some((s) => s.anyAd),
+    adSeconds: Math.max(0, ...states.map((s) => s.adSeconds)),
+    persistent: states.some((s) => s.persistent),
+    signals: [...new Set(states.flatMap((s) => s.signals))].sort(),
+    mainVideoStartedAfter: states.findLast((s) => s.anyAd)?.mainVideoStartedAfter ?? null,
+  };
+}
+
 /** Suma przyrostów currentTime między kolejnymi próbkami (bez skoków > maxStep, np. seek). */
 export function progressOf(samples, { maxStep = 5 } = {}) {
   let total = 0;
@@ -147,14 +158,15 @@ export function classifyAds(adState, metadata = {}) {
 
 /**
  * Wynik całego przypadku.
- * @param {{playback, ads, seek?, next?}} r
+ * @param {{playback, ads, seek?, next?, midroll?}} r
  * @returns {{outcome:string, failed:boolean, playback:'PASS'|'FAIL', adVerdict:string, reasons:string[]}}
  */
-export function classifyCase({ playback, ads, seek = null, next = null }) {
+export function classifyCase({ playback, ads, seek = null, next = null, midroll = null }) {
   const reasons = [];
   if (!playback.ok) reasons.push(...playback.reasons);
   if (seek && !seek.ok) reasons.push(`seek: ${seek.reasons.join(', ')}`);
   if (next && !next.ok) reasons.push(`następny film: ${next.reasons.join(', ')}`);
+  if (midroll && !midroll.ok) reasons.push(`dłuższe odtwarzanie: ${midroll.reasons.join(', ')}`);
   const playbackOk = reasons.length === 0;
   let outcome;
   if (ads.verdict === OUTCOME.AD_VISIBLE_FAILURE) outcome = OUTCOME.AD_VISIBLE_FAILURE;

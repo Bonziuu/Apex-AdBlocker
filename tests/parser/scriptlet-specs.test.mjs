@@ -37,6 +37,13 @@ test('json-prune: tryb logowania i stackNeedle nie są wykonywane', () => {
   assert.equal(a('json-prune-fetch-response', ['a', '', 'propsToMatch']).status, 'partial', 'niesparowany vararg');
 });
 
+test('property pattern validation keeps colons inside URLs and regexes', () => {
+  assert.equal(a('prevent-fetch', ['url:https://ads.example:8443/path']).status, 'supported');
+  assert.equal(a('prevent-fetch', [String.raw`url:/^https?:\/\/ads\.example:\d+\//`]).status, 'supported');
+  assert.equal(a('prevent-fetch', [String.raw`/^https?:\/\/ads\.example:\d+\//`]).status, 'supported');
+  assert.equal(a('prevent-fetch', ['url:/https?:[/']).status, 'partial', 'invalid regex is validated in full');
+});
+
 test('trusted-replace-*-response: "*" i pusty wzorzec nie są wykonywane', () => {
   assert.equal(a('trusted-rpfr', ['*', '']).status, 'partial');
   assert.equal(a('trusted-rpfr', ['', '']).status, 'partial');

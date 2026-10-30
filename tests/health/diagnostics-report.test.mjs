@@ -37,6 +37,12 @@ test('sanitizeText: zachowuje zwykłe komunikaty techniczne', () => {
   assert.equal(sanitizeText('dynamicRules: limit reguł'), 'dynamicRules: limit reguł');
 });
 
+test('sanitizeText: usuwa domenę z nowym TLD w kontekście błędu i nazwane identyfikatory filmu', () => {
+  const cleaned = sanitizeText('blocked on private.example.online; video=AbCdEfGhIjK video_id=SecretMovie videoId=OtherMovie');
+  for (const value of ['private.example.online', 'AbCdEfGhIjK', 'SecretMovie', 'OtherMovie']) assert.ok(!cleaned.includes(value), cleaned);
+  assert.equal(sanitizeText('chrome.storage.local failed in background.js'), 'chrome.storage.local failed in background.js');
+});
+
 const fullInput = () => ({
   version: '0.2.1',
   manifestVersion: 3,

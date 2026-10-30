@@ -141,5 +141,14 @@ textarea.report { min-height: 220px; margin: 10px 0; font-size: 12px; }
 .more-section[open] > summary { border-bottom: 1px solid var(--line); }
 .more-body { padding: 4px 16px 16px; }
 .more-body h3 { font-size: 14px; margin: 18px 0 6px; }
+.author-contact { margin-bottom: 18px; }
+.author-contact p { margin: 6px 0; }
+.author-contact a { color: var(--accent); overflow-wrap: anywhere; }
+.author-contact a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 details.dev { margin-top: 20px; border-top: 1px dashed var(--line); padding-top: 10px; }
 details.dev > summary { cursor: pointer; color: var(--muted); font-weight: 500; }
+
+.field-label { display: block; font-weight: 600; margin: 10px 0 6px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#loadError p { margin-top: 0; }
+#loadError a { color: var(--accent); margin-left: 10px; }

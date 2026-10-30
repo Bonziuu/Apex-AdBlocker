@@ -27,13 +27,13 @@ export const GITHUB_IMAGES = Object.freeze([
 
 const pngSize = (file) => { const b = fs.readFileSync(file); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
 
-export async function buildGithubImages() {
-  fs.mkdirSync(OUT, { recursive: true });
+export async function buildGithubImages({ storeDir = STORE, outDir = path.join(storeDir, 'github') } = {}) {
+  fs.mkdirSync(outDir, { recursive: true });
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-gh-img-'));
   const b = await launch({ lang: 'en' });
   try {
     for (const [src, dst, r] of GITHUB_IMAGES) {
-      const file = path.join(STORE, src);
+      const file = path.join(storeDir, src);
       const [w, h] = pngSize(file);
       const html = `<!doctype html><html><head><style>html,body{margin:0;background:transparent}
         .c{width:${w}px;height:${h}px;border-radius:${r}px;overflow:hidden;position:relative}
@@ -45,7 +45,7 @@ export async function buildGithubImages() {
       const p = await b.newPage(null, { w, h });
       await p.send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
       await p.goto(pathToFileURL(page).href, 800);
-      fs.writeFileSync(path.join(OUT, dst), await p.shot({ x: 0, y: 0, width: w, height: h }));
+      fs.writeFileSync(path.join(outDir, dst), await p.shot({ x: 0, y: 0, width: w, height: h }));
       await b.browser.send('Target.closeTarget', { targetId: p.targetId }).catch(() => {});
       console.log('✓', `store/github/${dst}`);
     }

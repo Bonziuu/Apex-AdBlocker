@@ -16,6 +16,17 @@
   const send = (msg) => {
     try { return chrome.runtime.sendMessage(msg); } catch { return Promise.resolve(null); }
   };
+  const request = async (msg) => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const response = await send(msg).catch(() => null);
+      if (response && !response.error && response.ok !== false) return response;
+      if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+    }
+    return null;
+  };
+  // Frame scriptlets need the worker's top-level site guard before entering MAIN.
+  // This request is independent of cosmetic initialization and never blocks it.
+  if (window !== window.top) void request({ type: 'scriptlets:init' });
 
   // ------------------------------------------------------------ diagnostyka
 
@@ -54,12 +65,14 @@
 
   function startGeneric() {
     const seen = new Set();
-    let pending = new Set();
+    const pending = new Set();
     let timer = 0;
     let first = true;
+    let flushing = false;
+    let failures = 0;
 
     const addToken = (t) => {
-      if (t.length > 1 && t.length < 80 && !seen.has(t)) { seen.add(t); pending.add(t); }
+      if (t.length > 1 && t.length < 80 && !seen.has(t)) pending.add(t);
     };
     const collectEl = (el) => {
       const id = el.id;
@@ -73,17 +86,30 @@
       const list = root.querySelectorAll('[id],[class]');
       for (let i = 0; i < list.length; i++) collectEl(list[i]);
     };
-    const flush = () => {
+    const flush = async () => {
       timer = 0;
-      if (!pending.size) return;
-      const tokens = [...pending];
-      pending = new Set();
-      bump('tokensSent', tokens.length);
-      send({ type: 'cosmetic:tokens', tokens, url }).then((r) => { if (r && r.selectors) bump('selectorsApplied', r.selectors); }, () => {});
+      if (flushing) return;
+      flushing = true;
+      try {
+        while (pending.size) {
+          // The worker accepts at most 2,000 tokens per message. Only acknowledged
+          // tokens become seen, so a temporary message failure does not lose them.
+          const tokens = [...pending].slice(0, 2000);
+          const r = await send({ type: 'cosmetic:tokens', tokens, url }).catch(() => null);
+          if (!r || r.error) { failures++; break; }
+          for (const token of tokens) { pending.delete(token); seen.add(token); }
+          failures = 0;
+          bump('tokensSent', tokens.length);
+          if (r.selectors) bump('selectorsApplied', r.selectors);
+        }
+      } finally {
+        flushing = false;
+        if (pending.size && failures < 3) schedule(1000);
+      }
     };
-    const schedule = () => {
-      if (timer || !pending.size) return;
-      timer = setTimeout(flush, first ? 1 : 150);
+    const schedule = (delay) => {
+      if (timer || flushing || !pending.size) return;
+      timer = setTimeout(flush, delay ?? (first ? 1 : 150));
       first = false;
     };
 
@@ -91,6 +117,7 @@
     schedule();
 
     const mo = new MutationObserver((records) => {
+      failures = 0;
       bump('mutationBatches');
       measure('genericMs', () => {
         for (const r of records) {
@@ -141,14 +168,13 @@
     const out = new Set();
     try {
       if (css[0] === '+' || css[0] === '~') {
-        const rest = css.slice(1).trim();
         for (const n of nodes) {
-          let s = n.nextElementSibling;
-          while (s) {
-            if (s.matches(rest)) out.add(s);
-            if (css[0] === '+') break;
-            s = s.nextElementSibling;
-          }
+          const parent = n.parentElement;
+          if (!parent) continue;
+          // Anchor the complete relative selector at this node, so continuations
+          // such as "+ .wrapper .banner" return the banner, not the wrapper.
+          const index = Array.prototype.indexOf.call(parent.children, n) + 1;
+          for (const e of parent.querySelectorAll(`:scope > :nth-child(${index}) ${css}`)) out.add(e);
         }
       } else if (css[0] === '>' || /^\s/.test(raw)) {
         for (const n of nodes) for (const e of n.querySelectorAll(':scope ' + css)) out.add(e);
@@ -163,7 +189,7 @@
     let nodes = null;
     let action = { type: 'hide' };
     for (const s of steps) {
-      if (s.css !== undefined) { nodes = cssStep(nodes, s.css); continue; }
+      if (!s.op && s.css !== undefined) { nodes = cssStep(nodes, s.css); continue; }
       switch (s.op) {
         case 'matches-path':
           if (!s.re.test(location.pathname + location.search)) return { nodes: [], action };
@@ -203,21 +229,65 @@
     if (!compiled.length) return;
     // Zmiany samego tekstu (characterData) obserwujemy tylko, gdy jakiś filtr od niego zależy.
     const textDependent = compiled.some((steps) => steps.some((s) => s.op === 'has-text' || s.op === 'min-text-length'));
-    const styled = new WeakSet();
+    const hidden = new Set();
+    const styled = new Map();
+    const declarations = new Map();
+    for (const steps of compiled) for (const s of steps) {
+      if (s.op !== 'style' || declarations.has(s.css)) continue;
+      const style = document.createElement('span').style;
+      style.cssText = s.css;
+      declarations.set(s.css, [...style].map((name) => [name, { value: style.getPropertyValue(name), priority: style.getPropertyPriority(name) }]));
+    }
+    const same = (a, b) => a.value === b.value && a.priority === b.priority;
+    const readStyle = (node, name) => ({ value: node.style.getPropertyValue(name), priority: node.style.getPropertyPriority(name) });
+    const writeStyle = (node, name, value) => {
+      if (same(readStyle(node, name), value)) return;
+      if (value.value) node.style.setProperty(name, value.value, value.priority);
+      else node.style.removeProperty(name);
+    };
     const apply = () => {
       bump('proceduralRuns');
       measure('proceduralMs', () => {
+        const nextHidden = new Set();
+        const nextStyles = new Map();
         for (const steps of compiled) {
           const { nodes, action } = run(steps);
           for (const n of nodes) {
             if (action.type === 'remove') { n.remove(); continue; }
             if (action.type === 'style') {
-              if (styled.has(n)) continue;
-              styled.add(n);
-              n.setAttribute('style', (n.getAttribute('style') || '') + ';' + action.css);
+              if (!nextStyles.has(n)) nextStyles.set(n, new Map());
+              const wanted = nextStyles.get(n);
+              for (const [name, value] of declarations.get(action.css) || []) {
+                if (wanted.get(name)?.priority === 'important' && !value.priority) continue;
+                wanted.set(name, value);
+              }
               continue;
             }
-            if (!n.hasAttribute(hideAttr)) n.setAttribute(hideAttr, '');
+            nextHidden.add(n);
+          }
+        }
+        for (const node of hidden) if (!nextHidden.has(node)) { node.removeAttribute(hideAttr); hidden.delete(node); }
+        for (const node of nextHidden) if (!node.hasAttribute(hideAttr)) { node.setAttribute(hideAttr, ''); hidden.add(node); }
+        // Restore only properties still carrying our value; preserve changes made
+        // by the page while the rule was active and apply all matching styles.
+        for (const [node, properties] of styled) {
+          const wanted = nextStyles.get(node);
+          for (const [name, record] of properties) if (!wanted?.has(name)) {
+            if (same(readStyle(node, name), record.applied)) writeStyle(node, name, record.original);
+            properties.delete(name);
+          }
+          if (!properties.size) styled.delete(node);
+        }
+        for (const [node, wanted] of nextStyles) {
+          if (!styled.has(node)) styled.set(node, new Map());
+          const properties = styled.get(node);
+          for (const [name, value] of wanted) {
+            const current = readStyle(node, name);
+            let record = properties.get(name);
+            if (!record) { record = { original: current, applied: value }; properties.set(name, record); }
+            else if (!same(current, record.applied)) record.original = current;
+            writeStyle(node, name, value);
+            record.applied = value;
           }
         }
       });
@@ -229,7 +299,11 @@
     };
     const begin = () => {
       apply();
-      new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true, characterData: textDependent });
+      new MutationObserver((records) => {
+        if (records.some((r) => r.type !== 'attributes' || r.attributeName !== hideAttr)) schedule();
+      }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: textDependent });
+      window.addEventListener('popstate', schedule);
+      window.navigation?.addEventListener('currententrychange', schedule);
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', begin, { once: true });
     else begin();
@@ -237,7 +311,7 @@
 
   // ------------------------------------------------------------------- start
 
-  send({ type: 'cosmetic:init', url }).then((resp) => {
+  request({ type: 'cosmetic:init', url }).then((resp) => {
     if (!resp || resp.off) return;
     if (resp.attr) hideAttr = resp.attr;
     if (resp.selectors) bump('selectorsApplied', resp.selectors);

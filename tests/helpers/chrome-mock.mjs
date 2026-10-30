@@ -29,6 +29,7 @@ export async function loadBackground(opts = {}) {
     dynamic: [],
     registered: opts.registered ? structuredClone(opts.registered) : [],
     css: [],
+    executed: [],
     staticRuleUpdates: [],
     reloads: [],
     tabsCreated: [],
@@ -75,9 +76,14 @@ export async function loadBackground(opts = {}) {
       local: {
         get: async (keys) => {
           const list = typeof keys === 'string' ? [keys] : keys;
-          return Object.fromEntries(list.filter((k) => k in store).map((k) => [k, structuredClone(store[k])]));
+          const snapshot = Object.fromEntries(list.filter((k) => k in store).map((k) => [k, structuredClone(store[k])]));
+          if (opts.storageGetDelay) await new Promise((r) => setTimeout(r, opts.storageGetDelay(list)));
+          return snapshot;
         },
-        set: async (o) => { Object.assign(store, structuredClone(o)); },
+        set: async (o) => {
+          if (opts.failStorageSet?.(o)) throw new Error('QUOTA_BYTES quota exceeded');
+          Object.assign(store, structuredClone(o));
+        },
         remove: async (k) => { for (const key of [].concat(k)) delete store[key]; },
       },
     },
@@ -125,12 +131,19 @@ export async function loadBackground(opts = {}) {
         for (const s of arr) state.registered.push(structuredClone(s));
       },
       insertCSS: async (o) => { state.css.push(o); },
-      executeScript: async () => {},
+      executeScript: async (o) => {
+        if (opts.failExecute?.(o)) throw new Error('No document with id');
+        state.executed.push(structuredClone(o));
+        return [];
+      },
     },
     action: { setBadgeBackgroundColor: async () => {}, setBadgeTextColor: async () => {}, setIcon: async (o) => { state.icons.push(structuredClone(o)); }, getBadgeText: async () => (opts.badgeText ?? '') },
     tabs: {
       get: async (id) => ({ id, url: opts.tabUrl || 'https://www.example.com/' }),
-      reload: (id) => state.reloads.push(id),
+      reload: async (id) => {
+        if (opts.failReload) throw new Error('The tab was closed');
+        state.reloads.push(id);
+      },
       onRemoved: ev('tabRemoved'),
       onUpdated: ev('tabUpdated'),
       sendMessage: (tabId, msg) => {
