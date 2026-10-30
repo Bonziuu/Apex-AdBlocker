@@ -30,7 +30,6 @@ const TEXT = {
     before: 'Without Apex AdBlocker', after: 'With Apex AdBlocker',
     s2: ['Protection status', 'at a glance.', 'See how many requests were blocked on the current tab and turn protection off for a site with one click.'],
     s3: ['Hide any element', 'on a page.', 'Start “Hide element” from the popup and click a leftover banner or annoying box – it stays hidden, even after reloading.'],
-    demo: 'Fictional demo page with sample ads. The extension and its blocking are real.',
     s4: ['Simple settings.', 'No accounts.', 'Ads, tracking and malicious sites are blocked automatically. Add your own filters or back up your settings.'],
     s5: ['Private by design.', 'Everything stays local.', 'No servers, no telemetry, no remote code. Your settings never leave your browser.'],
     chips: ['No telemetry', 'No accounts', 'No remote code', 'Free'],
@@ -41,7 +40,6 @@ const TEXT = {
     before: 'Bez rozszerzenia', after: 'Z rozszerzeniem Apex AdBlocker',
     s2: ['Stan ochrony', 'widoczny od razu.', 'Zobacz, ile żądań zablokowano na tej karcie, i jednym kliknięciem wyłącz ochronę na stronie.'],
     s3: ['Ukryj dowolny', 'element strony.', 'Uruchom „Ukryj element” w okienku rozszerzenia i kliknij pozostały baner albo irytującą ramkę – zniknie na stałe, także po odświeżeniu strony.'],
-    demo: 'Fikcyjna strona demonstracyjna z przykładowymi reklamami. Rozszerzenie i blokowanie są prawdziwe.',
     s4: ['Proste ustawienia.', 'Bez zakładania konta.', 'Reklamy, śledzenie i złośliwe strony są blokowane automatycznie. Dodaj własne filtry albo zrób kopię ustawień.'],
     s5: ['Prywatność przede wszystkim.', 'Wszystko zostaje na Twoim komputerze.', 'Bez serwerów, telemetrii i zdalnego kodu. Twoje ustawienia nie opuszczają przeglądarki.'],
     chips: ['Bez telemetrii', 'Bez zakładania konta', 'Bez zdalnego kodu', 'Za darmo'],
@@ -58,7 +56,6 @@ p.sub{margin:22px 0 0;font-size:19px;line-height:1.5;color:#3b5759}
 .frame{position:absolute;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 30px 70px rgba(13,43,46,.22),0 2px 6px rgba(13,43,46,.08)}
 .bar{height:38px;background:#eef1f3;display:flex;align-items:center;gap:7px;padding:0 14px;border-bottom:1px solid #dde3e6}
 .nav{width:16px;height:16px;flex:none;color:#7a878a}
-.note{position:absolute;left:72px;bottom:34px;width:420px;font-size:13px;line-height:1.45;color:#6b7f81}
 .url{margin-left:14px;flex:1;height:24px;border-radius:12px;background:#fff;font-size:12.5px;color:#56676a;display:flex;align-items:center;padding:0 12px}
 .ext{width:22px;height:22px;margin-left:8px;border-radius:6px;display:flex;align-items:center;justify-content:center}.ext.on{background:#d6efec}
 .ext img{width:16px;height:16px}.shot{display:block;width:100%}
@@ -89,13 +86,13 @@ function screens(lang) {
   const T = TEXT[lang];
   const site = 'dailynews.example';
   return {
-    '1-ads-blocked': page(`${head(T.s1)}<div class="note">${T.demo}</div>
+    '1-ads-blocked': page(`${head(T.s1)}
       ${frame({ x: 545, y: 120, w: 640, src: raw(`demo-before-${lang}.png`), url: site, label: T.before, cls: 'bad', iconOn: false, cropH: 400 })}
       ${frame({ x: 600, y: 420, w: 640, src: raw(`demo-after-${lang}.png`), url: site, label: T.after, cls: 'good', cropH: 330 })}`),
-    '2-popup': page(`${head(T.s2)}<div class="note">${T.demo}</div>
+    '2-popup': page(`${head(T.s2)}
       ${frame({ x: 545, y: 80, w: 700, src: raw(`demo-after-${lang}.png`), url: site, cropH: 600, region: { sx: 40, sy: 0, sw: 780 } })}
       <div class="popup" style="left:880px;top:128px;width:340px"><img src="${raw(`popup-${lang}.png`)}" style="display:block;width:340px"></div>`),
-    '3-hide-element': page(`${head(T.s3)}<div class="note">${T.demo}</div>
+    '3-hide-element': page(`${head(T.s3)}
       ${frame({ x: 545, y: 80, w: 700, src: raw(`picker-${lang}.png`), url: site, cropH: 600, region: { sx: 400, sy: 45, sw: 880 } })}`),
     '4-settings': page(`${head(T.s4)}
       ${frame({ x: 545, y: 80, w: 700, src: raw(`options-${lang}.png`), url: 'Apex AdBlocker', cropH: 600, region: { sx: 250, sy: 0, sw: 780 } })}`),
