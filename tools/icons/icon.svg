@@ -1,9 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <defs>
-    <linearGradient id="g-on" x1="0" y1="0" x2="0.42" y2="1"><stop offset="0" stop-color="#22b8a8"/><stop offset="1" stop-color="#0f7f8c"/></linearGradient>
-  </defs>
-  <path fill="url(#g-on)" fill-rule="evenodd" d="M64 7 116 112H91L64 59 37 112H12L64 7Zm0 34-12 25h24L64 41Z"/>
-  <path d="M26 104C45 84 72 75 105 82" fill="none" stroke="url(#g-on)" stroke-width="13" stroke-linecap="round"/>
-  <circle cx="94" cy="88" r="19" fill="#0f7f8c" fill-opacity="0.98" stroke="#0b6670" stroke-width="4"/>
-  <path d="M81 75 107 101" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><defs><linearGradient id="g" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#14a39f"/><stop offset="1" stop-color="#0b8f9a"/></linearGradient><clipPath id="sc"><path d="M64 6 L112 22 V60 C112 92 92 112 64 124 C36 112 16 92 16 60 V22 Z"/></clipPath></defs><g transform="translate(16 16) scale(0.75)"><path d="M64 6 L112 22 V60 C112 92 92 112 64 124 C36 112 16 92 16 60 V22 Z" fill="url(#g)"/><g transform="translate(32 32) scale(0.5)"><path d="M64 8 L120 116 H92 L83 92 H45 L36 116 H8 Z M64 42 L75.4 72 H52.6 Z" fill-rule="evenodd" fill="#fff"/></g></g></svg>

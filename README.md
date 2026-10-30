@@ -52,6 +52,8 @@ Apex AdBlocker używa jednego stałego zestawu ochrony: reklamy, prywatność/ś
 
 Bardziej szczegółowy opis architektury i ograniczeń: [docs/technical-overview.md](docs/technical-overview.md).
 
+Projekt ikon i jego zasady (3 koncepcje, kontrast, stany wł./wył.): [docs/icons.md](docs/icons.md).
+
 ## Jakość i testy
 
 Projekt ma automatyczny pipeline GitHub Actions oraz testy uruchamiane w Node.js i prawdziwym Chromium.
