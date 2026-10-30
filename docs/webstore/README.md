@@ -4,6 +4,10 @@ Wydawca i autor: **Konrad Woźniak**. Publiczny kontakt: **konrad.wozniak.1996@g
 
 Zakładasz konto wydawcy po raz pierwszy? Zacznij od [krótkiej checklisty zgłoszenia](SUBMISSION-CHECKLIST.pl.md): wskazuje właściwy ZIP, obrazy i teksty do panelu. Ten katalog zawiera materiały do zgłoszenia; nie stanowi potwierdzenia przyjęcia rozszerzenia do sklepu.
 
+## Publikacja na GitHubie
+
+Przygotowany kod, testy i materiały opublikowano na `main` w commicie [9249597](https://github.com/Bonziuu/Apex-AdBlocker/commit/92495979052cbe051318708ed0bd711252ac9540). Poprawiona [polityka prywatności](https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md) jest dostępna publicznie; jej treść sprawdzono po publikacji. Dokładny stan paczki i pozostałych warunków zgłoszenia opisuje [final-release-status.json](final-release-status.json). Publikacja w Chrome Web Store wymaga osobnego zgłoszenia z konta wydawcy.
+
 ## Gotowe materiały
 
 - [Polski opis sklepu](listing-pl.md) i [opis angielski](listing-en.md). Interfejs aplikacji jest dostępny po polsku i po angielsku.
@@ -28,7 +32,7 @@ Wyniki:
 - `validation-evidence.json` — rzeczywiste liczby testów, smoke i tożsamość ZIP-a;
 - `readiness-report.json` — kontrole techniczne i pozostałe blokady;
 - `dist/webstore-validation/check.log` — pełny zapis kontroli;
-- `submission.json` — dane wydawcy i lokalizacje materiałów. URL polityki wskazuje publiczny `PRIVACY.md` na GitHubie. Przed zgłoszeniem opublikuj i przejrzyj jego poprawioną treść.
+- `submission.json` — dane wydawcy i lokalizacje materiałów. URL polityki wskazuje opublikowany `PRIVACY.md` na GitHubie. Przed zgłoszeniem sprawdź, czy nadal odpowiada wysyłanej wersji.
 
 Do wysłania wybierz plik `package.path` z najnowszego `readiness-report.json`; w tej paczce `manifest.json` znajduje się w katalogu głównym ZIP-a. Sama nazwa `Apex-AdBlocker-WebStore-1.0.0.zip` nie odróżnia wcześniejszej paczki od aktualnej — sprawdź też jej ścieżkę i hash. Po zmianie kodu przygotuj paczkę ponownie.
 
@@ -56,7 +60,7 @@ npm run webstore:preflight
    ```
 
 3. Wykonać reprezentatywne testy prawdziwych stron przy odpowiednio skonfigurowanym dostępie sieciowym. Istniejące narzędzia: `npm run test:sites` i `npm run test:e2e`. Dłuższe próbkowanie YouTube opisano w `../manual-youtube-test.md`. Kontrole powinny obejmować normalne funkcje strony, wyłączenia i ramki. Wynik niejednoznaczny nie jest dowodem zablokowania reklamy. Automat nie dopisuje samodzielnie PASS dla niewykonanych testów zewnętrznych.
-4. Przejrzeć i opublikować poprawioną treść `PRIVACY.md` pod istniejącym publicznym adresem GitHuba. Alternatywnie można opublikować pliki z `public/` na hostingu HTTPS bez logowania i zaktualizować `submission.json`. Lokalne wygenerowanie HTML nie aktywuje hostingu.
+4. Sprawdzić aktualność opublikowanej polityki `PRIVACY.md` pod publicznym adresem GitHuba. Po późniejszych zmianach działania aplikacji zaktualizować także politykę. Alternatywnie można opublikować pliki z `public/` na hostingu HTTPS bez logowania i zaktualizować `submission.json`. Lokalne wygenerowanie HTML nie aktywuje hostingu.
 5. Obejrzeć prawdziwe zrzuty, zalogować się do konta deweloperskiego, uzupełnić deklaracje według aktualnych pól panelu i dopiero wtedy wysłać właściwy ZIP do oceny. Dane konta i weryfikację wykonuje właściciel konta.
 
 ## Informacja od autora a wyniki testów

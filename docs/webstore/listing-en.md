@@ -58,7 +58,7 @@ Block advertising and tracking while browsing websites in Chrome, with local sit
 | Publisher name | Konrad Woźniak — provided by the publisher. |
 | Developer account details | To be completed and verified by the publisher in the Chrome Web Store dashboard. |
 | Public support contact | konrad.wozniak.1996@gmail.com |
-| Public privacy policy URL | https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md — publish the reviewed changes before submission. |
+| Public privacy policy URL | https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md — published; check that it matches the submitted version. |
 | Product website | https://github.com/Bonziuu/Apex-AdBlocker |
 | Author profile (optional link) | https://www.linkedin.com/in/konrad-woźniak-23a5b831a |
 | Bug reports | https://github.com/Bonziuu/Apex-AdBlocker/issues |

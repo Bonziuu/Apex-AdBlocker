@@ -1,0 +1,63 @@
+{
+  "version": "1.0.0",
+  "zip": "Apex-AdBlocker-WebStore-1.0.0.zip",
+  "packageSha256": "9bd2d6f8501fc4c226b50d91817b080eca304ccd38b105aecaf465028e33ca8a",
+  "sourceContentsSha256": "deadb8d5b04d21f83f1e275262450e974b84f1f06432b030dc4cf719c6acedd8",
+  "technicalReady": true,
+  "github": {
+    "repository": "Bonziuu/Apex-AdBlocker",
+    "branch": "main",
+    "commit": "92495979052cbe051318708ed0bd711252ac9540",
+    "published": true,
+    "verifiedAt": "2026-10-30T17:35:36.773658+00:00",
+    "privacyRawUrl": "https://raw.githubusercontent.com/Bonziuu/Apex-AdBlocker/main/PRIVACY.md",
+    "privacyContentSha256": "31cf8da9cdcfbf36d24a212353cdffab4c64af0f7ec7839da827bf7d9e145714"
+  },
+  "publicationReady": false,
+  "review": {
+    "newBlockingFindings": 0,
+    "scope": "Reviewed runtime, state transitions, frames, UI, parser, scriptlets and release materials; not proof that all bugs are absent."
+  },
+  "fullCheck": {
+    "tests": 596,
+    "passed": 576,
+    "failed": 0,
+    "skipped": 20,
+    "cancelled": 0,
+    "todo": 0,
+    "smoke": "SKIP",
+    "checkExitCode": 1,
+    "summaryPresent": true,
+    "completed": true,
+    "completePass": false,
+    "failureGroups": [
+      "tests",
+      "chromium-smoke-required"
+    ],
+    "actualFailure": false
+  },
+  "additionalCaptureToolTests": {
+    "tests": 24,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0
+  },
+  "publisherFeedback": {
+    "statement": "Używam wtyczki kilka dni i działa bardzo dobrze.",
+    "source": "publisher statement in this conversation",
+    "exactPackageHashConfirmed": false
+  },
+  "screenshots": {
+    "status": "not_captured",
+    "reason": "Playwright Chromium download blocked by the cloud network policy; no placeholders generated."
+  },
+  "privacy": {
+    "targetUrl": "https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md",
+    "prepared": true,
+    "published": true,
+    "remoteCommit": "92495979052cbe051318708ed0bd711252ac9540",
+    "verifiedAt": "2026-10-30T17:35:36.773658+00:00",
+    "rawUrl": "https://raw.githubusercontent.com/Bonziuu/Apex-AdBlocker/main/PRIVACY.md",
+    "contentSha256": "31cf8da9cdcfbf36d24a212353cdffab4c64af0f7ec7839da827bf7d9e145714"
+  }
+}

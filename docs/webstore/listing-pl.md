@@ -57,7 +57,7 @@ Blokowanie reklam i elementów śledzących podczas przeglądania stron w Chrome
 | Nazwa wydawcy | Konrad Woźniak — dane przekazane przez wydawcę. |
 | Dane konta deweloperskiego | Do uzupełnienia i zweryfikowania przez wydawcę w panelu Chrome Web Store. |
 | Publiczny kontakt pomocy | konrad.wozniak.1996@gmail.com |
-| Publiczny adres polityki prywatności | https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md — przed zgłoszeniem opublikuj przejrzane zmiany. |
+| Publiczny adres polityki prywatności | https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md — opublikowany; przed zgłoszeniem sprawdź aktualność względem wysyłanej wersji. |
 | Strona produktu | https://github.com/Bonziuu/Apex-AdBlocker |
 | Profil autora (opcjonalny link) | https://www.linkedin.com/in/konrad-woźniak-23a5b831a |
 | Zgłoszenia błędów | https://github.com/Bonziuu/Apex-AdBlocker/issues |

@@ -1,6 +1,6 @@
 # Zgłoszenie Apex AdBlocker do Chrome Web Store
 
-Instrukcja dla Konrada Woźniaka. Nazwy sekcji są orientacyjne: sprawdź aktualny panel Google. Nie zakłada ona konkretnej opłaty, czasu oceny ani dostępności określonej kategorii. Nie wykonano zgłoszenia ani publikacji.
+Instrukcja dla Konrada Woźniaka. Nazwy sekcji są orientacyjne: sprawdź aktualny panel Google. Nie zakłada ona konkretnej opłaty, czasu oceny ani dostępności określonej kategorii. Nie wykonano zgłoszenia ani publikacji w Chrome Web Store.
 
 ## 1. Konto wydawcy
 

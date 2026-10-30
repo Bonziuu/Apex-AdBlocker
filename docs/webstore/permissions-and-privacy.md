@@ -50,7 +50,7 @@ Deklaracje dotyczące sprzedaży danych i używania ich do reklam muszą odpowia
 
 Projekty tekstu: `privacy-policy-pl.md` i `privacy-policy-en.md`.
 
-Wydawca wskazany przez autora: **Konrad Woźniak**. Publiczny kontakt: **konrad.wozniak.1996@gmail.com**. Profil autora: https://www.linkedin.com/in/konrad-woźniak-23a5b831a. Należy przejrzeć ostateczną treść, umieścić ją pod publicznym adresem HTTPS dostępnym bez logowania i wpisać ten adres do panelu sklepu. Lokalny plik Markdown ani adres localhost nie jest publiczną polityką. W `submission.json` wskazano istniejący publiczny adres `https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md`. Poprawiona treść musi zostać opublikowana przed zgłoszeniem; samo istnienie adresu nie potwierdza, że pokazuje on lokalne zmiany.
+Wydawca wskazany przez autora: **Konrad Woźniak**. Publiczny kontakt: **konrad.wozniak.1996@gmail.com**. Profil autora: https://www.linkedin.com/in/konrad-woźniak-23a5b831a. W `submission.json` wskazano publiczny adres `https://github.com/Bonziuu/Apex-AdBlocker/blob/main/PRIVACY.md`. Poprawioną treść opublikowano na `main` i sprawdzono po publikacji. Wpisz ten adres do panelu sklepu i przed zgłoszeniem upewnij się, że polityka nadal odpowiada wysyłanej wersji. Lokalne zmiany Markdown lub HTML wymagają osobnego opublikowania, aby zmienić publiczną treść.
 
 Jeśli przyszła witryna polityki będzie używać własnej analityki, formularzy lub cookies, trzeba opisać także sposób przetwarzania przez tę witrynę. Ten projekt dotyczy rozszerzenia, a nie nieistniejącego jeszcze serwisu wydawcy.
 
