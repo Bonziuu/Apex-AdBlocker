@@ -39,16 +39,25 @@ test('ikony: źródło SVG w repozytorium (poza paczką) i paleta „morski”',
   }
 });
 
-test('logo marki (brand/): sam znak bez badge\'a, pliki aktualne i poza paczką rozszerzenia', async () => {
+test('logo marki (brand/, icons/): sam znak bez badge\'a, pliki aktualne, brand/ poza paczką', async () => {
   for (const [name, svg] of logoFiles()) {
-    const file = path.join(ROOT, 'brand', name);
-    assert.ok(fs.existsSync(file), `brand/${name} (npm run icons)`);
+    const file = path.join(ROOT, name);
+    assert.ok(fs.existsSync(file), `${name} (npm run icons)`);
     assert.doesNotMatch(svg, /<circle|<rect/, `${name}: bez badge'a stanu`);
-    if (name.endsWith('.svg')) assert.equal(fs.readFileSync(file, 'utf8'), svg, `brand/${name} aktualny`);
+    if (name.endsWith('.svg')) assert.equal(fs.readFileSync(file, 'utf8'), svg, `${name} aktualny`);
     else { const n = Number(/(\d+)\.png$/.exec(name)[1]); assert.deepEqual(pngSize(file), [n, n], name); }
   }
   const { EXTENSION_ENTRIES } = await import('../../tools/chromium-smoke.mjs');
-  assert.ok(!EXTENSION_ENTRIES.includes('brand'), 'logo nie trafia do paczki rozszerzenia');
+  assert.ok(!EXTENSION_ENTRIES.includes('brand'), 'brand/ nie trafia do paczki rozszerzenia');
+});
+
+test('logo w rozszerzeniu: ikona 128 px z manifestu (sklep) i nagłówki Opcji / ekranu powitalnego', () => {
+  const m = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
+  assert.equal(m.icons['128'], 'icons/logo128.png', 'Chrome Web Store i chrome://extensions pokazują logo bez badge\'a');
+  for (const size of ['16', '32', '48']) assert.equal(m.action.default_icon[size], `icons/icon${size}.png`, 'pasek Chrome: ikony stanu bez zmian');
+  for (const f of ['options/options.html', 'welcome/welcome.html']) {
+    assert.match(fs.readFileSync(path.join(ROOT, f), 'utf8'), /<img src="\.\.\/icons\/logo\.svg"/, `${f}: logo w nagłówku`);
+  }
 });
 
 test('kolorystyka: ten sam akcent w popupie, Opcjach i ekranie powitalnym (jasny i ciemny motyw)', () => {

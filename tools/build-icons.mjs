@@ -76,12 +76,20 @@ export function logoSvg(size, { padding = 0 } = {}) {
 `;
 }
 
-/** Pliki logo: [ścieżka względna w brand/, SVG]. */
+/**
+ * Pliki logo: [ścieżka względna od ROOT, SVG].
+ *   brand/  – materiały marki poza paczką rozszerzenia,
+ *   icons/  – logo w rozszerzeniu: logo128.png = ikona 128 px z manifestu (Chrome Web Store,
+ *             chrome://extensions), logo.svg = nagłówki Opcji i ekranu powitalnego.
+ */
 export function logoFiles() {
+  const store = logoSvg(128, { padding: 16 });
   return [
-    ['apex-logo.svg', logoSvg(1024)],
-    ...LOGO_SIZES.map((s) => [`apex-logo-${s}.png`, logoSvg(s)]),
-    ['apex-store-icon-128.png', logoSvg(128, { padding: 16 })],
+    ['brand/apex-logo.svg', logoSvg(1024)],
+    ...LOGO_SIZES.map((s) => [`brand/apex-logo-${s}.png`, logoSvg(s)]),
+    ['brand/apex-store-icon-128.png', store],
+    ['icons/logo.svg', logoSvg(128)],
+    ['icons/logo128.png', store],
   ];
 }
 
@@ -105,11 +113,10 @@ export async function buildIcons({ outDir = path.join(ROOT, 'icons'), svgDir = p
         written.push(path.relative(ROOT, file));
       }
     }
-    // duże logo marki (brand/): PNG renderowane w rozmiarze docelowym
-    const brandDir = path.join(ROOT, 'brand');
-    fs.mkdirSync(brandDir, { recursive: true });
+    // logo marki (brand/ i icons/): PNG renderowane w rozmiarze docelowym
     for (const [name, svg] of logoFiles()) {
-      const file = path.join(brandDir, name);
+      const file = path.join(ROOT, name);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
       if (name.endsWith('.svg')) { fs.writeFileSync(file, svg); written.push(path.relative(ROOT, file)); continue; }
       const size = Number(/(\d+)\.png$/.exec(name)[1]);
       await page.setViewportSize({ width: size, height: size });
