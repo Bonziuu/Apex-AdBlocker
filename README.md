@@ -1,12 +1,9 @@
 <p align="center">
-  <img src="brand/apex-logo-512.png" alt="Apex AdBlocker" width="110">
+  <img src="store/promo/small-tile-440x280-pl.png" alt="Apex AdBlocker – blokuje reklamy i śledzenie" width="440">
 </p>
 
-<h1 align="center">Apex AdBlocker</h1>
-
 <p align="center">
-  Lekki bloker reklam i śledzenia dla Chrome · bez konfiguracji · bez telemetrii<br>
-  <a href="#eng">ENG ↓</a>
+  Lekki bloker reklam i śledzenia dla Chrome · <a href="#eng">ENG ↓</a>
 </p>
 
 <p align="center">
@@ -61,6 +58,14 @@ EasyList, EasyPrivacy, uBlock filters i Polskie Filtry – na warunkach ich lice
 <a id="eng"></a>
 
 ## ENG
+
+<p align="center">
+  <img src="store/promo/small-tile-440x280.png" alt="Apex AdBlocker – blocks ads and trackers" width="440">
+</p>
+
+<p align="center">
+  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest"><b>⬇ Download the latest release</b></a>
+</p>
 
 <p align="center">
   <img src="store/screenshots/en/1-ads-blocked.png" alt="A page without and with Apex AdBlocker" width="820">
