@@ -52,7 +52,7 @@ Apex AdBlocker używa jednego stałego zestawu ochrony: reklamy, prywatność/ś
 
 Bardziej szczegółowy opis architektury i ograniczeń: [docs/technical-overview.md](docs/technical-overview.md).
 
-Logo marki (np. do Chrome Web Store): [brand/](brand/README.md).
+Logo marki: [brand/](brand/README.md). Materiały do Chrome Web Store (teksty, uzasadnienia uprawnień, zrzuty ekranu): [store/](store/README.md).
 
 ## Jakość i testy
 
@@ -85,6 +85,8 @@ Dodatkowe materiały:
 Apex AdBlocker nie ma telemetrii, analityki, kont ani własnego backendu. Ustawienia i diagnostyka są przechowywane lokalnie. Rozszerzenie nie pobiera ani nie wykonuje zdalnego kodu.
 
 Raport diagnostyczny jest sanityzowany i nie powinien zawierać historii, pełnych URL-i, identyfikatorów filmów, cookies, tokenów ani danych logowania.
+
+Pełna polityka prywatności (EN/PL): [PRIVACY.md](PRIVACY.md).
 
 ## AI-assisted development
 
