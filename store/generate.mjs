@@ -5,6 +5,7 @@
 //
 // 1. Zrzuty prawdziwego rozszerzenia z dist/Apex-AdBlocker na fikcyjnej stronie demo (store/tools/).
 // 2. Kompozycja z nagłówkami w języku wpisu (en, pl) → store/screenshots/<lang>/, store/promo/.
+// 3. Wersje z zaokrąglonymi rogami na GitHuba → store/github/ (store/github-images.mjs).
 
 import fs from 'node:fs';
 import os from 'node:os';
@@ -12,6 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { capture } from './tools/capture.mjs';
 import { launch, sleep } from './tools/harness.mjs';
+import { buildGithubImages } from './github-images.mjs';
 
 const STORE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(STORE, '..');
@@ -127,3 +129,5 @@ for (const lang of ['en', 'pl']) {
 await sleep(100);
 await b.close();
 fs.rmSync(RAW, { recursive: true, force: true });
+// wersje z zaokrąglonymi rogami do README i opisów wydań na GitHubie
+await buildGithubImages();

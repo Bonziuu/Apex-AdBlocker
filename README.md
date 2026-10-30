@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="store/promo/small-tile-440x280-pl.png" alt="Apex AdBlocker – blokuje reklamy i śledzenie" width="440">
+  <img src="store/github/tile-pl.png" alt="Apex AdBlocker – blokuje reklamy i śledzenie" width="440">
 </p>
 
 <p align="center">
@@ -7,11 +7,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest"><b>⬇ Pobierz najnowsze wydanie</b></a>
+  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest/download/Apex-AdBlocker.zip"><b>⬇ Pobierz Apex AdBlocker (ZIP)</b></a> · <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest">wszystkie pliki wydania</a>
 </p>
 
 <p align="center">
-  <img src="store/screenshots/pl/1-ads-blocked.png" alt="Strona bez rozszerzenia i z Apex AdBlocker" width="820">
+  <img src="store/github/ads-blocked-pl.png" alt="Strona bez rozszerzenia i z Apex AdBlocker" width="820">
 </p>
 
 > **Status:** stabilne wydanie.
@@ -24,12 +24,10 @@
 - 🔒 **Prywatność** – bez telemetrii, kont i serwera ([polityka prywatności](PRIVACY.md))
 - 🌍 **Po polsku i po angielsku** – język według przeglądarki
 
-<table>
-  <tr>
-    <td><img src="store/screenshots/pl/2-popup.png" alt="Okienko rozszerzenia ze stanem ochrony" width="400"></td>
-    <td><img src="store/screenshots/pl/3-hide-element.png" alt="Narzędzie Ukryj element" width="400"></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="store/github/popup-pl.png" alt="Okienko rozszerzenia ze stanem ochrony" width="405">
+  <img src="store/github/hide-element-pl.png" alt="Narzędzie Ukryj element" width="405">
+</p>
 
 ## Instalacja
 
@@ -60,15 +58,15 @@ EasyList, EasyPrivacy, uBlock filters i Polskie Filtry – na warunkach ich lice
 ## ENG
 
 <p align="center">
-  <img src="store/promo/small-tile-440x280.png" alt="Apex AdBlocker – blocks ads and trackers" width="440">
+  <img src="store/github/tile-en.png" alt="Apex AdBlocker – blocks ads and trackers" width="440">
 </p>
 
 <p align="center">
-  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest"><b>⬇ Download the latest release</b></a>
+  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest/download/Apex-AdBlocker.zip"><b>⬇ Download Apex AdBlocker (ZIP)</b></a> · <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest">all release files</a>
 </p>
 
 <p align="center">
-  <img src="store/screenshots/en/1-ads-blocked.png" alt="A page without and with Apex AdBlocker" width="820">
+  <img src="store/github/ads-blocked-en.png" alt="A page without and with Apex AdBlocker" width="820">
 </p>
 
 **Lightweight ad and tracker blocker for Chrome – no setup, no telemetry.**
