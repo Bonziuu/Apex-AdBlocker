@@ -3,13 +3,20 @@
 // Język wybiera Chrome według języka przeglądarki: polski → pl, każdy inny → en (default_locale).
 // Strony HTML mają polski tekst jako wartość zapasową; localizeDocument() podmienia go na tłumaczenie.
 
+import { MESSAGES_PL } from './messages-pl.js';
+
 const api = () => (globalThis.chrome && globalThis.chrome.i18n) || null;
 
-/** Tłumaczenie klucza; gdy brak (np. testy bez chrome.i18n) – `fallback` albo sam klucz. */
+/**
+ * Tłumaczenie klucza. Bez chrome.i18n (testy w Node) – polski tekst z shared/messages-pl.js.
+ * Gdy klucza nie ma nigdzie – `fallback` albo sam klucz.
+ */
 export function t(key, subs, fallback) {
   const i18n = api();
+  const list = subs === undefined ? undefined : [].concat(subs).map(String);
   let m = '';
-  try { m = i18n ? i18n.getMessage(key, subs === undefined ? undefined : [].concat(subs).map(String)) : ''; } catch { m = ''; }
+  try { m = i18n ? i18n.getMessage(key, list) : ''; } catch { m = ''; }
+  if (!m && !i18n && Object.hasOwn(MESSAGES_PL, key)) m = MESSAGES_PL[key].replace(/\$(\d)/g, (_, n) => (list && list[Number(n) - 1]) ?? '');
   return m || (fallback !== undefined ? fallback : key);
 }
 

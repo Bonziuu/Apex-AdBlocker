@@ -79,7 +79,7 @@ Service worker przyjmuje od skryptów treści (działających na każdej stronie
 
 ## Języki
 
-Interfejs jest po polsku i po angielsku (`chrome.i18n`): polska przeglądarka → polski, każda inna → angielski (`default_locale: en`). Jedynym źródłem tekstów jest `tools/i18n-messages.mjs`; `npm run i18n` generuje z niego `_locales/{pl,en}/messages.json`. Strony HTML mają polski tekst jako zapas, a `shared/i18n.js` podmienia go na tłumaczenie. Szczegóły techniczne zapisywane przez service worker w Diagnostyce są po polsku.
+Interfejs jest po polsku i po angielsku (`chrome.i18n`): polska przeglądarka → polski, każda inna → angielski (`default_locale: en`). Jedynym źródłem tekstów jest `tools/i18n-messages.mjs`; `npm run i18n` generuje z niego `_locales/{pl,en}/messages.json`. Strony HTML mają polski tekst jako zapas, a `shared/i18n.js` podmienia go na tłumaczenie. Komunikaty Diagnostyki (stan silników, synchronizacja, kontrole YouTube Protection, błędy importu) też są tłumaczone; service worker zapisuje je w chwili zdarzenia, więc po zmianie języka przeglądarki stare wpisy zostają w poprzednim języku do kolejnej synchronizacji. Kod uruchamiany bez `chrome.i18n` (testy w Node) korzysta z polskiego zapasu `shared/messages-pl.js`, generowanego razem z `_locales`.
 
 ## Testy
 

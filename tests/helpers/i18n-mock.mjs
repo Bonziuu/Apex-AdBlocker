@@ -21,7 +21,8 @@ export function i18nFor(lang) {
       const m = messages[key];
       if (!m) return '';
       const list = subs === undefined ? [] : [].concat(subs).map(String);
-      return m.message.replace(/\$([A-Za-z0-9_]+)\$/g, (_, name) => {
+      return m.message.replace(/\$\$|\$([A-Za-z0-9_]+)\$/g, (whole, name) => {
+        if (whole === '$$') return '$'; // jak w Chrome: „$$” → „$”
         const ph = m.placeholders && m.placeholders[name.toLowerCase()];
         if (!ph) return '';
         return ph.content.replace(/\$(\d)/g, (__, n) => list[Number(n) - 1] ?? '');

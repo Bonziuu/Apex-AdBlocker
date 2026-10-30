@@ -3,7 +3,9 @@
 //
 //   npm run i18n
 //
-// $1…$9 w źródle → nazwane placeholdery Chrome ($P1$ → "content": "$1").
+// $1…$9 w źródle → nazwane placeholdery Chrome ($P1$ → "content": "$1"); inny „$” → „$$”.
+// Dodatkowo shared/messages-pl.js – polskie teksty jako zapas dla kodu bez chrome.i18n
+// (testy w Node, moduły współdzielone przez service worker i testy).
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,7 +23,7 @@ export function localeMessages(lang) {
     const text = entry[lang];
     if (typeof text !== 'string' || !text) throw new Error(`brak tekstu „${lang}” dla ${key}`);
     const nums = [...new Set([...text.matchAll(/\$(\d)/g)].map((m) => m[1]))].sort();
-    const msg = { message: text.replace(/\$(\d)/g, (_, n) => `$P${n}$`) };
+    const msg = { message: text.replace(/\$(?!\d)/g, '$$$$').replace(/\$(\d)/g, (_, n) => `$P${n}$`) };
     if (nums.length) msg.placeholders = Object.fromEntries(nums.map((n) => [`p${n}`, { content: `$${n}` }]));
     out[key] = msg;
   }
@@ -33,8 +35,18 @@ export function localeFile(lang) {
   return JSON.stringify(localeMessages(lang), null, 2) + '\n';
 }
 
+/** Zawartość shared/messages-pl.js (polski zapas dla shared/i18n.js). */
+export function fallbackModule() {
+  const pl = Object.fromEntries(Object.entries(MESSAGES).map(([k, e]) => [k, e.pl]));
+  return '// Apex AdBlocker – polskie teksty jako zapas dla shared/i18n.js, gdy chrome.i18n jest niedostępne\n'
+    + '// (testy w Node). Plik generowany przez tools/build-i18n.mjs (npm run i18n) – nie edytuj ręcznie.\n\n'
+    + `export const MESSAGES_PL = Object.freeze(${JSON.stringify(pl, null, 2)});\n`;
+}
+
 export function buildI18n(root = ROOT) {
   const written = [];
+  fs.writeFileSync(path.join(root, 'shared', 'messages-pl.js'), fallbackModule());
+  written.push('shared/messages-pl.js');
   for (const lang of LOCALES) {
     const file = path.join(root, '_locales', lang, 'messages.json');
     fs.mkdirSync(path.dirname(file), { recursive: true });

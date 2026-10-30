@@ -262,7 +262,7 @@
     "message": "Przykłady"
   },
   "filters_examplesBody": {
-    "message": "! komentarz\n||reklamy.example.com^            blokuj domenę\n||example.com/banner/*$image      blokuj obrazki z tej ścieżki\n@@||example.com^$script           zezwól na skrypty z domeny\nexample.com##.reklama              ukryj element na example.com\n##.sponsorowane                    ukryj na wszystkich stronach\nexample.com##div:has-text(Reklama) ukryj element zawierający tekst"
+    "message": "! komentarz\n||reklamy.example.com^            blokuj domenę\n||example.com/banner/*$$image      blokuj obrazki z tej ścieżki\n@@||example.com^$$script           zezwól na skrypty z domeny\nexample.com##.reklama              ukryj element na example.com\n##.sponsorowane                    ukryj na wszystkich stronach\nexample.com##div:has-text(Reklama) ukryj element zawierający tekst"
   },
   "filters_placeholder": {
     "message": "np. ||ads.example.com^"
@@ -610,6 +610,405 @@
   },
   "diag_reportSelect": {
     "message": "Zaznaczono raport – skopiuj go ręcznie (Ctrl+C)"
+  },
+  "dmsg_none": {
+    "message": "brak"
+  },
+  "dmsg_loadFailed": {
+    "message": "nie można wczytać $P1$ (HTTP $P2$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_listError": {
+    "message": "lista $P1$: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_listDataError": {
+    "message": "dane listy $P1$: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_rulesetMismatch": {
+    "message": "stan zestawów reguł niezgodny (brak: $P1$, nadmiarowe: $P2$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_enabledLists": {
+    "message": "włączone listy: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_rulesetsOk": {
+    "message": "włączone: $P1$; $$badfilter między listami: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_dynamicRules": {
+    "message": "reguły dynamiczne: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_scriptletsUnchanged": {
+    "message": "zarejestrowano $P1$ plików scriptletów (bez zmian)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_modeFull": {
+    "message": "pełna rejestracja"
+  },
+  "dmsg_modeSession": {
+    "message": "dorejestrowano część sesyjną"
+  },
+  "dmsg_scriptletsPartial": {
+    "message": "zarejestrowano $P1$/$P2$ plików scriptletów; $P3$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      }
+    }
+  },
+  "dmsg_scriptletsOk": {
+    "message": "zarejestrowano $P1$ plików scriptletów ($P2$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_stateLoadFailed": {
+    "message": "nie można wczytać stanu: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_listDataMissing": {
+    "message": "brak danych list: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_cosmeticOk": {
+    "message": "$P1$ filtrów w $P2$ listach (wczytywane przy pierwszej stronie)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_rollbackSave": {
+    "message": "zapis poprzednich ustawień: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_rollbackSites": {
+    "message": "storage: wyłączone strony nie zostały przywrócone"
+  },
+  "dmsg_rollbackFilters": {
+    "message": "storage: Moje filtry nie zostały przywrócone"
+  },
+  "dmsg_rollbackStep": {
+    "message": "przywracanie: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_badge": {
+    "message": "ustawienia plakietki: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_ytActive": {
+    "message": "ochrona aktywna"
+  },
+  "dmsg_stepRulesets": {
+    "message": "listy filtrów"
+  },
+  "dmsg_stepDynamic": {
+    "message": "moje filtry / wyłączone strony"
+  },
+  "dmsg_stepScriptlets": {
+    "message": "scriptlety"
+  },
+  "dmsg_importIncomplete": {
+    "message": "import ustawień nie powiódł się ($P1$), a przywrócenie poprzedniego stanu jest niepełne: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_rejectedSender": {
+    "message": "$P1$: odrzucono wiadomość spoza stron rozszerzenia",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_noContent": {
+    "message": "brak zawartości pliku"
+  },
+  "bk_tooLarge": {
+    "message": "plik jest za duży (maks. 2 MB)"
+  },
+  "bk_notJson": {
+    "message": "plik nie jest poprawnym JSON"
+  },
+  "bk_notObject": {
+    "message": "plik nie zawiera obiektu kopii ustawień"
+  },
+  "bk_badFormat": {
+    "message": "nieznany format pliku (oczekiwano „$P1$”)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_badVersion": {
+    "message": "nieobsługiwana wersja kopii: $P1$ (obsługiwane: $P2$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "bk_noSettings": {
+    "message": "brak sekcji „settings”"
+  },
+  "bk_missingField": {
+    "message": "brak pola settings.$P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_sitesType": {
+    "message": "settings.disabledSites musi być listą domen"
+  },
+  "bk_sitesTooMany": {
+    "message": "za dużo wyłączonych stron (maks. $P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_sitesInvalid": {
+    "message": "niepoprawne domeny w wyłączonych stronach: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_filtersType": {
+    "message": "settings.userFilters musi być tekstem"
+  },
+  "bk_filtersTooLong": {
+    "message": "settings.userFilters jest za długie"
+  },
+  "bk_unknownError": {
+    "message": "nieznany błąd"
+  },
+  "yt_siteDisabled": {
+    "message": "Ochrona wyłączona przez użytkownika na youtube.com"
+  },
+  "yt_adsOn": {
+    "message": "Lista „Reklamy” włączona"
+  },
+  "yt_adsOff": {
+    "message": "Lista „Reklamy” jest wyłączona – brak ochrony YouTube"
+  },
+  "yt_noCompat": {
+    "message": "Brak danych zgodności (data/youtube-compat.json)"
+  },
+  "yt_allSupported": {
+    "message": "Wszystkie krytyczne reguły YouTube obsługiwane ($P1$/$P2$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "yt_notExecuted": {
+    "message": "$P1$ z $P2$ krytycznych reguł YouTube nie jest wykonywanych",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "yt_noScriptlets": {
+    "message": "Brak plików scriptletów YouTube dla włączonych list"
+  },
+  "yt_scriptletsOk": {
+    "message": "Scriptlety YouTube zarejestrowane ($P1$ plików)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "yt_syncing": {
+    "message": "Synchronizacja w toku – zarejestrowano $P1$ z $P2$ plików scriptletów YouTube",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "yt_notRegistered": {
+    "message": "Nie zarejestrowano: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "yt_playerError": {
+    "message": "Odtwarzacz: błąd ($P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "yt_playerDegraded": {
+    "message": "Odtwarzacz: problem ($P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "yt_playerOk": {
+    "message": "Odtwarzacz: odtwarzanie możliwe"
+  },
+  "ytr_noPlayer": {
+    "message": "brak odtwarzacza na tej stronie"
+  },
+  "ytr_videoError": {
+    "message": "błąd elementu video (kod $P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ytr_errorVisible": {
+    "message": "komunikat błędu odtwarzacza"
+  },
+  "ytr_loading": {
+    "message": "ładowanie trwa $P1$ s",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ytr_noMoviePlayer": {
+    "message": "brak elementu movie_player"
+  },
+  "ytr_notYet": {
+    "message": "odtwarzacz jeszcze się nie pojawił"
+  },
+  "ytr_noVideoYet": {
+    "message": "brak elementu video (jeszcze)"
+  },
+  "ytr_noVideo": {
+    "message": "odtwarzacz bez elementu video"
+  },
+  "ytr_starting": {
+    "message": "trwa uruchamianie"
+  },
+  "ytr_notReady": {
+    "message": "video nie jest gotowe (readyState $P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   },
   "about_title": {
     "message": "O wtyczce"

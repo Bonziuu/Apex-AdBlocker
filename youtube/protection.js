@@ -5,6 +5,8 @@
 // diagnostyką odtwarzacza (youtube/health.js). YouTube Protection jest
 // domyślnie włączone i działa zawsze, gdy działa lista "Reklamy".
 
+import { t } from '../shared/i18n.js';
+
 export const YOUTUBE_HOST_PATTERNS = ['*://*.youtube.com/*', '*://*.www.youtube.com/*', '*://*.m.youtube.com/*',
   '*://*.music.youtube.com/*', '*://*.youtube-nocookie.com/*'];
 
@@ -29,41 +31,41 @@ export function evaluateYouTubeProtection(input) {
   const add = (id, ok, message, severity = 'error') => checks.push({ id, ok, message, severity: ok ? 'ok' : severity });
 
   if (input.siteDisabled) {
-    return { status: 'disabled', checks: [{ id: 'site', ok: false, severity: 'warning', message: 'Ochrona wyłączona przez użytkownika na youtube.com' }], player: input.player || null };
+    return { status: 'disabled', checks: [{ id: 'site', ok: false, severity: 'warning', message: t('yt_siteDisabled') }], player: input.player || null };
   }
-  add('ads-list', !!input.adsEnabled, input.adsEnabled ? 'Lista „Reklamy” włączona' : 'Lista „Reklamy” jest wyłączona – brak ochrony YouTube');
+  add('ads-list', !!input.adsEnabled, input.adsEnabled ? t('yt_adsOn') : t('yt_adsOff'));
 
   const compat = input.compat;
   if (!compat) {
-    add('compat', false, 'Brak danych zgodności (data/youtube-compat.json)', 'warning');
+    add('compat', false, t('yt_noCompat'), 'warning');
   } else {
     const notExecuted = compat.partial + compat.unsupported;
     add('compat', notExecuted === 0,
       notExecuted === 0
-        ? `Wszystkie krytyczne reguły YouTube obsługiwane (${compat.supported}/${compat.total})`
-        : `${notExecuted} z ${compat.total} krytycznych reguł YouTube nie jest wykonywanych`,
+        ? t('yt_allSupported', [compat.supported, compat.total])
+        : t('yt_notExecuted', [notExecuted, compat.total]),
       compat.newGaps && compat.newGaps.length ? 'error' : 'warning');
   }
 
   const registered = new Set(input.registeredScripts || []);
   const missing = (input.expectedScripts || []).filter((id) => !registered.has(id));
   if ((input.expectedScripts || []).length === 0) {
-    add('scriptlets', false, 'Brak plików scriptletów YouTube dla włączonych list');
+    add('scriptlets', false, t('yt_noScriptlets'));
   } else {
-    let message = `Scriptlety YouTube zarejestrowane (${input.expectedScripts.length} plików)`;
+    let message = t('yt_scriptletsOk', input.expectedScripts.length);
     if (missing.length) {
       message = input.syncing
-        ? `Synchronizacja w toku – zarejestrowano ${input.expectedScripts.length - missing.length} z ${input.expectedScripts.length} plików scriptletów YouTube`
-        : `Nie zarejestrowano: ${missing.join(', ')}`;
+        ? t('yt_syncing', [input.expectedScripts.length - missing.length, input.expectedScripts.length])
+        : t('yt_notRegistered', missing.join(', '));
     }
     add('scriptlets', missing.length === 0, message, input.syncing ? 'warning' : 'error');
   }
 
   const player = input.player || null;
   if (player) {
-    if (player.status === 'error') add('player', false, `Odtwarzacz: błąd (${(player.reasons || []).join(', ')})`, 'warning');
-    else if (player.status === 'degraded') add('player', false, `Odtwarzacz: problem (${(player.reasons || []).join(', ')})`, 'warning');
-    else if (player.status === 'healthy') add('player', true, 'Odtwarzacz: odtwarzanie możliwe');
+    if (player.status === 'error') add('player', false, t('yt_playerError', (player.reasons || []).join(', ')), 'warning');
+    else if (player.status === 'degraded') add('player', false, t('yt_playerDegraded', (player.reasons || []).join(', ')), 'warning');
+    else if (player.status === 'healthy') add('player', true, t('yt_playerOk'));
   }
 
   let status = 'ok';

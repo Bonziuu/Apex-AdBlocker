@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, LOCALES, DEFAULT_LOCALE, localeFile } from '../../tools/build-i18n.mjs';
+import { ROOT, LOCALES, DEFAULT_LOCALE, localeFile, fallbackModule } from '../../tools/build-i18n.mjs';
 import { MESSAGES } from '../../tools/i18n-messages.mjs';
 import { installI18n, loadMessages } from '../helpers/i18n-mock.mjs';
 
@@ -14,6 +14,7 @@ const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
 test('_locales/{pl,en}/messages.json aktualne (npm run i18n) i z tymi samymi kluczami', () => {
   for (const lang of LOCALES) assert.equal(read(`_locales/${lang}/messages.json`), localeFile(lang), `${lang}: uruchom npm run i18n`);
+  assert.equal(read('shared/messages-pl.js'), fallbackModule(), 'shared/messages-pl.js: uruchom npm run i18n');
   assert.deepEqual(Object.keys(loadMessages('pl')).sort(), Object.keys(loadMessages('en')).sort());
 });
 
@@ -33,7 +34,8 @@ test('każdy klucz z HTML (data-i18n*) i JS (t/tPlural/T) istnieje w tłumaczeni
   for (const f of ['popup/popup.html', 'options/options.html', 'welcome/welcome.html']) {
     for (const m of read(f).matchAll(/data-i18n(?:-html|-placeholder|-title|-aria-label)?="([^"]+)"/g)) used.add(m[1]);
   }
-  for (const f of ['popup/popup.js', 'popup/view-model.js', 'options/options.js', 'welcome/welcome.js', 'content/picker.js']) {
+  for (const f of ['popup/popup.js', 'popup/view-model.js', 'options/options.js', 'welcome/welcome.js', 'content/picker.js',
+    'background.js', 'youtube/protection.js', 'youtube/health.js', 'shared/settings-backup.js']) {
     for (const m of read(f).matchAll(/\b(?:t|T)\('([a-zA-Z0-9_]+)'/g)) used.add(m[1]);
   }
   for (const k of used) assert.ok(keys.has(k), `brak tłumaczenia: ${k}`);
@@ -93,4 +95,29 @@ test('„Ukryj element”: teksty z chrome.i18n z polskim zapasem, paleta morska
   assert.match(src, /chrome\.i18n\.getMessage/);
   assert.doesNotMatch(src, /#5b5bd6|#4c4cc4|91,91,214/i, 'resztki fioletowej palety');
   assert.match(src, /picker_match_\$\{f\}/, 'odmiana liczby pasujących elementów');
+});
+
+test('Diagnostyka po angielsku: kontrole YouTube, komunikaty silników, błędy importu; „$” zachowany', async () => {
+  installI18n('en');
+  try {
+    const { evaluateYouTubeProtection } = await import('../../youtube/protection.js');
+    const r = evaluateYouTubeProtection({ adsEnabled: true, compat: { total: 30, supported: 30, partial: 0, unsupported: 0 }, expectedScripts: ['a'], registeredScripts: ['a'], player: { status: 'degraded', reasons: ['x'] } });
+    assert.deepEqual(r.checks.map((c) => c.message), ['The “Ads” list is on', 'All critical YouTube rules supported (30/30)', 'YouTube scriptlets registered (1 files)', 'Player: problem (x)']);
+    const { t } = await import('../../shared/i18n.js');
+    assert.equal(t('dmsg_rulesetsOk', ['ads', 19]), 'enabled: ads; cross-list $badfilter: 19');
+    const { parseBackup } = await import('../../shared/settings-backup.js');
+    assert.deepEqual(parseBackup('{').errors, ['the file is not valid JSON']);
+  } finally { installI18n('pl'); }
+});
+
+test('Diagnostyka po polsku: teksty bez zmian (także bez chrome.i18n – zapas z shared/messages-pl.js)', async () => {
+  const { t } = await import('../../shared/i18n.js');
+  installI18n('pl');
+  assert.equal(t('dmsg_rulesetsOk', ['ads', 19]), 'włączone: ads; $badfilter między listami: 19');
+  const saved = globalThis.chrome;
+  globalThis.chrome = undefined;
+  try {
+    assert.equal(t('dmsg_cosmeticOk', [5, 3]), '5 filtrów w 3 listach (wczytywane przy pierwszej stronie)');
+    assert.equal(t('yt_playerOk'), 'Odtwarzacz: odtwarzanie możliwe');
+  } finally { globalThis.chrome = saved; }
 });

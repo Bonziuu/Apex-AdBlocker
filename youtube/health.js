@@ -7,6 +7,10 @@
 // próbuje automatycznie naprawiać odtwarzacza.
 
 (() => {
+  // powody w języku przeglądarki (chrome.i18n); polski jako zapas (np. testy bez Chrome)
+  const T = (key, fallback, subs) => {
+    try { return (globalThis.chrome && chrome.i18n && chrome.i18n.getMessage(key, subs && subs.map(String))) || fallback; } catch { return fallback; }
+  };
   const NS = {
     /** Rodzaj strony YouTube z odtwarzaczem (albo '' gdy brak). */
     pageKind(loc) {
@@ -24,23 +28,23 @@
      *            spinnerMs, readyState, paused, advanced}
      */
     classify(s) {
-      if (!s.kind) return { status: 'unknown', reasons: ['brak odtwarzacza na tej stronie'] };
-      if (s.videoError) return { status: 'error', reasons: [`błąd elementu video (kod ${s.videoError})`] };
-      if (s.errorVisible) return { status: 'error', reasons: ['komunikat błędu odtwarzacza'] };
+      if (!s.kind) return { status: 'unknown', reasons: [T('ytr_noPlayer', 'brak odtwarzacza na tej stronie')] };
+      if (s.videoError) return { status: 'error', reasons: [T('ytr_videoError', `błąd elementu video (kod ${s.videoError})`, [s.videoError])] };
+      if (s.errorVisible) return { status: 'error', reasons: [T('ytr_errorVisible', 'komunikat błędu odtwarzacza')] };
       const canStart = s.hasVideo && (s.readyState >= 2 || s.advanced || (s.readyState >= 1 && s.paused && s.spinnerMs === 0));
       if (canStart && s.spinnerMs < 15000) return { status: 'healthy', reasons: [] };
-      if (s.spinnerMs >= 15000) return { status: 'degraded', reasons: [`ładowanie trwa ${Math.round(s.spinnerMs / 1000)} s`] };
+      if (s.spinnerMs >= 15000) return { status: 'degraded', reasons: [T('ytr_loading', `ładowanie trwa ${Math.round(s.spinnerMs / 1000)} s`, [Math.round(s.spinnerMs / 1000)])] };
       if (!s.hasPlayer) {
-        if (s.elapsedMs >= 10000 && s.kind !== 'embed') return { status: 'degraded', reasons: ['brak elementu movie_player'] };
-        return { status: 'unknown', reasons: ['odtwarzacz jeszcze się nie pojawił'] };
+        if (s.elapsedMs >= 10000 && s.kind !== 'embed') return { status: 'degraded', reasons: [T('ytr_noMoviePlayer', 'brak elementu movie_player')] };
+        return { status: 'unknown', reasons: [T('ytr_notYet', 'odtwarzacz jeszcze się nie pojawił')] };
       }
       if (!s.hasVideo) {
         // osadzony odtwarzacz tworzy <video> dopiero po kliknięciu – to nie jest błąd
-        if (s.kind === 'embed' || s.elapsedMs < 20000) return { status: 'unknown', reasons: ['brak elementu video (jeszcze)'] };
-        return { status: 'degraded', reasons: ['odtwarzacz bez elementu video'] };
+        if (s.kind === 'embed' || s.elapsedMs < 20000) return { status: 'unknown', reasons: [T('ytr_noVideoYet', 'brak elementu video (jeszcze)')] };
+        return { status: 'degraded', reasons: [T('ytr_noVideo', 'odtwarzacz bez elementu video')] };
       }
-      if (s.elapsedMs < 15000) return { status: 'unknown', reasons: ['trwa uruchamianie'] };
-      return { status: 'degraded', reasons: [`video nie jest gotowe (readyState ${s.readyState})`] };
+      if (s.elapsedMs < 15000) return { status: 'unknown', reasons: [T('ytr_starting', 'trwa uruchamianie')] };
+      return { status: 'degraded', reasons: [T('ytr_notReady', `video nie jest gotowe (readyState ${s.readyState})`, [s.readyState])] };
     },
   };
 

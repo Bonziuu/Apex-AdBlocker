@@ -13,6 +13,8 @@
 // Identyfikator formatu `chromeblock-settings` pozostaje celowo bez zmian, żeby stare kopie
 // zachowały pełną zgodność po rebrandzie na Apex AdBlocker.
 
+import { t } from './i18n.js';
+
 export const BACKUP_FORMAT = 'chromeblock-settings';
 export const BACKUP_VERSION = 2;
 export const SUPPORTED_BACKUP_VERSIONS = Object.freeze([1, 2]);
@@ -55,10 +57,10 @@ const isPlainObject = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
  * @returns {{ok:true, settings:{disabledSites:string[], userFilters:string}, ignored:string[], version:number} | {ok:false, errors:string[]}}
  */
 export function parseBackup(text) {
-  if (typeof text !== 'string') return { ok: false, errors: ['brak zawartości pliku'] };
-  if (text.length > BACKUP_LIMITS.maxFileBytes) return { ok: false, errors: ['plik jest za duży (maks. 2 MB)'] };
+  if (typeof text !== 'string') return { ok: false, errors: [t('bk_noContent')] };
+  if (text.length > BACKUP_LIMITS.maxFileBytes) return { ok: false, errors: [t('bk_tooLarge')] };
   let data;
-  try { data = JSON.parse(text); } catch { return { ok: false, errors: ['plik nie jest poprawnym JSON'] }; }
+  try { data = JSON.parse(text); } catch { return { ok: false, errors: [t('bk_notJson')] }; }
   return validateBackup(data);
 }
 
@@ -66,36 +68,36 @@ export function parseBackup(text) {
 export function validateBackup(data) {
   const errors = [];
   const ignored = [];
-  if (!isPlainObject(data)) return { ok: false, errors: ['plik nie zawiera obiektu kopii ustawień'] };
-  if (data.format !== BACKUP_FORMAT) errors.push(`nieznany format pliku (oczekiwano „${BACKUP_FORMAT}”)`);
-  if (!SUPPORTED_BACKUP_VERSIONS.includes(data.version)) errors.push(`nieobsługiwana wersja kopii: ${JSON.stringify(data.version)} (obsługiwane: ${SUPPORTED_BACKUP_VERSIONS.join(', ')})`);
+  if (!isPlainObject(data)) return { ok: false, errors: [t('bk_notObject')] };
+  if (data.format !== BACKUP_FORMAT) errors.push(t('bk_badFormat', BACKUP_FORMAT));
+  if (!SUPPORTED_BACKUP_VERSIONS.includes(data.version)) errors.push(t('bk_badVersion', [JSON.stringify(data.version), SUPPORTED_BACKUP_VERSIONS.join(', ')]));
   for (const k of Object.keys(data)) if (!['format', 'version', 'exportedAt', 'extensionVersion', 'settings'].includes(k)) ignored.push(k);
   const s = data.settings;
   if (!isPlainObject(s)) {
-    errors.push('brak sekcji „settings”');
+    errors.push(t('bk_noSettings'));
     return { ok: false, errors };
   }
   // pola v1 (enabledLists, protectionMode, youtubeFocus) i nieznane: ignorowane, bez walidacji
   for (const k of Object.keys(s)) if (!BACKUP_SETTINGS_KEYS.includes(k)) ignored.push(`settings.${k}`);
-  for (const k of BACKUP_SETTINGS_KEYS) if (!(k in s)) errors.push(`brak pola settings.${k}`);
+  for (const k of BACKUP_SETTINGS_KEYS) if (!(k in s)) errors.push(t('bk_missingField', k));
 
   const out = {};
   // disabledSites (same hostname'y)
   if ('disabledSites' in s) {
     const v = s.disabledSites;
-    if (!Array.isArray(v) || !v.every((x) => typeof x === 'string')) errors.push('settings.disabledSites musi być listą domen');
-    else if (v.length > BACKUP_LIMITS.maxDisabledSites) errors.push(`za dużo wyłączonych stron (maks. ${BACKUP_LIMITS.maxDisabledSites})`);
+    if (!Array.isArray(v) || !v.every((x) => typeof x === 'string')) errors.push(t('bk_sitesType'));
+    else if (v.length > BACKUP_LIMITS.maxDisabledSites) errors.push(t('bk_sitesTooMany', BACKUP_LIMITS.maxDisabledSites));
     else {
       const norm = v.map((h) => h.toLowerCase().replace(/^www\./, '').replace(/\.$/, ''));
       const bad = v.filter((_, i) => !HOST_RE.test(norm[i]));
-      if (bad.length) errors.push(`niepoprawne domeny w wyłączonych stronach: ${bad.slice(0, 3).map((x) => JSON.stringify(x.slice(0, 60))).join(', ')}`);
+      if (bad.length) errors.push(t('bk_sitesInvalid', bad.slice(0, 3).map((x) => JSON.stringify(x.slice(0, 60))).join(', ')));
       out.disabledSites = [...new Set(norm)];
     }
   }
   // userFilters
   if ('userFilters' in s) {
-    if (typeof s.userFilters !== 'string') errors.push('settings.userFilters musi być tekstem');
-    else if (s.userFilters.length > BACKUP_LIMITS.maxUserFiltersChars) errors.push('settings.userFilters jest za długie');
+    if (typeof s.userFilters !== 'string') errors.push(t('bk_filtersType'));
+    else if (s.userFilters.length > BACKUP_LIMITS.maxUserFiltersChars) errors.push(t('bk_filtersTooLong'));
     else out.userFilters = s.userFilters;
   }
   if (errors.length) return { ok: false, errors };
@@ -125,9 +127,9 @@ export function importFailureMessage(r) {
   const errors = Array.isArray(res.errors) ? res.errors : [];
   if (res.rolledBack === true) return { kind: 'rolledBack', title: IMPORT_MSG.rolledBack, items: errors, diagnostics: false };
   if (res.rolledBack === false || Array.isArray(res.rollbackErrors)) {
-    return { kind: 'incomplete', title: IMPORT_MSG.incomplete, items: [...errors, ...(res.rollbackErrors || []).map((e) => `przywracanie: ${e}`)], diagnostics: true };
+    return { kind: 'incomplete', title: IMPORT_MSG.incomplete, items: [...errors, ...(res.rollbackErrors || []).map((e) => t('dmsg_rollbackStep', e))], diagnostics: true };
   }
-  return { kind: 'invalid', title: IMPORT_MSG.invalid, items: errors.length ? errors : ['nieznany błąd'], diagnostics: false };
+  return { kind: 'invalid', title: IMPORT_MSG.invalid, items: errors.length ? errors : [t('bk_unknownError')], diagnostics: false };
 }
 
 /** Liczby do podsumowania importu (Opcje formatują je w języku interfejsu). */

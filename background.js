@@ -14,6 +14,7 @@ import { buildDiagnosticsReport } from './background/diagnostics-report.js';
 import { ScriptletPerfStore, parseReport } from './background/scriptlet-perf.js';
 import { createStartupProfiler, formatStartupProfile } from './background/startup-profile.js';
 import { handlerFor, senderAllowed } from './background/message-policy.js';
+import { t } from './shared/i18n.js';
 import { CORE_LISTS } from './shared/core-lists.js';
 import { buildBackup, backupFileName, parseBackup, summarizeSettings, settingsCounts } from './shared/settings-backup.js';
 
@@ -90,7 +91,7 @@ const health = createHealth({
 
 async function fetchJSON(path) {
   const r = await fetch(chrome.runtime.getURL(path));
-  if (!r.ok) throw new Error(`nie można wczytać ${path} (HTTP ${r.status})`);
+  if (!r.ok) throw new Error(t('dmsg_loadFailed', [path, r.status]));
   return r.json();
 }
 
@@ -144,8 +145,8 @@ async function getListData(id) {
   if (!d) {
     d = startup.time('dane kosmetyczne: wczytanie JSON', () => fetchJSON(`data/${id}.json`).then(toSet)).catch(async (e) => {
       listData.delete(id);
-      await health.setComponent('cosmetic', 'error', `lista ${id}: ${e.message || e}`);
-      await health.error('cosmetic', `dane listy ${id}: ${e.message || e}`);
+      await health.setComponent('cosmetic', 'error', t('dmsg_listError', [id, e.message || e]));
+      await health.error('cosmetic', t('dmsg_listDataError', [id, e.message || e]));
       // pusta struktura – reszta list działa dalej
       return toSet({ sel: [], gen: {}, genC: [], spec: {}, unhide: {}, style: {}, proc: {}, gunhide: [], failed: true });
     });
@@ -253,12 +254,12 @@ async function syncRulesetsNow() {
   const missing = enable.filter((id) => !actual.has(id));
   const extra = disable.filter((id) => actual.has(id));
   if (missing.length || extra.length) {
-    throw new Error(`stan zestawów reguł niezgodny (brak: ${missing.join(',') || '-'}, nadmiarowe: ${extra.join(',') || '-'})`);
+    throw new Error(t('dmsg_rulesetMismatch', [missing.join(',') || '-', extra.join(',') || '-']));
   }
   const crossDisabled = await startup.time('syncCrossBadfilters', () => syncCrossBadfilters(new Set(enable)));
   startup.mark('DNR gotowy');
-  await health.setComponent('filters', 'ok', `włączone listy: ${enable.join(', ') || 'brak'}`);
-  return `włączone: ${enable.join(', ') || 'brak'}; $badfilter między listami: ${crossDisabled}`;
+  await health.setComponent('filters', 'ok', t('dmsg_enabledLists', enable.join(', ') || t('dmsg_none')));
+  return t('dmsg_rulesetsOk', [enable.join(', ') || t('dmsg_none'), crossDisabled]);
 }
 
 const syncDynamicRules = serialDnr(syncDynamicRulesNow);
@@ -281,7 +282,7 @@ async function syncDynamicRulesNow() {
     removeRuleIds: existing.map((r) => r.id),
     addRules: rules,
   }));
-  return `reguły dynamiczne: ${rules.length}`;
+  return t('dmsg_dynamicRules', rules.length);
 }
 
 // Metadane plików scriptletów (data/<lista>.scriptlets.json, do 1,5 MB) nie zmieniają się w trakcie
@@ -372,14 +373,14 @@ async function syncScriptletsNow() {
   if (sameScriptletRegistrations(ours, wanted)) {
     await markSessionOk();
     startup.mark('scriptlety gotowe');
-    return `zarejestrowano ${expected.length} plików scriptletów (bez zmian)`;
+    return t('dmsg_scriptletsUnchanged', expected.length);
   }
 
   let toRegister = wanted;
-  let mode = 'pełna rejestracja';
+  let mode = t('dmsg_modeFull');
   if (session.length && sameScriptletRegistrations(ours, persistent)) {
     toRegister = session;
-    mode = 'dorejestrowano część sesyjną';
+    mode = t('dmsg_modeSession');
   } else if (ours.length) {
     // Znacznik „zarejestrowane w tej sesji” zdejmujemy PRZED zmianą: gdy rejestracja się nie
     // uda albo service worker zostanie przerwany w trakcie, następny start SW sprawdzi i naprawi.
@@ -404,11 +405,11 @@ async function syncScriptletsNow() {
   const notRegistered = wanted.filter((r) => !after.has(r.id)).map((r) => r.id);
   if (notRegistered.length) {
     const files = new Set(notRegistered.map((id) => id.replace(/-s$/, '')));
-    throw new Error(`zarejestrowano ${expected.length - files.size}/${expected.length} plików scriptletów; ${failures.slice(0, 3).join('; ') || notRegistered.slice(0, 5).join(', ')}`);
+    throw new Error(t('dmsg_scriptletsPartial', [expected.length - files.size, expected.length, failures.slice(0, 3).join('; ') || notRegistered.slice(0, 5).join(', ')]));
   }
   await markSessionOk();
   startup.mark('scriptlety gotowe');
-  return `zarejestrowano ${expected.length} plików scriptletów (${mode})`;
+  return t('dmsg_scriptletsOk', [expected.length, mode]);
 }
 
 // Część sesyjna (bez utrwalania) znika po restarcie przeglądarki oraz po wyłączeniu i ponownym
@@ -435,7 +436,7 @@ async function syncAll(reason = '', { initial = false } = {}) {
   try {
     await getState();
   } catch (e) {
-    await health.error('filters', `nie można wczytać stanu: ${e.message || e}`);
+    await health.error('filters', t('dmsg_stateLoadFailed', e.message || e));
     return null;
   }
   syncInProgress++;
@@ -478,12 +479,12 @@ async function checkCosmeticData() {
     } catch (e) { missing.push(`${id} (${e.message || e})`); }
   }));
   if (missing.length) {
-    await health.setComponent('cosmetic', 'error', `brak danych list: ${missing.join(', ')}`);
-    await health.error('cosmetic', `brak danych list: ${missing.join(', ')}`);
+    await health.setComponent('cosmetic', 'error', t('dmsg_listDataMissing', missing.join(', ')));
+    await health.error('cosmetic', t('dmsg_listDataMissing', missing.join(', ')));
     return;
   }
   const filters = meta.filter((m) => s.enabledLists.includes(m.id)).reduce((n, m) => n + (m.cosmeticFilters || 0), 0);
-  await health.setComponent('cosmetic', 'ok', `${filters} filtrów w ${s.enabledLists.length} listach (wczytywane przy pierwszej stronie)`);
+  await health.setComponent('cosmetic', 'ok', t('dmsg_cosmeticOk', [filters, s.enabledLists.length]));
 }
 
 /**
@@ -496,13 +497,13 @@ async function rollbackImport(previous, syncAllSteps) {
   try {
     await saveState(previous);
   } catch (e) {
-    errors.push(`zapis poprzednich ustawień: ${(e && e.message) || e}`);
+    errors.push(t('dmsg_rollbackSave', (e && e.message) || e));
   }
   // weryfikacja zapisu
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const now = await chrome.storage.local.get(['disabledSites', 'userFilters']).catch(() => ({}));
-  if (!same(now.disabledSites, previous.disabledSites)) errors.push('storage: wyłączone strony nie zostały przywrócone');
-  if (now.userFilters !== previous.userFilters) errors.push('storage: Moje filtry nie zostały przywrócone');
+  if (!same(now.disabledSites, previous.disabledSites)) errors.push(t('dmsg_rollbackSites'));
+  if (now.userFilters !== previous.userFilters) errors.push(t('dmsg_rollbackFilters'));
   // synchronizacja poprzedniego stanu – każdy krok osobno
   for (const [name, r] of await syncAllSteps()) if (!r.ok) errors.push(`synchronizacja (${name}): ${r.message}`);
   return errors;
@@ -545,7 +546,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       await chrome.action.setBadgeBackgroundColor({ color: '#0f7f8c' });
       try { await chrome.action.setBadgeTextColor({ color: '#ffffff' }); } catch { /* starszy Chrome */ }
     } catch (e) {
-      await health.error('network', `ustawienia plakietki: ${e.message || e}`);
+      await health.error('network', t('dmsg_badge', e.message || e));
     }
   });
   await syncAll('install/update', { initial: true });
@@ -695,7 +696,7 @@ async function refreshYouTubeStatus() {
       syncing: syncInProgress > 0,
     });
     const status = result.status === 'ok' ? 'ok' : result.status;
-    await health.setComponent('youtube', status, result.checks.filter((c) => !c.ok).map((c) => c.message).join('; ') || 'ochrona aktywna');
+    await health.setComponent('youtube', status, result.checks.filter((c) => !c.ok).map((c) => c.message).join('; ') || t('dmsg_ytActive'));
     return { ...result, compat };
   } catch (e) {
     await health.setComponent('youtube', 'error', String(e.message || e));
@@ -1006,9 +1007,9 @@ const handlers = {
         try { return [name, await runStep(id, fn)]; } catch (e) { return [name, { ok: false, message: String((e && e.message) || e) }]; }
       };
       return [
-        await step('listy filtrów', 'rulesets', syncRulesets),
-        await step('moje filtry / wyłączone strony', 'dynamicRules', syncDynamicRules),
-        await step('scriptlety', 'scriptlets', syncScriptlets),
+        await step(t('dmsg_stepRulesets'), 'rulesets', syncRulesets),
+        await step(t('dmsg_stepDynamic'), 'dynamicRules', syncDynamicRules),
+        await step(t('dmsg_stepScriptlets'), 'scriptlets', syncScriptlets),
       ];
     };
     await saveState({ disabledSites: next.disabledSites, userFilters: next.userFilters });
@@ -1019,7 +1020,7 @@ const handlers = {
       await refreshYouTubeStatus();
       if (!rollbackErrors.length) return { ok: false, rolledBack: true, errors };
       // niepełne przywrócenie – jawnie (bez twierdzenia, że przywrócono) + wpis w dzienniku błędów (Diagnostyka)
-      await health.error('filters', `import ustawień nie powiódł się (${errors.join('; ')}), a przywrócenie poprzedniego stanu jest niepełne: ${rollbackErrors.join('; ')}`);
+      await health.error('filters', t('dmsg_importIncomplete', [errors.join('; '), rollbackErrors.join('; ')]));
       return { ok: false, rolledBack: false, errors, rollbackErrors };
     }
     await checkCosmeticData();
@@ -1086,7 +1087,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!h) return false;
   const type = msg.type;
   if (!senderAllowed(type, sender, chrome.runtime.getURL(''))) {
-    health.error('filters', `${type}: odrzucono wiadomość spoza stron rozszerzenia`).catch(() => {});
+    health.error('filters', t('dmsg_rejectedSender', type)).catch(() => {});
     sendResponse({ ok: false, error: 'forbidden' });
     return false;
   }

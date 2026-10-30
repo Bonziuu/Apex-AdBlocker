@@ -262,7 +262,7 @@
     "message": "Examples"
   },
   "filters_examplesBody": {
-    "message": "! comment\n||ads.example.com^                block a domain\n||example.com/banner/*$image      block images from this path\n@@||example.com^$script           allow scripts from a domain\nexample.com##.ad                   hide an element on example.com\n##.sponsored                       hide on all sites\nexample.com##div:has-text(Advert)  hide an element containing text"
+    "message": "! comment\n||ads.example.com^                block a domain\n||example.com/banner/*$$image      block images from this path\n@@||example.com^$$script           allow scripts from a domain\nexample.com##.ad                   hide an element on example.com\n##.sponsored                       hide on all sites\nexample.com##div:has-text(Advert)  hide an element containing text"
   },
   "filters_placeholder": {
     "message": "e.g. ||ads.example.com^"
@@ -610,6 +610,405 @@
   },
   "diag_reportSelect": {
     "message": "Report selected – copy it manually (Ctrl+C)"
+  },
+  "dmsg_none": {
+    "message": "none"
+  },
+  "dmsg_loadFailed": {
+    "message": "couldn’t load $P1$ (HTTP $P2$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_listError": {
+    "message": "list $P1$: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_listDataError": {
+    "message": "list data $P1$: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_rulesetMismatch": {
+    "message": "ruleset state mismatch (missing: $P1$, extra: $P2$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_enabledLists": {
+    "message": "enabled lists: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_rulesetsOk": {
+    "message": "enabled: $P1$; cross-list $$badfilter: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_dynamicRules": {
+    "message": "dynamic rules: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_scriptletsUnchanged": {
+    "message": "registered $P1$ scriptlet files (unchanged)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_modeFull": {
+    "message": "full registration"
+  },
+  "dmsg_modeSession": {
+    "message": "session part registered"
+  },
+  "dmsg_scriptletsPartial": {
+    "message": "registered $P1$/$P2$ scriptlet files; $P3$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      }
+    }
+  },
+  "dmsg_scriptletsOk": {
+    "message": "registered $P1$ scriptlet files ($P2$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_stateLoadFailed": {
+    "message": "couldn’t load state: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_listDataMissing": {
+    "message": "list data missing: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_cosmeticOk": {
+    "message": "$P1$ filters in $P2$ lists (loaded on the first page)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_rollbackSave": {
+    "message": "saving previous settings: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_rollbackSites": {
+    "message": "storage: disabled sites were not restored"
+  },
+  "dmsg_rollbackFilters": {
+    "message": "storage: My filters were not restored"
+  },
+  "dmsg_rollbackStep": {
+    "message": "restoring: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_badge": {
+    "message": "badge settings: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "dmsg_ytActive": {
+    "message": "protection active"
+  },
+  "dmsg_stepRulesets": {
+    "message": "filter lists"
+  },
+  "dmsg_stepDynamic": {
+    "message": "my filters / disabled sites"
+  },
+  "dmsg_stepScriptlets": {
+    "message": "scriptlets"
+  },
+  "dmsg_importIncomplete": {
+    "message": "settings import failed ($P1$) and the previous state couldn’t be fully restored: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "dmsg_rejectedSender": {
+    "message": "$P1$: rejected a message from outside the extension pages",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_noContent": {
+    "message": "the file is empty"
+  },
+  "bk_tooLarge": {
+    "message": "the file is too large (max 2 MB)"
+  },
+  "bk_notJson": {
+    "message": "the file is not valid JSON"
+  },
+  "bk_notObject": {
+    "message": "the file doesn’t contain a settings backup"
+  },
+  "bk_badFormat": {
+    "message": "unknown file format (expected “$P1$”)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_badVersion": {
+    "message": "unsupported backup version: $P1$ (supported: $P2$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "bk_noSettings": {
+    "message": "missing “settings” section"
+  },
+  "bk_missingField": {
+    "message": "missing field settings.$P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_sitesType": {
+    "message": "settings.disabledSites must be a list of domains"
+  },
+  "bk_sitesTooMany": {
+    "message": "too many disabled sites (max $P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_sitesInvalid": {
+    "message": "invalid domains in disabled sites: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_filtersType": {
+    "message": "settings.userFilters must be text"
+  },
+  "bk_filtersTooLong": {
+    "message": "settings.userFilters is too long"
+  },
+  "bk_unknownError": {
+    "message": "unknown error"
+  },
+  "yt_siteDisabled": {
+    "message": "Protection turned off by the user on youtube.com"
+  },
+  "yt_adsOn": {
+    "message": "The “Ads” list is on"
+  },
+  "yt_adsOff": {
+    "message": "The “Ads” list is off – no YouTube protection"
+  },
+  "yt_noCompat": {
+    "message": "No compatibility data (data/youtube-compat.json)"
+  },
+  "yt_allSupported": {
+    "message": "All critical YouTube rules supported ($P1$/$P2$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "yt_notExecuted": {
+    "message": "$P1$ of $P2$ critical YouTube rules are not executed",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "yt_noScriptlets": {
+    "message": "No YouTube scriptlet files for the enabled lists"
+  },
+  "yt_scriptletsOk": {
+    "message": "YouTube scriptlets registered ($P1$ files)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "yt_syncing": {
+    "message": "Sync in progress – registered $P1$ of $P2$ YouTube scriptlet files",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "yt_notRegistered": {
+    "message": "Not registered: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "yt_playerError": {
+    "message": "Player: error ($P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "yt_playerDegraded": {
+    "message": "Player: problem ($P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "yt_playerOk": {
+    "message": "Player: playback possible"
+  },
+  "ytr_noPlayer": {
+    "message": "no player on this page"
+  },
+  "ytr_videoError": {
+    "message": "video element error (code $P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ytr_errorVisible": {
+    "message": "player error message"
+  },
+  "ytr_loading": {
+    "message": "loading for $P1$ s",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "ytr_noMoviePlayer": {
+    "message": "no movie_player element"
+  },
+  "ytr_notYet": {
+    "message": "player hasn’t appeared yet"
+  },
+  "ytr_noVideoYet": {
+    "message": "no video element (yet)"
+  },
+  "ytr_noVideo": {
+    "message": "player without a video element"
+  },
+  "ytr_starting": {
+    "message": "starting up"
+  },
+  "ytr_notReady": {
+    "message": "video not ready (readyState $P1$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   },
   "about_title": {
     "message": "About"
