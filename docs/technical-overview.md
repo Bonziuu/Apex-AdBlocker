@@ -22,6 +22,8 @@ Parser obsługuje tylko semantykę, którą Apex AdBlocker potrafi odwzorować p
 
 To samo podejście jest stosowane w scriptletach: nieznany scriptlet albo nieobsługiwany wariant argumentów nie jest uruchamiany.
 
+Część reguł nie blokuje żądania, tylko podmienia je na nieszkodliwą atrapę z `web_accessible_resources/` (np. `adsbygoogle.js`), żeby strona nie przestała działać. Te pliki są dostępne wyłącznie pod losowym adresem sesji (`use_dynamic_url`), więc strona nie może wykryć rozszerzenia, odpytując stały adres `chrome-extension://<id>/...`. Przekierowania reguł działają bez zmian (sprawdzone w Chrome; test: `tests/network/war-dynamic-url.test.mjs`).
+
 ## Kosmetyka
 
 Warstwa kosmetyczna obsługuje klasyczne selektory CSS oraz wybrany podzbiór filtrów proceduralnych, m.in.:
@@ -72,6 +74,12 @@ Jeżeli po aktualizacji list pojawi się nowy krytyczny filtr YouTube, którego 
 Apex AdBlocker nie ma telemetrii ani backendu.
 
 Stan diagnostyczny jest lokalny. Raport eksportowany przez użytkownika jest sanityzowany z danych takich jak pełne URL-e, cookies, tokeny, adresy e-mail i identyfikatory filmów.
+
+Service worker przyjmuje od skryptów treści (działających na każdej stronie) tylko wiadomości kosmetyki, YouTube, pomiarów i „Ukryj element”. Zmiana ustawień, import kopii i diagnostyka są dostępne wyłącznie ze stron rozszerzenia (`background/message-policy.js`). Pełna polityka prywatności: [PRIVACY.md](../PRIVACY.md).
+
+## Języki
+
+Interfejs jest po polsku i po angielsku (`chrome.i18n`): polska przeglądarka → polski, każda inna → angielski (`default_locale: en`). Jedynym źródłem tekstów jest `tools/i18n-messages.mjs`; `npm run i18n` generuje z niego `_locales/{pl,en}/messages.json`. Strony HTML mają polski tekst jako zapas, a `shared/i18n.js` podmienia go na tłumaczenie. Szczegóły techniczne zapisywane przez service worker w Diagnostyce są po polsku.
 
 ## Testy
 

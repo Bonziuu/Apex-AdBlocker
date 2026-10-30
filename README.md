@@ -1,10 +1,12 @@
 # Apex AdBlocker
 
-<img src="icons/icon128.png" alt="Apex AdBlocker" width="96">
+<img src="brand/apex-logo-512.png" alt="Apex AdBlocker" width="96">
 
 **Apex AdBlocker** to lekki bloker reklam i śledzenia dla Google Chrome oparty o Manifest V3 i własny silnik filtrów.
 
 > **Status:** stabilne wydanie. Źródłem numeru wersji jest `manifest.json`.
+
+> **English:** Apex AdBlocker is a lightweight ad and tracker blocker for Chrome (Manifest V3) with its own filter engine. It works with no setup, has no telemetry, accounts or backend, and its interface is available in English and Polish. To install, download `Apex-AdBlocker-<version>.zip` from the [latest release](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest), extract it, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and select the `Apex-AdBlocker` folder. Privacy policy: [PRIVACY.md](PRIVACY.md).
 
 ## Instalacja
 
@@ -33,6 +35,8 @@ Docelowa dystrybucja przez Chrome Web Store korzysta z osobnej paczki generowane
 - wyłączanie ochrony per strona i opcjonalne automatyczne odświeżenie,
 - „Ukryj element” i własne filtry użytkownika,
 - lokalna diagnostyka bez telemetrii, kont i backendu,
+- interfejs po polsku i po angielsku (język według przeglądarki),
+- ochrona przed wykrywaniem rozszerzenia przez strony (pliki zastępcze tylko pod losowym adresem sesji),
 - jasny i ciemny motyw interfejsu.
 
 Apex AdBlocker używa jednego stałego zestawu ochrony: reklamy, prywatność/śledzenie i bezpieczeństwo. Produkt nie ma płatnych funkcji, kont ani subskrypcji.
@@ -45,6 +49,7 @@ Apex AdBlocker używa jednego stałego zestawu ochrony: reklamy, prywatność/ś
 | `shared/parser.js` | parser obsługiwanego podzbioru składni ABP/uBO |
 | `content/cosmetic.js` | ukrywanie elementów i filtry proceduralne |
 | `content/picker.js` | interaktywny tryb „Ukryj element” |
+| `_locales/`, `shared/i18n.js` | tłumaczenia interfejsu (pl, en); źródło tekstów: `tools/i18n-messages.mjs` |
 | `youtube/` | zgodność filtrów i lokalna diagnostyka odtwarzacza |
 | `rules/`, `data/`, `scriptlets/` | wygenerowane artefakty wykorzystywane przez rozszerzenie |
 | `tools/` | build, audyty, aktualizacja list i packaging |

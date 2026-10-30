@@ -41,7 +41,19 @@ export function startHereText(version) {
     'AKTUALIZACJA\r\n\r\n' +
     'Pobierz nowszą paczkę, zastąp pliki w tym samym folderze Apex-AdBlocker,\r\n' +
     'a następnie kliknij „Odśwież” przy Apex AdBlocker w chrome://extensions.\r\n\r\n' +
-    'Szczegółowa instrukcja: https://github.com/Bonziuu/Apex-AdBlocker/blob/main/docs/INSTALLATION.md\r\n';
+    'Szczegółowa instrukcja: https://github.com/Bonziuu/Apex-AdBlocker/blob/main/docs/INSTALLATION.md\r\n\r\n' +
+    '--------------------------------------------------------------------\r\n\r\n' +
+    'INSTALLING IN GOOGLE CHROME\r\n\r\n' +
+    '1. Extract this archive to a permanent location on your disk.\r\n' +
+    '2. Open in Chrome: chrome://extensions\r\n' +
+    '3. Turn on "Developer mode" in the top right corner.\r\n' +
+    '4. Click "Load unpacked".\r\n' +
+    '5. Select the "Apex-AdBlocker" folder next to this file.\r\n\r\n' +
+    'IMPORTANT: do not delete or move the Apex-AdBlocker folder after installing.\r\n' +
+    'Chrome uses this folder while the extension is running.\r\n\r\n' +
+    'UPDATING\r\n\r\n' +
+    'Download a newer package, replace the files in the same Apex-AdBlocker folder,\r\n' +
+    'then click "Reload" next to Apex AdBlocker in chrome://extensions.\r\n';
 }
 
 /** Buduje gotową paczkę do publikacji w GitHub Releases. */
