@@ -5,7 +5,7 @@
 <h1 align="center">Apex AdBlocker</h1>
 
 <p align="center">
-  <b>Polski, bezpłatny i open-source’owy adblocker dla Google Chrome.<br>Blokuje reklamy i mechanizmy śledzące bez konta i bez telemetrii Apex.</b>
+  <b>Polski, bezpłatny adblocker o otwartym kodzie dla Google Chrome.<br>Blokuje reklamy i mechanizmy śledzące bez konta i bez telemetrii Apex.</b>
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 <p align="center">
   <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest"><img src="https://img.shields.io/github/v/release/Bonziuu/Apex-AdBlocker?label=wersja&color=0f7f8c" alt="Najnowsza wersja"></a>
   <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest"><img src="https://img.shields.io/github/release-date/Bonziuu/Apex-AdBlocker?label=wydano&color=0f7f8c" alt="Data wydania"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/licencja-MIT-0f7f8c" alt="Licencja MIT"></a>
+  <a href="LICENSING.md"><img src="https://img.shields.io/badge/kod%20Apex-MIT-0f7f8c" alt="Kod Apex: licencja MIT; listy filtrów na własnych licencjach"></a>
 </p>
 
 > **Status:** stabilne wydanie. Najnowszą wersję, listę zmian i sumy SHA-256 znajdziesz w [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) · [Co nowego](CHANGELOG.md)
@@ -104,7 +104,7 @@ Wersja rozpakowana aktualizuje się ręcznie: pobierz nową paczkę z [Releases]
   <img src="https://apexsoftware.app/assets/screens/pl/filters.webp" alt="Ustawienia: edytor własnych filtrów" width="405">
 </p>
 
-Wyjątek dla strony, „Ukryj element”, wbudowane listy filtrów i edytor własnych filtrów — prawdziwy interfejs wersji 1.0.0.
+Wyjątek dla strony, „Ukryj element”, wbudowane listy filtrów i edytor własnych filtrów — prawdziwy interfejs wersji 1.0.0 na lokalnej stronie demonstracyjnej. To nie jest pomiar skuteczności na rzeczywistych serwisach.
 
 ## Open source
 
@@ -145,7 +145,7 @@ EasyList, EasyPrivacy, uBlock filters i Polskie Filtry są używane na warunkach
 <h2 align="center">Apex AdBlocker — English</h2>
 
 <p align="center">
-  <b>A free, open-source ad blocker for Google Chrome.<br>Blocks ads and tracking with no account and no Apex telemetry.</b>
+  <b>A free ad blocker for Google Chrome with publicly available source code.<br>Blocks ads and tracking with no account and no Apex telemetry.</b>
 </p>
 
 <p align="center">
@@ -231,6 +231,8 @@ Google Chrome 121 or later on desktop (Windows, macOS, Linux). Mobile Chrome on 
   <img src="https://apexsoftware.app/assets/screens/en/options.webp" alt="Settings: built-in filter lists" width="405">
   <img src="https://apexsoftware.app/assets/screens/en/filters.webp" alt="Settings: custom filter editor" width="405">
 </p>
+
+Site exception, “Hide element”, built-in filter lists and the custom filter editor — the real 1.0.0 interface on a local demo page. Not a measurement of effectiveness on real websites.
 
 ### Open source and development
 
