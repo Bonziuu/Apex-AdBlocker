@@ -6,3 +6,8 @@ tests/local/results/
 _metadata/
 dist/
 perf/results/
+
+# Strona rozwijana w oddzielnym prywatnym repozytorium.
+/website/
+/docs/website/
+/release-sync/

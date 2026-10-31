@@ -1,13 +1,13 @@
 {
   "generator": "tools/webstore-prepare.mjs",
-  "generatedAt": "2026-10-30T17:05:18.338Z",
-  "packageSha256": "9bd2d6f8501fc4c226b50d91817b080eca304ccd38b105aecaf465028e33ca8a",
-  "packagePath": "dist/webstore-prepare-nG15Jw/package/Apex-AdBlocker-WebStore-1.0.0.zip",
+  "generatedAt": "2026-10-30T22:07:13.305Z",
+  "packageSha256": "f58affb6dc6f3bbaa866ac5a81cf923ba106eb92e029b66da9b3980358589588",
+  "packagePath": "dist/Apex-AdBlocker-WebStore-1.0.0.zip",
   "checkLog": "dist/webstore-validation/check.log",
   "command": "node tools/check.mjs --require-browser",
   "browser": {
-    "tests": 596,
-    "passed": 576,
+    "tests": 597,
+    "passed": 577,
     "failed": 0,
     "skipped": 20,
     "cancelled": 0,
@@ -28,5 +28,9 @@
     "tested": 0,
     "failed": 0,
     "reason": "Real-site tests are not run by this offline preparation command."
+  },
+  "preparedPackagePath": "dist/webstore-prepare-jxEDNz/package/Apex-AdBlocker-WebStore-1.0.0.zip",
+  "environmentVariables": {
+    "APEX_DOM_TEST_BROWSER": "/usr/bin/chromium"
   }
 }

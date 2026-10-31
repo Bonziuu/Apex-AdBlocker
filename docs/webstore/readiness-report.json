@@ -1,12 +1,12 @@
 {
   "generator": "tools/webstore-prepare.mjs",
-  "generatedAt": "2026-10-30T17:05:19.677Z",
+  "generatedAt": "2026-10-30T22:07:14.072Z",
   "scope": "Offline preparation, actual strict-check outcomes and genuine captures only; no submission or Chrome Web Store approval.",
   "package": {
     "version": "1.0.0",
-    "path": "dist/webstore-prepare-nG15Jw/package/Apex-AdBlocker-WebStore-1.0.0.zip",
-    "extensionDir": "dist/webstore-prepare-nG15Jw/package/Apex-AdBlocker",
-    "sha256": "9bd2d6f8501fc4c226b50d91817b080eca304ccd38b105aecaf465028e33ca8a"
+    "path": "dist/Apex-AdBlocker-WebStore-1.0.0.zip",
+    "extensionDir": "dist/Apex-AdBlocker",
+    "sha256": "f58affb6dc6f3bbaa866ac5a81cf923ba106eb92e029b66da9b3980358589588"
   },
   "evidenceFile": "docs/webstore/validation-evidence.json",
   "checkLog": "dist/webstore-validation/check.log",
@@ -54,8 +54,8 @@
     "hostPermissions": [
       "<all_urls>"
     ],
-    "packageSha256": "9bd2d6f8501fc4c226b50d91817b080eca304ccd38b105aecaf465028e33ca8a",
-    "sourceContentsSha256": "deadb8d5b04d21f83f1e275262450e974b84f1f06432b030dc4cf719c6acedd8"
+    "packageSha256": "f58affb6dc6f3bbaa866ac5a81cf923ba106eb92e029b66da9b3980358589588",
+    "sourceContentsSha256": "495380f524c48a7a1672465452325ad37ba7b5acb90bd84c2899fdff3cd56b56"
   },
   "publicationReady": false,
   "blockers": [
@@ -65,5 +65,7 @@
     "Strict check is incomplete or failed (exit 1, smoke SKIP)"
   ],
   "exitCode": 2,
-  "previousOutputsBackupDir": "dist/webstore-prepare-nG15Jw"
+  "previousOutputsBackupDir": "dist/webstore-prepare-jxEDNz",
+  "preparedPackagePath": "dist/webstore-prepare-jxEDNz/package/Apex-AdBlocker-WebStore-1.0.0.zip",
+  "retainedCopyNote": "ZIP copied byte-for-byte from preparedPackagePath to the stable download path; no rebuild followed the recorded check."
 }
