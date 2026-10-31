@@ -9,15 +9,19 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/download/v1.0.0/Apex-AdBlocker-1.0.0.zip"><b>⬇ Pobierz Apex AdBlocker 1.0.0</b></a>
+  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest/download/Apex-AdBlocker.zip"><b>⬇ Pobierz Apex AdBlocker (ZIP)</b></a>
   &nbsp;·&nbsp; <a href="#instalacja">Instrukcja instalacji</a>
   &nbsp;·&nbsp; <a href="https://apexsoftware.app/pl/adblocker/">Strona produktu</a>
   &nbsp;·&nbsp; <a href="#eng">English ↓</a>
 </p>
 
 <p align="center">
-  Wersja 1.0.0 · wydano 30.10.2026 · <a href="CHANGELOG.md">Co nowego</a> · <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/download/v1.0.0/SHA256SUMS.txt">SHA-256</a>
+  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest"><img src="https://img.shields.io/github/v/release/Bonziuu/Apex-AdBlocker?label=wersja&color=0f7f8c" alt="Najnowsza wersja"></a>
+  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest"><img src="https://img.shields.io/github/release-date/Bonziuu/Apex-AdBlocker?label=wydano&color=0f7f8c" alt="Data wydania"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licencja-MIT-0f7f8c" alt="Licencja MIT"></a>
 </p>
+
+> **Status:** stabilne wydanie. Najnowszą wersję, listę zmian i sumy SHA-256 znajdziesz w [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) · [Co nowego](CHANGELOG.md)
 
 - 🛡️ Blokowanie reklam i trackerów
 - 🔒 Bez konta i telemetrii Apex
@@ -69,7 +73,7 @@ Uprawnienia: `declarativeNetRequest`, `scripting`, `storage`, `activeTab` oraz d
 
 Apex AdBlocker nie jest jeszcze dostępny w Chrome Web Store. Obecnie instalujesz go ręcznie jako rozszerzenie rozpakowane:
 
-1. Pobierz [`Apex-AdBlocker-1.0.0.zip`](https://github.com/Bonziuu/Apex-AdBlocker/releases/download/v1.0.0/Apex-AdBlocker-1.0.0.zip) z [najnowszego wydania](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest).
+1. Pobierz `Apex-AdBlocker-<wersja>.zip` z [najnowszego wydania](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) (sekcja **Assets**).
 2. Rozpakuj ZIP w stałym miejscu na dysku, np. `Dokumenty/Apex-AdBlocker`.
 3. Otwórz w Chrome `chrome://extensions`.
 4. Włącz **Tryb dewelopera** w prawym górnym rogu.
@@ -78,7 +82,7 @@ Apex AdBlocker nie jest jeszcze dostępny w Chrome Web Store. Obecnie instalujes
 
 Nie usuwaj ani nie przenoś folderu po instalacji — Chrome korzysta z niego podczas działania rozszerzenia. Pełna instrukcja, w tym usuwanie: [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
-**Weryfikacja pobranego pliku:** porównaj sumę SHA-256 ZIP-a z wpisem w [`SHA256SUMS.txt`](https://github.com/Bonziuu/Apex-AdBlocker/releases/download/v1.0.0/SHA256SUMS.txt), np. `Get-FileHash .\Apex-AdBlocker-1.0.0.zip -Algorithm SHA256` (Windows) lub `shasum -a 256 Apex-AdBlocker-1.0.0.zip` (macOS, Linux).
+**Weryfikacja pobranego pliku:** porównaj sumę SHA-256 ZIP-a z wpisem w [`SHA256SUMS.txt`](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest/download/SHA256SUMS.txt) z tego samego wydania, np. `Get-FileHash .\Apex-AdBlocker-<wersja>.zip -Algorithm SHA256` (Windows) lub `shasum -a 256 Apex-AdBlocker-<wersja>.zip` (macOS, Linux).
 
 ## Aktualizacja
 
@@ -145,14 +149,12 @@ EasyList, EasyPrivacy, uBlock filters i Polskie Filtry są używane na warunkach
 </p>
 
 <p align="center">
-  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/download/v1.0.0/Apex-AdBlocker-1.0.0.zip"><b>⬇ Download Apex AdBlocker 1.0.0</b></a>
+  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest/download/Apex-AdBlocker.zip"><b>⬇ Download Apex AdBlocker (ZIP)</b></a>
   &nbsp;·&nbsp; <a href="#install-en">Installation guide</a>
   &nbsp;·&nbsp; <a href="https://apexsoftware.app/en/adblocker/">Product page</a>
 </p>
 
-<p align="center">
-  Version 1.0.0 · released 30 October 2026 · <a href="CHANGELOG.md">What’s new</a> · <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/download/v1.0.0/SHA256SUMS.txt">SHA-256</a>
-</p>
+> **Status:** stable release. Get the latest version, release notes and SHA-256 checksums from [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) · [What’s new](CHANGELOG.md)
 
 - 🛡️ Blocks ads and trackers
 - 🔒 No account, no Apex telemetry
@@ -198,7 +200,7 @@ No account, no Apex telemetry and no Apex backend: the extension does not send y
 
 Apex AdBlocker is not yet available in the Chrome Web Store. For now you install it manually as an unpacked extension:
 
-1. Download [`Apex-AdBlocker-1.0.0.zip`](https://github.com/Bonziuu/Apex-AdBlocker/releases/download/v1.0.0/Apex-AdBlocker-1.0.0.zip) from the [latest release](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest).
+1. Download `Apex-AdBlocker-<version>.zip` from the [latest release](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) (**Assets** section).
 2. Extract the ZIP to a permanent location, e.g. `Documents/Apex-AdBlocker`.
 3. Open `chrome://extensions` in Chrome.
 4. Turn on **Developer mode** in the top-right corner.
@@ -209,7 +211,7 @@ Don’t delete or move the folder after installation — Chrome uses it while th
 
 <a id="verify-en"></a>
 
-**Verify the download:** compare the ZIP’s SHA-256 checksum with the entry in [`SHA256SUMS.txt`](https://github.com/Bonziuu/Apex-AdBlocker/releases/download/v1.0.0/SHA256SUMS.txt), e.g. `Get-FileHash .\Apex-AdBlocker-1.0.0.zip -Algorithm SHA256` (Windows) or `shasum -a 256 Apex-AdBlocker-1.0.0.zip` (macOS, Linux).
+**Verify the download:** compare the ZIP’s SHA-256 checksum with the entry in [`SHA256SUMS.txt`](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest/download/SHA256SUMS.txt) from the same release, e.g. `Get-FileHash .\Apex-AdBlocker-<version>.zip -Algorithm SHA256` (Windows) or `shasum -a 256 Apex-AdBlocker-<version>.zip` (macOS, Linux).
 
 ### Updating
 
