@@ -9,6 +9,18 @@ export const SCRIPTLET_PERF_FLAG_FILE = 'content/scriptlet-perf-on.js';
 export const SESSION_SUFFIX = '-s';
 
 /**
+ * Wpis pliku scriptletów listy z dołączonymi plikami wyjątków #@#+js innych list (`crossBefore`,
+ * z data/<lista>.scriptlets.json). Plik wyjątków listy źródłowej jest wstrzykiwany tylko wtedy,
+ * gdy ta lista jest włączona – tak jak w v1.0.0, gdy obie listy były kompilowane razem.
+ * Kolejność: jsBefore (encje), wyjątki innych list, plik scriptletów.
+ */
+export function withCrossExceptionFiles(entry, enabledLists) {
+  const { crossBefore, ...rest } = entry;
+  const cross = (crossBefore || []).filter((c) => c && enabledLists.includes(c.list)).map((c) => c.file);
+  return { ...rest, jsBefore: [...(entry.jsBefore || []), ...cross] };
+}
+
+/**
  * Rejestracje jednego pliku scriptletów (0–2):
  *   `sl-<lista>-<n>`   – wzorce hostów zwykłych, utrwalane (działają od razu po starcie przeglądarki),
  *   `sl-<lista>-<n>-s` – wzorce encji „nazwa.*”, persistAcrossSessions: false.

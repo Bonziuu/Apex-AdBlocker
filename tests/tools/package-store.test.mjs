@@ -42,6 +42,9 @@ test('package:store: ZIP ma manifest.json w root i tylko pliki rozszerzenia', ()
     const zip = readZip(fs.readFileSync(r.zipPath));
     assert.ok(zip.has('manifest.json'), 'manifest.json musi być w katalogu głównym ZIP-a');
     assert.ok(zip.has('THIRD_PARTY_NOTICES.md'));
+    for (const f of ['LICENSE', 'LICENSING.md', 'LICENSES/GPL-3.0.txt']) assert.ok(zip.has(f), f);
+    // Polskie Filtry jako osobna lista: własny ruleset, dane i scriptlety; plik wyjątków uBO dla pl
+    for (const f of ['rules/pl.json', 'data/pl.json', 'data/pl.allow.json', 'data/pl.scriptlets.json', 'scriptlets/pl-0.js', 'scriptlets/ads-x-pl.js']) assert.ok(zip.has(f), f);
     assert.ok(!zip.has('START-HERE.txt'));
     assert.ok(![...zip.keys()].some((name) => name.startsWith('Apex-AdBlocker/')));
 

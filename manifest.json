@@ -87,6 +87,11 @@
         "id": "security",
         "enabled": true,
         "path": "rules/security.json"
+      },
+      {
+        "id": "pl",
+        "enabled": true,
+        "path": "rules/pl.json"
       }
     ]
   }

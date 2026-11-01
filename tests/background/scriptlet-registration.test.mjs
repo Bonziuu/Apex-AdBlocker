@@ -95,9 +95,9 @@ test('moduł czysty: bez importów, Chrome API, I/O, await i stanu; background.j
   assert.doesNotMatch(src, /\bchrome\.|\bfetch\(|import\(|\bawait\b|\basync\b|globalThis/);
   assert.doesNotMatch(src, /^(let|var) /m, 'brak zmiennego stanu modułu');
   assert.deepEqual([...src.matchAll(/^export (const|function) (\w+)/gm)].map((m) => m[2]).sort(),
-    ['SCRIPTLET_PERF_FLAG_FILE', 'SESSION_SUFFIX', 'sameScriptletRegistrations', 'scriptletRegistrations']);
+    ['SCRIPTLET_PERF_FLAG_FILE', 'SESSION_SUFFIX', 'sameScriptletRegistrations', 'scriptletRegistrations', 'withCrossExceptionFiles']);
   const bg = fs.readFileSync(path.join(ROOT, 'background.js'), 'utf8');
-  assert.match(bg, /^import \{ scriptletRegistrations, sameScriptletRegistrations \} from '\.\/background\/scriptlet-registration\.js';$/m);
+  assert.match(bg, /^import \{ scriptletRegistrations, sameScriptletRegistrations, withCrossExceptionFiles \} from '\.\/background\/scriptlet-registration\.js';$/m);
   assert.doesNotMatch(bg, /function scriptletRegistrations|function sameScriptletRegistrations|SESSION_SUFFIX|SCRIPTLET_PERF_FLAG_FILE/);
   assert.match(bg, /const SESSION_SCRIPTLETS_KEY = 'sessionScriptletsOk';/);
 });

@@ -36,7 +36,7 @@ export const DEFAULT_VIDEO = 'aqz-KE-bpKQ'; // Big Buck Bunny (~10 min, publiczn
 export const DEFAULT_SHORTS = 'https://www.youtube.com/shorts/';
 export const COMPONENT_LABEL = { network: 'Network', cosmetic: 'Cosmetic', scriptlets: 'Scriptlets', filters: 'Filters', youtube: 'YouTube' };
 // stały zestaw list produktu (shared/core-lists.js) – tester nie importuje kodu rozszerzenia
-export const CORE_LISTS = Object.freeze(['ads', 'privacy', 'security']);
+export const CORE_LISTS = Object.freeze(['ads', 'privacy', 'security', 'pl']);
 const enabledListsOf = (o) => (o && o.lists ? o.lists.filter((l) => l.enabled).map((l) => l.id).sort() : []);
 
 // ---------------------------------------------------------------------------

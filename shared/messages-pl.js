@@ -106,11 +106,13 @@ export const MESSAGES_PL = Object.freeze({
   "prot_title": "Ochrona",
   "prot_desc": "Apex AdBlocker blokuje reklamy, śledzenie i złośliwe strony – zawsze tym samym zestawem list, bez wybierania poziomu ochrony. YouTube Protection działa razem z listą reklam. Na wybranych stronach ochronę wyłączysz przyciskiem w okienku wtyczki albo w zakładce „Wyłączone strony”.",
   "list_ads_name": "Reklamy",
-  "list_ads_desc": "EasyList, uBlock filters i Polskie Filtry Reklamowe",
+  "list_ads_desc": "EasyList i uBlock filters",
   "list_privacy_name": "Śledzenie i prywatność",
   "list_privacy_desc": "EasyPrivacy i uBlock filters – Privacy",
   "list_security_name": "Złośliwe strony",
   "list_security_desc": "uBlock filters – Badware risks (oszustwa, malware)",
+  "list_pl_name": "Polskie Filtry",
+  "list_pl_desc": "Oficjalne Polskie Filtry (Certyficate IT) – reklamy na polskich stronach",
   "list_counts": "$1 filtrów sieciowych · $2 kosmetycznych · $3 scriptletów",
   "filters_desc": "Własne filtry w składni uBlock Origin / Adblock Plus, po jednym w linii. Filtry dodane przyciskiem „Ukryj element” trafiają tutaj.",
   "filters_examples": "Przykłady",
@@ -283,6 +285,6 @@ export const MESSAGES_PL = Object.freeze({
   "about_limitsTitle": "Ograniczenia",
   "about_limits": "Apex AdBlocker obsługuje podzbiór składni filtrów uBO/ABP. Części filtrów nie da się wyrazić w MV3 (np. filtrowanie HTML, nagłówki CSP, blokowanie wyskakujących okien przez sieć), a część scriptletów nie ma implementacji, więc na niektórych stronach skuteczność może być niższa niż w uBlock Origin. Apex AdBlocker nie obiecuje niewykrywalności przez strony.",
   "about_listsTitle": "Listy filtrów",
-  "about_lists": "EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.",
+  "about_lists": "Reklamy, Śledzenie i prywatność, Złośliwe strony: EasyList, EasyPrivacy (© The EasyList authors) i uBlock filters (© Raymond Hill i współtwórcy), GPLv3. Polskie Filtry: Oficjalne Polskie Filtry (© Certyficate IT i współtwórcy, github.com/MajkiIT/polish-ads-filter), CC BY-NC-SA 4.0. Listy są przetworzone do formatu Apex AdBlocker i wbudowane we wtyczkę – szczegóły w plikach THIRD_PARTY_NOTICES.md i LICENSING.md.",
   "about_stats": "Aktywne: $1 filtrów sieciowych, $2 kosmetycznych, $3 scriptletów, $4 własnych."
 });

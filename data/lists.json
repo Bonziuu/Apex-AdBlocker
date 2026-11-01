@@ -2,24 +2,46 @@
  {
   "id": "ads",
   "name": "Reklamy",
-  "desc": "EasyList, uBlock filters i Polskie Filtry Reklamowe",
+  "desc": "EasyList i uBlock filters",
   "enabledByDefault": true,
-  "networkRules": 10287,
-  "networkFilters": 64413,
-  "cosmeticFilters": 46321,
-  "scriptletFilters": 4550,
-  "scriptletRejected": 513,
+  "license": "GPL-3.0-only",
+  "sources": [
+   "easylist/easylist.txt",
+   "ubo/filters-2020.txt",
+   "ubo/filters-2021.txt",
+   "ubo/filters-2022.txt",
+   "ubo/filters-2023.txt",
+   "ubo/filters-2024.txt",
+   "ubo/filters-2025.txt",
+   "ubo/filters-2026.txt",
+   "ubo/filters-general.txt",
+   "ubo/filters.txt",
+   "ubo/quick-fixes.txt",
+   "ubo/ubo-link-shorteners.txt",
+   "ubo/unbreak.txt"
+  ],
+  "networkRules": 9442,
+  "networkFilters": 63268,
+  "cosmeticFilters": 41341,
+  "scriptletFilters": 4510,
+  "scriptletRejected": 504,
   "scriptletFiles": 24,
-  "scriptletPatterns": 22154,
+  "scriptletPatterns": 22103,
   "scriptletSessionPatterns": 0,
-  "unmatchedScriptletExceptions": 21,
-  "crossListScriptletExceptions": 0
+  "unmatchedScriptletExceptions": 29,
+  "crossListScriptletExceptions": 10
  },
  {
   "id": "privacy",
   "name": "Śledzenie i prywatność",
   "desc": "EasyPrivacy i uBlock filters – Privacy",
   "enabledByDefault": true,
+  "license": "GPL-3.0-only",
+  "sources": [
+   "easylist/easyprivacy.txt",
+   "ubo/privacy.txt",
+   "ubo/resource-abuse.txt"
+  ],
   "networkRules": 10059,
   "networkFilters": 57390,
   "cosmeticFilters": 292,
@@ -36,6 +58,10 @@
   "name": "Złośliwe strony",
   "desc": "uBlock filters – Badware risks (oszustwa, malware)",
   "enabledByDefault": true,
+  "license": "GPL-3.0-only",
+  "sources": [
+   "ubo/badware.txt"
+  ],
   "networkRules": 1337,
   "networkFilters": 4783,
   "cosmeticFilters": 134,
@@ -45,6 +71,28 @@
   "scriptletPatterns": 38,
   "scriptletSessionPatterns": 0,
   "unmatchedScriptletExceptions": 0,
+  "crossListScriptletExceptions": 0
+ },
+ {
+  "id": "pl",
+  "name": "Polskie Filtry",
+  "desc": "Oficjalne Polskie Filtry (Certyficate IT) – reklamy na polskich stronach",
+  "enabledByDefault": true,
+  "license": "CC-BY-NC-SA-4.0",
+  "sources": [
+   "pl/adblock.txt",
+   "pl/adblock_suplement.txt",
+   "pl/adblock_ublock.txt"
+  ],
+  "networkRules": 859,
+  "networkFilters": 1149,
+  "cosmeticFilters": 4980,
+  "scriptletFilters": 47,
+  "scriptletRejected": 9,
+  "scriptletFiles": 1,
+  "scriptletPatterns": 61,
+  "scriptletSessionPatterns": 0,
+  "unmatchedScriptletExceptions": 2,
   "crossListScriptletExceptions": 0
  }
 ]

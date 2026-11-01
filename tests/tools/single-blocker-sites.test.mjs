@@ -353,7 +353,7 @@ test('atrapy stron w Chromium (bez internetu): none vs Apex AdBlocker, consent, 
     const res = (k, c) => by[k].results[c];
     const dump = (k) => JSON.stringify({ verdict: by[k].verdict, none: res(k, 'none').ads?.counts, cb: res(k, 'apex').ads?.counts, consent: [res(k, 'none').consent, res(k, 'apex').consent] });
 
-    assert.deepEqual(report.extension.lists, ['ads', 'privacy', 'security']);
+    assert.deepEqual(report.extension.lists, ['ads', 'privacy', 'security', 'pl']);
     // reklama: widoczna bez rozszerzenia, Apex AdBlocker blokuje host reklamowy
     assert.ok(res('ad', 'none').ads.counts.REAL_AD >= 1, dump('ad'));
     assert.ok(res('ad', 'apex').requests.blocked >= 1, dump('ad'));

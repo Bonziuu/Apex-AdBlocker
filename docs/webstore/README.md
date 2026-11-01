@@ -2,6 +2,8 @@
 
 Wydawca i autor: **Konrad Woźniak**. Publiczny kontakt: **konrad.wozniak.1996@gmail.com**. [Profil autora na LinkedIn](https://www.linkedin.com/in/konrad-woźniak-23a5b831a). Zakres MIT oraz nierozstrzygnięte warunki dystrybucji cudzych filtrów opisuje [LICENSING.md](../../LICENSING.md).
 
+> **Polskie Filtry (lista `pl`, CC BY-NC-SA 4.0):** dodatkowa zgoda autorów na dystrybucję w Chrome Web Store jest oczekiwana ([docs/licensing/README.md](../licensing/README.md)). Do czasu zapisania odpowiedzi `webstore:preflight` i `webstore:prepare` zgłaszają to jako blokadę publikacji. Paczka jest technicznie przygotowana (osobny ruleset `pl`), ale nie jest gotowa do zgłoszenia.
+
 Zakładasz konto wydawcy po raz pierwszy? Zacznij od [krótkiej checklisty zgłoszenia](SUBMISSION-CHECKLIST.pl.md): wskazuje właściwy ZIP, obrazy i teksty do panelu. Ten katalog zawiera materiały do zgłoszenia; nie stanowi potwierdzenia przyjęcia rozszerzenia do sklepu.
 
 ## Publikacja na GitHubie

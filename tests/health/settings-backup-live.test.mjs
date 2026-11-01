@@ -75,7 +75,7 @@ test('UI: eksport → zmiana ustawień → import przywraca; uszkodzony plik bez
     assert.doesNotMatch(summary, /Focus|Tryb|Listy/);
     assert.equal(await opt.isHidden('#importErrors'), true);
     const o = await call({ type: 'options:get' });
-    assert.deepEqual(o.lists.filter((l) => l.enabled).map((l) => l.id), ['ads', 'privacy', 'security']);
+    assert.deepEqual(o.lists.filter((l) => l.enabled).map((l) => l.id), ['ads', 'privacy', 'security', 'pl']);
     assert.deepEqual(o.disabledSites, ['bank.example']);
     assert.equal(o.userFilters, '||ads.example^\n');
     assert.equal(await opt.inputValue('#userFilters'), '||ads.example^\n', 'UI opcji odświeżone po imporcie');

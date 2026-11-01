@@ -1,5 +1,5 @@
-// Apex AdBlocker 1.0: jeden stały zestaw list (ads, privacy, security) – bez trybów ochrony i bez
-// list cookies / annoyances. Instalacja, migracja starszych konfiguracji, dane użytkownika, paczka.
+// Apex AdBlocker 1.0: jeden stały zestaw list (ads, privacy, security, pl) – bez trybów ochrony i bez
+// list cookies / annoyances. `pl` (Polskie Filtry) jest osobną listą od v1.0.1 (licencje). Instalacja, migracja starszych konfiguracji, dane użytkownika, paczka.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,17 +19,17 @@ const scriptletLists = (bg) => sorted(new Set(bg.state.registered.filter((r) => 
 const enabledIn = (o) => sorted(o.lists.filter((l) => l.enabled).map((l) => l.id));
 const REMOVED = ['cookies', 'annoyances'];
 
-test('stały zestaw: CORE_LISTS = ads, privacy, security; build i metadane list dokładnie tym zestawem', () => {
-  assert.deepEqual([...CORE_LISTS], ['ads', 'privacy', 'security']);
+test('stały zestaw: CORE_LISTS = ads, privacy, security, pl; build i metadane list dokładnie tym zestawem', () => {
+  assert.deepEqual([...CORE_LISTS], ['ads', 'privacy', 'security', 'pl']);
   assert.ok(Object.isFrozen(CORE_LISTS));
   assert.deepEqual(LISTS.map((l) => l.id), [...CORE_LISTS], 'tools/lists-config.mjs');
   const meta = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/lists.json'), 'utf8'));
   assert.deepEqual(meta.map((m) => m.id), [...CORE_LISTS], 'data/lists.json');
-  assert.equal(isCoreSet(['security', 'ads', 'privacy']), true);
-  for (const bad of [['ads', 'privacy'], ['ads', 'privacy', 'security', 'cookies'], [], null]) assert.equal(isCoreSet(bad), false, JSON.stringify(bad));
+  assert.equal(isCoreSet(['pl', 'security', 'ads', 'privacy']), true);
+  for (const bad of [['ads', 'privacy'], ['ads', 'privacy', 'security'], ['ads', 'privacy', 'security', 'cookies'], [], null]) assert.equal(isCoreSet(bad), false, JSON.stringify(bad));
 });
 
-test('świeża instalacja: tylko ads/privacy/security w DNR i scriptletach; bez zapisu list ani trybu', async () => {
+test('świeża instalacja: tylko ads/privacy/security/pl w DNR i scriptletach; bez zapisu list ani trybu', async () => {
   const bg = await loadBackground();
   try {
     await bg.state.listeners.installed({ reason: 'install' });
@@ -37,7 +37,7 @@ test('świeża instalacja: tylko ads/privacy/security w DNR i scriptletach; bez 
     assert.deepEqual(scriptletLists(bg), CORE, 'scriptlety');
     const o = await bg.send({ type: 'options:get' });
     assert.deepEqual(enabledIn(o), CORE);
-    assert.equal(o.lists.length, 3, 'w opcjach tylko 3 listy (bez przełączników)');
+    assert.equal(o.lists.length, 4, 'w opcjach tylko 4 listy (bez przełączników)');
     assert.ok(!('protectionMode' in o) && !('protectionModes' in o), 'brak trybów w odpowiedzi');
     for (const k of ['enabledLists', 'protectionMode', 'youtubeFocus']) assert.ok(!(k in bg.store), `storage: ${k}`);
     const p = await bg.send({ type: 'popup:get', tabId: 1 });
@@ -105,7 +105,7 @@ test('produkt nie ma już wyboru trybu ani list: brak komunikatów, modułów i 
   assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'options/options.js'), 'utf8'), /<span class="switch"><input type="checkbox">/, 'listy bez przełączników');
 });
 
-test('paczka (package:dev): brak danych cookies/annoyances, rulesety tylko z zestawu, scriptlety tylko ads/privacy/security', () => {
+test('paczka (package:dev): brak danych cookies/annoyances, rulesety tylko z zestawu, scriptlety tylko ads/privacy/security/pl', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-core-pkg-'));
   try {
     const { extDir } = packageDev({ outDir: path.join(tmp, 'dist') });
@@ -114,8 +114,8 @@ test('paczka (package:dev): brak danych cookies/annoyances, rulesety tylko z zes
     assert.deepEqual(bad, [], 'pliki cookies/annoyances w paczce');
     for (const f of ['rules/cookies.json', 'rules/annoyances.json', 'data/cookies.json', 'data/annoyances.json', 'data/cookies.scriptlets.json', 'data/annoyances.scriptlets.json']) assert.ok(!files.includes(f), f);
     const shards = files.filter((f) => f.startsWith('scriptlets/'));
-    assert.ok(shards.length > 0 && shards.every((f) => /^scriptlets\/(ads|privacy|security)-(\d+|entities)\.js$/.test(f)), `scriptlety: ${shards.filter((f) => !/^scriptlets\/(ads|privacy|security)-/.test(f)).join(', ')}`);
-    assert.deepEqual(files.filter((f) => f.startsWith('rules/')), ['rules/ads.json', 'rules/privacy.json', 'rules/security.json']);
+    assert.ok(shards.length > 0 && shards.every((f) => /^scriptlets\/(ads|privacy|security|pl)-(\d+|entities|x-(ads|privacy|security|pl))\.js$/.test(f)), `scriptlety: ${shards.filter((f) => !/^scriptlets\/(ads|privacy|security|pl)-/.test(f)).join(', ')}`);
+    assert.deepEqual(files.filter((f) => f.startsWith('rules/')), ['rules/ads.json', 'rules/pl.json', 'rules/privacy.json', 'rules/security.json']);
     const manifest = JSON.parse(fs.readFileSync(path.join(extDir, 'manifest.json'), 'utf8'));
     assert.deepEqual(manifest.declarative_net_request.rule_resources.map((r) => [r.id, r.enabled]), CORE_LISTS.map((id) => [id, true]));
     const compat = fs.readFileSync(path.join(extDir, 'data/scriptlet-compat.json'), 'utf8');

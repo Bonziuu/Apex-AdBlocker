@@ -317,5 +317,7 @@ test('Onboarding i popup w testerze: pozycje raportu; bez trybów; stały zestaw
   assert.ok(body.indexOf('await runOnboarding(') < body.indexOf("add('popup'"), 'onboarding przed testami popupu');
   assert.match(body, /add\('core-lists', 'Ochrona: stały zestaw list'/);
   assert.doesNotMatch(src, /setProtectionMode|options:setLists|MODE_LISTS|MODE_LABEL|protectionModes\.basic/, 'tester nie testuje usuniętych trybów');
-  assert.deepEqual([...CORE_LISTS], ['ads', 'privacy', 'security']);
+  assert.deepEqual([...CORE_LISTS], ['ads', 'privacy', 'security', 'pl']);
+  // tester nie importuje kodu rozszerzenia – jego kopia zestawu musi zgadzać się z shared/core-lists.js
+  assert.match(fs.readFileSync(path.join(ROOT, 'shared/core-lists.js'), 'utf8'), /CORE_LISTS = Object\.freeze\(\['ads', 'privacy', 'security', 'pl'\]\)/);
 });

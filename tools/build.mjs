@@ -19,7 +19,7 @@ import {
   classifyLine, parseNetworkFilter, parseCosmeticFilter, validateRule,
   splitSelectorList, genericToken, scriptletKey,
 } from '../shared/parser.js';
-import { LISTS, ROOT, LISTS_DIR, loadList } from './lists-config.mjs';
+import { LISTS, ROOT, LISTS_DIR, loadList, listSourceFiles } from './lists-config.mjs';
 import { runAudit, readBaseline } from './audit-scriptlets.mjs';
 
 // Chrome match patterns cannot express an entity such as google.*. Those hosts
@@ -111,6 +111,9 @@ export function compileList(listId, lines, own, crossTargets = new Map()) {
   const ghide = new Set();
   const ehide = new Set();
   const docAllow = new Set();
+  // wyjątki stron ($generichide/$elemhide/$document) tej listy wyłączane przez $badfilter innej listy:
+  // stosowane w czasie działania tylko, gdy żadna z list źródłowych nie jest włączona
+  const crossHide = new Map();
   const calls = [];
   const callIndex = new Map();
   const scriptHosts = Object.create(null);
@@ -129,7 +132,13 @@ export function compileList(listId, lines, own, crossTargets = new Map()) {
       if (own.badfilters.has(norm)) { stats.ownBadfiltered++; continue; }
       const res = parseNetworkFilter(c.text, { trusted });
       if (!res) { stats.skippedNetwork++; continue; }
-      if (res.cosmeticHosts) {
+      if (res.cosmeticHosts && crossTargets.has(norm)) {
+        const sources = [...crossTargets.get(norm)].sort();
+        const key = sources.join(',');
+        if (!crossHide.has(key)) crossHide.set(key, { sources, ghide: new Set(), ehide: new Set(), docAllow: new Set() });
+        const entry = crossHide.get(key);
+        for (const k of ['ghide', 'ehide', 'docAllow']) for (const h of res.cosmeticHosts[k] || []) entry[k].add(h);
+      } else if (res.cosmeticHosts) {
         for (const h of res.cosmeticHosts.ghide || []) ghide.add(h);
         for (const h of res.cosmeticHosts.ehide || []) ehide.add(h);
         for (const h of res.cosmeticHosts.docAllow || []) docAllow.add(h);
@@ -255,6 +264,7 @@ export function compileList(listId, lines, own, crossTargets = new Map()) {
     ghide: [...ghide],
     ehide: [...ehide],
     docAllow: [...docAllow],
+    crossHide: [...crossHide.values()].map((e) => ({ sources: e.sources, ghide: [...e.ghide].sort(), ehide: [...e.ehide].sort(), docAllow: [...e.docAllow].sort() })),
     // ogólne wyjątki #@# tej listy – stosowane w czasie działania do WSZYSTKICH włączonych list
     gunhide: [...own.gunhide].sort(),
   };
@@ -290,11 +300,15 @@ installed.add(shardKey);`;
 }
 
 /** Dzieli scriptlety na pliki według domeny, żeby strona ładowała tylko małą część danych. */
-export function shardScriptlets(listId, listName, compiled, scriptletLib) {
+export function shardScriptlets(listId, listName, compiled, scriptletLib, { license } = {}) {
   const { calls, scriptHosts, scriptExcept } = compiled;
   const hosts = Object.keys(scriptHosts).filter((h) => !h.endsWith('.*'));
   const entityHosts = Object.keys(scriptHosts).filter((h) => h.endsWith('.*'));
   const shardCount = Math.max(1, Math.min(32, Math.ceil(hosts.length / 1000)));
+  // Dane (CALLS/HOSTS/EXCEPT) pochodzą wyłącznie z filtrów tej listy; kod biblioteki to Apex AdBlocker (MIT).
+  const licenseNote = license
+    ? `\n   Dane CALLS/HOSTS/EXCEPT: filtry listy "${listName}" przetworzone do formatu Apex AdBlocker, licencja ${license}. Kod biblioteki scriptletów: Apex AdBlocker, MIT. Źródła i licencje: THIRD_PARTY_NOTICES.md.`
+    : '';
   const makeShard = () => ({ hosts: Object.create(null), calls: [], callMap: new Map() });
   const shards = Array.from({ length: shardCount }, makeShard);
   const addHost = (shard, h) => {
@@ -310,11 +324,13 @@ export function shardScriptlets(listId, listName, compiled, scriptletLib) {
     addHost(shards[hash(base) % shardCount], h);
   }
   const files = [];
+  // Wyjątki #@#+js innych list nie są wklejane do tego pliku (izolacja danych i licencji list).
+  // Dostarczają je osobne pliki tych list (crossScriptletExceptionFile), wstrzykiwane wcześniej.
   const body = (shard, except) => `const CALLS = ${JSON.stringify(shard.calls)};
 const HOSTS = ${JSON.stringify(shard.hosts)};
 const EXCEPT = ${JSON.stringify(except)};
 ${scriptletLib}
-runForHost(CALLS, HOSTS, EXCEPT);`;
+runForHost(CALLS, HOSTS, withCrossListExceptions(EXCEPT, ${JSON.stringify(listId)}));`;
   shards.forEach((shard, n) => {
     const shardHosts = Object.keys(shard.hosts);
     if (!shardHosts.length) return;
@@ -327,7 +343,7 @@ runForHost(CALLS, HOSTS, EXCEPT);`;
     const prerequisiteGuard = Object.keys(scriptExcept).some((h) => h.endsWith('.*'))
       ? "if (typeof globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')] !== 'function') return;"
       : '';
-    const js = `/* Apex AdBlocker – scriptlety listy "${listName}" (część ${n + 1}/${shardCount}). Plik generowany przez tools/build.mjs. */
+    const js = `/* Apex AdBlocker – scriptlety listy "${listName}" (część ${n + 1}/${shardCount}). Plik generowany przez tools/build.mjs.${licenseNote} */
 (function () {
 'use strict';
 ${prerequisiteGuard}
@@ -385,6 +401,53 @@ ${source}
   return files;
 }
 
+/** Klucz rejestru wyjątków #@#+js między listami w świecie MAIN strony. */
+export const CROSS_EXCEPTIONS_SYMBOL = 'ApexAdBlocker.crossListScriptletExceptions.v1';
+
+/**
+ * Wyjątki #@#+js listy `source`, które dotyczą scriptletów listy `target` (albo wszystkich: '*').
+ * W v1.0.0 listy były kompilowane razem i takie wyjątki działały w obrębie jednej listy; po
+ * rozdzieleniu są stosowane w czasie działania, tylko gdy obie listy są włączone.
+ * @returns {Record<string, string[]>} host → klucze scriptletów (posortowane, bez duplikatów)
+ */
+export function crossScriptletExceptions(source, target) {
+  const targetKeys = new Set(target.calls.map(scriptletKey));
+  const out = {};
+  for (const host of Object.keys(source.scriptExcept).sort()) {
+    const keys = source.scriptExcept[host].filter((k) => k === '*' || targetKeys.has(k));
+    if (keys.length) out[host] = [...new Set(keys)].sort();
+  }
+  return out;
+}
+
+/**
+ * Plik z wyjątkami listy `sourceId` dla scriptletów listy `targetId`. Zawiera wyłącznie dane
+ * listy źródłowej (hosty i klucze z jej filtrów #@#+js), więc dziedziczy jej licencję.
+ * Uruchamiany w świecie MAIN przed plikami scriptletów listy docelowej (ta sama rejestracja).
+ */
+export function crossScriptletExceptionFile(sourceId, sourceName, targetId, exceptions, { license } = {}) {
+  const file = `scriptlets/${sourceId}-x-${targetId}.js`;
+  const licenseNote = license ? `\n   Dane: wyjątki #@#+js listy "${sourceName}" przetworzone do formatu Apex AdBlocker, licencja ${license}. Źródła i licencje: THIRD_PARTY_NOTICES.md.` : '';
+  const js = `/* Apex AdBlocker – wyjątki scriptletów listy "${sourceName}" dla listy "${targetId}". Plik generowany przez tools/build.mjs.${licenseNote} */
+(function () {
+'use strict';
+const key = Symbol.for(${JSON.stringify(CROSS_EXCEPTIONS_SYMBOL)});
+let registry = globalThis[key];
+if (!registry || typeof registry !== 'object') {
+  registry = Object.create(null);
+  try { Object.defineProperty(globalThis, key, { value: registry, writable: false, configurable: false }); } catch { return; }
+}
+const target = registry[${JSON.stringify(targetId)}] || (registry[${JSON.stringify(targetId)}] = Object.create(null));
+const DATA = ${JSON.stringify(exceptions)};
+for (const host of Object.keys(DATA)) {
+  const list = target[host] || (target[host] = []);
+  for (const k of DATA[host]) if (!list.includes(k)) list.push(k);
+}
+})();
+`;
+  return { file, js };
+}
+
 /**
  * Biblioteka scriptletów z wklejonym silnikiem JSONPath. Kopia trafia do każdego
  * pliku scriptletów, więc usuwamy z niej pełnoliniowe komentarze i puste linie
@@ -428,10 +491,26 @@ export function buildAll(opts = {}) {
   const results = {};
   const totals = { network: 0, skippedNetwork: 0, cosmetic: 0, skippedCosmetic: 0, scriptletRejected: 0 };
 
+  for (const list of lists) results[list.id] = compileList(list.id, listLines[list.id], perList[list.id], crossBadfilter[list.id]);
+
+  // Wyjątki #@#+js między listami: osobny plik każdej listy źródłowej dla każdej listy docelowej.
+  const crossFiles = {}; // target → [{ list: source, file, js, hosts, keys }]
+  for (const target of lists) {
+    for (const source of lists) {
+      if (source.id === target.id) continue;
+      const exceptions = crossScriptletExceptions(results[source.id], results[target.id]);
+      const hosts = Object.keys(exceptions);
+      if (!hosts.length) continue;
+      const { file, js } = crossScriptletExceptionFile(source.id, source.name, target.id, exceptions, { license: source.license });
+      (crossFiles[target.id] ||= []).push({ list: source.id, file, js, hosts: hosts.length, keys: hosts.reduce((n, h) => n + exceptions[h].length, 0) });
+    }
+  }
+
   for (const list of lists) {
-    const compiled = compileList(list.id, listLines[list.id], perList[list.id], crossBadfilter[list.id]);
-    results[list.id] = compiled;
-    const files = shardScriptlets(list.id, list.name, compiled, scriptletLib);
+    const compiled = results[list.id];
+    const files = shardScriptlets(list.id, list.name, compiled, scriptletLib, { license: list.license });
+    const cross = crossFiles[list.id] || [];
+    for (const f of files) f.crossBefore = cross.map(({ list: source, file }) => ({ list: source, file }));
     for (const [source, ruleIds] of Object.entries(compiled.crossRuleIds)) badfilterCross.push({ source, target: list.id, ruleIds });
     for (const k of Object.keys(totals)) totals[k] += compiled.stats[k] || 0;
     const matchCount = files.reduce((n, f) => n + f.matches.length, 0);
@@ -443,7 +522,9 @@ export function buildAll(opts = {}) {
         JSON.stringify(compiled.rules.filter((r) => r.action.type.startsWith('allow')).map((r) => r.id)));
       fs.writeFileSync(path.join(outDir, 'data', `${list.id}.json`), JSON.stringify(compiled.cosmetic));
       for (const f of files) fs.writeFileSync(path.join(outDir, f.file), f.js);
-      fs.writeFileSync(path.join(outDir, 'data', `${list.id}.scriptlets.json`), JSON.stringify(files.map(({ file, matches, sessionMatches, jsBefore }) => ({ file, matches, sessionMatches, jsBefore }))));
+      // Pliki wyjątków są zapisywane przy liście docelowej, ale zawierają dane listy źródłowej.
+      if (files.length) for (const c of cross) fs.writeFileSync(path.join(outDir, c.file), c.js);
+      fs.writeFileSync(path.join(outDir, 'data', `${list.id}.scriptlets.json`), JSON.stringify(files.map(({ file, matches, sessionMatches, jsBefore, crossBefore }) => ({ file, matches, sessionMatches, jsBefore, crossBefore }))));
     }
     ruleResources.push({ id: list.id, enabled: list.enabled, path: `rules/${list.id}.json` });
 
@@ -453,6 +534,9 @@ export function buildAll(opts = {}) {
       name: list.name,
       desc: list.desc,
       enabledByDefault: list.enabled,
+      // provenance: licencja danych tej listy i pliki źródłowe (z !#include), tools/lists-config.mjs
+      license: list.license,
+      sources: listSourceFiles(list, { dir: listsDir }),
       networkRules: compiled.rules.length,
       networkFilters: s.network,
       cosmeticFilters: s.cosmetic,
@@ -467,7 +551,7 @@ export function buildAll(opts = {}) {
   }
 
   // Wyjątki #@#+js z listy X, które dotyczą scriptletów wykonywanych przez INNĄ listę.
-  // Nie są stosowane między listami (ograniczenie) – liczymy je, żeby było to widoczne.
+  // Są stosowane w czasie działania (pliki scriptlets/<X>-x-<Y>.js), gdy obie listy są włączone.
   for (const item of summary) {
     const own = results[item.id];
     let cross = 0;
@@ -475,7 +559,8 @@ export function buildAll(opts = {}) {
       if (Object.entries(results).some(([id, r]) => id !== item.id && r.calls.some((c) => scriptletKey(c) === k))) cross++;
     }
     item.crossListScriptletExceptions = cross;
-    if (cross) log(`Uwaga: ${item.id} – ${cross} wyjątków #@#+js dotyczy scriptletów z innych list (nie są stosowane między listami)`);
+    const applied = Object.values(crossFiles).flat().filter((c) => c.list === item.id);
+    if (applied.length) log(`${item.id} – wyjątki #@#+js dla innych list: ${applied.map((c) => `${c.file} (${c.hosts} hostów)`).join(', ')}`);
   }
 
   if (write) {

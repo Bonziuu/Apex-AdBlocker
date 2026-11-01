@@ -57,7 +57,7 @@ test('instalacja: strona powitalna nie zmienia stałego zestawu list', async () 
   const bg = await loadBackground();
   try {
     await bg.state.listeners.installed({ reason: 'install' });
-    assert.deepEqual(sorted(bg.state.enabledRulesets), ['ads', 'privacy', 'security']);
+    assert.deepEqual(sorted(bg.state.enabledRulesets), ['ads', 'pl', 'privacy', 'security']);
     assert.ok(!('enabledLists' in bg.store) && !('protectionMode' in bg.store));
   } finally { bg.restore(); }
 });

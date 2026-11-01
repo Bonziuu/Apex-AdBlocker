@@ -1,26 +1,23 @@
 {
   "generator": "tools/webstore-prepare.mjs",
-  "generatedAt": "2026-10-30T22:07:13.305Z",
-  "packageSha256": "f58affb6dc6f3bbaa866ac5a81cf923ba106eb92e029b66da9b3980358589588",
-  "packagePath": "dist/Apex-AdBlocker-WebStore-1.0.0.zip",
+  "generatedAt": "2026-11-01T19:40:54.425Z",
+  "packageSha256": "48a3f83b785c708754ad0a5330f91d744272bc73803b6f82ef96c7e1afd34451",
+  "packagePath": "dist/webstore-prepare-03eAJD/package/Apex-AdBlocker-WebStore-1.0.0.zip",
   "checkLog": "dist/webstore-validation/check.log",
   "command": "node tools/check.mjs --require-browser",
   "browser": {
-    "tests": 597,
-    "passed": 577,
+    "tests": 622,
+    "passed": 622,
     "failed": 0,
-    "skipped": 20,
+    "skipped": 0,
     "cancelled": 0,
     "todo": 0,
-    "smoke": "SKIP",
-    "checkExitCode": 1,
+    "smoke": "PASS",
+    "checkExitCode": 0,
     "summaryPresent": true,
     "completed": true,
-    "completePass": false,
-    "failureGroups": [
-      "tests",
-      "chromium-smoke-required"
-    ],
+    "completePass": true,
+    "failureGroups": [],
     "actualFailure": false
   },
   "liveSites": {
@@ -28,9 +25,5 @@
     "tested": 0,
     "failed": 0,
     "reason": "Real-site tests are not run by this offline preparation command."
-  },
-  "preparedPackagePath": "dist/webstore-prepare-jxEDNz/package/Apex-AdBlocker-WebStore-1.0.0.zip",
-  "environmentVariables": {
-    "APEX_DOM_TEST_BROWSER": "/usr/bin/chromium"
   }
 }

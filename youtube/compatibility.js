@@ -17,7 +17,7 @@ export const YOUTUBE_CRITICAL_HOSTS = [
 ];
 
 /** Listy, których filtry YouTube są sprawdzane w trybie strict (domyślnie włączone). */
-export const YOUTUBE_STRICT_LISTS = ['ads', 'privacy', 'security'];
+export const YOUTUBE_STRICT_LISTS = ['ads', 'privacy', 'security', 'pl'];
 
 /**
  * Czy filtr (po parsowaniu domen) dotyczy któregoś z krytycznych hostów YouTube.

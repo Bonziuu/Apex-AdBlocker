@@ -148,6 +148,7 @@ const legacyFiles = {
   'data/ads.scriptlets.json': [{ file: 'scriptlets/ads-0.js', matches: ['*://*.legacy.example/*'], sessionMatches: ['*://*.legacy.fr/*'] }],
   'data/privacy.scriptlets.json': [],
   'data/security.scriptlets.json': [],
+  'data/pl.scriptlets.json': [],
 };
 
 test('zgodność starszych metadanych: utrwalane przed sesyjnymi, obie w jednym wywołaniu', async () => {

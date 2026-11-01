@@ -38,7 +38,7 @@ test('bug 2: po wybudzeniu SW Chrome odrzuca rulesety – zestaw list zostaje st
   try {
     await bg.state.listeners.installed({ reason: 'update' });
     const o = await bg.send({ type: 'options:get' });
-    assert.deepEqual(o.lists.filter((l) => l.enabled).map((l) => l.id), ['ads', 'privacy', 'security']);
+    assert.deepEqual(o.lists.filter((l) => l.enabled).map((l) => l.id), ['ads', 'privacy', 'security', 'pl']);
     assert.equal(bg.store.enabledLists, undefined, 'błąd Chrome nie zapisuje pustego ani innego zestawu');
     const h = await bg.send({ type: 'health:get' });
     assert.equal(h.components.network.status, 'error', 'błąd widoczny w diagnostyce');
@@ -171,7 +171,7 @@ test('wyłączenie strony i pełna ponowna rejestracja zachowują komplet utrwal
     await bg.send({ type: 'options:setDevPerf', enabled: true });
     ours = bg.state.registered.filter((r) => r.id.startsWith('sl-'));
     assertCompleteSet(ours, true);
-    assert.deepEqual([...new Set(ours.map((r) => r.id.split('-')[1]))].sort(), ['ads', 'privacy', 'security']);
+    assert.deepEqual([...new Set(ours.map((r) => r.id.split('-')[1]))].sort(), ['ads', 'pl', 'privacy', 'security']);
     for (const r of ours) assert.deepEqual(r.excludeMatches, ['*://*.news.example/*'], r.id);
     assert.equal(new Set(ours.map((r) => r.id)).size, ours.length, 'bez duplikatów id');
     await bg.send({ type: 'site:toggle', host: 'news.example' });

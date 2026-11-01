@@ -15,7 +15,7 @@ try { chromium = await loadPlaywright(); } catch { chromium = null; }
 let exe = '';
 try { exe = chromium ? chromium.executablePath() : ''; } catch { /* */ }
 const skip = !chromium || !exe || !fs.existsSync(exe) ? 'Playwright/Chromium niedostępne' : false;
-const CORE = ['ads', 'privacy', 'security'];
+const CORE = ['ads', 'pl', 'privacy', 'security'];
 const enabledOf = (o) => o.lists.filter((l) => l.enabled).map((l) => l.id).sort();
 
 test('onboarding w Chromium: instalacja → ochrona od razu → zamknięcie; przeładowanie: bez strony + migracja starych trybów; ustawienia', { skip, timeout: 240_000 }, async () => {

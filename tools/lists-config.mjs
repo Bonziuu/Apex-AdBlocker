@@ -9,23 +9,45 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const LISTS_DIR = path.join(ROOT, 'tools', 'lists');
 
 /**
+ * Licencje katalogów źródłowych w tools/lists/ (provenance). Każdy plik listy, także dołączany
+ * przez !#include, leży w katalogu swojego upstreamu. Wartości to identyfikatory SPDX.
+ * EasyList / EasyPrivacy są podwójnie licencjonowane; Apex korzysta z opcji GPL-3.0-or-later.
+ * Połączone z uBlock filters (GPL-3.0-only) dają w wynikowych plikach ads / privacy GPL-3.0-only.
+ */
+export const SOURCE_LICENSES = Object.freeze({
+  easylist: { spdx: 'GPL-3.0-or-later OR CC-BY-SA-3.0', used: 'GPL-3.0-or-later', upstream: 'EasyList', url: 'https://easylist.to/' },
+  ubo: { spdx: 'GPL-3.0-only', used: 'GPL-3.0-only', upstream: 'uBlock filters (uBlockOrigin/uAssets)', url: 'https://github.com/uBlockOrigin/uAssets' },
+  pl: { spdx: 'CC-BY-NC-SA-4.0', used: 'CC-BY-NC-SA-4.0', upstream: 'Oficjalne Polskie Filtry (Certyficate IT)', url: 'https://github.com/MajkiIT/polish-ads-filter' },
+});
+
+/** Katalog upstreamu dla ścieżki źródła względnej do tools/lists/ (np. 'ubo/filters.txt' → 'ubo'). */
+export function sourceFamily(file) {
+  return String(file).split(/[\\/]/)[0];
+}
+
+/**
  * Listy używane przez Apex AdBlocker – stały zestaw (shared/core-lists.js: CORE_LISTS). Bez list
  * cookies / annoyances (nie są częścią produktu 1.0 i nie trafiają do paczki).
  * "trusted" = źródło uBlock filters (uAssets), któremu wolno używać scriptletów zaufanych
  * (trusted-*), tak jak w uBO.
+ *
+ * Zasada licencyjna: wszystkie źródła jednej listy mają tę samą licencję wynikową (`license`),
+ * więc żaden wygenerowany plik (rules/<id>.json, data/<id>*.json, scriptlets/<id>-*.js) nie łączy
+ * danych na licencjach GPL i CC BY-NC-SA. Polskie Filtry tworzą osobną listę `pl`.
+ * Pilnują tego tests/build/license-separation.test.mjs.
  */
 export const LISTS = [
   {
     id: 'ads',
     name: 'Reklamy',
-    desc: 'EasyList, uBlock filters i Polskie Filtry Reklamowe',
+    desc: 'EasyList i uBlock filters',
     enabled: true,
+    license: 'GPL-3.0-only',
     sources: [
       { file: 'easylist/easylist.txt' },
       { file: 'ubo/filters.txt', trusted: true },
       { file: 'ubo/quick-fixes.txt', trusted: true },
       { file: 'ubo/unbreak.txt', trusted: true },
-      { file: 'pl/adblock.txt' },
     ],
   },
   {
@@ -33,6 +55,7 @@ export const LISTS = [
     name: 'Śledzenie i prywatność',
     desc: 'EasyPrivacy i uBlock filters – Privacy',
     enabled: true,
+    license: 'GPL-3.0-only',
     sources: [
       { file: 'easylist/easyprivacy.txt' },
       { file: 'ubo/privacy.txt', trusted: true },
@@ -43,9 +66,28 @@ export const LISTS = [
     name: 'Złośliwe strony',
     desc: 'uBlock filters – Badware risks (oszustwa, malware)',
     enabled: true,
+    license: 'GPL-3.0-only',
     sources: [{ file: 'ubo/badware.txt', trusted: true }],
   },
+  {
+    id: 'pl',
+    name: 'Polskie Filtry',
+    desc: 'Oficjalne Polskie Filtry (Certyficate IT) – reklamy na polskich stronach',
+    enabled: true,
+    license: 'CC-BY-NC-SA-4.0',
+    sources: [{ file: 'pl/adblock.txt' }],
+  },
 ];
+
+/**
+ * Wszystkie pliki (ścieżki względne do tools/lists/) wczytywane dla listy, łącznie z plikami
+ * dołączanymi przez !#include w aktywnych gałęziach !#if.
+ */
+export function listSourceFiles(list, { dir = LISTS_DIR } = {}) {
+  const seen = new Set();
+  for (const src of list.sources) loadListLines(src.file, { dir, seen });
+  return [...seen].map((abs) => path.relative(dir, abs).split(path.sep).join('/')).sort();
+}
 
 // Środowisko dla dyrektyw !#if – Apex AdBlocker zachowuje się jak uBO Lite (MV3) w Chromium.
 export const ENV = {

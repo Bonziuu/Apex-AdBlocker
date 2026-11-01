@@ -434,7 +434,7 @@
     "message": "Ads"
   },
   "list_ads_desc": {
-    "message": "EasyList, uBlock filters and Polish Ad Filters"
+    "message": "EasyList and uBlock filters"
   },
   "list_privacy_name": {
     "message": "Tracking and privacy"
@@ -447,6 +447,12 @@
   },
   "list_security_desc": {
     "message": "uBlock filters – Badware risks (scams, malware)"
+  },
+  "list_pl_name": {
+    "message": "Polish Filters"
+  },
+  "list_pl_desc": {
+    "message": "Official Polish Filters (Certyficate IT) – ads on Polish websites"
   },
   "list_counts": {
     "message": "$P1$ network filters · $P2$ cosmetic · $P3$ scriptlets",
@@ -1251,7 +1257,7 @@
     "message": "Filter lists"
   },
   "about_lists": {
-    "message": "EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill and contributors, GPLv3), Polish Ad Filters (© MajkiIT, CC BY-NC-SA 4.0). The lists are built into the extension – to refresh them, see the README file."
+    "message": "Ads, Tracking and privacy, Malicious sites: EasyList, EasyPrivacy (© The EasyList authors) and uBlock filters (© Raymond Hill and contributors), GPLv3. Polish Filters: Official Polish Filters (© Certyficate IT and contributors, github.com/MajkiIT/polish-ads-filter), CC BY-NC-SA 4.0. The lists are converted to the Apex AdBlocker format and built into the extension – see THIRD_PARTY_NOTICES.md and LICENSING.md for details."
   },
   "about_stats": {
     "message": "Active: $P1$ network filters, $P2$ cosmetic, $P3$ scriptlets, $P4$ custom.",
