@@ -37,6 +37,66 @@ function hashPackage(dir) {
   return hash.digest('hex');
 }
 
+/**
+ * Stan katalogu: ścieżka względna → rodzaj i zawartość (plik: SHA-256, link: cel, katalog).
+ * Obejmuje każdy wpis (także puste katalogi i dowiązania), żeby wykryć każdą zmianę.
+ */
+export function snapshotTree(dir, entries = null) {
+  const out = new Map();
+  const walk = (abs, rel) => {
+    const st = fs.lstatSync(abs);
+    if (st.isSymbolicLink()) out.set(rel, `symlink:${fs.readlinkSync(abs)}`);
+    else if (st.isDirectory()) {
+      if (rel) out.set(rel, 'dir');
+      for (const name of fs.readdirSync(abs).sort()) walk(path.join(abs, name), rel ? `${rel}/${name}` : name);
+    } else if (st.isFile()) out.set(rel, `file:${crypto.createHash('sha256').update(fs.readFileSync(abs)).digest('hex')}`);
+    else out.set(rel, 'other');
+  };
+  if (entries) { for (const e of entries) if (fs.existsSync(path.join(dir, e))) walk(path.join(dir, e), e); }
+  else walk(dir, '');
+  return out;
+}
+
+/** Katalog, w którym Chrome zapisuje zindeksowane rulesety DNR rozszerzenia rozpakowanego. */
+export const INDEXED_RULESETS_DIR = '_metadata/generated_indexed_rulesets';
+
+/**
+ * Jedyne pliki, które Chrome może utworzyć w kopii rozszerzenia podczas zrzutów: zindeksowane statyczne
+ * rulesety DNR `_rulesetN`, N = 1…liczba rulesetów w manifeście (kolejność rule_resources).
+ */
+export function expectedRuntimeArtifacts(manifest) {
+  const resources = manifest?.declarative_net_request?.rule_resources;
+  const count = Array.isArray(resources) ? resources.length : 0;
+  return new Set(Array.from({ length: count }, (_, i) => `${INDEXED_RULESETS_DIR}/_ruleset${i + 1}`));
+}
+
+/**
+ * Porównuje stan kopii rozszerzenia po działaniu Chromium z migawką sprzed uruchomienia.
+ * Dozwolone są tylko nowe zwykłe pliki z expectedRuntimeArtifacts() i ich katalogi nadrzędne.
+ * Każda zmiana, usunięcie lub inny nowy wpis to błąd. Zwraca listę problemów i znalezione artefakty.
+ */
+export function compareRuntimeSnapshot(before, after, manifest) {
+  return compareSnapshots(before, after, expectedRuntimeArtifacts(manifest));
+}
+
+/** Ścisłe porównanie migawek; `allowed` – pliki, które wolno dodać (domyślnie żadne). */
+export function compareSnapshots(before, after, allowed = new Set()) {
+  const allowedDirs = new Set(allowed.size ? ['_metadata', INDEXED_RULESETS_DIR] : []);
+  const problems = [];
+  const artifacts = [];
+  for (const [rel, state] of before) {
+    if (!after.has(rel)) problems.push(`usunięto: ${rel}`);
+    else if (after.get(rel) !== state) problems.push(`zmieniono: ${rel}`);
+  }
+  for (const [rel, state] of after) {
+    if (before.has(rel)) continue;
+    if (allowed.has(rel) && state.startsWith('file:')) artifacts.push(rel);
+    else if (allowedDirs.has(rel) && state === 'dir') continue;
+    else problems.push(`nieoczekiwany nowy wpis: ${rel}`);
+  }
+  return { problems, artifacts: artifacts.sort() };
+}
+
 function outputIsOwned(outDir) {
   if (!fs.existsSync(outDir)) return;
   if (!fs.lstatSync(outDir).isDirectory()) throw new Error(`Odmowa zastąpienia ścieżki: ${outDir}`);
@@ -107,6 +167,12 @@ export async function captureScreenshots({
     const problems = validatePackage(extDir);
     if (problems.length) throw new Error(`Niepoprawna paczka: ${problems.join('; ')}`);
     const manifest = JSON.parse(fs.readFileSync(path.join(extDir, 'manifest.json'), 'utf8'));
+    // Przed uruchomieniem Chromium: kopia musi być bajtowo zgodna ze źródłem (te same wpisy paczki).
+    const sourceBefore = snapshotTree(extensionDir, EXTENSION_ENTRIES);
+    const copyBefore = snapshotTree(extDir);
+    const copyMismatch = compareSnapshots(sourceBefore, copyBefore).problems;
+    if (copyMismatch.length) throw new Error(`Kopia paczki różni się od źródła: ${copyMismatch.slice(0, 5).join('; ')}`);
+    const sourceContentsSha256 = hashPackage(extDir);
     context = await chromium.launchPersistentContext(path.join(work, 'profile'), {
       headless: true, channel: 'chromium', viewport: VIEWPORT, deviceScaleFactor: 1, locale: browserLocale, colorScheme: 'light',
       env: { ...process.env, LANGUAGE: locale, LANG: locale === 'pl' ? 'pl_PL.UTF-8' : 'en_US.UTF-8' },
@@ -165,13 +231,19 @@ export async function captureScreenshots({
     const metadata = {
       generator: GENERATOR, generatedAt: new Date().toISOString(), product: manifest.name, extensionVersion: manifest.version,
       provenance: 'actual-extension-in-temporary-profile', mockedChromeApi: false, externalSitesVisited: false,
-      sourceContentsSha256: hashPackage(extDir), viewport: VIEWPORT, locale: browserLocale, colorScheme: 'light',
+      sourceContentsSha256, viewport: VIEWPORT, locale: browserLocale, colorScheme: 'light',
       exampleUserFilter: exampleFilter, sync: Object.fromEntries(SYNC_STEPS.map((step) => [step, health.sync[step].status])), images,
       scope: 'Screenshots document the actual extension UI. They do not prove advertising effectiveness on external websites.',
     };
-    fs.writeFileSync(path.join(staged, 'metadata.json'), JSON.stringify(metadata, null, 2) + '\n');
     await context.close();
     context = null;
+    // Po zamknięciu Chromium: w kopii wolno pojawić się wyłącznie zindeksowanym rulesetom DNR z manifestu.
+    const integrity = compareRuntimeSnapshot(copyBefore, snapshotTree(extDir), manifest);
+    if (integrity.problems.length) throw new Error(`Kontrola integralności paczki nie przeszła: ${integrity.problems.slice(0, 10).join('; ')}`);
+    const sourceChanges = compareSnapshots(sourceBefore, snapshotTree(extensionDir, EXTENSION_ENTRIES)).problems;
+    if (sourceChanges.length) throw new Error(`Źródłowa paczka zmieniła się podczas zrzutów: ${sourceChanges.slice(0, 5).join('; ')}`);
+    metadata.integrity = { status: 'PASS', checked: 'byte-for-byte snapshot before and after Chromium', allowedRuntimeArtifacts: integrity.artifacts };
+    fs.writeFileSync(path.join(staged, 'metadata.json'), JSON.stringify(metadata, null, 2) + '\n');
     if (fs.existsSync(outDir)) fs.renameSync(outDir, backup);
     try { fs.renameSync(staged, outDir); } catch (error) {
       if (fs.existsSync(backup)) {
