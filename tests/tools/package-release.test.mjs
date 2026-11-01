@@ -53,6 +53,11 @@ test('package:release: gotowy ZIP użytkownika + stała nazwa + SHA256', () => {
     assert.ok(zip.has('START-HERE.txt'));
     assert.ok(zip.has('Apex-AdBlocker/manifest.json'));
     assert.ok(zip.has('Apex-AdBlocker/THIRD_PARTY_NOTICES.md'));
+    for (const f of ['LICENSE', 'LICENSING.md', 'LICENSES/GPL-3.0.txt', 'rules/pl.json', 'data/pl.scriptlets.json', 'scriptlets/pl-0.js', 'scriptlets/ads-x-pl.js']) {
+      assert.ok(zip.has(`Apex-AdBlocker/${f}`), f);
+    }
+    const manifest = JSON.parse(zip.get('Apex-AdBlocker/manifest.json').toString('utf8'));
+    assert.deepEqual(manifest.declarative_net_request.rule_resources.map((r) => r.id), ['ads', 'privacy', 'security', 'pl']);
     assert.match(zip.get('START-HERE.txt').toString('utf8'), /chrome:\/\/extensions/);
     assert.match(zip.get('START-HERE.txt').toString('utf8'), /nie usuwaj ani nie przenoś folderu Apex-AdBlocker/i);
     assert.equal(zip.get('START-HERE.txt').toString('utf8'), startHereText(r.version));

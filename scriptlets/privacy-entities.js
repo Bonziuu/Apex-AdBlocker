@@ -24,7 +24,7 @@ if (!installed) {
   installed = new Set();
   Object.defineProperty(globalThis, installedKey, { value: installed, writable: false, configurable: false });
 }
-const shardKey = "scriptlets/privacy-entities.js:0bdf36aff894899dca9cec973f0a508cde6afb8b86b54ee332197b632570f033";
+const shardKey = "scriptlets/privacy-entities.js:10d2cfea2afbb14768babb1d4b3a9fa8360245f843c465b86ca72dc013db1deb";
 if (installed.has(shardKey)) return;
 installed.add(shardKey);
 const CALLS = [["set-constant","Navigator.prototype.globalPrivacyControl","false"],["set-constant","navigator.globalPrivacyControl","false"],["set-constant","rwt","noopFunc"],["set-attr","c-wiz[data-p] [data-query] a[target=\"_blank\"][role=\"link\"]","rlhc","1"],["set-local-storage-item","adshield-analytics-uuid","$remove$"],["set-local-storage-item","/_fa_bGFzdF9iZmFfYXQ=$/","$remove$"],["set-local-storage-item","/_fa_dXVpZA==$/","$remove$"],["set-local-storage-item","/_fa_Y2FjaGVfaXNfYmxvY2tpbmdfYWNjZXB0YWJsZV9hZHM=$/","$remove$"],["set-local-storage-item","/_fa_Y2FjaGVfaXNfYmxvY2tpbmdfYWRz$/","$remove$"],["set-local-storage-item","/_fa_Y2FjaGVfYWRibG9ja19jaXJjdW12ZW50X3Njb3Jl$/","$remove$"],["remove-cookie","kt_ips"],["set-constant","send_gravity_event","noopFunc"],["set-constant","send_recommendation_event","noopFunc"],["abort-on-property-write","CoinNebula"]];
@@ -1984,6 +1984,23 @@ const resolve = globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')];
 if (typeof resolve === 'function') return resolve(hostname);
 return hostname.split('.').map((_, i, labels) => labels.slice(i).join('.'));
 }
+/**
+* Dołącza wyjątki #@#+js zarejestrowane przez INNE włączone listy (pliki scriptlets/<lista>-x-<id>.js,
+* wstrzykiwane przed plikami tej listy). Dane pozostają w plikach listy źródłowej – tu są tylko łączone
+* w pamięci strony. Brak rejestru = brak wyjątków z innych list.
+*/
+function withCrossListExceptions(except, listId) {
+let extra;
+try { extra = globalThis[Symbol.for('ApexAdBlocker.crossListScriptletExceptions.v1')]?.[listId]; } catch { /* */ }
+if (!extra || typeof extra !== 'object') return except;
+const merged = Object.assign(Object.create(null), except);
+for (const host of Object.keys(extra)) {
+const keys = extra[host];
+if (!Array.isArray(keys)) continue;
+merged[host] = merged[host] ? [...merged[host], ...keys] : [...keys];
+}
+return merged;
+}
 function runForHost(calls, hosts, except) {
 if (typeof globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')] !== 'function'
 && [...Object.keys(hosts), ...Object.keys(except)].some((h) => h.endsWith('.*'))) return;
@@ -2010,6 +2027,6 @@ currentScriptlet = call[0];
 try { fn(...call.slice(1)); } catch { /* scriptlet nie może zepsuć strony */ }
 }
 }
-runForHost(CALLS, HOSTS, EXCEPT);
+runForHost(CALLS, HOSTS, withCrossListExceptions(EXCEPT, "privacy"));
 })();
 })();

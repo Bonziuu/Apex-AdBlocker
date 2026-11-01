@@ -1,10 +1,13 @@
 // Apex AdBlocker – stały zestaw list ochrony (jedno źródło prawdy).
 //
-// Apex AdBlocker 1.0 nie ma trybów ochrony ani wyboru list: zawsze działają te trzy listy.
+// Apex AdBlocker 1.0 nie ma trybów ochrony ani wyboru list: zawsze działają te listy.
 // Użytkownik konfiguruje tylko wyłączone strony i własne filtry (oraz „Ukryj element”).
 // Budowanie (tools/lists-config.mjs) i działanie rozszerzenia (background.js) korzystają z tej stałej.
+// `pl` (Polskie Filtry, CC BY-NC-SA 4.0) jest osobną listą wyłącznie ze względów licencyjnych:
+// jej dane nie mogą trafiać do tych samych plików co listy GPL. Działa zawsze, jak pozostałe.
+// Zestaw włączonych list nie jest zapisywany w storage, więc dodanie listy nie wymaga migracji.
 
-export const CORE_LISTS = Object.freeze(['ads', 'privacy', 'security']);
+export const CORE_LISTS = Object.freeze(['ads', 'privacy', 'security', 'pl']);
 
 /** Czy zestaw list (kolejność bez znaczenia) to dokładnie stały zestaw. */
 export function isCoreSet(lists) {

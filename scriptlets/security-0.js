@@ -1,4 +1,5 @@
-/* Apex AdBlocker – scriptlety listy "Złośliwe strony" (część 1/1). Plik generowany przez tools/build.mjs. */
+/* Apex AdBlocker – scriptlety listy "Złośliwe strony" (część 1/1). Plik generowany przez tools/build.mjs.
+   Dane CALLS/HOSTS/EXCEPT: filtry listy "Złośliwe strony" przetworzone do formatu Apex AdBlocker, licencja GPL-3.0-only. Kod biblioteki scriptletów: Apex AdBlocker, MIT. Źródła i licencje: THIRD_PARTY_NOTICES.md. */
 (function () {
 'use strict';
 
@@ -8,7 +9,7 @@ if (!installed) {
   installed = new Set();
   Object.defineProperty(globalThis, installedKey, { value: installed, writable: false, configurable: false });
 }
-const shardKey = "scriptlets/security-0.js:c23589959cc3f6ab4696086f9b75e85b86a08886ad61e293b920c08950061ef2";
+const shardKey = "scriptlets/security-0.js:972c3859a66a6d61f244ca40b79a3a769dde6c87df2aa5723de2d9f1d202bd98";
 if (installed.has(shardKey)) return;
 installed.add(shardKey);
 const CALLS = [["prevent-addEventListener","DOMContentLoaded","fullscreenEnabled"],["prevent-addEventListener","beforeunload","/[Ww]orker/"],["prevent-addEventListener","mousemove","loadSecret"],["remove-node-text","script","TextDecoder"],["remove-node-text","script","/document\\.currentScript\\.remove|0x0/"],["remove-node-text","script","String.fromCharCode"],["abort-current-script","fetch","_0x","/^data:/"],["abort-on-property-write","ai_front"],["abort-current-script","document.createElement",".onerror"],["abort-current-script","String.prototype.toLowerCase","Contract"],["remove-node-text","script","randomUUID"],["abort-current-script","atob","Uint8Array"],["remove-node-text","script","(self);"],["abort-current-script","atob","new"],["noeval-if","tigervip2"],["abort-current-script","atob","new Function(atob("],["abort-current-script","WebSocket","event.data"],["abort-current-script","open","executeCode"],["noeval-if","_0x"]];
@@ -1968,6 +1969,23 @@ const resolve = globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')];
 if (typeof resolve === 'function') return resolve(hostname);
 return hostname.split('.').map((_, i, labels) => labels.slice(i).join('.'));
 }
+/**
+* Dołącza wyjątki #@#+js zarejestrowane przez INNE włączone listy (pliki scriptlets/<lista>-x-<id>.js,
+* wstrzykiwane przed plikami tej listy). Dane pozostają w plikach listy źródłowej – tu są tylko łączone
+* w pamięci strony. Brak rejestru = brak wyjątków z innych list.
+*/
+function withCrossListExceptions(except, listId) {
+let extra;
+try { extra = globalThis[Symbol.for('ApexAdBlocker.crossListScriptletExceptions.v1')]?.[listId]; } catch { /* */ }
+if (!extra || typeof extra !== 'object') return except;
+const merged = Object.assign(Object.create(null), except);
+for (const host of Object.keys(extra)) {
+const keys = extra[host];
+if (!Array.isArray(keys)) continue;
+merged[host] = merged[host] ? [...merged[host], ...keys] : [...keys];
+}
+return merged;
+}
 function runForHost(calls, hosts, except) {
 if (typeof globalThis[Symbol.for('ApexAdBlocker.entityHostKeys.v1')] !== 'function'
 && [...Object.keys(hosts), ...Object.keys(except)].some((h) => h.endsWith('.*'))) return;
@@ -1994,5 +2012,5 @@ currentScriptlet = call[0];
 try { fn(...call.slice(1)); } catch { /* scriptlet nie może zepsuć strony */ }
 }
 }
-runForHost(CALLS, HOSTS, EXCEPT);
+runForHost(CALLS, HOSTS, withCrossListExceptions(EXCEPT, "security"));
 })();

@@ -1,18 +1,18 @@
 {
   "generator": "tools/webstore-prepare.mjs",
-  "generatedAt": "2026-10-30T22:07:14.072Z",
+  "generatedAt": "2026-11-01T19:41:02.302Z",
   "scope": "Offline preparation, actual strict-check outcomes and genuine captures only; no submission or Chrome Web Store approval.",
   "package": {
     "version": "1.0.0",
-    "path": "dist/Apex-AdBlocker-WebStore-1.0.0.zip",
-    "extensionDir": "dist/Apex-AdBlocker",
-    "sha256": "f58affb6dc6f3bbaa866ac5a81cf923ba106eb92e029b66da9b3980358589588"
+    "path": "dist/webstore-prepare-03eAJD/package/Apex-AdBlocker-WebStore-1.0.0.zip",
+    "extensionDir": "dist/webstore-prepare-03eAJD/package/Apex-AdBlocker",
+    "sha256": "48a3f83b785c708754ad0a5330f91d744272bc73803b6f82ef96c7e1afd34451"
   },
   "evidenceFile": "docs/webstore/validation-evidence.json",
   "checkLog": "dist/webstore-validation/check.log",
   "screenshots": {
-    "status": "NOT_RUN",
-    "reason": "Extension smoke result is SKIP; genuine captures require PASS."
+    "status": "FAIL",
+    "error": "Screenshot metadata does not prove a genuine capture of this package"
   },
   "technical": {
     "ok": true,
@@ -54,18 +54,34 @@
     "hostPermissions": [
       "<all_urls>"
     ],
-    "packageSha256": "f58affb6dc6f3bbaa866ac5a81cf923ba106eb92e029b66da9b3980358589588",
-    "sourceContentsSha256": "495380f524c48a7a1672465452325ad37ba7b5acb90bd84c2899fdff3cd56b56"
+    "packageSha256": "48a3f83b785c708754ad0a5330f91d744272bc73803b6f82ef96c7e1afd34451",
+    "sourceContentsSha256": "2a04ffe27b5f40d17ec9ffd6078ddffd8aaf06c6a16c633eba61217c9e367b32",
+    "listLicenses": [
+      {
+        "id": "ads",
+        "license": "GPL-3.0-only"
+      },
+      {
+        "id": "privacy",
+        "license": "GPL-3.0-only"
+      },
+      {
+        "id": "security",
+        "license": "GPL-3.0-only"
+      },
+      {
+        "id": "pl",
+        "license": "CC-BY-NC-SA-4.0"
+      }
+    ]
   },
   "publicationReady": false,
   "blockers": [
     "1–5 genuine extension screenshots at 1280×800 or 640×400 are missing (UI fixtures do not qualify)",
-    "complete browser test evidence and extension smoke PASS are missing",
     "representative real-site validation evidence is missing",
-    "Strict check is incomplete or failed (exit 1, smoke SKIP)"
+    "additional distribution permission for Chrome Web Store from the authors of filter list \"pl\" (CC-BY-NC-SA-4.0): pending upstream response",
+    "Genuine screenshot capture failed: Screenshot metadata does not prove a genuine capture of this package"
   ],
   "exitCode": 2,
-  "previousOutputsBackupDir": "dist/webstore-prepare-jxEDNz",
-  "preparedPackagePath": "dist/webstore-prepare-jxEDNz/package/Apex-AdBlocker-WebStore-1.0.0.zip",
-  "retainedCopyNote": "ZIP copied byte-for-byte from preparedPackagePath to the stable download path; no rebuild followed the recorded check."
+  "previousOutputsBackupDir": "dist/webstore-prepare-03eAJD"
 }

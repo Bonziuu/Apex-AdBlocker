@@ -1,6 +1,6 @@
 # Pochodzenie i licencje list filtrów (audyt provenance)
 
-Stan na: 2026-10-26, `main` = `07ffd5eec4849f727f122b04bf712a379971f7ea`.
+Stan na: 2026-10-26, `main` = `07ffd5eec4849f727f122b04bf712a379971f7ea` (snapshoty list). Struktura list zaktualizowana 2026-11-01: Polskie Filtry wydzielone do osobnej listy `pl` (snapshoty bez zmian).
 
 Ten dokument opisuje fakty ustalone z repozytorium i z upstreamów. **Nie jest opinią prawną.** Pozycje oznaczone `NEEDS LEGAL REVIEW` wymagają oceny prawnika przed publicznym wydaniem. Skrócona lista uznań autorstwa jest w [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md).
 
@@ -15,23 +15,27 @@ Statusy:
 2. `tools/build.mjs` wczytuje źródła z `tools/lists-config.mjs` (`LISTS`), rozwija `!#include` i `!#if` (środowisko jak uBO Lite / MV3: `ext_ublock`, `ext_ubol` = prawda; `env_mobile`, `adguard` = fałsz) i kompiluje je do plików rozszerzenia.
 3. Paczka (`tools/package-dev.mjs`) zawiera **tylko wygenerowane pliki**, nie surowe listy (`tools/` nie wchodzi do paczki).
 
-Wygenerowane pliki na listę Apex AdBlocker (`<id>` = `ads`, `privacy`, `security`):
+Wygenerowane pliki na listę Apex AdBlocker (`<id>` = `ads`, `privacy`, `security`, `pl`):
 
 | Plik | Zawartość |
 |---|---|
 | `rules/<id>.json` | reguły `declarativeNetRequest` z filtrów sieciowych |
 | `data/<id>.json` | filtry kosmetyczne (selektory, procedury) |
 | `data/<id>.allow.json` | wyjątki |
-| `data/<id>.scriptlets.json` + `scriptlets/<id>-N.js` | scriptlety: własna biblioteka Apex AdBlocker (`tools/scriptlets-lib.js`) + argumenty filtrów `##+js(...)` z list |
-| `data/lists.json`, `data/badfilter-cross.json`, `data/scriptlet-compat.json`, `data/youtube-compat.json` | statystyki i metadane kompilacji (liczby, ID reguł; bez treści filtrów) |
+| `data/<id>.scriptlets.json` + `scriptlets/<id>-N.js` | scriptlety: własna biblioteka Apex AdBlocker (`tools/scriptlets-lib.js`) + argumenty filtrów `##+js(...)` tej listy |
+| `scriptlets/<id>-x-<cel>.js` | wyjątki `#@#+js` listy `<id>` dotyczące scriptletów listy `<cel>` (dane listy `<id>`); obecnie tylko `ads-x-pl.js` |
+| `data/lists.json`, `data/badfilter-cross.json`, `data/scriptlet-compat.json`, `data/youtube-compat.json` | statystyki i metadane kompilacji (liczby, ID reguł, licencja i pliki źródłowe każdej listy; bez treści filtrów) |
 
 **Łączenie źródeł w jednym artefakcie** (każdy plik powyżej dla danej listy zawiera wszystkie jej źródła razem):
 
 | Lista Apex AdBlocker | Źródła połączone w jednym zestawie plików | Licencje w jednym artefakcie |
 |---|---|---|
-| `ads` | EasyList + uBlock filters (filters, quick-fixes, unbreak) + Polskie Filtry | GPL-3.0+ / CC BY-SA 3.0+ (wybór) + GPL-3.0 + **CC BY-NC-SA 4.0** |
-| `privacy` | EasyPrivacy + uBlock filters – Privacy (z Resource abuse) | GPL-3.0+ / CC BY-SA 3.0+ (wybór) + GPL-3.0 |
-| `security` | uBlock filters – Badware risks | GPL-3.0 |
+| `ads` | EasyList + uBlock filters (filters, quick-fixes, unbreak) | GPL-3.0+ (wybrana opcja EasyList) + GPL-3.0 → GPL-3.0-only |
+| `privacy` | EasyPrivacy + uBlock filters – Privacy (z Resource abuse) | GPL-3.0+ (wybrana opcja EasyList) + GPL-3.0 → GPL-3.0-only |
+| `security` | uBlock filters – Badware risks | GPL-3.0-only |
+| `pl` | Polskie Filtry (adblock, adblock_suplement, adblock_ublock) | CC BY-NC-SA 4.0 |
+
+Do wersji 1.0.0 Polskie Filtry były kompilowane razem z EasyList i uBlock filters w liście `ads`, więc pliki `ads` łączyły GPL i CC BY-NC-SA. Od wydzielenia listy `pl` (2026-11-01) żaden wygenerowany plik nie łączy tych licencji. Wpływ list na siebie nawzajem ogranicza się do mechanizmów czasu działania, które nie przenoszą danych między plikami: `$badfilter` z `ads` wyłącza wskazane reguły `pl` po ID (`data/badfilter-cross.json`) i wskazane wyjątki stron `pl` (`crossHide` w `data/pl.json`), a wyjątki `#@#+js` z `ads` dla scriptletów `pl` są w osobnym pliku listy `ads` (`scriptlets/ads-x-pl.js`, GPL). Licencje źródeł są zapisane w `tools/lists-config.mjs` (`SOURCE_LICENSES`, pole `license` listy), a rozdzielenie sprawdza `tests/build/license-separation.test.mjs` (build każdej listy z samych jej źródeł daje bajtowo te same pliki co pełny build). `tests/build/split-equivalence.test.mjs` sprawdza, że `ads` + `pl` działają jak wspólna lista z v1.0.0.
 
 ## 2. Źródła używane przez build
 
@@ -93,7 +97,7 @@ Uwagi:
 
 ### 2.3 Polskie Filtry (Official Polish Filters, MajkiIT / Certyficate IT) – `NEEDS LEGAL REVIEW`
 
-> **Klauzula NonCommercial.** Licencja CC BY-NC-SA 4.0 zabrania korzystania w celach komercyjnych i wymaga share-alike dla materiału adaptowanego. Te dane są wkompilowane w artefakty listy `ads` razem z treściami GPL-3.0.
+> **Klauzula NonCommercial.** Licencja CC BY-NC-SA 4.0 zabrania korzystania w celach komercyjnych i wymaga share-alike dla materiału adaptowanego. Te dane są kompilowane wyłącznie do plików listy `pl` (bez treści GPL). Dodatkowa zgoda autorów na dystrybucję w Chrome Web Store: oczekiwana (`docs/licensing/README.md`).
 
 | | |
 |---|---|
@@ -106,14 +110,14 @@ Uwagi:
 
 | Snapshot (`tools/lists/pl/`) | Rola w buildzie | Lista Apex AdBlocker | Wersja (nagłówek) | Git blob | Commit upstream (treść identyczna od) | SHA-256 |
 |---|---|---|---|---|---|---|
-| `adblock.txt` | źródło | `ads` | `Version: 20261012001`; `Last modified: 20 November 2026` (sic) | `a87d2107f8e615a046d45c3e3357e7c6262c6356` | `b5eb4000fb6b0d297d7abd05203db07e9877b2fe` (2026-10-20) | `15a72737099f9335c4129f6b36318ce18ebd02a41ce27e65d5ead1de953880ad` |
-| `adblock_suplement.txt` | `!#include` (bezwarunkowo) | `ads` | `Version: 2026041301` | `4e9923b178f10aaa86b8284caf4947bf066c9f8f` | `9d42f99a95eb13e2c525d0f2284f9c4dd89b8f3d` (2026-07-20) | `8744c5ba3e8587ef0ab7c1c4a09eec2ec7bbf2dd1724a2900b9936fc4d067ea5` |
-| `adblock_ublock.txt` | `!#include` pod `!#if ext_ublock` (prawda) | `ads` | `Version: 2026081501` | `f49cc6403f52dcdc3c5a59234c11ebbfc4b75327` | `99ae8ae93d3db9276e00faff40ccf658b677219f` (2026-09-20) | `844a87639f3b05be48cdcaef987f6b26129de4efa5fcf00ee3aeffbf106c56a3` |
+| `adblock.txt` | źródło | `pl` | `Version: 20261012001`; `Last modified: 20 November 2026` (sic) | `a87d2107f8e615a046d45c3e3357e7c6262c6356` | `b5eb4000fb6b0d297d7abd05203db07e9877b2fe` (2026-10-20) | `15a72737099f9335c4129f6b36318ce18ebd02a41ce27e65d5ead1de953880ad` |
+| `adblock_suplement.txt` | `!#include` (bezwarunkowo) | `pl` | `Version: 2026041301` | `4e9923b178f10aaa86b8284caf4947bf066c9f8f` | `9d42f99a95eb13e2c525d0f2284f9c4dd89b8f3d` (2026-07-20) | `8744c5ba3e8587ef0ab7c1c4a09eec2ec7bbf2dd1724a2900b9936fc4d067ea5` |
+| `adblock_ublock.txt` | `!#include` pod `!#if ext_ublock` (prawda) | `pl` | `Version: 2026081501` | `f49cc6403f52dcdc3c5a59234c11ebbfc4b75327` | `99ae8ae93d3db9276e00faff40ccf658b677219f` (2026-09-20) | `844a87639f3b05be48cdcaef987f6b26129de4efa5fcf00ee3aeffbf106c56a3` |
 | `adblock_adguard.txt` | `!#include` pod `!#if adguard` (fałsz) – **nie kompilowany** | – | `Version: 2026012501` | `63d74d7b80cfd0326a544f40ea235e9d71cc6bb2` | `9d42f99a95eb13e2c525d0f2284f9c4dd89b8f3d` (2026-07-20) | `d6319c00e7e417784fbdecb476e37cd1ea7e9b5a14022ba8713a7fe4ad2a92e5` |
 
 Uwagi:
 - Nagłówek `adblock.txt` podaje `Last modified: 20 November 2026`, a `Version: 20261012001` i linia „aktualizacja: wt, 20 pazdziernika 2026”. Daty są niespójne w samym upstreamie; zapisane dosłownie.
-- README i strona Opcji Apex AdBlocker piszą „© MajkiIT”, a nagłówek listy „Copyright © 2026 Certyficate IT”. Do ujednolicenia po przeglądzie prawnym (zmiana tekstu UI nie jest częścią tego audytu).
+- Uznanie autorstwa w Opcjach (O wtyczce) i w `THIRD_PARTY_NOTICES.md` podaje autora zgodnie z nagłówkiem listy: „© Certyficate IT i współtwórcy”, z adresem upstreamu i licencją (wcześniej „© MajkiIT”).
 - W ramach tego audytu nie analizowano treści reguł Polskich Filtrów; sprawdzono wyłącznie metadane, nagłówki, dokumenty licencyjne i hashe.
 
 ## 3. Snapshoty w repozytorium, których build nie używa
@@ -137,10 +141,10 @@ Te pliki są nadal redystrybuowane w repozytorium (obecnie prywatnym).
 
 `NEEDS LEGAL REVIEW`:
 1. **Polskie Filtry – CC BY-NC-SA 4.0 (NonCommercial + ShareAlike).** Czy darmowa dystrybucja Apex AdBlocker (ewentualnie w Chrome Web Store) mieści się w „NonCommercial”, oraz czy skompilowane reguły DNR / kosmetyka / argumenty scriptletów to „Adapted Material” podlegający share-alike.
-2. **Mieszanie licencji w jednym artefakcie listy `ads`:** EasyList (GPL-3.0+ albo CC BY-SA 3.0+), uBlock filters (GPL-3.0) i Polskie Filtry (CC BY-NC-SA 4.0) w tych samych plikach `rules/ads.json`, `data/ads*.json`, `scriptlets/ads-*.js`. Creative Commons obecnie nie wskazuje żadnej licencji spoza CC jako BY-NC-SA Compatible License dla BY-NC-SA 4.0 (https://creativecommons.org/share-your-work/licensing-considerations/compatible-licenses). Skutki dla mieszanych artefaktów: `NEEDS LEGAL REVIEW`.
+2. ~~**Mieszanie licencji w jednym artefakcie listy `ads`:** EasyList (GPL-3.0+ albo CC BY-SA 3.0+), uBlock filters (GPL-3.0) i Polskie Filtry (CC BY-NC-SA 4.0) w tych samych plikach `rules/ads.json`, `data/ads*.json`, `scriptlets/ads-*.js`. Creative Commons obecnie nie wskazuje żadnej licencji spoza CC jako BY-NC-SA Compatible License dla BY-NC-SA 4.0 (https://creativecommons.org/share-your-work/licensing-considerations/compatible-licenses). Skutki dla mieszanych artefaktów: `NEEDS LEGAL REVIEW`.~~ – rozwiązane technicznie przez wydzielenie listy `pl` (sekcja 1). Pozostaje pkt 1 (NonCommercial / Chrome Web Store).
 3. **GPL-3.0 / CC BY-SA a dystrybucja paczki.**
    - *Treść licencji (fakt):* GPL-3.0 zawiera obowiązki dotyczące conveyance covered works, w tym warunki dotyczące licencji i Corresponding Source; CC BY-SA zawiera warunki uznania autorstwa i share-alike.
-   - *Stan paczki (fakt):* od wydania 1.0.0 paczka zawiera `THIRD_PARTY_NOTICES.md` (autorzy, źródła, licencje z adresami, informacja o zmianach i odesłanie do postanowień licencji o wyłączeniu gwarancji); uznanie autorstwa jest też w zakładce „O wtyczce” w Opcjach. Aktualna paczka zawiera pełny tekst GPLv3 (`LICENSES/GPL-3.0.txt`) oraz MPL 2.0 (`shared/public-suffix-LICENSE.txt`); dla Creative Commons podano adresy tekstów licencji. Nie oznacza to rozstrzygnięcia kwestii zgodności mieszanych artefaktów.
+   - *Stan paczki (fakt):* od wydania 1.0.0 paczka zawiera `THIRD_PARTY_NOTICES.md` (autorzy, źródła, licencje z adresami, informacja o zmianach i odesłanie do postanowień licencji o wyłączeniu gwarancji); uznanie autorstwa jest też w zakładce „O wtyczce” w Opcjach. Aktualna paczka zawiera pełny tekst GPLv3 (`LICENSES/GPL-3.0.txt`) oraz MPL 2.0 (`shared/public-suffix-LICENSE.txt`); dla Creative Commons podano adresy tekstów licencji. Od wydzielenia listy `pl` `THIRD_PARTY_NOTICES.md` zawiera mapę „plik wynikowy → źródła → licencja”, jawną licencję wygenerowanych danych, opis konwersji, daty snapshotów i adres źródła odpowiadającego wersji (tag `vX.Y.Z`); pliki scriptletów mają licencję w nagłówku. Nie rozstrzyga to zakresu obowiązków GPL dla wygenerowanych artefaktów.
    - *Pytanie otwarte (`NEEDS LEGAL REVIEW`):* czy wygenerowane artefakty Apex AdBlocker (reguły DNR, dane kosmetyczne, pliki scriptletów) są covered / modified work w rozumieniu tych licencji i jakie obowiązki z tego wynikają. Ten dokument tego nie rozstrzyga.
 4. **Licencja kodu Apex AdBlocker:** dodano `LICENSE` (MIT wyłącznie dla oryginalnego kodu i dokumentacji Konrada Woźniaka), z wyłączeniem cudzych danych i materiałów pochodnych. Zakres oraz warunki opcjonalnego wsparcia opisuje `LICENSING.md`. MIT nie rozstrzyga zgodności całej dystrybucji. Czy połączenie własnego kodu z treściami GPL-3.0 (scriptlety łączą bibliotekę Apex AdBlocker z argumentami filtrów w jednym pliku) tworzy covered work i jakie ma to skutki – `NEEDS LEGAL REVIEW`.
 5. ~~Commitowana paczka `download/Apex-AdBlocker-dev.zip` była nieaktualna~~ (0.3.4-dev z 2026-10-25, z artefaktami list `cookies` i `annoyances`) – usunięta z repozytorium; ZIP tworzy się tylko lokalnie przez `npm run package:dev` (ignorowany przez Git).

@@ -145,6 +145,8 @@ Kompilacja i walidacja poprzedzają trwały zapis. Zmiana ustawień jest potwier
 
 ## Listy filtrów
 
+Apex AdBlocker ma stały zestaw czterech list, każda z osobnym statycznym rulesetem DNR i własnymi plikami danych: `ads` (EasyList, uBlock filters), `privacy` (EasyPrivacy, uBlock filters – Privacy), `security` (uBlock filters – Badware risks) i `pl` (Oficjalne Polskie Filtry). Wszystkie są zawsze włączone; zestaw nie jest zapisywany w ustawieniach (`shared/core-lists.js`). Listy są kompilowane niezależnie, więc pliki jednej listy nie zawierają danych innej (osobne licencje). Zależności między listami są stosowane w czasie działania: `$badfilter` jednej listy wyłącza reguły innej po ID (`updateStaticRules`, `data/badfilter-cross.json`) i jej wyjątki stron `$generichide` / `$elemhide` / `$document` (pole `crossHide` w `data/<lista>.json`), ogólne wyjątki kosmetyczne są łączone w workerze, a wyjątki `#@#+js` jednej listy dla scriptletów innej są osobnym plikiem tej listy (`scriptlets/<lista>-x-<cel>.js`), wstrzykiwanym przed scriptletami listy docelowej, gdy obie listy są włączone.
+
 Informacje o upstreamach, snapshotach i licencjach są utrzymywane osobno:
 
 - [../THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md),

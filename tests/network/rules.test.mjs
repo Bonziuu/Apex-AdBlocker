@@ -82,6 +82,7 @@ test('$badfilter między listami wskazuje istniejące reguły docelowe', () => {
 test('pliki scriptletów zawierają wyłącznie obsługiwane wywołania', async () => {
   const { SCRIPTLET_SPECS } = await import('../../shared/scriptlet-specs.js');
   for (const f of fs.readdirSync(path.join(ROOT, 'scriptlets'))) {
+    if (/-x-/.test(f)) continue; // wyjątki #@#+js innych list (bez CALLS) – tests/build/cross-list-exceptions.test.mjs
     const js = fs.readFileSync(path.join(ROOT, 'scriptlets', f), 'utf8');
     const calls = JSON.parse(/const CALLS = (.*);\n/.exec(js)[1]);
     for (const c of calls) {

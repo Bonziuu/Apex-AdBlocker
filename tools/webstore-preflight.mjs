@@ -144,6 +144,12 @@ export function validateStorePackage({ extensionDir, sourceDir, zipPath } = {}) 
         localFile(extensionDir, shard.file);
         if (shard.jsBefore !== undefined && !Array.isArray(shard.jsBefore)) throw new Error(`invalid jsBefore in ${shard.file}`);
         for (const prerequisite of shard.jsBefore || []) localFile(extensionDir, prerequisite);
+        // wyjątki #@#+js innych list (scriptlets/<lista>-x-<lista>.js) – lista źródłowa musi istnieć
+        if (shard.crossBefore !== undefined && !Array.isArray(shard.crossBefore)) throw new Error(`invalid crossBefore in ${shard.file}`);
+        for (const cross of shard.crossBefore || []) {
+          if (!rulesets.some((r) => r.id === cross?.list)) throw new Error(`unknown crossBefore list in ${shard.file}`);
+          localFile(extensionDir, cross.file);
+        }
       }
     }
   });
@@ -179,7 +185,8 @@ export function validateStorePackage({ extensionDir, sourceDir, zipPath } = {}) 
   try { sourceContentsSha256 = contentsHash(extensionDir); }
   catch (error) { issues.push(`extension contents hash: ${error.message}`); }
   return { ok: issues.length === 0, issues, checks, version: manifest.version, name: renderedMetadata?.name || manifest.name,
-    permissions: manifest.permissions || [], hostPermissions: manifest.host_permissions || [], packageSha256, sourceContentsSha256 };
+    permissions: manifest.permissions || [], hostPermissions: manifest.host_permissions || [], packageSha256, sourceContentsSha256,
+    listLicenses: packagedListLicenses(extensionDir) };
 }
 
 function publicHttps(value) {
@@ -190,6 +197,40 @@ function publicHttps(value) {
       && !['example.com','example.org','example.net'].some((host) => u.hostname === host || u.hostname.endsWith('.' + host))
       && !u.hostname.endsWith('.example') && !u.hostname.endsWith('.test');
   } catch { return false; }
+}
+
+/** Licencje danych list w paczce (data/lists.json → id, license). Brak pliku = brak list z metadanymi. */
+function packagedListLicenses(extensionDir) {
+  let meta;
+  try { meta = readJson(localFile(extensionDir, 'data/lists.json')); } catch { return []; }
+  return Array.isArray(meta) ? meta.map((m) => ({ id: String(m?.id ?? ''), license: typeof m?.license === 'string' ? m.license : null })) : [];
+}
+
+/** Rejestr dodatkowych zgód autorów list (docs/licensing/permissions.json); bez zgody lista blokuje publikację. */
+export const PERMISSIONS_REGISTER = 'docs/licensing/permissions.json';
+
+/**
+ * Listy NonCommercial (np. CC BY-NC-SA) wymagają do publikacji w sklepie zapisanej dodatkowej zgody autorów:
+ * wpis o statusie "granted" z niepustym plikiem `record` (kopia odpowiedzi autorów). Inaczej – blokada.
+ * Lista bez znanej licencji też blokuje (nie da się ocenić warunków).
+ */
+export function licensingBlockers({ technical, materialsRoot = ROOT, register = PERMISSIONS_REGISTER } = {}) {
+  const lists = Array.isArray(technical?.listLicenses) ? technical.listLicenses : [];
+  if (!lists.length) return [];
+  let entries = [];
+  try { entries = readJson(localFile(materialsRoot, register)).permissions || []; } catch { entries = []; }
+  const blockers = [];
+  for (const { id, license } of lists) {
+    if (!license) { blockers.push(`licence of filter list "${id}" is unknown (data/lists.json)`); continue; }
+    if (!/(^|-)NC(-|$)/.test(license)) continue;
+    const entry = entries.find((e) => e?.list === id && e?.scope === 'chrome-web-store');
+    let recorded = false;
+    if (entry?.status === 'granted' && typeof entry.record === 'string') {
+      try { recorded = fs.readFileSync(localFile(materialsRoot, entry.record), 'utf8').trim().length > 0; } catch { recorded = false; }
+    }
+    if (!recorded) blockers.push(`additional distribution permission for Chrome Web Store from the authors of filter list "${id}" (${license}): ${entry?.status || 'not requested'}${entry?.status === 'pending' ? ' upstream response' : ''}`);
+  }
+  return blockers;
 }
 
 /** Readiness statements are supplied evidence, not tests performed by this tool. */
@@ -240,6 +281,7 @@ export function publicationBlockers({ technical, submission = {}, evidence = {},
   if (!technical?.packageSha256 || evidence.packageSha256 !== technical.packageSha256) blockers.push('validation evidence does not identify this exact ZIP SHA-256');
   const live = evidence.liveSites || {};
   if (live.status !== 'PASS' || !Number.isInteger(live.tested) || live.tested <= 0 || live.failed !== 0) blockers.push('representative real-site validation evidence is missing');
+  blockers.push(...licensingBlockers({ technical, materialsRoot }));
   return blockers;
 }
 

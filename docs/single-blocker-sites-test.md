@@ -1,6 +1,6 @@
 # Test jednego blockera na prawdziwych stronach
 
-Porównuje **bez Apex AdBlocker** (kontrola) i **z Apex AdBlocker** (stały zestaw list ads, privacy, security) na 53 stronach i osobno na YouTube. Wymaga internetu, więc uruchamia się lokalnie (Windows/Chrome). Zastępuje historyczny test trybów (`docs/protection-modes-test.md`), którego wyniki nie są wiarygodnym benchmarkiem: tryby zostawiały stronę w różnym stanie zgody na cookies.
+Porównuje **bez Apex AdBlocker** (kontrola) i **z Apex AdBlocker** (stały zestaw list ads, privacy, security, pl) na 53 stronach i osobno na YouTube. Wymaga internetu, więc uruchamia się lokalnie (Windows/Chrome). Zastępuje historyczny test trybów (`docs/protection-modes-test.md`), którego wyniki nie są wiarygodnym benchmarkiem: tryby zostawiały stronę w różnym stanie zgody na cookies.
 
 ## Uruchomienie
 

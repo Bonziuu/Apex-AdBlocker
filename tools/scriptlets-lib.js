@@ -1702,6 +1702,24 @@ function hostCandidates(hostname) {
   return hostname.split('.').map((_, i, labels) => labels.slice(i).join('.'));
 }
 
+/**
+ * Dołącza wyjątki #@#+js zarejestrowane przez INNE włączone listy (pliki scriptlets/<lista>-x-<id>.js,
+ * wstrzykiwane przed plikami tej listy). Dane pozostają w plikach listy źródłowej – tu są tylko łączone
+ * w pamięci strony. Brak rejestru = brak wyjątków z innych list.
+ */
+function withCrossListExceptions(except, listId) {
+  let extra;
+  try { extra = globalThis[Symbol.for('ApexAdBlocker.crossListScriptletExceptions.v1')]?.[listId]; } catch { /* */ }
+  if (!extra || typeof extra !== 'object') return except;
+  const merged = Object.assign(Object.create(null), except);
+  for (const host of Object.keys(extra)) {
+    const keys = extra[host];
+    if (!Array.isArray(keys)) continue;
+    merged[host] = merged[host] ? [...merged[host], ...keys] : [...keys];
+  }
+  return merged;
+}
+
 function runForHost(calls, hosts, except) {
   // Entity exclusions are also security-sensitive scope constraints: without
   // the prerequisite, do not run a concrete filter while dropping its exception.

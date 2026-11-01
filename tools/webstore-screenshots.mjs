@@ -135,7 +135,8 @@ export async function captureScreenshots({
     const base = `chrome-extension://${id}/options/options.html`;
     await page.goto(base);
     if (await page.evaluate(() => document.documentElement.lang) !== locale) throw new Error(`Chrome did not select the requested UI language: ${locale}`);
-    await page.waitForFunction(() => document.querySelectorAll('#listContainer .card').length === 3);
+    // jedna karta na każdą wbudowaną listę (ruleset w manifeście)
+    await page.waitForFunction(() => document.querySelectorAll('#listContainer .card').length === chrome.runtime.getManifest().declarative_net_request.rule_resources.length);
     const health = await waitForHealth(page, syncTimeoutMs);
     const images = [];
     const capture = async (file, title) => {

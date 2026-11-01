@@ -62,9 +62,10 @@ test('routing: stare deep linki #diag / #backup / #about otwierają sekcję w �
 test('O wtyczce: zwięzłe, z ograniczeniami MV3 i pełnym attribution list (także Polskie Filtry)', () => {
   const about = HTML.slice(HTML.indexOf('<details id="about"'), HTML.indexOf('</details>', HTML.indexOf('<details id="about"')));
   for (const re of [/declarativeNetRequest/, /kosmetycznie/, /obsługiwane warianty scriptletów/, /Manifest V3/, /podzbiór składni filtrów uBO\/ABP/]) assert.match(about, re);
-  assert.match(about, /EasyList, EasyPrivacy \(© The EasyList authors, GPLv3 \/ CC BY-SA 3\.0\)/);
-  assert.match(about, /uBlock filters \(© Raymond Hill i współtwórcy, GPLv3\)/);
-  assert.match(about, /Polskie Filtry Reklamowe \(© MajkiIT, CC BY-NC-SA 4\.0\)/);
+  assert.match(about, /EasyList, EasyPrivacy \(© The EasyList authors\) i uBlock filters \(© Raymond Hill i współtwórcy\), GPLv3\./);
+  // Polskie Filtry: osobna lista na CC BY-NC-SA 4.0, z autorem z nagłówka listy i adresem upstreamu
+  assert.match(about, /Polskie Filtry: Oficjalne Polskie Filtry \(© Certyficate IT i współtwórcy, github\.com\/MajkiIT\/polish-ads-filter\), CC BY-NC-SA 4\.0\./);
+  assert.match(about, /przetworzone do formatu Apex AdBlocker/);
   assert.doesNotMatch(HTML, /najszybsz|najmniejsz|najlepsz|fastest|smallest|\bbest\b/i);
   // Ochrona: stały zestaw, bez trybów i przełączników
   assert.doesNotMatch(HTML + JS, /Basic|Balanced|Strict|protectionMode/);
@@ -138,7 +139,7 @@ test('Opcje w Chromium: health:get tylko po otwarciu Diagnostyki; deep linki #di
     assert.equal(await page.isVisible('#exportSettings'), true);
     const a = await open('#about');
     assert.deepEqual([a.tab, a.open, a.health], ['more', ['about'], 0]);
-    assert.match(await page.locator('#about').innerText(), /Polskie Filtry Reklamowe/);
+    assert.match(await page.locator('#about').innerText(), /Polskie Filtry: Oficjalne Polskie Filtry/);
     // stare zakładki
     for (const t of ['protection', 'filters', 'sites']) assert.deepEqual((await open(`#${t}`)).panels, [t]);
     // zmiana # w otwartych Opcjach (hashchange) też przełącza sekcję

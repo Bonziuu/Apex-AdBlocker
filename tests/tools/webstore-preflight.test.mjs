@@ -6,7 +6,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 import { createZip, listFiles, crc32 } from '../../tools/package-dev.mjs';
-import { pngDimensions, validateStorePackage, publicationBlockers, runPreflight } from '../../tools/webstore-preflight.mjs';
+import { pngDimensions, validateStorePackage, publicationBlockers, runPreflight, licensingBlockers, PERMISSIONS_REGISTER } from '../../tools/webstore-preflight.mjs';
 
 function png(width = 128, height = 128) {
   const chunk = (name, data) => {
@@ -266,4 +266,47 @@ test('localized manifest metadata validates rendered name and description for ev
     writeManifest(f, { ...patch, default_locale: undefined });
     assert.ok(validateStorePackage({ extensionDir: f.extensionDir }).issues.some(x => /default_locale/.test(x)));
   } finally { f.cleanup(); }
+});
+
+test('licencje list: lista NonCommercial blokuje publikację, dopóki zgoda autorów nie jest zapisana', () => {
+  const f = fixture();
+  try {
+    const lists = JSON.stringify([{ id: 'ads', license: 'GPL-3.0-only' }, { id: 'pl', license: 'CC-BY-NC-SA-4.0' }]);
+    for (const dir of [f.sourceDir, f.extensionDir]) fs.writeFileSync(path.join(dir, 'data/lists.json'), lists);
+    f.zip();
+    const ready = readyFixture(f);
+    assert.equal(ready.technical.ok, true, ready.technical.issues.join('; '));
+    assert.deepEqual(ready.technical.listLicenses, [{ id: 'ads', license: 'GPL-3.0-only' }, { id: 'pl', license: 'CC-BY-NC-SA-4.0' }]);
+    // brak rejestru zgód
+    assert.deepEqual(publicationBlockers(ready).filter((x) => /permission/.test(x)), [
+      'additional distribution permission for Chrome Web Store from the authors of filter list "pl" (CC-BY-NC-SA-4.0): not requested',
+    ]);
+    const register = (entry) => {
+      fs.mkdirSync(path.join(f.root, path.dirname(PERMISSIONS_REGISTER)), { recursive: true });
+      fs.writeFileSync(path.join(f.root, PERMISSIONS_REGISTER), JSON.stringify({ permissions: [{ list: 'pl', scope: 'chrome-web-store', ...entry }] }));
+    };
+    register({ status: 'pending', record: null });
+    assert.deepEqual(licensingBlockers(ready), ['additional distribution permission for Chrome Web Store from the authors of filter list "pl" (CC-BY-NC-SA-4.0): pending upstream response']);
+    // „granted” bez zapisu odpowiedzi autorów nie wystarcza
+    register({ status: 'granted', record: 'answer.md' });
+    assert.equal(licensingBlockers(ready).length, 1);
+    fs.writeFileSync(path.join(f.root, 'answer.md'), 'Fixture: treść odpowiedzi (test)');
+    assert.deepEqual(licensingBlockers(ready), []);
+    assert.deepEqual(publicationBlockers(ready), []);
+    // lista bez znanej licencji
+    assert.deepEqual(licensingBlockers({ ...ready, technical: { ...ready.technical, listLicenses: [{ id: 'x', license: null }] } }), ['licence of filter list "x" is unknown (data/lists.json)']);
+  } finally { f.cleanup(); }
+});
+
+test('repozytorium: zgoda Polskich Filtrów na Chrome Web Store ma status pending i nie ma fikcyjnego zapisu', () => {
+  const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
+  const register = JSON.parse(fs.readFileSync(path.join(root, PERMISSIONS_REGISTER), 'utf8'));
+  const pl = register.permissions.find((p) => p.list === 'pl' && p.scope === 'chrome-web-store');
+  assert.equal(pl.status, 'pending');
+  assert.equal(pl.record, null);
+  const technical = { listLicenses: JSON.parse(fs.readFileSync(path.join(root, 'data/lists.json'), 'utf8')).map(({ id, license }) => ({ id, license })) };
+  assert.deepEqual(licensingBlockers({ technical, materialsRoot: root }), [
+    'additional distribution permission for Chrome Web Store from the authors of filter list "pl" (CC-BY-NC-SA-4.0): pending upstream response',
+  ]);
+  assert.match(fs.readFileSync(path.join(root, 'docs/licensing/README.md'), 'utf8'), /Additional distribution permission for Chrome Web Store: pending upstream response\./);
 });

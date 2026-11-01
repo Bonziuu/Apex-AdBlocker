@@ -146,11 +146,13 @@ export const MESSAGES = {
     en: 'Apex AdBlocker blocks ads, tracking and malicious sites – always with the same set of lists, with no protection levels to choose from. YouTube Protection works together with the ads list. You can turn protection off for selected sites with the button in the extension popup or on the “Disabled sites” tab.',
   },
   list_ads_name: { pl: 'Reklamy', en: 'Ads' },
-  list_ads_desc: { pl: 'EasyList, uBlock filters i Polskie Filtry Reklamowe', en: 'EasyList, uBlock filters and Polish Ad Filters' },
+  list_ads_desc: { pl: 'EasyList i uBlock filters', en: 'EasyList and uBlock filters' },
   list_privacy_name: { pl: 'Śledzenie i prywatność', en: 'Tracking and privacy' },
   list_privacy_desc: { pl: 'EasyPrivacy i uBlock filters – Privacy', en: 'EasyPrivacy and uBlock filters – Privacy' },
   list_security_name: { pl: 'Złośliwe strony', en: 'Malicious sites' },
   list_security_desc: { pl: 'uBlock filters – Badware risks (oszustwa, malware)', en: 'uBlock filters – Badware risks (scams, malware)' },
+  list_pl_name: { pl: 'Polskie Filtry', en: 'Polish Filters' },
+  list_pl_desc: { pl: 'Oficjalne Polskie Filtry (Certyficate IT) – reklamy na polskich stronach', en: 'Official Polish Filters (Certyficate IT) – ads on Polish websites' },
   list_counts: { pl: '$1 filtrów sieciowych · $2 kosmetycznych · $3 scriptletów', en: '$1 network filters · $2 cosmetic · $3 scriptlets' },
 
   // ── Opcje: Moje filtry ──────────────────────────────────────────────────────
@@ -397,8 +399,8 @@ export const MESSAGES = {
   },
   about_listsTitle: { pl: 'Listy filtrów', en: 'Filter lists' },
   about_lists: {
-    pl: 'EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill i współtwórcy, GPLv3), Polskie Filtry Reklamowe (© MajkiIT, CC BY-NC-SA 4.0). Listy są wbudowane we wtyczkę – aby je odświeżyć, zobacz plik README.',
-    en: 'EasyList, EasyPrivacy (© The EasyList authors, GPLv3 / CC BY-SA 3.0), uBlock filters (© Raymond Hill and contributors, GPLv3), Polish Ad Filters (© MajkiIT, CC BY-NC-SA 4.0). The lists are built into the extension – to refresh them, see the README file.',
+    pl: 'Reklamy, Śledzenie i prywatność, Złośliwe strony: EasyList, EasyPrivacy (© The EasyList authors) i uBlock filters (© Raymond Hill i współtwórcy), GPLv3. Polskie Filtry: Oficjalne Polskie Filtry (© Certyficate IT i współtwórcy, github.com/MajkiIT/polish-ads-filter), CC BY-NC-SA 4.0. Listy są przetworzone do formatu Apex AdBlocker i wbudowane we wtyczkę – szczegóły w plikach THIRD_PARTY_NOTICES.md i LICENSING.md.',
+    en: 'Ads, Tracking and privacy, Malicious sites: EasyList, EasyPrivacy (© The EasyList authors) and uBlock filters (© Raymond Hill and contributors), GPLv3. Polish Filters: Official Polish Filters (© Certyficate IT and contributors, github.com/MajkiIT/polish-ads-filter), CC BY-NC-SA 4.0. The lists are converted to the Apex AdBlocker format and built into the extension – see THIRD_PARTY_NOTICES.md and LICENSING.md for details.',
   },
   about_stats: {
     pl: 'Aktywne: $1 filtrów sieciowych, $2 kosmetycznych, $3 scriptletów, $4 własnych.',

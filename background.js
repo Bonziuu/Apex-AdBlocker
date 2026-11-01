@@ -6,7 +6,7 @@
 
 import { hostKeys, PRIORITY } from './shared/parser.js';
 import { compileUserFilters } from './background/user-filters.js';
-import { scriptletRegistrations, sameScriptletRegistrations } from './background/scriptlet-registration.js';
+import { scriptletRegistrations, sameScriptletRegistrations, withCrossExceptionFiles } from './background/scriptlet-registration.js';
 import { scriptletFilesForFrame } from './background/frame-scriptlets.js';
 import { createHealth, runSyncSteps, componentStatusFromSync } from './background/health.js';
 import { evaluateYouTubeProtection, coversYouTube } from './youtube/protection.js';
@@ -326,7 +326,7 @@ async function expectedScriptlets() {
   for (const m of meta) {
     if (!s.enabledLists.includes(m.id)) continue;
     const files = await scriptletMeta(m.id);
-    files.forEach((f, n) => out.push({ id: `sl-${m.id}-${n}`, list: m.id, ...f }));
+    files.forEach((f, n) => out.push({ id: `sl-${m.id}-${n}`, list: m.id, ...withCrossExceptionFiles(f, s.enabledLists) }));
   }
   return out;
 }
@@ -645,9 +645,15 @@ async function cosmeticFor(host) {
   let ehide = false;
   const unhide = new Set(gunhide);
   for (const d of lists) {
+    // wyjątki stron tej listy, które $badfilter innej listy wyłącza, gdy tamta lista jest włączona
+    const crossHide = (d.crossHide || []).filter((e) => !e.sources.some((src) => s.enabledLists.includes(src)));
     for (const k of keys) {
       if (d.ehideSet.has(k) || d.docAllowSet.has(k)) ehide = true;
       if (d.ghideSet.has(k)) ghide = true;
+      for (const e of crossHide) {
+        if (e.ehide.includes(k) || e.docAllow.includes(k)) ehide = true;
+        if (e.ghide.includes(k)) ghide = true;
+      }
       const u = d.unhide[k];
       if (u) for (const sel of u) unhide.add(sel);
     }

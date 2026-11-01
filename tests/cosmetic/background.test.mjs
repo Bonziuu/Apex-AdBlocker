@@ -13,7 +13,7 @@ test('instalacja: włącza domyślne listy, rejestruje scriptlety i zapisuje wyn
   const bg = await loadBackground();
   try {
     await bg.install();
-    assert.deepEqual([...bg.state.enabledRulesets].sort(), ['ads', 'privacy', 'security']);
+    assert.deepEqual([...bg.state.enabledRulesets].sort(), ['ads', 'pl', 'privacy', 'security']);
     assert.ok(bg.state.registered.length > 0);
     assert.ok(bg.state.registered.every((s) => s.world === 'MAIN' && s.runAt === 'document_start'));
     const h = await bg.send({ type: 'health:get' });
