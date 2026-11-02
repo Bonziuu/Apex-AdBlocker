@@ -38,7 +38,7 @@ Filter lists and executable extension code are included in the extension package
 
 ## Chrome Web Store User Data Policy (Limited Use)
 
-Apex AdBlocker’s use of information complies with the Chrome Web Store User Data Policy, including the Limited Use requirements. Data handled by the extension is used only to provide its single purpose — blocking ads, trackers and malicious sites. It is not sold, not transferred to Apex Software or third parties, not used for advertising, creditworthiness or lending purposes, and not read by humans unless the user chooses to send a file, report or message.
+Apex AdBlocker’s use of information complies with the Chrome Web Store User Data Policy, including the Limited Use requirements. Data handled automatically by the extension is used only to provide its single purpose — blocking ads, trackers and malicious sites. The extension does not sell this data or automatically transfer it to Apex Software or third parties, and it is not used for advertising, creditworthiness or lending purposes. Humans do not read this data unless the user explicitly chooses to send a file, report or message.
 
 ## User-initiated exports
 
@@ -112,7 +112,7 @@ Listy filtrów i kod wykonywany przez rozszerzenie znajdują się w jego paczce.
 
 ## Zasady Chrome Web Store dotyczące danych użytkownika (Limited Use)
 
-Sposób, w jaki Apex AdBlocker korzysta z informacji, jest zgodny z zasadami Chrome Web Store dotyczącymi danych użytkownika (Chrome Web Store User Data Policy), w tym z wymogami ograniczonego użytkowania (Limited Use). Dane przetwarzane przez rozszerzenie służą wyłącznie realizacji jego jedynego celu — blokowaniu reklam, mechanizmów śledzących i złośliwych stron. Nie są sprzedawane, nie są przekazywane Apex Software ani osobom trzecim, nie są używane do reklam, oceny zdolności kredytowej ani w celach pożyczkowych i nie są czytane przez ludzi, chyba że użytkownik sam zdecyduje się przesłać plik, raport lub wiadomość.
+Sposób, w jaki Apex AdBlocker korzysta z informacji, jest zgodny z zasadami Chrome Web Store dotyczącymi danych użytkownika (Chrome Web Store User Data Policy), w tym z wymogami ograniczonego użytkowania (Limited Use). Dane automatycznie przetwarzane przez rozszerzenie służą wyłącznie realizacji jego jedynego celu — blokowaniu reklam, mechanizmów śledzących i złośliwych stron. Rozszerzenie nie sprzedaje tych danych ani nie przekazuje ich automatycznie Apex Software lub osobom trzecim i nie używa ich do reklam, oceny zdolności kredytowej ani w celach pożyczkowych. Ludzie nie odczytują tych danych, chyba że użytkownik sam zdecyduje się przesłać plik, raport lub wiadomość.
 
 ## Eksport wykonywany przez użytkownika
 
