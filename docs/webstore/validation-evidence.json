@@ -1,13 +1,13 @@
 {
   "generator": "tools/webstore-prepare.mjs",
-  "generatedAt": "2026-11-01T19:40:54.425Z",
-  "packageSha256": "48a3f83b785c708754ad0a5330f91d744272bc73803b6f82ef96c7e1afd34451",
-  "packagePath": "dist/webstore-prepare-03eAJD/package/Apex-AdBlocker-WebStore-1.0.0.zip",
+  "generatedAt": "2026-11-02T21:24:11.099Z",
+  "packageSha256": "990c612ea914037b4307ae9371dfc1262dae9e3cac68bc1c6c46a6d55d053b9e",
+  "packagePath": "dist/webstore-prepare-BesHhT/package/Apex-AdBlocker-WebStore-1.0.0.zip",
   "checkLog": "dist/webstore-validation/check.log",
   "command": "node tools/check.mjs --require-browser",
   "browser": {
-    "tests": 622,
-    "passed": 622,
+    "tests": 646,
+    "passed": 646,
     "failed": 0,
     "skipped": 0,
     "cancelled": 0,
