@@ -1,5 +1,5 @@
 {
-  "description": "Rejestr dodatkowych zgód autorów list filtrów. Wpis bez statusu \"granted\" i bez pliku \"record\" (kopia odpowiedzi autorów) blokuje publikację w Chrome Web Store (tools/webstore-preflight.mjs). Nie wpisuj \"granted\" bez faktycznej odpowiedzi autorów.",
+  "description": "Rejestr dodatkowych zgód autorów list filtrów. Lista NonCommercial bez wpisu \"not-required\" albo bez wpisu \"granted\" z plikiem \"record\" (kopia odpowiedzi autorów) blokuje publikację w Chrome Web Store (tools/webstore-preflight.mjs). \"not-required\": projekt nie wymaga dla danego zakresu osobnej zgody; licencja i uznanie autorstwa nadal obowiązują. Nie wpisuj \"granted\" bez faktycznej odpowiedzi autorów.",
   "permissions": [
     {
       "list": "pl",
@@ -7,8 +7,8 @@
       "upstream": "Oficjalne Polskie Filtry (Certyficate IT)",
       "upstreamUrl": "https://github.com/MajkiIT/polish-ads-filter",
       "license": "CC-BY-NC-SA-4.0",
-      "request": "Additional distribution permission for Chrome Web Store",
-      "status": "pending",
+      "requirement": "No additional distribution permission record is required for Chrome Web Store; CC BY-NC-SA 4.0 terms and attribution apply",
+      "status": "not-required",
       "record": null
     }
   ]

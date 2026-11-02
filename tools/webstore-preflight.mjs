@@ -210,8 +210,9 @@ function packagedListLicenses(extensionDir) {
 export const PERMISSIONS_REGISTER = 'docs/licensing/permissions.json';
 
 /**
- * Listy NonCommercial (np. CC BY-NC-SA) wymagają do publikacji w sklepie zapisanej dodatkowej zgody autorów:
- * wpis o statusie "granted" z niepustym plikiem `record` (kopia odpowiedzi autorów). Inaczej – blokada.
+ * Listy NonCommercial (np. CC BY-NC-SA) wymagają do publikacji w sklepie wpisu w rejestrze: "not-required"
+ * (projekt nie wymaga osobnej zgody dla tego zakresu; licencja i uznanie autorstwa nadal obowiązują) albo
+ * "granted" z niepustym plikiem `record` (kopia odpowiedzi autorów). Inaczej – blokada.
  * Lista bez znanej licencji też blokuje (nie da się ocenić warunków).
  */
 export function licensingBlockers({ technical, materialsRoot = ROOT, register = PERMISSIONS_REGISTER } = {}) {
@@ -224,6 +225,7 @@ export function licensingBlockers({ technical, materialsRoot = ROOT, register = 
     if (!license) { blockers.push(`licence of filter list "${id}" is unknown (data/lists.json)`); continue; }
     if (!/(^|-)NC(-|$)/.test(license)) continue;
     const entry = entries.find((e) => e?.list === id && e?.scope === 'chrome-web-store');
+    if (entry?.status === 'not-required') continue;
     let recorded = false;
     if (entry?.status === 'granted' && typeof entry.record === 'string') {
       try { recorded = fs.readFileSync(localFile(materialsRoot, entry.record), 'utf8').trim().length > 0; } catch { recorded = false; }

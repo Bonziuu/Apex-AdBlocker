@@ -33,11 +33,10 @@ listy są budowane wyłącznie z jej źródeł.
 ## Polskie Filtry i Chrome Web Store
 
 Polskie Filtry są dystrybuowane na warunkach CC BY-NC-SA 4.0 (klauzule
-NonCommercial i ShareAlike). Wydawca poprosił autorów o dodatkową zgodę na
-dystrybucję w Chrome Web Store; odpowiedź jest oczekiwana. Stan zgody:
-docs/licensing/README.md i docs/licensing/permissions.json. Do czasu zapisania
-odpowiedzi autorów kontrola gotowości do publikacji (webstore:preflight)
-zgłasza brak tej zgody jako blokadę.
+NonCommercial i ShareAlike), z uznaniem autorstwa. Projekt nie wymaga
+osobnego zapisu dodatkowej zgody autorów na dystrybucję w Chrome Web Store
+(status `not-required` w docs/licensing/permissions.json; opis rejestru:
+docs/licensing/README.md).
 
 ## Opcjonalne wsparcie autora
 

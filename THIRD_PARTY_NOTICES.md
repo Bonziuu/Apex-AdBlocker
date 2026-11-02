@@ -57,7 +57,7 @@ Listy są udostępniane przez ich autorów na warunkach podanych niżej licencji
 - Licencja: **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** – https://creativecommons.org/licenses/by-nc-sa/4.0/ (pełny tekst: https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
 - Zmiany: dane zostały przetworzone do formatu używanego przez Apex AdBlocker (opis wyżej). Pliki listy `pl` (mapa wyżej) są materiałem adaptowanym i są udostępniane na tej samej licencji, CC BY-NC-SA 4.0. Licencja zawiera klauzulę NonCommercial.
 - Używane w liście Apex AdBlocker: `pl` (wyłącznie). Dane nie są łączone z listami GPL.
-- Wydawca Apex AdBlocker poprosił autorów o dodatkową zgodę na dystrybucję w Chrome Web Store. Odpowiedź nie została jeszcze otrzymana; do tego czasu obowiązują wyłącznie warunki CC BY-NC-SA 4.0.
+- Dystrybucja, także w Chrome Web Store, odbywa się na warunkach CC BY-NC-SA 4.0.
 
 ## Public Suffix List
 

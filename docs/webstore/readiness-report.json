@@ -79,7 +79,6 @@
   "blockers": [
     "1–5 genuine extension screenshots at 1280×800 or 640×400 are missing (UI fixtures do not qualify)",
     "representative real-site validation evidence is missing",
-    "additional distribution permission for Chrome Web Store from the authors of filter list \"pl\" (CC-BY-NC-SA-4.0): pending upstream response",
     "Genuine screenshot capture failed: Screenshot metadata does not prove a genuine capture of this package"
   ],
   "exitCode": 2,
