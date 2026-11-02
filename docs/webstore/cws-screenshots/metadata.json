@@ -1,0 +1,200 @@
+{
+  "generator": "store/cws-screenshots.mjs",
+  "generatedAt": "2026-11-02T13:31:41.643Z",
+  "product": "Apex AdBlocker",
+  "extensionVersion": "1.0.0",
+  "package": {
+    "file": "Apex-AdBlocker-WebStore-1.0.0.zip",
+    "sha256": "f58affb6dc6f3bbaa866ac5a81cf923ba106eb92e029b66da9b3980358589588",
+    "sourceCommit": "fa1045a",
+    "files": 116
+  },
+  "provenance": "published-package-zip-in-temporary-profile",
+  "mockedChromeApi": false,
+  "externalSitesVisited": false,
+  "demo": {
+    "host": "dailynews.example",
+    "served": "locally by Playwright routing; neutral ad creatives without brands, prices or claims"
+  },
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "colorScheme": "light",
+  "observed": {
+    "pl": {
+      "before": {
+        "adsVisible": 3,
+        "sponsoredOverlay": true,
+        "trackers": 5
+      },
+      "after": {
+        "adsVisible": 0,
+        "sponsoredOverlay": false,
+        "trackers": 0,
+        "blockedRequests": 8
+      },
+      "protectionOffPage": {
+        "adsVisible": 3,
+        "sponsoredOverlay": true,
+        "trackers": 5,
+        "blockedRequests": 0
+      },
+      "popupOn": {
+        "host": "dailynews.example",
+        "status": "Ochrona aktywna",
+        "blocked": "8",
+        "blockedLabel": "zablokowanych żądań na tej karcie",
+        "toggle": "true"
+      },
+      "popupOff": {
+        "host": "dailynews.example",
+        "status": "Ochrona wyłączona",
+        "blocked": "0",
+        "blockedLabel": "zablokowanych żądań na tej karcie",
+        "toggle": "false"
+      },
+      "filtersSaved": "Zapisano · aktywnych filtrów: 3"
+    },
+    "en": {
+      "before": {
+        "adsVisible": 3,
+        "sponsoredOverlay": true,
+        "trackers": 5
+      },
+      "after": {
+        "adsVisible": 0,
+        "sponsoredOverlay": false,
+        "trackers": 0,
+        "blockedRequests": 8
+      },
+      "protectionOffPage": {
+        "adsVisible": 3,
+        "sponsoredOverlay": true,
+        "trackers": 5,
+        "blockedRequests": 0
+      },
+      "popupOn": {
+        "host": "dailynews.example",
+        "status": "Protection on",
+        "blocked": "8",
+        "blockedLabel": "blocked requests on this tab",
+        "toggle": "true"
+      },
+      "popupOff": {
+        "host": "dailynews.example",
+        "status": "Protection off",
+        "blocked": "0",
+        "blockedLabel": "blocked requests on this tab",
+        "toggle": "false"
+      },
+      "filtersSaved": "Saved · active filters: 3"
+    }
+  },
+  "exampleUserFilters": {
+    "pl": "! Moje filtry (przykład dla strony demonstracyjnej)\ndailynews.example##.dn-signup\ndailynews.example##.dn-most-read\n||tracker.example^\n",
+    "en": "! My filters (example for the demo page)\ndailynews.example##.dn-signup\ndailynews.example##.dn-most-read\n||tracker.example^\n"
+  },
+  "integrity": {
+    "status": "PASS",
+    "checked": "ZIP SHA-256 before and after; extracted files = ZIP listing; byte-for-byte snapshot of each loaded copy before and after Chromium",
+    "allowedRuntimeArtifacts": [
+      "_metadata/generated_indexed_rulesets/_ruleset1",
+      "_metadata/generated_indexed_rulesets/_ruleset2",
+      "_metadata/generated_indexed_rulesets/_ruleset3"
+    ]
+  },
+  "images": [
+    {
+      "file": "pl/01-protection-pl.png",
+      "locale": "pl",
+      "scene": "01-protection",
+      "headline": "Blokuj reklamy i śledzenie",
+      "width": 1280,
+      "height": 800,
+      "sha256": "1d4611e9bcb94bef9b832ead98d476a977e6e89f0d64a9716c5d2a959196a40c"
+    },
+    {
+      "file": "pl/02-before-after-pl.png",
+      "locale": "pl",
+      "scene": "02-before-after",
+      "headline": "Mniej reklam. Więcej treści.",
+      "width": 1280,
+      "height": 800,
+      "sha256": "0977d1cff3aa6246c11e8af920d51b1e8c43d4f3c1dba7afad739faaae3b4786"
+    },
+    {
+      "file": "pl/03-hide-element-pl.png",
+      "locale": "pl",
+      "scene": "03-hide-element",
+      "headline": "Ukryj to, czego nie chcesz widzieć",
+      "width": 1280,
+      "height": 800,
+      "sha256": "2aea8af943a92fb0bb8bedfffc2fb173d1915e669a309b0890b2463aee0df5e5"
+    },
+    {
+      "file": "pl/04-site-toggle-pl.png",
+      "locale": "pl",
+      "scene": "04-site-toggle",
+      "headline": "Ty decydujesz, gdzie działa ochrona",
+      "width": 1280,
+      "height": 800,
+      "sha256": "699c9d2f6ed62b36ec3a286abb3762807181ac2b2f677dd859879112f71dfeb2"
+    },
+    {
+      "file": "pl/05-custom-filters-pl.png",
+      "locale": "pl",
+      "scene": "05-custom-filters",
+      "headline": "Dostosuj ochronę do siebie",
+      "width": 1280,
+      "height": 800,
+      "sha256": "4c62a799885bcda8073e7fb7c00717f2f45fd090042def69e815e28b0486c0c5"
+    },
+    {
+      "file": "en/01-protection-en.png",
+      "locale": "en",
+      "scene": "01-protection",
+      "headline": "Block ads and tracking",
+      "width": 1280,
+      "height": 800,
+      "sha256": "3ec1821d73f84520458dd446cd2f670ec1d1f15e74c68fb703784c9de4486a58"
+    },
+    {
+      "file": "en/02-before-after-en.png",
+      "locale": "en",
+      "scene": "02-before-after",
+      "headline": "Fewer ads. More content.",
+      "width": 1280,
+      "height": 800,
+      "sha256": "1c91e4f5529ba677e90330c956a7a8ecaaa89bdd43d4fda2230582c80fefd980"
+    },
+    {
+      "file": "en/03-hide-element-en.png",
+      "locale": "en",
+      "scene": "03-hide-element",
+      "headline": "Hide what you don’t want to see",
+      "width": 1280,
+      "height": 800,
+      "sha256": "1c8e4a0511f92b545d9f3ebd63b02cf7249b28e5f2e2ef596113d3a26de7410e"
+    },
+    {
+      "file": "en/04-site-toggle-en.png",
+      "locale": "en",
+      "scene": "04-site-toggle",
+      "headline": "You decide where protection runs",
+      "width": 1280,
+      "height": 800,
+      "sha256": "b5baa9c65f0e22a0d618f9cab8a2150ce5d03211bd458a66393ad40dc629cc9a"
+    },
+    {
+      "file": "en/05-custom-filters-en.png",
+      "locale": "en",
+      "scene": "05-custom-filters",
+      "headline": "Customize your protection",
+      "width": 1280,
+      "height": 800,
+      "sha256": "7688018c9bce9300abb57521a4562f1348d08428710ce9b0b4d6a089161988ab"
+    }
+  ],
+  "scope": "Real extension UI on a local demo page. The images do not measure blocking effectiveness on real websites."
+}
