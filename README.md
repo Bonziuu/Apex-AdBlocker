@@ -75,7 +75,7 @@ Uprawnienia: `declarativeNetRequest`, `scripting`, `storage`, `activeTab` oraz d
 
 Zalecana instalacja dla większości osób: otwórz [Apex AdBlocker w Chrome Web Store](https://chromewebstore.google.com/detail/apex-adblocker/pfomoijnliechlfgkkdhfganfleaafad) i kliknij **Dodaj do Chrome**. Chrome sam instaluje kolejne wersje ze sklepu.
 
-W Chrome Web Store jest Apex AdBlocker 1.0.0. Zmiany na gałęzi `main` niewydane po `v1.0.0` nie są częścią wersji sklepowej.
+Zmiany wprowadzone na gałęzi `main` po wydaniu `v1.0.0` nie są częścią wersji 1.0.0 dostępnej w Chrome Web Store.
 
 <a id="instalacja-reczna"></a>
 
@@ -212,7 +212,7 @@ No account, no Apex telemetry and no Apex backend: the extension does not send y
 
 Recommended for most people: open [Apex AdBlocker on the Chrome Web Store](https://chromewebstore.google.com/detail/apex-adblocker/pfomoijnliechlfgkkdhfganfleaafad) and click **Add to Chrome**. Chrome installs later versions from the store automatically.
 
-The Chrome Web Store has Apex AdBlocker 1.0.0. Changes on the `main` branch that were not released after `v1.0.0` are not part of the store version.
+Changes added to the `main` branch after the `v1.0.0` release are not part of version 1.0.0 currently available on the Chrome Web Store.
 
 <a id="manual-install-en"></a>
 
