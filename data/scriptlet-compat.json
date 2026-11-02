@@ -1,22 +1,22 @@
 {
  "summary": {
-  "total": 10354,
-  "supported": 9699,
+  "total": 10384,
+  "supported": 9724,
   "partial": 32,
-  "unsupported": 623
+  "unsupported": 628
  },
  "byList": {
   "ads": {
-   "total": 9914,
-   "supported": 9352,
+   "total": 9942,
+   "supported": 9377,
    "partial": 29,
-   "unsupported": 533
+   "unsupported": 536
   },
   "privacy": {
-   "total": 358,
+   "total": 360,
    "supported": 278,
    "partial": 1,
-   "unsupported": 79
+   "unsupported": 81
   },
   "security": {
    "total": 24,

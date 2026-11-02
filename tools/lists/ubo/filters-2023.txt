@@ -1,5 +1,5 @@
 ! Title: uBlock filters (2023)
-! Last modified: %timestamp%
+! Last modified: Sun, 01 Nov 2026 02:33:14 +0000
 ! Description: Filters optimized for uBlock, to be used along EasyList
 ! Homepage: https://github.com/uBlockOrigin/uAssets
 ! License: https://github.com/uBlockOrigin/uAssets/blob/master/LICENSE
@@ -975,12 +975,13 @@ bg-gledai.*##+js(nosiif, visibility, 1000)
 ! https://www.reddit.com/r/uBlockOrigin/comments/11vtqib/
 bg-gledai.*##+js(aopr, chp_adblock_browser)
 @@||bg-gledai.*^$ghide
-bg-gledai.*##.adsbygoogle
+bg-gledai.*##center > .adsbygoogle
 bg-gledai.*##.smallbanner
 bg-gledai.*##.squarebanner
 /binance-banner.jpg$domain=bg-gledai.*
 bg-gledai.*##+js(acs, document.getElementById, adblock)
 bg-gledai.*###casing > center
+gledaitv.*##.adsbygoogle
 ! https://www.reddit.com/r/uBlockOrigin/comments/11vtqib/ads_blocker_detected/
 cdn.gledaitv.live##+js(noeval-if, String.fromCharCode)
 ! https://www.reddit.com/r/uBlockOrigin/comments/1j3jbqd/adblock_detected/
@@ -1157,14 +1158,6 @@ assettoworld.com##.nitro-ads
 
 ! webcreator-journal.com anti-adb
 webcreator-journal.com##+js(nostif, getComputedStyle)
-
-! https://github.com/uBlockOrigin/uAssets/issues/17396
-||movie44.com/*.gif$image
-movie44.com##.imgbanner
-movie44.com##.white_content1
-movie44.com##.ad-overlay-click
-movie44.com##.ad-player-skip
-||postmovie.net/*.mp4$media,redirect=noopmp3-0.1s
 
 ! https://github.com/uBlockOrigin/uAssets/issues/17398
 *.gif$image,3p,domain=madoohd.com
@@ -1661,9 +1654,11 @@ pepperlive.info##^script:has-text(decodeURIComponent(escape(r)))
 pepperlivestream.online##+js(aopr, Adcash)
 
 ! https://github.com/uBlockOrigin/uAssets/issues/17636#issuecomment-1529158656
+! https://www.reddit.com/r/uBlockOrigin/comments/1xc15sw/bunker_sites_showing_ads_having_popups/
 bunkr.la##+js(acs, document.createElement, click)
 *$script,3p,denyallow=cdn.plyr.io|b-cdn.net,domain=bunkr.la
-||bunkr.la/build/lv.js$script,1p
+||bunkr.*/lv.js$script,1p
+/^https:\/\/[0-9]+\.b-cdn\.net\/w\.js$/$script,3p,match-case
 
 ! https://github.com/uBlockOrigin/uAssets/issues/17893
 androidadult.com##+js(set, chp_adblock_browser, noopFunc)
@@ -3128,7 +3123,6 @@ trakt.tv##:xpath("//*[(text()='Advertisement')]"):upward(1)
 ! https://github.com/uBlockOrigin/uAssets/issues/25134
 trakt.tv##+js(set, art3m1sItemNames.affiliate-wrapper, '""')
 trakt.tv##.snigel
-trakt.tv##a[target="_blank"][style]:has(img[src])
 ! https://github.com/uBlockOrigin/uAssets/issues/26812
 trakt.tv##div[id*="-wrapper"]:has(a[href="/vip/advertising"])
 
