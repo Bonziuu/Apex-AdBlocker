@@ -4,7 +4,7 @@ Publisher: **Konrad Woźniak**
 Privacy contact: **support@apexsoftware.app**
 Last updated: **2 November 2026**
 
-This policy describes Apex AdBlocker version 1.0.0. Its single main purpose is blocking advertisements, tracking mechanisms and selected malicious sites while browsing websites. The extension operates in the browser, requires no account, and has no publisher-operated backend or telemetry.
+This policy describes Apex AdBlocker version 1.0.1. Its single main purpose is blocking advertisements, tracking mechanisms and selected malicious sites while browsing websites. The extension operates in the browser, requires no account, and has no publisher-operated backend or telemetry.
 
 ## Data needed for the extension to work
 
