@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest/download/Apex-AdBlocker.zip"><b>⬇ Pobierz Apex AdBlocker (ZIP)</b></a>
-  &nbsp;·&nbsp; <a href="#instalacja">Instrukcja instalacji</a>
+  <a href="https://chromewebstore.google.com/detail/apex-adblocker/pfomoijnliechlfgkkdhfganfleaafad"><b>Dodaj do Chrome — Chrome Web Store ↗</b></a>
+  &nbsp;·&nbsp; <a href="#instalacja-reczna">Instalacja ręczna (ZIP)</a>
   &nbsp;·&nbsp; <a href="https://apexsoftware.app/pl/adblocker/">Strona produktu</a>
   &nbsp;·&nbsp; <a href="#eng">English ↓</a>
 </p>
@@ -21,7 +21,7 @@
   <a href="LICENSING.md"><img src="https://img.shields.io/badge/kod%20Apex-MIT-0f7f8c" alt="Kod Apex: licencja MIT; listy filtrów na własnych licencjach"></a>
 </p>
 
-> **Status:** stabilne wydanie. Najnowszą wersję, listę zmian i sumy SHA-256 znajdziesz w [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) · [Co nowego](CHANGELOG.md)
+> **Status:** stabilne wydanie, dostępne w [Chrome Web Store](https://chromewebstore.google.com/detail/apex-adblocker/pfomoijnliechlfgkkdhfganfleaafad). Najnowszą wersję, listę zmian i sumy SHA-256 znajdziesz w [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) · [Co nowego](CHANGELOG.md)
 
 - 🛡️ Blokowanie reklam i trackerów
 - 🔒 Bez konta i telemetrii Apex
@@ -71,7 +71,17 @@ Uprawnienia: `declarativeNetRequest`, `scripting`, `storage`, `activeTab` oraz d
 
 ## Instalacja
 
-Apex AdBlocker nie jest jeszcze dostępny w Chrome Web Store. Obecnie instalujesz go ręcznie jako rozszerzenie rozpakowane:
+### Chrome Web Store (zalecane)
+
+Zalecana instalacja dla większości osób: otwórz [Apex AdBlocker w Chrome Web Store](https://chromewebstore.google.com/detail/apex-adblocker/pfomoijnliechlfgkkdhfganfleaafad) i kliknij **Dodaj do Chrome**. Chrome sam instaluje kolejne wersje ze sklepu.
+
+Zmiany wprowadzone na gałęzi `main` po wydaniu `v1.0.0` nie są częścią wersji 1.0.0 dostępnej w Chrome Web Store.
+
+<a id="instalacja-reczna"></a>
+
+### Instalacja ręczna (GitHub Release)
+
+Dla osób, które świadomie wolą rozszerzenie rozpakowane z wydania na GitHubie:
 
 1. Pobierz `Apex-AdBlocker-<wersja>.zip` z [najnowszego wydania](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) (sekcja **Assets**).
 2. Rozpakuj ZIP w stałym miejscu na dysku, np. `Dokumenty/Apex-AdBlocker`.
@@ -86,7 +96,7 @@ Nie usuwaj ani nie przenoś folderu po instalacji — Chrome korzysta z niego po
 
 ## Aktualizacja
 
-Wersja rozpakowana aktualizuje się ręcznie: pobierz nową paczkę z [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases), zastąp pliki w tym samym folderze i kliknij **Odśwież** przy Apex AdBlocker w `chrome://extensions`. Ustawienia zostają w profilu przeglądarki.
+Wersję z Chrome Web Store Chrome aktualizuje automatycznie. Wersja rozpakowana aktualizuje się ręcznie: pobierz nową paczkę z [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases), zastąp pliki w tym samym folderze i kliknij **Odśwież** przy Apex AdBlocker w `chrome://extensions`. Ustawienia zostają w profilu przeglądarki.
 
 ## Wymagania
 
@@ -149,12 +159,12 @@ EasyList, EasyPrivacy, uBlock filters i Polskie Filtry są używane na warunkach
 </p>
 
 <p align="center">
-  <a href="https://github.com/Bonziuu/Apex-AdBlocker/releases/latest/download/Apex-AdBlocker.zip"><b>⬇ Download Apex AdBlocker (ZIP)</b></a>
-  &nbsp;·&nbsp; <a href="#install-en">Installation guide</a>
+  <a href="https://chromewebstore.google.com/detail/apex-adblocker/pfomoijnliechlfgkkdhfganfleaafad"><b>Add to Chrome — Chrome Web Store ↗</b></a>
+  &nbsp;·&nbsp; <a href="#manual-install-en">Manual installation (ZIP)</a>
   &nbsp;·&nbsp; <a href="https://apexsoftware.app/en/adblocker/">Product page</a>
 </p>
 
-> **Status:** stable release. Get the latest version, release notes and SHA-256 checksums from [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) · [What’s new](CHANGELOG.md)
+> **Status:** stable release, available on the [Chrome Web Store](https://chromewebstore.google.com/detail/apex-adblocker/pfomoijnliechlfgkkdhfganfleaafad). Get the latest version, release notes and SHA-256 checksums from [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) · [What’s new](CHANGELOG.md)
 
 - 🛡️ Blocks ads and trackers
 - 🔒 No account, no Apex telemetry
@@ -198,7 +208,17 @@ No account, no Apex telemetry and no Apex backend: the extension does not send y
 
 ### Installation
 
-Apex AdBlocker is not yet available in the Chrome Web Store. For now you install it manually as an unpacked extension:
+#### Chrome Web Store (recommended)
+
+Recommended for most people: open [Apex AdBlocker on the Chrome Web Store](https://chromewebstore.google.com/detail/apex-adblocker/pfomoijnliechlfgkkdhfganfleaafad) and click **Add to Chrome**. Chrome installs later versions from the store automatically.
+
+Changes added to the `main` branch after the `v1.0.0` release are not part of version 1.0.0 currently available on the Chrome Web Store.
+
+<a id="manual-install-en"></a>
+
+#### Manual installation (GitHub Release)
+
+For people who deliberately prefer the unpacked extension from the GitHub release:
 
 1. Download `Apex-AdBlocker-<version>.zip` from the [latest release](https://github.com/Bonziuu/Apex-AdBlocker/releases/latest) (**Assets** section).
 2. Extract the ZIP to a permanent location, e.g. `Documents/Apex-AdBlocker`.
@@ -215,7 +235,7 @@ Don’t delete or move the folder after installation — Chrome uses it while th
 
 ### Updating
 
-The unpacked version is updated manually: download the new package from [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases), replace the files in the same folder and click **Reload** next to Apex AdBlocker in `chrome://extensions`. Your settings stay in the browser profile.
+Chrome updates the Chrome Web Store version automatically. The unpacked version is updated manually: download the new package from [Releases](https://github.com/Bonziuu/Apex-AdBlocker/releases), replace the files in the same folder and click **Reload** next to Apex AdBlocker in `chrome://extensions`. Your settings stay in the browser profile.
 
 ### Requirements
 
