@@ -1,19 +1,18 @@
 {
   "generator": "tools/webstore-prepare.mjs",
-  "generatedAt": "2026-11-02T21:24:19.104Z",
+  "generatedAt": "2026-11-01T19:41:02.302Z",
   "scope": "Offline preparation, actual strict-check outcomes and genuine captures only; no submission or Chrome Web Store approval.",
   "package": {
     "version": "1.0.0",
-    "path": "dist/webstore-prepare-BesHhT/package/Apex-AdBlocker-WebStore-1.0.0.zip",
-    "extensionDir": "dist/webstore-prepare-BesHhT/package/Apex-AdBlocker",
-    "sha256": "990c612ea914037b4307ae9371dfc1262dae9e3cac68bc1c6c46a6d55d053b9e"
+    "path": "dist/webstore-prepare-03eAJD/package/Apex-AdBlocker-WebStore-1.0.0.zip",
+    "extensionDir": "dist/webstore-prepare-03eAJD/package/Apex-AdBlocker",
+    "sha256": "48a3f83b785c708754ad0a5330f91d744272bc73803b6f82ef96c7e1afd34451"
   },
   "evidenceFile": "docs/webstore/validation-evidence.json",
   "checkLog": "dist/webstore-validation/check.log",
   "screenshots": {
-    "status": "PASS",
-    "images": 3,
-    "metadata": "docs/webstore/screenshots/metadata.json"
+    "status": "FAIL",
+    "error": "Screenshot metadata does not prove a genuine capture of this package"
   },
   "technical": {
     "ok": true,
@@ -55,8 +54,8 @@
     "hostPermissions": [
       "<all_urls>"
     ],
-    "packageSha256": "990c612ea914037b4307ae9371dfc1262dae9e3cac68bc1c6c46a6d55d053b9e",
-    "sourceContentsSha256": "e8eeee151f78d0cd4e32800a8230762faf185dc2d8543c9068a1abd0a5c17a00",
+    "packageSha256": "48a3f83b785c708754ad0a5330f91d744272bc73803b6f82ef96c7e1afd34451",
+    "sourceContentsSha256": "2a04ffe27b5f40d17ec9ffd6078ddffd8aaf06c6a16c633eba61217c9e367b32",
     "listLicenses": [
       {
         "id": "ads",
@@ -78,8 +77,10 @@
   },
   "publicationReady": false,
   "blockers": [
-    "representative real-site validation evidence is missing"
+    "1–5 genuine extension screenshots at 1280×800 or 640×400 are missing (UI fixtures do not qualify)",
+    "representative real-site validation evidence is missing",
+    "Genuine screenshot capture failed: Screenshot metadata does not prove a genuine capture of this package"
   ],
   "exitCode": 2,
-  "previousOutputsBackupDir": "dist/webstore-prepare-BesHhT"
+  "previousOutputsBackupDir": "dist/webstore-prepare-03eAJD"
 }

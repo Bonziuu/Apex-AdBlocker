@@ -206,10 +206,33 @@ function packagedListLicenses(extensionDir) {
   return Array.isArray(meta) ? meta.map((m) => ({ id: String(m?.id ?? ''), license: typeof m?.license === 'string' ? m.license : null })) : [];
 }
 
-/** Lista bez znanej licencji blokuje publikację (nie da się ocenić warunków jej dystrybucji). */
-export function licensingBlockers({ technical } = {}) {
+/** Rejestr dodatkowych zgód autorów list (docs/licensing/permissions.json); bez zgody lista blokuje publikację. */
+export const PERMISSIONS_REGISTER = 'docs/licensing/permissions.json';
+
+/**
+ * Listy NonCommercial (np. CC BY-NC-SA) wymagają do publikacji w sklepie wpisu w rejestrze: "not-required"
+ * (projekt nie wymaga osobnej zgody dla tego zakresu; licencja i uznanie autorstwa nadal obowiązują) albo
+ * "granted" z niepustym plikiem `record` (kopia odpowiedzi autorów). Inaczej – blokada.
+ * Lista bez znanej licencji też blokuje (nie da się ocenić warunków).
+ */
+export function licensingBlockers({ technical, materialsRoot = ROOT, register = PERMISSIONS_REGISTER } = {}) {
   const lists = Array.isArray(technical?.listLicenses) ? technical.listLicenses : [];
-  return lists.filter(({ license }) => !license).map(({ id }) => `licence of filter list "${id}" is unknown (data/lists.json)`);
+  if (!lists.length) return [];
+  let entries = [];
+  try { entries = readJson(localFile(materialsRoot, register)).permissions || []; } catch { entries = []; }
+  const blockers = [];
+  for (const { id, license } of lists) {
+    if (!license) { blockers.push(`licence of filter list "${id}" is unknown (data/lists.json)`); continue; }
+    if (!/(^|-)NC(-|$)/.test(license)) continue;
+    const entry = entries.find((e) => e?.list === id && e?.scope === 'chrome-web-store');
+    if (entry?.status === 'not-required') continue;
+    let recorded = false;
+    if (entry?.status === 'granted' && typeof entry.record === 'string') {
+      try { recorded = fs.readFileSync(localFile(materialsRoot, entry.record), 'utf8').trim().length > 0; } catch { recorded = false; }
+    }
+    if (!recorded) blockers.push(`additional distribution permission for Chrome Web Store from the authors of filter list "${id}" (${license}): ${entry?.status || 'not requested'}${entry?.status === 'pending' ? ' upstream response' : ''}`);
+  }
+  return blockers;
 }
 
 /** Readiness statements are supplied evidence, not tests performed by this tool. */
@@ -260,7 +283,7 @@ export function publicationBlockers({ technical, submission = {}, evidence = {},
   if (!technical?.packageSha256 || evidence.packageSha256 !== technical.packageSha256) blockers.push('validation evidence does not identify this exact ZIP SHA-256');
   const live = evidence.liveSites || {};
   if (live.status !== 'PASS' || !Number.isInteger(live.tested) || live.tested <= 0 || live.failed !== 0) blockers.push('representative real-site validation evidence is missing');
-  blockers.push(...licensingBlockers({ technical }));
+  blockers.push(...licensingBlockers({ technical, materialsRoot }));
   return blockers;
 }
 

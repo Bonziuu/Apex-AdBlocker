@@ -97,7 +97,7 @@ Uwagi:
 
 ### 2.3 Polskie Filtry (Official Polish Filters, MajkiIT / Certyficate IT) – `NEEDS LEGAL REVIEW`
 
-> **Klauzula NonCommercial.** Licencja CC BY-NC-SA 4.0 zabrania korzystania w celach komercyjnych i wymaga share-alike dla materiału adaptowanego. Te dane są kompilowane wyłącznie do plików listy `pl` (bez treści GPL).
+> **Klauzula NonCommercial.** Licencja CC BY-NC-SA 4.0 zabrania korzystania w celach komercyjnych i wymaga share-alike dla materiału adaptowanego. Te dane są kompilowane wyłącznie do plików listy `pl` (bez treści GPL). Dodatkowa zgoda autorów na dystrybucję w Chrome Web Store: niewymagana (`not-required`, `docs/licensing/README.md`).
 
 | | |
 |---|---|

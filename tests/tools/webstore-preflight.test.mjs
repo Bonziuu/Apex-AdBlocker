@@ -6,7 +6,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 import { createZip, listFiles, crc32 } from '../../tools/package-dev.mjs';
-import { pngDimensions, validateStorePackage, publicationBlockers, runPreflight, licensingBlockers } from '../../tools/webstore-preflight.mjs';
+import { pngDimensions, validateStorePackage, publicationBlockers, runPreflight, licensingBlockers, PERMISSIONS_REGISTER } from '../../tools/webstore-preflight.mjs';
 
 function png(width = 128, height = 128) {
   const chunk = (name, data) => {
@@ -268,7 +268,7 @@ test('localized manifest metadata validates rendered name and description for ev
   } finally { f.cleanup(); }
 });
 
-test('licencje list: każda lista w paczce musi mieć znaną licencję', () => {
+test('licencje list: lista NonCommercial wymaga wpisu not-required albo zapisanej zgody autorów', () => {
   const f = fixture();
   try {
     const lists = JSON.stringify([{ id: 'ads', license: 'GPL-3.0-only' }, { id: 'pl', license: 'CC-BY-NC-SA-4.0' }]);
@@ -277,15 +277,48 @@ test('licencje list: każda lista w paczce musi mieć znaną licencję', () => {
     const ready = readyFixture(f);
     assert.equal(ready.technical.ok, true, ready.technical.issues.join('; '));
     assert.deepEqual(ready.technical.listLicenses, [{ id: 'ads', license: 'GPL-3.0-only' }, { id: 'pl', license: 'CC-BY-NC-SA-4.0' }]);
+    // brak rejestru zgód
+    assert.deepEqual(publicationBlockers(ready).filter((x) => /permission/.test(x)), [
+      'additional distribution permission for Chrome Web Store from the authors of filter list "pl" (CC-BY-NC-SA-4.0): not requested',
+    ]);
+    const register = (entry) => {
+      fs.mkdirSync(path.join(f.root, path.dirname(PERMISSIONS_REGISTER)), { recursive: true });
+      fs.writeFileSync(path.join(f.root, PERMISSIONS_REGISTER), JSON.stringify({ permissions: [{ list: 'pl', scope: 'chrome-web-store', ...entry }] }));
+    };
+    register({ status: 'pending', record: null });
+    assert.deepEqual(licensingBlockers(ready), ['additional distribution permission for Chrome Web Store from the authors of filter list "pl" (CC-BY-NC-SA-4.0): pending upstream response']);
+    // „granted” bez zapisu odpowiedzi autorów nie wystarcza
+    register({ status: 'granted', record: 'answer.md' });
+    assert.equal(licensingBlockers(ready).length, 1);
+    fs.writeFileSync(path.join(f.root, 'answer.md'), 'Fixture: treść odpowiedzi (test)');
     assert.deepEqual(licensingBlockers(ready), []);
     assert.deepEqual(publicationBlockers(ready), []);
+    // „not-required”: bez blokady i bez pliku record
+    register({ status: 'not-required', record: null });
+    assert.deepEqual(licensingBlockers(ready), []);
+    assert.deepEqual(publicationBlockers(ready), []);
+    // „declined” blokuje
+    register({ status: 'declined', record: null });
+    assert.equal(licensingBlockers(ready).length, 1);
+    // wpis dla innego zakresu nie zwalnia z wymogu dla Chrome Web Store
+    fs.writeFileSync(path.join(f.root, PERMISSIONS_REGISTER), JSON.stringify({ permissions: [{ list: 'pl', scope: 'other-store', status: 'not-required', record: null }] }));
+    assert.deepEqual(licensingBlockers(ready), ['additional distribution permission for Chrome Web Store from the authors of filter list "pl" (CC-BY-NC-SA-4.0): not requested']);
     // lista bez znanej licencji
     assert.deepEqual(licensingBlockers({ ...ready, technical: { ...ready.technical, listLicenses: [{ id: 'x', license: null }] } }), ['licence of filter list "x" is unknown (data/lists.json)']);
   } finally { f.cleanup(); }
 });
 
-test('repozytorium: wszystkie listy w data/lists.json mają licencję', () => {
+test('repozytorium: Polskie Filtry mają status not-required, bez pliku record, i nie blokują publikacji', () => {
   const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
+  const register = JSON.parse(fs.readFileSync(path.join(root, PERMISSIONS_REGISTER), 'utf8'));
+  const pl = register.permissions.find((p) => p.list === 'pl' && p.scope === 'chrome-web-store');
+  assert.equal(pl.status, 'not-required');
+  assert.equal(pl.record, null);
+  assert.equal(pl.license, 'CC-BY-NC-SA-4.0');
   const technical = { listLicenses: JSON.parse(fs.readFileSync(path.join(root, 'data/lists.json'), 'utf8')).map(({ id, license }) => ({ id, license })) };
-  assert.deepEqual(licensingBlockers({ technical }), []);
+  assert.ok(technical.listLicenses.some((l) => l.id === 'pl' && l.license === 'CC-BY-NC-SA-4.0'), 'pl keeps its declared licence');
+  assert.deepEqual(licensingBlockers({ technical, materialsRoot: root }), []);
+  for (const file of ['docs/licensing/README.md', 'LICENSING.md', 'THIRD_PARTY_NOTICES.md']) {
+    assert.doesNotMatch(fs.readFileSync(path.join(root, file), 'utf8'), /pending upstream response|odpowiedź (?:jest oczekiwana|nie została jeszcze otrzymana)/, file);
+  }
 });
