@@ -28,3 +28,9 @@ Starsze pliki `store/screenshots/en/` i `store/screenshots/pl/` to zachowane kom
 Dotychczasowe wyniki generatora są zastępowane dopiero po pomyślnym przygotowaniu całego zestawu. Katalog bez `metadata.json` tego generatora lub zawierający dodatkowe pliki użytkownika spoza metadanych nie jest nadpisywany; trzeba wybrać nowy `--out`.
 
 **Brak przeglądarki:** narzędzie zgłasza brak Chromium Playwright kodem 2 i nie wytwarza makiet ani zastępczych zrzutów. Systemowe Chromium z polityką administratora blokującą rozszerzenia nie zastępuje tej walidacji. Bieżący stan przechwyceń odczytaj z `readiness-report.json`; sam plik instrukcji nie potwierdza, że wykonano nową serię.
+
+## Zestaw kompozycji dla Chrome Web Store (1.0.0)
+
+`docs/webstore/cws-screenshots/` zawiera 5 zrzutów PL i 5 EN (1280×800) z nagłówkami, wykonanych przez
+`store/cws-screenshots.mjs` na opublikowanej paczce `Apex-AdBlocker-WebStore-1.0.0.zip` o przypiętym SHA-256.
+Opis scen, kontrole integralności i sposób odtworzenia: [cws-screenshots/README.md](cws-screenshots/README.md).
