@@ -78,7 +78,7 @@ Wydawca: **Konrad Woźniak**
 Kontakt w sprawach prywatności: **support@apexsoftware.app**
 Data aktualizacji: **2 listopada 2026 r.**
 
-Ta polityka opisuje rozszerzenie Apex AdBlocker w wersji 1.0.0. Jego głównym celem jest blokowanie reklam, mechanizmów śledzących i wybranych złośliwych stron podczas przeglądania. Rozszerzenie działa w przeglądarce, nie wymaga konta i nie ma własnego backendu ani telemetrii.
+Ta polityka opisuje rozszerzenie Apex AdBlocker w wersji 1.0.1. Jego głównym celem jest blokowanie reklam, mechanizmów śledzących i wybranych złośliwych stron podczas przeglądania. Rozszerzenie działa w przeglądarce, nie wymaga konta i nie ma własnego backendu ani telemetrii.
 
 ## Dane potrzebne do działania
 
