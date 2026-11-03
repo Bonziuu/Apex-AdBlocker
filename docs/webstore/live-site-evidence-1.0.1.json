@@ -1,0 +1,708 @@
+{
+  "kind": "apex-live-site-evidence",
+  "version": "1.0.1",
+  "packageSha256": "b068c20d9606e58fa4674cb91568f49e116a172f47276577a6c4c6405d855f4b",
+  "packageFile": "Apex-AdBlocker-WebStore-1.0.1.zip",
+  "candidateCommit": "1a6820f971339a678b2b6370d758907c00df9fe3",
+  "latestJsonSha256": "873e9b6be46f8e7cefbd5147cbdef7f5801e98a0d34e11f1ff6e95adf5f77fa7",
+  "packageBinding": "latest.json records extension version 1.0.1 and lists ads/privacy/security/pl but no package hash; the link to this ZIP SHA-256 is stated by the project owner (run on .\\dist\\candidate-1.0.1).",
+  "automatic": {
+    "tool": "tests/local/single-blocker-sites.mjs",
+    "command": "npm run test:sites -- --dir \".\\dist\\candidate-1.0.1\"",
+    "latestJsonSha256": "873e9b6be46f8e7cefbd5147cbdef7f5801e98a0d34e11f1ff6e95adf5f77fa7",
+    "startedAt": "2026-11-03T07:42:45.845Z",
+    "finishedAt": "2026-11-03T08:04:11.096Z",
+    "environment": {
+      "os": "Windows_NT 10.0.26200",
+      "node": "v24.22.1",
+      "headless": false
+    },
+    "extension": {
+      "config": "apex",
+      "startupMs": 2241.1,
+      "lists": [
+        "ads",
+        "privacy",
+        "security",
+        "pl"
+      ],
+      "version": "1.0.1"
+    },
+    "summary": {
+      "status": {
+        "PASS": 15,
+        "REAL_AD": 0,
+        "EMPTY_AD_SLOT": 1,
+        "BREAKAGE": 2,
+        "ANTI_ADBLOCK": 0,
+        "BOT_CHALLENGE": 3,
+        "SITE_ERROR": 2,
+        "CONSENT_INCONCLUSIVE": 30,
+        "MANUAL_REVIEW": 0
+      },
+      "comparableSites": 20,
+      "realAdReductionPct": 100,
+      "sitesWithRealAds": {
+        "none": 12,
+        "apex": 0
+      },
+      "blockedRequests": 750,
+      "youtube": {
+        "PASS": 2,
+        "BREAKAGE": 2,
+        "INCONCLUSIVE": 2
+      },
+      "counts": {
+        "checks": 59,
+        "sites": 53,
+        "youtubeChecks": 6,
+        "PASS": 17,
+        "BREAKAGE": 4,
+        "needsReview": 1,
+        "INCONCLUSIVE": 37
+      },
+      "visibleRealAds": {
+        "withoutExtension": 78,
+        "withApex": 0
+      }
+    },
+    "sites": [
+      {
+        "host": "www.onet.pl",
+        "url": "https://www.onet.pl/",
+        "category": "portale i news (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "różny stan zgody: rejected vs none (bez → z) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.wp.pl",
+        "url": "https://www.wp.pl/",
+        "category": "portale i news (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.interia.pl",
+        "url": "https://www.interia.pl/",
+        "category": "portale i news (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 17 → 0",
+          "materiały promocyjne strony: 6 → 6",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "www.o2.pl",
+        "url": "https://www.o2.pl/",
+        "category": "portale i news (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.gazeta.pl",
+        "url": "https://www.gazeta.pl/",
+        "category": "portale i news (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 5 → 0",
+          "materiały promocyjne strony: 17 → 17",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "tvn24.pl",
+        "url": "https://tvn24.pl/",
+        "category": "portale i news (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 9 → 0",
+          "materiały promocyjne strony: 1 → 1",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "www.rmf24.pl",
+        "url": "https://www.rmf24.pl/",
+        "category": "portale i news (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – po otwarciu ustawień brak bezpiecznego odrzucenia; z: unresolved – po otwarciu ustawień brak bezpiecznego odrzucenia – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.polsatnews.pl",
+        "url": "https://www.polsatnews.pl/",
+        "category": "portale i news (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 1 → 0",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "www.fakt.pl",
+        "url": "https://www.fakt.pl/",
+        "category": "portale i news (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 4 → 0",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "www.se.pl",
+        "url": "https://www.se.pl/",
+        "category": "portale i news (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: none – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "natemat.pl",
+        "url": "https://natemat.pl/",
+        "category": "portale i news (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – po otwarciu ustawień brak bezpiecznego odrzucenia; z: none – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.wprost.pl",
+        "url": "https://www.wprost.pl/",
+        "category": "portale i news (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 0 → 0",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "www.money.pl",
+        "url": "https://www.money.pl/",
+        "category": "finanse i biznes (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.bankier.pl",
+        "url": "https://www.bankier.pl/",
+        "category": "finanse i biznes (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "businessinsider.com.pl",
+        "url": "https://businessinsider.com.pl/",
+        "category": "finanse i biznes (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 6 → 0",
+          "materiały promocyjne strony: 4 → 3",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "www.sport.pl",
+        "url": "https://www.sport.pl/",
+        "category": "sport (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 3 → 0",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "meczyki.pl",
+        "url": "https://meczyki.pl/",
+        "category": "sport (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: none – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "przegladsportowy.onet.pl",
+        "url": "https://przegladsportowy.onet.pl/",
+        "category": "sport (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 14 → 0",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "spidersweb.pl",
+        "url": "https://spidersweb.pl/",
+        "category": "technologie (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – po otwarciu ustawień brak bezpiecznego odrzucenia; z: none – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "antyweb.pl",
+        "url": "https://antyweb.pl/",
+        "category": "technologie (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.komputerswiat.pl",
+        "url": "https://www.komputerswiat.pl/",
+        "category": "technologie (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 7 → 0",
+          "materiały promocyjne strony: 14 → 24",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "www.benchmark.pl",
+        "url": "https://www.benchmark.pl/",
+        "category": "technologie (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.purepc.pl",
+        "url": "https://www.purepc.pl/",
+        "category": "technologie (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 0 → 0",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "www.cda.pl",
+        "url": "https://www.cda.pl/",
+        "category": "video",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: none – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.dailymotion.com",
+        "url": "https://www.dailymotion.com/",
+        "category": "video",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 0 → 0",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "www.twitch.tv",
+        "url": "https://www.twitch.tv/",
+        "category": "video",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 0 → 0",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "allegro.pl",
+        "url": "https://allegro.pl/",
+        "category": "sklepy (PL)",
+        "status": "SITE_ERROR",
+        "reasons": [
+          "strona nie działa w obu konfiguracjach (bez: HTTP 403; z: HTTP 403)"
+        ]
+      },
+      {
+        "host": "www.ceneo.pl",
+        "url": "https://www.ceneo.pl/",
+        "category": "sklepy (PL)",
+        "status": "EMPTY_AD_SLOT",
+        "reasons": [
+          "puste sloty po reklamach: 3 → 3"
+        ]
+      },
+      {
+        "host": "www.x-kom.pl",
+        "url": "https://www.x-kom.pl/",
+        "category": "sklepy (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – po otwarciu ustawień brak bezpiecznego odrzucenia; z: unresolved – po otwarciu ustawień brak bezpiecznego odrzucenia – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.mediaexpert.pl",
+        "url": "https://www.mediaexpert.pl/",
+        "category": "sklepy (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.olx.pl",
+        "url": "https://www.olx.pl/",
+        "category": "sklepy (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.empik.com",
+        "url": "https://www.empik.com/",
+        "category": "sklepy (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "wykop.pl",
+        "url": "https://wykop.pl/",
+        "category": "fora i społeczności",
+        "status": "BREAKAGE",
+        "reasons": [
+          "rozjechany układ (poziome przewijanie)"
+        ]
+      },
+      {
+        "host": "www.elektroda.pl",
+        "url": "https://www.elektroda.pl/",
+        "category": "fora i społeczności",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "różny stan zgody: rejected vs none (bez → z) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "f.kafeteria.pl",
+        "url": "https://f.kafeteria.pl/",
+        "category": "fora i społeczności",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 0 → 0",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "www.reddit.com",
+        "url": "https://www.reddit.com/",
+        "category": "fora i społeczności",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – brak przycisku odrzucenia ani ustawień CMP; z: unresolved – brak przycisku odrzucenia ani ustawień CMP – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.pudelek.pl",
+        "url": "https://www.pudelek.pl/",
+        "category": "rozrywka, ciężkie reklamy (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.plotek.pl",
+        "url": "https://www.plotek.pl/",
+        "category": "rozrywka, ciężkie reklamy (PL)",
+        "status": "PASS",
+        "reasons": [
+          "reklamy bez → z: 6 → 0",
+          "materiały promocyjne strony: 1 → 1",
+          "brak automatycznych sygnałów problemu – to wskazówka, nie gwarancja"
+        ]
+      },
+      {
+        "host": "kwejk.pl",
+        "url": "https://kwejk.pl/",
+        "category": "rozrywka, ciężkie reklamy (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "jbzd.com.pl",
+        "url": "https://jbzd.com.pl/",
+        "category": "rozrywka, ciężkie reklamy (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "demotywatory.pl",
+        "url": "https://demotywatory.pl/",
+        "category": "rozrywka, ciężkie reklamy (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.filmweb.pl",
+        "url": "https://www.filmweb.pl/",
+        "category": "rozrywka, ciężkie reklamy (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – brak przycisku odrzucenia ani ustawień CMP; z: unresolved – brak przycisku odrzucenia ani ustawień CMP – reklamy nie są porównywane",
+          "więcej błędów JS z Apex AdBlocker (38 vs 0) – tylko informacja, nie breakage"
+        ]
+      },
+      {
+        "host": "www.gry-online.pl",
+        "url": "https://www.gry-online.pl/",
+        "category": "rozrywka, ciężkie reklamy (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.trojmiasto.pl",
+        "url": "https://www.trojmiasto.pl/",
+        "category": "regionalne (PL)",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "epoznan.pl",
+        "url": "https://epoznan.pl/",
+        "category": "regionalne (PL)",
+        "status": "BOT_CHALLENGE",
+        "reasons": [
+          "challenge także BEZ Apex AdBlocker – nie przypisujemy rozszerzeniu („ramka CAPTCHA/challenge”)"
+        ]
+      },
+      {
+        "host": "www.bbc.com",
+        "url": "https://www.bbc.com/",
+        "category": "zagraniczne",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – po otwarciu ustawień brak bezpiecznego odrzucenia; z: unresolved – po otwarciu ustawień brak bezpiecznego odrzucenia – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "edition.cnn.com",
+        "url": "https://edition.cnn.com/",
+        "category": "zagraniczne",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane"
+        ]
+      },
+      {
+        "host": "www.theguardian.com",
+        "url": "https://www.theguardian.com/international",
+        "category": "zagraniczne",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – tylko przycisk akceptacji (nie klikamy); z: unresolved – tylko przycisk akceptacji (nie klikamy) – reklamy nie są porównywane",
+          "więcej błędów JS z Apex AdBlocker (20 vs 0) – tylko informacja, nie breakage"
+        ]
+      },
+      {
+        "host": "www.dailymail.co.uk",
+        "url": "https://www.dailymail.co.uk/",
+        "category": "zagraniczne",
+        "status": "CONSENT_INCONCLUSIVE",
+        "reasons": [
+          "zgoda bez: unresolved – po otwarciu ustawień brak bezpiecznego odrzucenia; z: none – reklamy nie są porównywane",
+          "więcej błędów JS z Apex AdBlocker (8 vs 2) – tylko informacja, nie breakage"
+        ]
+      },
+      {
+        "host": "www.forbes.com",
+        "url": "https://www.forbes.com/",
+        "category": "zagraniczne",
+        "status": "BOT_CHALLENGE",
+        "reasons": [
+          "challenge tylko Z Apex AdBlocker („ramka CAPTCHA/challenge”) – sprawdź ręcznie, czy się powtarza"
+        ]
+      },
+      {
+        "host": "www.imdb.com",
+        "url": "https://www.imdb.com/",
+        "category": "zagraniczne",
+        "status": "BOT_CHALLENGE",
+        "reasons": [
+          "challenge także BEZ Apex AdBlocker – nie przypisujemy rozszerzeniu („Human Verification”)"
+        ]
+      },
+      {
+        "host": "stackoverflow.com",
+        "url": "https://stackoverflow.com/questions",
+        "category": "zagraniczne",
+        "status": "SITE_ERROR",
+        "reasons": [
+          "strona nie działa w obu konfiguracjach (bez: HTTP 403; z: HTTP 403)"
+        ]
+      },
+      {
+        "host": "weather.com",
+        "url": "https://weather.com/",
+        "category": "zagraniczne",
+        "status": "BREAKAGE",
+        "reasons": [
+          "zniknął odtwarzacz wideo (bez: 2)"
+        ]
+      }
+    ],
+    "youtube": [
+      {
+        "id": "yt-player",
+        "status": "BREAKAGE",
+        "detail": "odtwarzanie nie postępuje z Apex AdBlocker (+0.1 s), bez: +7.1 s"
+      },
+      {
+        "id": "yt-seek",
+        "status": "INCONCLUSIVE",
+        "detail": "seek nie działa także bez Apex AdBlocker – nie przypisujemy rozszerzeniu"
+      },
+      {
+        "id": "yt-shorts",
+        "status": "BREAKAGE",
+        "detail": "Shorts nie odtwarza z Apex AdBlocker"
+      },
+      {
+        "id": "yt-ads",
+        "status": "INCONCLUSIVE",
+        "detail": "brak okazji reklamowej w tym przebiegu (to nie jest PASS)"
+      },
+      {
+        "id": "yt-antiadblock",
+        "status": "PASS",
+        "detail": "brak komunikatu anti-adblock"
+      },
+      {
+        "id": "yt-protection",
+        "status": "PASS",
+        "detail": "YouTube Protection: ok, zgodność 30/30"
+      }
+    ],
+    "note": "Automated verdicts copied unchanged from latest.json. They are hints, not a human assessment; the harness did not pass without errors.",
+    "breakage": [
+      "wykop.pl",
+      "weather.com",
+      "YouTube video (yt-player)",
+      "YouTube Shorts (yt-shorts)"
+    ]
+  },
+  "manual": {
+    "kind": "user-attested manual validation",
+    "attestedBy": "project owner",
+    "date": "2026-11-03",
+    "package": "same candidate (Apex-AdBlocker-WebStore-1.0.1.zip, b068c20d…), after the automated run",
+    "cases": [
+      {
+        "case": "YouTube – regular video",
+        "result": "PASS",
+        "notes": "playback, play/pause and seeking worked"
+      },
+      {
+        "case": "YouTube Shorts",
+        "result": "PASS",
+        "notes": "consecutive Shorts played correctly"
+      },
+      {
+        "case": "wykop.pl",
+        "result": "PASS",
+        "notes": "scrolling and basic interaction worked; no visible layout breakage"
+      },
+      {
+        "case": "weather.com",
+        "result": "PASS",
+        "notes": "basic forecast and navigation worked"
+      },
+      {
+        "case": "forbes.com",
+        "result": "PASS",
+        "notes": "site worked during manual validation"
+      },
+      {
+        "case": "ChatGPT (signed in)",
+        "result": "PASS",
+        "notes": "longer answer generation and switching conversations worked; no visible breakage caused by the extension"
+      },
+      {
+        "case": "Claude (signed in)",
+        "result": "PASS",
+        "notes": "answer generation, basic navigation and conversations worked; no visible breakage caused by the extension"
+      }
+    ],
+    "note": "Kept separate from the automated results; it does not change any automated verdict.",
+    "method": "Manual validation performed directly in Chrome on the candidate and reported as a statement of the project owner; the latest.html review interface was not used."
+  },
+  "adjudication": {
+    "decidedBy": "project owner",
+    "date": "2026-11-03",
+    "rule": "Final representative real-site validation is decided by a human; automated test:sites verdicts are hints (latest.json note).",
+    "resolvedAutomatedSignals": [
+      {
+        "case": "YouTube video",
+        "automatic": "BREAKAGE",
+        "manual": "PASS"
+      },
+      {
+        "case": "YouTube Shorts",
+        "automatic": "BREAKAGE",
+        "manual": "PASS"
+      },
+      {
+        "case": "wykop.pl",
+        "automatic": "BREAKAGE",
+        "manual": "PASS"
+      },
+      {
+        "case": "weather.com",
+        "automatic": "BREAKAGE",
+        "manual": "PASS"
+      },
+      {
+        "case": "forbes.com",
+        "automatic": "BOT_CHALLENGE (Apex only)",
+        "manual": "PASS"
+      }
+    ],
+    "assessment": "Automated signals for these cases were judged by the owner as false positives or non-reproducible harness issues; they remain listed unchanged in \"automatic\".",
+    "notReviewed": "The 37 INCONCLUSIVE and 1 needs-review automated cases were not manually reviewed and are not counted in liveSites."
+  },
+  "liveSites": {
+    "status": "PASS",
+    "tested": 7,
+    "passed": 7,
+    "failed": 0,
+    "basis": "human-adjudicated representative validation",
+    "cases": [
+      "YouTube – regular video",
+      "YouTube Shorts",
+      "wykop.pl",
+      "weather.com",
+      "forbes.com",
+      "ChatGPT (signed in)",
+      "Claude (signed in)"
+    ],
+    "automaticResults": "kept separately in \"automatic\", unmodified (17 PASS, 4 BREAKAGE, 1 needs review, 37 INCONCLUSIVE of 59 checks)"
+  }
+}
