@@ -59,3 +59,20 @@ jobs:
           path: dist/Apex-AdBlocker-WebStore-*.zip
           if-no-files-found: error
           retention-days: 30
+
+  gallery-source:
+    name: Existing CWS source graphics
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Apex-AdBlocker-Originals
+          path: |
+            store/screenshots/en/*.png
+            store/screenshots/pl/*.png
+            brand/apex-logo-512.png
+            icons/logo.svg
+          if-no-files-found: error
+          retention-days: 7
