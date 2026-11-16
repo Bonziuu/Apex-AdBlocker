@@ -1,5 +1,5 @@
 ! Title: uBlock filters (2020)
-! Last modified: %timestamp%
+! Last modified: Mon, 09 Nov 2026 12:07:06 +0000
 ! Description: Filters optimized for uBlock, to be used along EasyList
 ! Homepage: https://github.com/uBlockOrigin/uAssets
 ! License: https://github.com/uBlockOrigin/uAssets/blob/master/LICENSE
@@ -744,6 +744,8 @@ turkrock.com##+js(acs, $, .show)
 ||googletagmanager.com^$script,domain=foxnews.com,important
 ||imasdk.googleapis.com/js/sdkloader/ima3_debug.js$domain=foxnews.com,important
 foxnews.com##.site-header:style(min-height: 90px !important)
+! https://github.com/uBlockOrigin/uAssets/issues/12543
+/google.funding.choices.js^$script
 
 ! https://github.com/NanoMeow/QuickReports/issues/3995
 @@||85videos.com^$ghide
@@ -1605,9 +1607,6 @@ pimylifeup.com##+js(aopr, adthrive.config)
 @@||chronicle.com/dg/default/rest/$xhr,1p
 chronicle.com##.GoogleDfpAd-container
 
-! https://github.com/NanoMeow/QuickReports/issues/4512
-animepahe.*##+js(aopw, __C)
-
 ! https://github.com/AdguardTeam/AdguardFilters/issues/62210
 ||uii.io^$3p
 
@@ -1968,9 +1967,6 @@ linuxhint.com,thekitchenmagpie.com##+js(acs, Math, adthrive)
 
 ! https://github.com/AdguardTeam/AdguardFilters/issues/64220
 bonobono.com##.custom-html-widget
-
-! https://github.com/uBlockOrigin/uAssets/pull/7930
-makefreecallsonline.com##+js(rmnt, script, onerror)
 
 ! https://github.com/NanoMeow/QuickReports/issues/4729
 businesstimes.com.sg##.overlayWhite
@@ -2778,7 +2774,7 @@ palcomix.com##table[width="800"]:has(img[src^="../ads/"])
 freemagazines.top##+js(aopr, b2a)
 freemagazines.top##+js(nostif, showModal)
 freemagazines.top##+js(acs, eval, replace)
-freemagazines.top##+js(rmnt, script, var Data)
+freemagazines.top##+js(rmnt, script, .offsetParent)
 freemagazines.top##+js(no-xhr-if, /doubleclick|googlesyndication/)
 freemagazines.top##+js(aeld, DOMContentLoaded, /atob|overlay/)
 freemagazines.top##.widget:has(> .adsbygoogle)
@@ -2869,8 +2865,8 @@ nypost.com##img[src$="/knewz_300x250.png"]:upward(.widget_text)
 nypost.com##.entry-content > .nyp-video-player
 ! https://github.com/uBlockOrigin/uAssets/issues/33707
 ! https://old.reddit.com/r/uBlockOrigin/comments/1ug4jiw/the_sun_adblock_nag/
-decider.com,nypost.com,pagesix.com,the-sun.com,thescottishsun.co.uk,thesun.co.uk,thesun.ie##+js(rmnt, script, parentNode.removeChild)
-decider.com,nypost.com,pagesix.com,the-sun.com,thescottishsun.co.uk,thesun.co.uk,thesun.ie##+js(acs, atob, parentNode.removeChild)
+decider.com,nypost.com,pagesix.com,the-sun.com,thescottishsun.co.uk,thesun.co.uk,thesun.ie##+js(rmnt, script, /parentNode\.removeChild|textContent=atob/)
+decider.com,nypost.com,pagesix.com,the-sun.com,thescottishsun.co.uk,thesun.co.uk,thesun.ie##+js(acs, atob, /parentNode\.removeChild|textContent=atob/)
 
 ! xmegadrive.com popup
 xmegadrive.com##+js(set, flashvars.adv_pause_html, '')
@@ -2889,6 +2885,12 @@ moviessources.*##+js(aopr, console.clear)
 
 ! citynews sites .it anti adb in video
 agrigentonotizie.it,anconatoday.it,arezzonotizie.it,avellinotoday.it,bresciatoday.it,brindisireport.it,casertanews.it,cataniatoday.it,cesenatoday.it,chietitoday.it,forlitoday.it,frosinonetoday.it,genovatoday.it,ilpescara.it,ilpiacenza.it,latinatoday.it,lecceprima.it,leccotoday.it,livornotoday.it,messinatoday.it,milanotoday.it,modenatoday.it,monzatoday.it,novaratoday.it,padovaoggi.it,parmatoday.it,perugiatoday.it,pisatoday.it,quicomo.it,ravennatoday.it,reggiotoday.it,riminitoday.it,romatoday.it,salernotoday.it,sondriotoday.it,sportpiacenza.it,ternitoday.it,today.it,torinotoday.it,trevisotoday.it,triesteprima.it,udinetoday.it,veneziatoday.it,vicenzatoday.it##+js(nostif, bADBlock)
+! https://www.reddit.com/r/uBlockOrigin/comments/1xio240/adblock_detection_on_wwwmilanotodayit/
+!#if cap_html_filtering
+agrigentonotizie.it,anconatoday.it,arezzonotizie.it,avellinotoday.it,bresciatoday.it,brindisireport.it,casertanews.it,cataniatoday.it,cesenatoday.it,chietitoday.it,forlitoday.it,frosinonetoday.it,genovatoday.it,ilpescara.it,ilpiacenza.it,latinatoday.it,lecceprima.it,leccotoday.it,livornotoday.it,messinatoday.it,milanotoday.it,modenatoday.it,monzatoday.it,novaratoday.it,padovaoggi.it,parmatoday.it,perugiatoday.it,pisatoday.it,quicomo.it,ravennatoday.it,reggiotoday.it,riminitoday.it,romatoday.it,salernotoday.it,sondriotoday.it,sportpiacenza.it,ternitoday.it,today.it,torinotoday.it,trevisotoday.it,triesteprima.it,udinetoday.it,veneziatoday.it,vicenzatoday.it##^script:has-text(__unfair)
+!#else
+agrigentonotizie.it,anconatoday.it,arezzonotizie.it,avellinotoday.it,bresciatoday.it,brindisireport.it,casertanews.it,cataniatoday.it,cesenatoday.it,chietitoday.it,forlitoday.it,frosinonetoday.it,genovatoday.it,ilpescara.it,ilpiacenza.it,latinatoday.it,lecceprima.it,leccotoday.it,livornotoday.it,messinatoday.it,milanotoday.it,modenatoday.it,monzatoday.it,novaratoday.it,padovaoggi.it,parmatoday.it,perugiatoday.it,pisatoday.it,quicomo.it,ravennatoday.it,reggiotoday.it,riminitoday.it,romatoday.it,salernotoday.it,sondriotoday.it,sportpiacenza.it,ternitoday.it,today.it,torinotoday.it,trevisotoday.it,triesteprima.it,udinetoday.it,veneziatoday.it,vicenzatoday.it##+js(rmnt, script, __unfair)
+!#endif
 
 ! https://www.reddit.com/r/uBlockOrigin/comments/kc6jpe/how_to_bypass_adblock_detection_on_these_sites/
 *$script,redirect-rule=noopjs,domain=examsnet.com

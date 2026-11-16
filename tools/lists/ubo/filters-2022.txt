@@ -1,5 +1,5 @@
 ! Title: uBlock filters (2022)
-! Last modified: %timestamp%
+! Last modified: Sat, 14 Nov 2026 18:16:00 +0000
 ! Description: Filters optimized for uBlock, to be used along EasyList
 ! Homepage: https://github.com/uBlockOrigin/uAssets
 ! License: https://github.com/uBlockOrigin/uAssets/blob/master/LICENSE
@@ -313,9 +313,12 @@ pornoborshch.com##.on-player-wrap3
 ! https://github.com/uBlockOrigin/uAssets/issues/11551
 btcadspace.com##+js(acs, document.getElementById, AdBlock)
 
-! https://www.reddit.com/r/uBlockOrigin/comments/sjeu10/adblock_detected/
+! https://github.com/uBlockOrigin/uAssets/issues/35086
+mmorpg.org.pl##+js(aeld, error, sentry)
+mmorpg.org.pl##div[data-vidverto-zone]
 mmorpg.org.pl##+js(no-fetch-if, wtg-ads)
 mmorpg.org.pl##div.bABcMb.sc-5odcub-0
+mmorpg.org.pl##.AdsBlock__Wrapper-sc-e3170f82-0
 
 ! https://github.com/uBlockOrigin/uAssets/issues/11566
 hostmath.com##+js(set, canRunAds, true)
@@ -384,10 +387,6 @@ faselhd.*###popup
 mittelhessen.de##[class*="banner"]
 mittelhessen.de##[class*="Banner"]
 mittelhessen.de##.adSlot
-
-! https://www.reddit.com/r/uBlockOrigin/comments/spykj6/getcopynet_adblock_detected_and_ads/
-getcopy.link##+js(aopr, document.write)
-getcopy.link##+js(refresh-defuser)
 
 ! https://github.com/uBlockOrigin/uAssets/issues/11697
 largescaleforums.com##+js(nostif, ).show())
@@ -2666,9 +2665,6 @@ cloudcomputingtopics.net##+js(set, distance, 0)
 null-scripts.net,nullscripts.net##+js(nostif, show)
 @@||nullscripts.net^$ghide
 
-! https://github.com/AdguardTeam/AdguardFilters/issues/130051
-video-to-mp3-converter.com##+js(nowoif, !/^\//)
-
 ! seriesmetro. net popups
 seriesmetro.net##+js(aopr, afStorage)
 
@@ -2759,13 +2755,13 @@ upiapi.in##+js(set, detectAdBlock, noopFunc)
 ! https://github.com/uBlockOrigin/uAssets/issues/29130
 ! https://github.com/uBlockOrigin/uAssets/issues/29364
 *&caid=$xhr,removeparam=caid,domain=max.com
-play.hbomax.com,play.max.com##+js(json-prune, adtech-brightline adtech-google-pal adtech-iab-om)
+hbomax.com,play.max.com##+js(json-prune, adtech-brightline adtech-google-pal adtech-iab-om)
 ! play.hbomax.com,play.max.com##+js(json-prune, ssaiInfo fallback.ssaiInfo)
 ! play.hbomax.com,play.max.com##+js(json-prune-fetch-response, ssaiInfo fallback.ssaiInfo, , propsToMatch, /playbackInfo)
 ! play.hbomax.com,play.max.com##+js(xml-prune, xpath(//*[name()="MPD"]/@mediaPresentationDuration | //*[name()="Period"]/@start | //*[name()="Period"][not(.//*[name()="SegmentTimeline"])][not(.//*[name()="ContentProtection"])] | //*[name()="Period"][./*[name()="BaseURL"]][not(.//*[name()="ContentProtection"])]), , .mpd)
-play.hbomax.com##+js(json-prune-fetch-response, ssaiInfo, , propsToMatch, /playbackInfo)
-play.hbomax.com##+js(json-prune-fetch-response, fallback.ssaiInfo manifest.url, fallback.ssaiInfo, propsToMatch, /playbackInfo)
-play.hbomax.com##+js(xml-prune, xpath(//*[name()="MPD"]/@mediaPresentationDuration | //*[name()="Period"]/@start | //*[name()="Period"][not(.//*[name()="SegmentTimeline"])][not(.//*[name()="ContentProtection"])] | //*[name()="Period"][./*[name()="BaseURL"]][not(.//*[name()="ContentProtection"])][not(.//*[name()="AdaptationSet"][@contentType="text"])]), , /dash.mpd)
+hbomax.com##+js(json-prune-fetch-response, ssaiInfo, , propsToMatch, /playbackInfo)
+hbomax.com##+js(json-prune-fetch-response, fallback.ssaiInfo manifest.url, fallback.ssaiInfo, propsToMatch, /playbackInfo)
+hbomax.com##+js(xml-prune, xpath(//*[name()="MPD"]/@mediaPresentationDuration | //*[name()="Period"]/@start | //*[name()="Period"][not(.//*[name()="SegmentTimeline"])][not(.//*[name()="ContentProtection"])] | //*[name()="Period"][./*[name()="BaseURL"]][not(.//*[name()="ContentProtection"])][not(.//*[name()="AdaptationSet"][@contentType="text"])]), , /dash.mpd)
 ! https://github.com/uBlockOrigin/uAssets/issues/21255#issuecomment-3609784708
 peacocktv.com##+js(xml-prune, xpath(//*[name()="MPD"]/@mediaPresentationDuration | //*[name()="Period"]/@start | //*[name()="Period"][not(.//*[name()="SegmentTimeline"])][not(.//*[name()="ContentProtection"])] | //*[name()="Period"][./*[name()="BaseURL"]][not(.//*[name()="ContentProtection"])]), , /-vod-.+\.mpd/)
 
@@ -3141,12 +3137,6 @@ mmnm.store##+js(nowoif, _blank)
 ||flatrelentlessperspective.com^$all
 ||litaudrootsa.net^$all
 
-! https://mdisklink.link/bdaM1Nu timer
-adzz.in##+js(ra, disabled, button#getlink)
-adzz.in##+js(ra, disabled, button#gotolink)
-adzz.in##button#getlink, button#gotolink:style(display: block !important;)
-adzz.in##.countdown
-
 ! https://github.com/AdguardTeam/AdguardFilters/issues/133535
 hentaihaven.vip,nhentaihaven.org##+js(acs, Script_Manager)
 hentaihaven.vip,nhentaihaven.org##.script_manager_video_master
@@ -3439,20 +3429,19 @@ chip.de###banner_top_table
 chip.de##.Ad
 chip.de##.ad
 chip.de###contentad-top-adsense-1
-chip.de##.Ad-Slot
-chip.de##div[class*="ad-slot"]
-chip.de##.ad-listing
+chip.de##div[class*="ad-slot" i]
 chip.de##div[id*="AdSlot"]
-chip.de##.ae-banner
-chip.de##.ae-skyscraper
+chip.de##.ad-listing
 chip.de##.product__top-aside
 chip.de##.RUC-DownloadButton-Wrap:has(> span:has-text(/^ANZEIGE$/))
+chip.de##div:not([id], [class]):has(> section:only-child > div:only-child > a[href^="https://www.chip.de/deals/schnaeppchen/"]:only-child > img[src^="https://quadro.burda-forward.de/"]:only-child)
+chip.de##div:not([id], [class]):has(> section:only-child > a[href^="https://www.chip.de/deals/schnaeppchen/"]:only-child > img[src^="https://quadro.burda-forward.de/"]:only-child)
 ! restore speed (the anti adblock script causing lag spikes)
 !#if cap_html_filtering
-www.chip.de##^script:has-text(/\'\, [0-9]{3}\)\]\; \}  \}/)
+www.chip.de##^script:has-text(/\, [0-9]{3}\)\]\; var /)
 www.chip.de##^script:has-text(/\"\,\"clickp\"\:\"[0-9]{1,2}\"/)
 !#else
-www.chip.de##+js(rmnt, script, /\'\, [0-9]{3}\)\]\; \}  \}/)
+www.chip.de##+js(rmnt, script, /\, [0-9]{3}\)\]\; var /)
 www.chip.de##+js(rmnt, script, /\"\,\"clickp\"\:\"[0-9]{1\,2}\"/)
 !#endif
 ||nah-versorger.de^$3p
@@ -3659,6 +3648,10 @@ ios.codevn.net##+js(nosiif, offsetHeight)
 ! https://github.com/uBlockOrigin/uAssets/issues/16076
 @@||redketchup.io^$script,1p
 redketchup.io##+js(rpnt, script, ?30:0, ?0:0)
+redketchup.io##+js(trusted-set, document.visibilityState, json:"visible")
+redketchup.io##+js(set, googletag.cmd.push, noopFunc)
+redketchup.io##+js(nostif, /googletag\.pubads|\/PreBid\.js/)
+||securepubads.g.doubleclick.net/tag/js/gpt.js$script,redirect=noopjs:6,domain=redketchup.io
 redketchup.io##.potato_modal
 
 ! https://en.bestfonts.pro/font/download/5ddec54abc00f605b3d2d2b1 timer
@@ -3749,13 +3742,6 @@ xxxshake.com##.fluid-b
 bravedown.com##+js(no-fetch-if, /adskeeper|cloudflare/)
 bravedown.com##+js(set-local-storage-item, a_render, true)
 bravedown.com##+js(rmnt, script, /adbl/i)
-
-! https://github.com/uBlockOrigin/uAssets/issues/16166
-proappapk.com##+js(ra, disabled, #gotolink)
-proappapk.com###gotolink:style(display: block !important;)
-proappapk.com##.blogContent:has(#verify) .postBody
-*$popunder,domain=proappapk.com
-||iili.io^$domain=proappapk.com
 
 ! https://github.com/uBlockOrigin/uAssets/issues/16169
 crypto4yu.com##+js(aopr, Swal.fire)

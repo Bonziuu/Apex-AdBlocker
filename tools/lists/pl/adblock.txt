@@ -7,9 +7,9 @@
 ! Works best with EasyList - be sure to subscribe it as well!
 ! Działa najlepiej z EasyList - pamiętaj aby zasubskrybować!
 !   Patronite ==> https://patronite.pl/polskiefiltry
-! Last modified: 20 November 2026
+! Last modified: 15 November 2026
 ! Expires: 1 day
-! Version: 20261012001
+! Version: 2026111501
 ! Support:
 !   Email >> errorsfilters@certyficate.it
 !   Github >> https://github.com/MajkiIT/polish-ads-filter/issues
@@ -17,7 +17,7 @@
 ! License: https://creativecommons.org/licenses/by-nc-sa/4.0/
 ! Copyright © 2026 Certyficate IT
 ! Najnowsza wersja zawsze na: https://www.certyficate.it/adblock
-! v.20261012001 aktualizacja: wt, 20 pazdziernika 2026, 19:35:00
+! v.2026111501 aktualizacja: nie, 15 listopada 2026, 22:00:00
 !
 !
 !1#-----------------------General advert blocking filters-----------------------!
@@ -247,7 +247,7 @@ popkiller.pl,tygodnikpodhalanski.pl,cnc.info.pl##[class*="reklamy"]
 !~biblio.com,~milionczesci.pl,~dizibox.com,~imdb.com,~2dehands.be,~btdb.eu,~ewybory.eu,~pudelek.pl,~ru,~ua,~me,~sk##[id^="adv-"]:not(#adv-settings):not(.adv-player-container)
 ~24jgora.pl,~24wroclaw.pl,~bbfan.pl,~bp24.pl,~e-sochaczew.pl,~egarwolin.pl,~egorzow.pl,~ekspresjaroslawski.pl,~goral.info.pl,~iochota.pl,~iotwock.info,~iskierniewice.pl,~izyrardow.pl,~jaworzno.biz,~kartuzy.info,~koscierski.info,~kurierbytowski.com.pl,~kurierpodlaski.pl,~lowicz24.eu,~mylomza.pl,~nswiecie.pl,~ool.ru,~pulsgdanska.pl,~skarzyski.eu,~szydlowiecki.eu,~tulegnica.pl,~turyki.pl,~zambrow.org##[class*="box-advert"]
 ~plonskwsieci.pl##.a-d-v-i
-~dziennikwschodni.pl,~fakro.pl,~fera.pl,~filmweb.pl,~galilu.pl,~hardcorowo.pl,~meczyki.pl,~milmag.pl,~otodom.pl,~przegladsportowy.pl,~uwaga.tvn.pl,~vod.tvp.pl,~wpolityce.pl,pl,~zero.pl##[class^="ad-"]
+~dziennikwschodni.pl,~fakro.pl,~fera.pl,~filmweb.pl,~galilu.pl,~hardcorowo.pl,~meczyki.pl,~milmag.pl,~otodom.pl,~otomoto.pl,~przegladsportowy.pl,~uwaga.tvn.pl,~vod.tvp.pl,~wpolityce.pl,pl,~zero.pl##[class^="ad-"]
 ~przegladsportowy.pl,~fakt.pl,~forbes.pl,~auto-swiat.pl,~noizz.pl,~plejada.pl,~businessinsider.com.pl,~komputerswiat.pl,~onet.pl,pl##[id^="crt-"]
 ~przegladsportowy.pl,~medonet.pl,~fakt.pl,~forbes.pl,~auto-swiat.pl,~noizz.pl,~plejada.pl,~businessinsider.com.pl,~komputerswiat.pl,~onet.pl,pl###advertisments
 ~przegladsportowy.pl,~medonet.pl,~fakt.pl,~forbes.pl,~auto-swiat.pl,~noizz.pl,~plejada.pl,~businessinsider.com.pl,~komputerswiat.pl,~onet.pl,pl###pixad-box
@@ -431,6 +431,7 @@ antyweb.pl##.transparent, .box-adv, .grid-item--height-2.grid-item--width-2.grid
 antyweb.pl##[class$="banner--place"]
 antyweb.pl##span.font-bold:has-text(Reklama)
 aptekarski.com##.placement-item
+apteline.pl##.container--ad-naviboard.container
 apynews.pl##.featured-advert
 archiwum.wiesci.com.pl##table:nth-of-type(1) > tbody > tr > td:nth-of-type(3), table:nth-of-type(2) > tbody > tr > td:nth-of-type(3)
 arenadesign.pl##div.owl-item
@@ -704,6 +705,7 @@ centrumwitalnosci.pl##div:nth-of-type(8), div:nth-of-type(9), .ot-widget-banner,
 centrumxp.pl###WelcomeBox
 centrumxp.pl###sldr, .article > p > span
 centrumxp.pl##.article > p > a > img[src*="Bannery"]
+cenograj.pl##a[href*="?utm"] > img, a[href*="&utm"] > img
 ceo.com.pl,trzemeszno24.info##.td_single_image_bg, .td-category-description, .widget_media_image.widget.td_block_template_1
 cgm.pl##.headFlash
 chcemybycrodzicami.pl##.premium-cont, .the-a
@@ -1409,6 +1411,8 @@ gazetaprawna.pl##.tpl_ads_adexon.tpl_std_module
 gazetaprawna.pl##.tpl_stc-content.tpl_std_module
 gazetaprawna.pl##[style^="text-align:center; margin: 0 0 10px 0"], .adCaptionContainer
 gazetaprawna.pl##a[href^="http://www.kyoceradocumentsolutions.pl/index/produkty/product/"]
+www.gazetaprawna.pl##.md\:w-12\/12.w-12\/12.gap-3.flex-col.flex
+www.gazetaprawna.pl##.print\:hidden.lg\:block.w-\[300px\].hidden
 gazetaregionalna.pl##.right-col.col-md-3.col-sm-12
 gazetasenior.pl##.fn-builder > p > [target="_blank"] > IMG, .fn-block-content.widget_text
 gazetaslupecka.pl###main > .widget_media_image.covernews-widget.widget
@@ -2310,6 +2314,9 @@ meteoprog.pl##.reclama
 meteovista.pl##.leaderboard
 metropoliabydgoska.pl##.mt-commercial-boxes-fix.mt-banner
 mfind.pl###sidebar-sticky-widgets > .widget-ebook-form > .widget-ebook-form-content
+mgr.farm##.mgr-content-row.row > .col-lg-12
+mgr.farm##[id^="gam-ad-"]
+mgr.farm##.farmacja-advertisement-label
 mgprojekt.com.pl##.ai-close-fit.ai-close
 mgsm.pl###left-con > div
 mgsm.pl##.hr
@@ -4018,6 +4025,9 @@ wieleliter.pl##.wiele-widget.widget
 wielkahistoria.pl#?##custom_html-5:-abp-has(.adsbygoogle)
 wielkiebudowanie.pl##.banerjpg
 wielkopolska.tv##.ineaBox.boxHeader, #ai_widget-2
+wielkopolska.tv##.tvwlkp-ad--pos-header_top
+wielkopolska.tv##.tvwlkp-ad--image
+wielkopolska.tv##.banner-ad
 wielkopolska24.info###ai_widget-3
 wielodzietni.org##[id^="reklama-"]
 wiesci.info.pl#?#h4:-abp-contains(REKLAMA)
@@ -4096,6 +4106,10 @@ wrealu24.pl##.bannergroup
 wrealu24.pl##DIV[id^="content_video_"][preload="auto"]
 wronek.wikidot.com##.image
 wrzesnia.info.pl##.owl-loaded.text-center.owl-carousel.adverts-slider
+wrzuc.info##.wi-r-box-1
+wrzuc.info##div.wi-r-vertical
+wrzuc.info##.wi-r-przed-ostatnim-akapitem-2
+wrzuc.info##.wi-r-entity-placement
 wschodnik.pl##.col-sm-3.col-xs-12 > p
 wschodnik.pl##.hsbannerside > p
 wspomnijbliskich.pl###sponsor_title
@@ -5080,6 +5094,15 @@ wiadomosci.onet.pl##.ods-ads__ad-space
 ||matomo.neuca24.pl^
 ||stg.noon.insteadempty.com^
 ||landingpagenebulamaster.com^
+||coolaspen.tech^
+||snowdahlia.pro^
+||cheerfulridge.com^
+||bamboolake.pro^
+||calmjacket.com^
+||lovingflag.com^
+||curiousbirch.mobi^
+||parrotforest.biz^
+||kupcochcesz.pl/skins/user/*/js/wa-ad.js
 !
 !11#---------------------------------Multi Regex----------------------------------!
 /:\/\/[a-zA-Z0-9]{3,9}\.quartic\.pl\/Ad\//$script
@@ -5514,6 +5537,8 @@ filmyfilmy.pl###play
 ||dobrezrodla.com^
 ||feji.io^
 ||hvmtdby.com^
+||flffetre.net^
+||caringyarn.pro^
 !
 !24#--------------------------Rules for ublock, but can be use with adblock------------!
 ||imasdk.googleapis.com/js/core/bridge*.html$subdocument,domain=exs.pl,important

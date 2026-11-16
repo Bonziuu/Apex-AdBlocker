@@ -1,5 +1,5 @@
 ! Title: uBlock filters – Privacy
-! Last modified: %timestamp%
+! Last modified: Mon, 16 Nov 2026 05:04:35 +0000
 ! Expires: 7 days
 ! Description: |
 !   Some of these filters make use of the `important` filter option,`
@@ -114,8 +114,8 @@ www.google.*###main a[href][ping^="/url?"]:remove-attr(ping)
 ! https://github.com/uBlockOrigin/uAssets/issues/7960#issuecomment-5433711948
 !#if !env_mobile
 !#if !ext_ubol
-www.google.com##+js(aeld, mouseover, b.src, elements, #search #rso div[data-rpos] > div[data-ved])
-www.google.com##+js(rpnt, script, this.gbar_=, `window.addEventListener("mousemove",(()=>{W_jd&&document.querySelectorAll("#search #rso div[data-rpos]").forEach((t=>{let e=t.querySelector('div[data-hveid] span[jsaction^="trigger."] > a[href^="/goto?url="]');if(!e)return;let r=t.querySelector('div[id^="atritem-"]')?.attributes?.jsdata?.value?.split?.(";_;")?.[1];r&&Object.getOwnPropertySymbols(W_jd[r]).map((t=>{let l=W_jd[r][t];if("object"!=typeof l||null===l)return;let s=Object.values(l)?.[0]?.[32];if(s?.[3]?.[0]?.startsWith?.("http"))e.setAttribute("href",s[3][0]);else if(null!==s?.[3]){let t=Object.values(s?.[3]);t?.[0]?.[0]?.startsWith?.("http")&&e.setAttribute("href",t[0][0])}else null===s?.[3]&&s[11]?.[7]?.startsWith?.("http")&&e.setAttribute("href",s[11][7])}))}))}));this.gbar_=`)
+! www.google.com##+js(aeld, mouseover, b.src, elements, #search #rso div[data-rpos] > div[data-ved])
+! www.google.com##+js(rpnt, script, this.gbar_=, `window.addEventListener("mousemove",(()=>{W_jd&&document.querySelectorAll("#search #rso div[data-rpos]").forEach((t=>{let e=t.querySelector('div[data-hveid] span[jsaction^="trigger."] > a[href^="/goto?url="]');if(!e)return;let r=t.querySelector('div[id^="atritem-"]')?.attributes?.jsdata?.value?.split?.(";_;")?.[1];r&&Object.getOwnPropertySymbols(W_jd[r]).map((t=>{let l=W_jd[r][t];if("object"!=typeof l||null===l)return;let s=Object.values(l)?.[0]?.[32];if(s?.[3]?.[0]?.startsWith?.("http"))e.setAttribute("href",s[3][0]);else if(null!==s?.[3]){let t=Object.values(s?.[3]);t?.[0]?.[0]?.startsWith?.("http")&&e.setAttribute("href",t[0][0])}else null===s?.[3]&&s[11]?.[7]?.startsWith?.("http")&&e.setAttribute("href",s[11][7])}))}))}));this.gbar_=`)
 !#endif
 !#endif
 
@@ -352,7 +352,7 @@ tacobell.com##+js(set, bmak.js_post, false)
 ||videovard.*/api/front/view^$xhr,important
 
 ! https://github.com/uBlockOrigin/uAssets/issues/11644
-endbasic.dev,jmmv.dev##+js(no-xhr-if, method:POST)
+endbasic.dev##+js(no-xhr-if, method:POST)
 
 ! https://github.com/AdguardTeam/AdguardFilters/issues/106875
 ||b90.yahoo.co.jp^
@@ -1174,20 +1174,8 @@ arstechnica.com,dermnetnz.org##.gsc-webResult a[data-cturl]:remove-attr(/^data-c
 !#if !ext_ubol
 ! Block Attribution reporting
 www.youtube.com##+js(no-xhr-if, /\/api\/stats\/atr\?.+?&rt=\d+\.\d+.+?&volume=\d+&cbr=.+?&fexp=v1%[-%0-9C]{300\,}&.+?&muted=\d(&vis=3)?&docid=/ method:POST)
-! https://github.com/uBlockOrigin/uAssets/issues/33267
-! https://github.com/uBlockOrigin/uAssets/issues/33328
-! https://github.com/AdguardTeam/AdguardFilters/issues/233800
-||observe.runpod.io/static/web-vitals.js
-! https://github.com/uBlockOrigin/uAssets/issues/33914
-/wp-content/plugins/google-site-kit/dist/assets/js/googlesitekit-consent-mode-
-/wp-content/plugins/google-site-kit/dist/assets/js/googlesitekit-events-provider-
-! https://www.rd.com/
-/wp-content/plugins/tmbi-assertive-yield/*
-/wp-content/plugins/tmbi-data-analytics
-/wp-content/plugins/tmbi-brandmetrics
-/wp-content/plugins/tmbi-ad-density
-/wp-content/plugins/tmbi-permutive
-/wp-content/plugins/tmbi*-affiliate
+! 1st-party google tag manager script
+/^https:\/\/(www\.)?[a-z0-9-]+\.[a-z]+(\.[a-z]+)?\/[A-Z0-9]{6}\/$/$script,1p,match-case
 !#endif
 /e/*^ip=*^beacon=
 /e/*^ip=*^compression=
@@ -1227,6 +1215,20 @@ www.youtube.com##+js(no-xhr-if, /\/api\/stats\/atr\?.+?&rt=\d+\.\d+.+?&volume=\d
 ! https://github.com/AdguardTeam/AdguardFilters/issues/240598
 ||otrium.*/static/newrelic.js
 ||otrium.*/measure/
+! https://github.com/uBlockOrigin/uAssets/issues/33267
+! https://github.com/uBlockOrigin/uAssets/issues/33328
+! https://github.com/AdguardTeam/AdguardFilters/issues/233800
+||observe.runpod.io/static/web-vitals.js
+! https://github.com/uBlockOrigin/uAssets/issues/33914
+/wp-content/plugins/google-site-kit/dist/assets/js/googlesitekit-consent-mode-
+/wp-content/plugins/google-site-kit/dist/assets/js/googlesitekit-events-provider-
+! https://www.rd.com/
+/wp-content/plugins/tmbi-assertive-yield/*
+/wp-content/plugins/tmbi-data-analytics
+/wp-content/plugins/tmbi-brandmetrics
+/wp-content/plugins/tmbi-ad-density
+/wp-content/plugins/tmbi-permutive
+/wp-content/plugins/tmbi*-affiliate
 
 ! https://github.com/AdguardTeam/AdguardFilters/issues/213240
 ||bdvmetricas.banvenez.com.ve^
@@ -1694,6 +1696,8 @@ $removeparam=s,to=twitter.com|x.com
 ! https://github.com/uBlockOrigin/uAssets/issues/20941
 ! https://github.com/uBlockOrigin/uAssets/issues/30129
 ||com/*/status/$removeparam=t,to=twitter.com|x.com
+! "copy link" tracking parameters
+||x.com/*/status/$doc,removeparam=a
 ! https://github.com/DandelionSprout/adfilt/discussions/163#discussioncomment-8955444
 ! https://github.com/brave/adblock-lists/pull/1455
 ! eBay tracking parameters
@@ -2216,7 +2220,7 @@ r.mail.wowvegas.com%2Ftr%2Fop%2F*$image
 ! github.com
 /github.com/notifications/beacon/*$image
 *%2Fgithub.com%2Fnotifications%2Fbeacon%2F*$image
-||api.github.com/_private/browser/rum?*beacon$ping
+||api.github.com/_private/browser/rum?
 ! vistaprint.com
 *%2Flinks.mail.vistaprint.com%2Fs%2F*$image
 ! controld.com
@@ -2794,6 +2798,9 @@ evropa2.cz##+js(set-local-storage-item, /cnc_alien_invasion_code|pixelsLastFired
 ||al.fanza.co.jp/?lurl=$doc,urlskip=?lurl
 ||ck.jp.ap.valuecommerce.com/servlet/referral?*&vc_url=$doc,urlskip=?vc_url
 ||hb.afl.rakuten.co.jp/hgc/*/?pc=$doc,urlskip=?pc
+!
+||dlaf.jp/home/dlaf/=/aid/*/url/$urlskip=/\/url\/(http.+)/ -uricomponent
+erogamescape.org,erogamescape.dyndns.org##+js(href-sanitizer, a[href^="https://dlaf.jp/home/dlaf/=/aid/"][href*="/url/http"], /\/url\/(http.+)/ -uricomponent)
 
 ! https://pagalfree.com/
 ||spexjs.com^
@@ -3250,7 +3257,7 @@ webex.com##+js(no-xhr-if, svc.webex.com/metrics)
 /fingerprint2.min.js$script,redirect=fingerprint2.js
 
 ! https://github.com/uBlockOrigin/uAssets/issues/26362
-||curiosity.sheepesports.com^
+||rainbow.sheepesports.com^
 
 ! https://github.com/AdguardTeam/AdguardFilters/issues/234519
 mashable.com##+js(href-sanitizer, a[href^="https://zdcs.link/"], ?u)
@@ -3263,10 +3270,10 @@ vaughn.live##+js(no-fetch-if, method:POST body:zaraz)
 ||vaughn.live/vsz/
 
 ! https://github.com/uBlockOrigin/uAssets/issues/33072#issuecomment-4937969164
-x.com##+js(prevent-xhr, /i/api/1.1/flow/viewer.json)
-x.com##+js(prevent-xhr, /i/api/1.1/flow/timeline.json)
+x.com##+js(prevent-xhr, /api/1.1/flow/viewer.json)
+x.com##+js(prevent-xhr, /api/1.1/flow/timeline.json)
 x.com##+js(proxy-apply-config, {"skipToString":true})
-x.com##+js(prevent-xhr, /i/api/1.1/graphql/viewer_context.json)
+x.com##+js(prevent-xhr, /api/1.1/graphql/viewer_context.json)
 
 ! https://github.com/uBlockOrigin/uAssets/issues/12635#issuecomment-4982050273
 telegraph.co.uk##.onward-journey
@@ -3306,6 +3313,8 @@ $uritransform=/#Echobox=[\d]{10}$//,to=iltalehti.fi|hs.fi
 ||stats.index.hr^
 ||index.hr/tracking-beacon
 ||index.hr/api/Stats/
+||index.hr/api/homepage/seen
+||index.hr/setabcookie
 
 ! https://github.com/uBlockOrigin/uAssets/issues/34145
 ||sms24.me/numbers/pixel
@@ -3374,6 +3383,55 @@ oklivetv.com##+js(no-fetch-if, method:POST body:tracker)
 
 ! https://github.com/uBlockOrigin/uAssets/issues/34905
 ||emudesk.com/api/analytics/
+
+! https://github.com/uBlockOrigin/uAssets/issues/35002
+||go.portail-assurance.ca^
+||proxyhog.com^
+
+! https://github.com/uBlockOrigin/uAssets/issues/35020
+||bol.com/rs/v*/batch|
+bol.com##+js(json-edit-fetch-request, $[?.operationName=="sendExperimentMeasurementReferences"].*, propsToMatch, /graphql)
+
+! https://github.com/uBlockOrigin/uAssets/issues/35036
+||tarnkappe.info/matABC.js
+
+! https://github.com/uBlockOrigin/uAssets/issues/35086
+||analytics.fullstak.pl^
+
+! https://github.com/uBlockOrigin/uAssets/issues/35156
+||tvivu.com/api/channels/*/view
+||tvivu.com/api/t/view
+
+! https://github.com/uBlockOrigin/uAssets/issues/28050
+||pla.uqload.vc^
+/api/videos/*/view$xhr,method=post,1p,domain=chaturflix.cam|striphub.cam
+
+! https://github.com/uBlockOrigin/uAssets/issues/26079
+tiktok.com##+js(set, AppLogBridge.hasStarted, trueFunc)
+tiktok.com##+js(set, AppLogBridge.onEventV3, noopFunc)
+tiktok.com##+js(set, AppLogBridge.profileSet, noopFunc)
+tiktok.com##+js(set, AppLogBridge.profileSetOnce, noopFunc)
+tiktok.com##+js(set, AppLogBridge.profileIncrement, noopFunc)
+tiktok.com##+js(set, AppLogBridge.profileUnset, noopFunc)
+tiktok.com##+js(set, AppLogBridge.profileAppend, noopFunc)
+tiktok.com##+js(set-local-storage-item, /__tea_cache_events_.*/, $remove$)
+
+! https://www.reddit.com/r/uBlockOrigin/comments/1i83y7t/a_certain_website_detected_that_im_using_an/
+||analytics.fsicomics.com^
+
+! https://github.com/uBlockOrigin/uAssets/issues/29412
+||mediamarkt.be/api/v1/msg
+||1.1.1.1/dns-query$domain=mediamarkt.be,method=post,xhr
+
+! https://github.com/uBlockOrigin/uAssets/issues/33031
+||pxtrkapp.com^
+
+! https://github.com/uBlockOrigin/uAssets/issues/24654#issuecomment-5649876266
+/prod/pni/g2i.min.js?
+/prod/pni/fp.min.js?
+
+! https://github.com/uBlockOrigin/uAssets/issues/34843
+fcportables.com,filecatchers.com##+js(no-fetch-if, method:POST body:/detect|trigger/)
 
 ! Merge in resource-abuse.txt
 !#include resource-abuse.txt
